@@ -22,12 +22,12 @@ If you see something along the lines of "this is how you use the command" and no
 
 For this step, I'm assuming you already have [git](https://git-scm.com/downloads) installed. Make sure you are able to run the `git` command in your terminal. For windows users, if you are unable to run `git` in powershell or cmd (after a reboot), git for windows comes with it's own terminal called "git bash". You can search for it in the start menu. Alternatively, you can also use git via [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-Next, make sure you are [logged in with your Github accout on git](https://docs.github.com/en/get-started/getting-started-with-git/set-up-git). If you ommit this step you might not be able to download the repository.
+Next, make sure you are [logged in with your Github accout on git](https://docs.github.com/en/get-started/getting-started-with-git/set-up-git). If you omit this step you might not be able to download the repository.
 
 Navigate to the directory where you want to store the project and run the following command:
 
 ```bash
-git clone FIXME
+git clone https://github.com/GillesVanPellicom/PE2-laravel/
 ```
 
 git will now download the project and initialize local version control.
@@ -46,11 +46,11 @@ In the docker dashboard, you can control the container. You can stop and start t
 
 Although there is a "delete" button associated with the container in the dashboard, I would advise against using it. If you ever want to delete the container, look [here](#in-case-of-configuration-changes).
 
-Finally, navigate to `localhost` in your browser to verify that the app is running.
+Finally, navigate to [localhost](http://localhost/) in your browser to verify that the app is running.
 
 ## 4) Initialize project
 
-To finish the setup process, you'll have to run a few commands fetch/build the last dependancies.
+To finish the setup process, you'll have to run a few commands fetch/build the last dependencies.
 
 Fetch node modules
 

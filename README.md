@@ -24,7 +24,7 @@ We use Markdown (.md) files located in the [/docs](/docs) folder to document fea
 
 If you don't know how to correctly open Markdown files, following are some options:
 
-- Look at the .md file inside the [github repository](FIXME) web viewer. Github has an extensive built-in Markdown (pre)viewer.
+- Look at the .md file inside the [github repository](https://github.com/GillesVanPellicom/PE2-laravel/tree/main/docs) web viewer. Github has an extensive built-in Markdown (pre)viewer.
 - Use the built-in live Markdown viewer in JetBrains IDE's such as [IntelliJ IDEA](https://www.jetbrains.com/idea/)
   or [PhpStorm](https://www.jetbrains.com/phpstorm/). These IDE's are extremely useful in general and free for students through [Github education](https://github.com/education). This viewer handles very fast and is very readable but struggles with advanced mathematical notation, although I don't imagine we'll be needing that for this project.
 - For vscode, use [this plugin bundle](https://marketplace.visualstudio.com/items?itemName=bierner.github-markdown-preview). Your preview will look 95% as if you are viewing on Github, which is good for consistency.

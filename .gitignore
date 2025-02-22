@@ -6,9 +6,6 @@
 /public/storage
 /storage/*.key
 /storage/pail
-.env
-.env.backup
-.env.production
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
@@ -22,7 +19,7 @@ yarn-error.log
 /.vscode
 /.zed
 /node_modules
-
+.DS_Store
 # Add your own gitignore rules below like so, without the second hashtags
 
 # # Ignore xyz.php in /hr/abc

@@ -120,7 +120,7 @@ Use consistent terminology
 
 Follow a logical hierarchy
 
-- E.g.: console.command.reboot (instead of console.reboot.cmd).
+- E.g.: console.command.reboot (instead of console.reboot.command).
 
 Use full words instead of abbreviations
 
@@ -156,7 +156,7 @@ To add your own roles, you can define them in the `$roles` array at the top of [
     'sysadmin' => ['*'],
     'admin'    => ['posts.*', 'console.command.ping', 'console.comand.reboot'],
     'group_B3' => ['scanner.actiongroup.18', 'scanner.actiongroup.39'],
-    'employee' => ['posts.edit.all', 'console.view', 'console.cmd.reboot'],
+    'employee' => ['posts.edit.all', 'console.view', 'console.command.reboot'],
     'user'     => ['posts.edit.own'],
     // END: distribution center roles
   ];
@@ -215,14 +215,14 @@ In development, you might want to check if a user has a specific permission, rol
 This will result in an output similar to the following:
 
 ```txt
-+--------------------+-------+----------+------+
-|                    | admin | sysadmin | user |
-+--------------------+-------+----------+------+
-| console.cmd.reboot |  ✔    |  ✔       |  ·   |
-| console.view       |  ✔    |  ✔       |  ·   |
-| posts.edit.all     |  ✔    |  ✔       |  ·   |
-| posts.edit.own     |  ·    |  ✔       |  ✔   |
-+--------------------+-------+----------+------+
++------------------------+-------+----------+------+
+|                        | admin | sysadmin | user |
++------------------------+-------+----------+------+
+| console.command.reboot |  ✔    |  ✔       |  ·   |
+| console.view           |  ✔    |  ✔       |  ·   |
+| posts.edit.all         |  ✔    |  ✔       |  ·   |
+| posts.edit.own         |  ·    |  ✔       |  ✔   |
++------------------------+-------+----------+------+
 ```
 
 ## Utilizing permissions in code
