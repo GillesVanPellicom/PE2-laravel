@@ -6,8 +6,8 @@
     <title>Document</title>
 </head>
 <body>
-@can('sysadmin')
-    <p>Welcome, Sysadmin!</p>
-@endcan
+<div>
+    <h1>Hello there.</h1>
+</div>
 </body>
 </html>

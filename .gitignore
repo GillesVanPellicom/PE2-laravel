@@ -18,9 +18,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/node_modules
+node_modules/
 .DS_Store
-# Add your own gitignore rules below like so, without the second hashtags
 
-# # Ignore xyz.php in /hr/abc
-# /hr/abc/xyz.php # r0997008 (@Gilles)
+# Add your own gitignore rules below
+
+

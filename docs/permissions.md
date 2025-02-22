@@ -19,7 +19,7 @@ You don't have to run this command just yet, but I'm placing it here because you
 To seed the permission system specifically, you can run the following command:
 
 ```bash
-./artisan db:seed --class=RolesAndPermissionsSeeder
+php artisan db:seed --class=RolesAndPermissionsSeeder
 ```
 
 Which will result in an output similar to the following, albeit a little more colorful:
@@ -209,7 +209,7 @@ In this example, `group_B3` is set up to function as a regular `employee`, but w
 In development, you might want to check if a user has a specific permission, role, or if a role has a specific permission. You may do so using the following command:
 
 ```bash
-./artisan permission:show
+php artisan permission:show
 ```
 
 This will result in an output similar to the following:

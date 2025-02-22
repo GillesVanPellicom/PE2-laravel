@@ -46,55 +46,62 @@ In the docker dashboard, you can control the container. You can stop and start t
 
 Although there is a "delete" button associated with the container in the dashboard, I would advise against using it. If you ever want to delete the container, look [here](#in-case-of-configuration-changes).
 
-Finally, navigate to [localhost](http://localhost/) in your browser to verify that the app is running.
-
 ## 4) Initialize project
 
 To finish the setup process, you'll have to run a few commands fetch/build the last dependencies.
 
-Fetch node modules
+### Changes in command environment
+
+Since the project is running in a docker container, you cannot simply run the artisan command in your own terminal, since that terminal interacts with your machine and not the VM.
+To access the vm terminal run the following command:
 
 ```bash
-./vendor/bin/sail npm install
+./vendor/bin/sail shell
 ```
 
-Generate the database.
-
-```bash
-
-./artisan migrate:fresh
-```
-
-Seed the database with test/production data.
-
-```bash
-
-./artisan db:seed
-```
-
-## Considerations
-
-Like with XAMPP or any other managed webserver, docker has to be active with the development containers enabled in order to develop. These will shut down during every OS reboot and don't start automatically.
-
-## Changes in command syntax
-
-You're probably used to running some variation of the following command:
+This will connect your terminal with the VM terminal. From here you can run artisan commands as you would normally.
 
 ```bash
 php artisan <xyz>
 ```
 
-This might not work in this setup.
+If you tried running artisan commands outside of this shell, some of them might work, but all commands requiring the database will fail.
 
-If you experience problems with this command, you should run all artisan commands like so:
+Remember, you will have to run this command every time you open a new terminal window.
+
+### Finalize setup
+
+Enter sail shell:
 
 ```bash
-./artisan <xyz>
+./vendor/bin/sail shell
 ```
 
-This basically leaves out the php call and just gives the command to the artisan program in the root folder of the project.
+Fetch node modules:
 
+```bash
+npm install
+```
 
+Generate the database:
+
+```bash
+
+php artisan migrate:fresh
+```
+
+Seed the database with test/production data:
+
+```bash
+
+php artisan db:seed
+```
+
+Finally, navigate to [localhost](http://localhost/) in your browser to verify that the app is running.
+
+## Considerations
+
+Like with XAMPP or any other managed webserver, docker has to be active with the development containers enabled in order to develop. These will shut down during every OS reboot and don't start automatically.
 
 ## Rebuild container
 
@@ -106,6 +113,8 @@ Take the containers down:
 ./vendor/bin/sail down -v
 ```
 
+Always leave a couple of seconds between commands to let the containers shut down properly.
+Even when it has confirmed shutdown and cleanup, sometimes this being fast leads to issues.
 Rebuild the containers:
 
 ```bash
