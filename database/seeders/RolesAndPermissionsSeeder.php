@@ -99,13 +99,7 @@ class RolesAndPermissionsSeeder extends Seeder {
       });
 
     } catch (Exception $e) {
-      $errMsg = sprintf(
-        "Permission system initialization failed with the following exception: %s in %s.",
-        $e->getMessage(),
-        $e->getFile(),
-      );
-
-      ConsoleHelper::error($errMsg);
+      ConsoleHelper::printError($e);
       ConsoleHelper::success('Roles and permissions rollback completed');
     }
   }

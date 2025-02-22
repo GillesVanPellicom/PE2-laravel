@@ -20,9 +20,7 @@ If you see something along the lines of "this is how you use the command" and no
 
 ## 2) Clone the repository
 
-For this step, I'm assuming you already have [git](https://git-scm.com/downloads) installed. Make sure you are able to run the `git` command in your terminal. For windows users, if you are unable to run `git` in powershell or cmd (after a reboot), git for windows comes with it's own terminal called "git bash". You can search for it in the start menu. Alternatively, you can also use git via [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
-
-Next, make sure you are [logged in with your Github accout on git](https://docs.github.com/en/get-started/getting-started-with-git/set-up-git). If you omit this step you might not be able to download the repository.
+For this step, I'm assuming you already have [git](https://git-scm.com/downloads) installed and that you are already logged in to Github on git. If not, complete [step 1 and 2 from this guide](/docs/github.md) first.
 
 Navigate to the directory where you want to store the project and run the following command:
 

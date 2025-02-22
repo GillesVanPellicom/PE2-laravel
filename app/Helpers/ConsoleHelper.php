@@ -2,10 +2,13 @@
 
 namespace App\Helpers;
 
+use Exception;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+
 
 class ConsoleHelper {
 
@@ -43,10 +46,32 @@ class ConsoleHelper {
     self::getFactory()->success($msg);
   }
 
+  public static function twoColumnDetail(string $l, $r): void {
+    self::getFactory()->twoColumnDetail($l, $r);
+  }
+
+  public static function printError(Exception $e): void {
+    $errMsg = sprintf(
+      "Permission system initialization failed with the following exception: %s in %s.",
+      $e->getMessage(),
+      $e->getFile(),
+    );
+
+    ConsoleHelper::error($errMsg);
+  }
+
   // Input methods
 
   public static function secret(string $msg): string {
     return self::getFactory()->secret($msg);
+  }
+
+  public static function confirm(string $msg): bool {
+    return self::getFactory()->confirm($msg);
+  }
+
+  public static function ask(string $msg): string {
+    return self::getFactory()->ask($msg);
   }
 
 

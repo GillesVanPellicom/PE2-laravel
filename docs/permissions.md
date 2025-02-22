@@ -28,12 +28,12 @@ Which will result in an output similar to the following, albeit a little more co
   INFO  Initializing roles and permissions.
   INFO  Starting transaction.  
 
-  Removing potential existing roles and permissions .................................................................................... 7.22ms DONE
-  Resetting cached roles and permissions ............................................................................................... 3.54ms DONE
-  Defining permission nodes ........................................................................................................... 22.42ms DONE
-  Updating cache with new permission nodes ............................................................................................. 0.38ms DONE
-  Defining roles and assigning permissions ............................................................................................ 17.90ms DONE
-  Applying role inheritance ............................................................................................................ 0.00ms DONE
+  Removing potential existing roles and permissions ...................................................... 7.22ms DONE
+  Resetting cached roles and permissions ................................................................. 3.54ms DONE
+  Defining permission nodes ............................................................................. 22.42ms DONE
+  Updating cache with new permission nodes ............................................................... 0.38ms DONE
+  Defining roles and assigning permissions .............................................................. 17.90ms DONE
+  Applying role inheritance .............................................................................. 0.00ms DONE
 
   SUCCESS  Roles and permissions initialized.  
 ```
@@ -48,14 +48,14 @@ The system will also clearly tell you where something went wrong. This looks lik
   INFO  Initializing roles and permissions.
   INFO  Starting transaction.  
   
-  Removing potential existing roles and permissions .................................................................................... 6.61ms DONE
-  Resetting cached roles and permissions ............................................................................................... 3.01ms DONE
-  Defining permission nodes ........................................................................................................... 19.96ms DONE
-  Updating cache with new permission nodes ............................................................................................. 0.37ms DONE
-  Defining roles and assigning permissions ............................................................................................ 14.15ms DONE
-  Applying role inheritance ............................................................................................................ 0.99ms FAIL
+  Removing potential existing roles and permissions ...................................................... 6.61ms DONE
+  Resetting cached roles and permissions ................................................................. 3.01ms DONE
+  Defining permission nodes ............................................................................. 19.96ms DONE
+  Updating cache with new permission nodes ............................................................... 0.37ms DONE
+  Defining roles and assigning permissions .............................................................. 14.15ms DONE
+  Applying role inheritance .............................................................................. 0.99ms FAIL
 
-  ERROR  Initialization failed with the following exception: There is no role named `useree` for guard `web`. in vendor/spatie/laravel-permission/src/Exceptions/RoleDoesNotExist.php.  
+  ERROR  Initialization failed with the following exception: There is no role named `useree` for guard `web` in vendor/spatie/laravel-permission/src/Exceptions/RoleDoesNotExist.php.  
 
   SUCCESS  Rollback complete. 
   ```
