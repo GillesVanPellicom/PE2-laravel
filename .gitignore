@@ -1,0 +1,29 @@
+# General
+# DO NOT MODIFY
+/.phpunit.cache
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+/node_modules
+
+# Add your own gitignore rules below like so, without the second hashtags
+
+# # Ignore xyz.php in /hr/abc
+# /hr/abc/xyz.php # r0997008 (@Gilles)
