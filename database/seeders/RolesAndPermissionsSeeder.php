@@ -18,26 +18,17 @@ class RolesAndPermissionsSeeder extends Seeder {
   // ╚════════════════════════════════════════╝
 
   private array $permissions = [
-    // Post permissions
-    'posts.edit.all',
-    'posts.edit.own',
 
-    // Console permissions
-    'console.view',
-    'console.cmd.reboot',
   ];
 
 
   private array $roles = [
-    // Distribution center roles
-    'sysadmin' => ['*'],
-    'admin' => ['posts.edit.all', 'console.view', 'console.cmd.reboot'],
-    'user' => ['posts.edit.own'],
+
   ];
 
 
   private array $roleInheritance = [
-    'user' => 'admin',
+
   ];
 
 
