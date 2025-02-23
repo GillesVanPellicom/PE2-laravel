@@ -1,6 +1,6 @@
 name: New uninitialized task
 description: Fill out this form to create a new task for the project.
-title: ""
+labels: []
 body:
   - type: input
     id: description
@@ -11,4 +11,6 @@ body:
       required: false
   - type: markdown
     attributes:
-      value: Do not forget that upon creation this task will be uninitialized, meaning you still have to assign labels in the detail page.
+      value: |
+        **Note:** Upon creation, this task will be uninitialized.  
+        You still have to assign labels in the detail page.
