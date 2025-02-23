@@ -1,6 +1,5 @@
 name: Create new uninitialized task
 description: Create new uninitialized task in the project.
-title: "[Bug]: "
 projects: ["GillesVanPellicom/1"]
 body:
   - type: textarea
@@ -13,4 +12,4 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Note:** Upon creation, this task will be uninitialized. You still have to assign labels in the detail page.
+        **Note:** Upon creation, this task will be uninitialized. You still have to assign labels in the detail page (next page) for it to show up correctly in the project.
