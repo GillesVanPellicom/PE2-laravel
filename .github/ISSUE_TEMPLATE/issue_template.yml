@@ -1,18 +1,14 @@
-name: New Issue
-description: Fill out this form to create an issue.
-title: "[New Issue] "
-labels: ["pending"]
+name: New uninitialized task
+description: Fill out this form to create a new task for the project.
+title: ""
 body:
+  - type: input
+    id: description
+    attributes:
+      label: Task description
+      description: Explain what the task is about
+    validations:
+      required: false
   - type: markdown
     attributes:
-      value: "Please fill out the details below."
-  - type: dropdown
-    id: Status
-    attributes:
-      label: "Project Status"
-      options:
-        - Pending
-        - In Progress
-        - Done
-    validations:
-      required: true
+      value: Do not forget that upon creation this task will be uninitialized, meaning you still have to assign labels in the detail page.
