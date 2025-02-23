@@ -1,16 +1,16 @@
-name: New uninitialized task
-description: Fill out this form to create a new task for the project.
-labels: []
+name: Create new uninitialized task
+description: Create new uninitialized task in the project.
+title: "[Bug]: "
+projects: ["GillesVanPellicom/1"]
 body:
-  - type: input
-    id: description
+  - type: textarea
+    id: desc
     attributes:
-      label: Task description
-      description: Explain what the task is about
+      label: Task Description
+      description: What is this task about?
     validations:
       required: false
   - type: markdown
     attributes:
       value: |
-        **Note:** Upon creation, this task will be uninitialized.  
-        You still have to assign labels in the detail page.
+        **Note:** Upon creation, this task will be uninitialized. You still have to assign labels in the detail page.
