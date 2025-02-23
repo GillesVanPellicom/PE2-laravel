@@ -4,34 +4,17 @@ Mockup end-to-end logistic management system made in Laravel.
 
 Final assignment for the Thomas More Practice Enterprise 2 course (YT6276), academic year 2024-2025.
 
-### ⚠️ NOTICE
+## Documentation
 
-> Team members, I'm aware this is a lot of text but please read this entire file. There's some important information here.
+We use the built-in [Wiki](https://github.com/GillesVanPellicom/PE2-laravel/wiki) feature in github to keep track of documentation. Here you can find guides and help on most topics relevant to our work. You can find more information about the Wiki on the Wiki itself.
 
 ## Run Project Locally
 
-Although this project could potentially run on XAMPP, bare metal, or other environments, it is strongly recommended to use the [included setup process](/docs/setup.md). This approach ensures proper functionality and maintains consistency across all configurations and devices. If you encounter difficulties with your own setup or prefer a hassle-free option, following the provided setup instructions is strongly advised.
+Although this project could potentially run on XAMPP, bare metal, or other environments, it is strongly recommended to use the [included setup process](https://github.com/GillesVanPellicom/PE2-laravel/wiki/Local-Setup-Process). This approach ensures proper functionality and maintains consistency across all configurations and devices. If you encounter difficulties with your own setup or prefer a hassle-free option, following the provided setup instructions is strongly advised.
 
 ## Sprint Tracking
 
-At the moment, sprint tasks, ownership of said tasks, storypoints and progress is tracked in [this google spreadsheet](https://docs.google.com/spreadsheets/d/1QTzqxl5neIlzYhti13QdCoNZm0Bt1pMBqmgu12ao8DM). Each person has their own tab.
-
-The difficulty of a task is measured by the number of story points assigned to it. By convention, story points range from 1 to 5, where 1 represents a relatively trivial task and 5 corresponds to 15+ hours of heavy work. Each team member independently assigns story points to their tasks based on what they deem fair relative to the norm. These assignments are publicly visible and subject to random, unscheduled reviews by the entire team. This approach eliminates the need for weekly story point meetings while maintaining oversight to prevent misuse of the system. In case you disagree with a storypoint assesment, discuss it with the team before making alterations.
-
-## Documentation
-
-We use Markdown (.md) files located in the [/docs](/docs) folder to document features so that other team members may understand how to use the code you've written. In this folder you can find guides about project-specific coding, setup, Github, etc.
-
-If you don't know how to correctly open Markdown files, following are some options:
-
-- Look at the .md file inside the [github repository](https://github.com/GillesVanPellicom/PE2-laravel/tree/main/docs) web viewer. Github has an extensive built-in Markdown (pre)viewer.
-- Use the built-in live Markdown viewer in JetBrains IDE's such as [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-  or [PhpStorm](https://www.jetbrains.com/phpstorm/). These IDE's are extremely useful in general and free for students through [Github education](https://github.com/education). This viewer handles very fast and is very readable but struggles with advanced mathematical notation, although I don't imagine we'll be needing that for this project.
-- For vscode, use [this plugin bundle](https://marketplace.visualstudio.com/items?itemName=bierner.github-markdown-preview). Your preview will look 95% as if you are viewing on Github, which is good for consistency.
-
- Do not modify another person’s documentation without their explicit permission. If you identify an error or have an addition, please contact the author. You cannot always be certain whether something you perceive as incorrect is actually accurate or if you are lacking context.
-
-f you wish to contribute documentation related to your work or write a guide on a relevant topic within the context of this project, you can refer to the [Markdown guide](https://www.markdownguide.org/basic-syntax/) for formatting instructions.
+Sprints, tasks, ownership and storypoints are tracked using the Github projects feature. Read more about how we do this [here](https://github.com/GillesVanPellicom/PE2-laravel/wiki/Sprint-Tracking).
 
 ## CSS
 
