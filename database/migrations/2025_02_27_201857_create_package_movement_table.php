@@ -20,7 +20,8 @@ return new class extends Migration
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
             $table->dateTime('departure_time');
             $table->dateTime('arrival_time')->nullable();
-            $table->timestamps();
+            $table->timestamps('check_in_time');
+            $table->timestamps('check_out_time');
         });
     }
 
