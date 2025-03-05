@@ -3,21 +3,26 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 
-Route::get('/', function () {
-    return view('index');
+Route::get('/courier', function () {
+    return view('courier.index');
 })->name('index.page');
 
-Route::get('/route', function () {
-    return view('route');
+Route::get('/courier/route', function () {
+    return view('courier.route');
 })->name('route.page');
 
-Route::get('/packages', function () {
-    return view('packages');
+Route::get('/courier/packages', function () {
+    return view('courier.packages');
 })->name('packages.page');
 
-Route::get('/scan', function () {
-    return view('scan');
+Route::get('/courier/scan', function () {
+    return view('courier.scan');
 })->name('scan.page');
 
+<<<<<<< HEAD
 Route::post('/package/update', [PackageController::class, 'updateStatus'])->name('package.update');
 
+=======
+Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
+Route::get('/package/qr/{id}', [PackageController::class,'generateQRcode'])->name('package.generateqr');
+>>>>>>> 512b0c8e2e4e32d348b2cae08f71e0c292898919
