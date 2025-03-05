@@ -19,4 +19,5 @@ Route::get('/scan', function () {
     return view('scan');
 })->name('scan.page');
 
-Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
+Route::post('/package/update', [PackageController::class, 'updateStatus'])->name('package.update');
+
