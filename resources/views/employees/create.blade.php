@@ -20,7 +20,7 @@
         <h1><a href="{{ route('employees.index') }}">Home</a></h1>
     </div>
     <div>
-        <form method="post" action="{{ route('employees.store') }}">
+        <form method="post" action="{{ route('employees.store_employee') }}">
             @csrf           <!--protection against cross-site request forgery-->
             @method('POST')
 

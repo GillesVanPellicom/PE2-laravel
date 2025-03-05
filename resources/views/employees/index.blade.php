@@ -25,33 +25,36 @@
             <thead>
                 <tr>
                     <th>id</th>
-                    <th>name</th>
-                    <th>firstname</th>
+                    <th>last name</th>
+                    <th>first name</th>
                     <th>email</th>
-                    <th>birthdate</th>
-                    <th>date of hire</th>
-                    <th>vacation days</th>
-                    <!--<th>actions</th>-->
+                    <th>phone number</th>
+                    <th>birth date</th>
+                    <th>address</th>
+                    <th>nationality</th>
+                    <th>city</th>
+                    <th>country</th>
+                    <th>leave balance</th>
+                    <th>created at</th>
+                    <th>updated at</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($employees as $employee)
                     <tr>
-                        <td>{{ $employee->employee_id }}</td>
-                        <td>{{ $employee->name }}</td>
-                        <td>{{ $employee->firstname }}</td>
+                        <td>{{ $employee->id }}</td>
+                        <td>{{ $employee->last_name }}</td>
+                        <td>{{ $employee->first_name }}</td>
                         <td>{{ $employee->email }}</td>
-                        <td>{{ $employee->birthdate }}</td>
-                        <td>{{ $employee->hire_date }}</td>
-                        <td>{{ $employee->vacation_days }}</td>
-                        <!--<td>
-                            <a href="{/{ route('employees.edit', $employee->id) }}">edit</a>
-                            <form method="post" action="{/{ route('employees.destroy', $employee->id) }}">
-                                @/csrf
-                                @/method('DELETE')
-                                <button type="submit">delete</button>
-                            </form>
-                        </td>-->
+                        <td>{{ $employee->phone_number }}</td>
+                        <td>{{ $employee->birth_date }}</td>
+                        <td>{{ $employee->address->street }} {{ $employee->address->house_number }}</td>
+                        <td>{{ $employee->nationality }}</td>
+                        <td>{{ $employee->address->city->name }}</td>
+                        <td>{{ $employee->address->city->country->country_name }}</td>
+                        <td>{{ $employee->leave_balance }}</td>
+                        <td>{{ $employee->created_at }}</td>
+                        <td>{{ $employee->updated_at }}</td>
                     </tr>
                 @endforeach
             </tbody>

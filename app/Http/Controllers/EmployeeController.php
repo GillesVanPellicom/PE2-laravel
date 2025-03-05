@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employee;
+use App\Models\{Employee, Country, City, Address};
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
 
@@ -12,16 +12,16 @@ class EmployeeController extends Controller
     public function index()
     {
         //https://laravel.com/docs/11.x/views#passing-data-to-views
-        $employees = Employee::all();
-        return view('employees.index', ['employees' => $employees]);
+        $employees = Employee::with('address.city.country')->get();
+        return view('employees.index', compact('employees'));
     }
 
     public function create()
     {
-        return view('employees.create');
+        return view('employees.create', ['countries' => Country::all()], ['cities' => City::all()]);
     }
 
-    public function store(Request $request)
+    public function store_employee(Request $request)
     {
         //https://stackoverflow.com/questions/47211686/list-of-laravel-validation-rules
         //https://www.youtube.com/watch?v=q9PeXmrQLpI
