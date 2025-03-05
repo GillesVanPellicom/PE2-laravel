@@ -20,3 +20,4 @@ Route::get('/scan', function () {
 })->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
+Route::get('/package/qr/{id}', [PackageController::class,'generateQRcode'])->name('package.generateqr');
