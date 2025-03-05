@@ -19,5 +19,10 @@ Route::get('/courier/scan', function () {
     return view('courier.scan');
 })->name('scan.page');
 
+<<<<<<< HEAD
+=======
+Route::post('/package/update', [PackageController::class, 'updateStatus'])->name('package.update');
+
+>>>>>>> ffdcb88737ee4e79a4f1f9df7937232efde3c71c
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 Route::get('/package/qr/{id}', [PackageController::class,'generateQRcode'])->name('package.generateqr');
