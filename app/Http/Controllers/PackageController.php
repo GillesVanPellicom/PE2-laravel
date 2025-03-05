@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PackageController extends Controller
 {
@@ -19,5 +20,10 @@ class PackageController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Package not found']);
+    }
+
+    public function generateQRcode($packageID){
+        $qrCode = QrCode::size(300)->generate($packageID);
+        return response($qrCode)->header('Content-Type', 'image/svg+xml');
     }
 }
