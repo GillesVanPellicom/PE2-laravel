@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('delivery_method', function (Blueprint $table) {
             $table->id();
+            $table->string('code');
+            $table->string('name');
+            $table->string('description');
+            $table->decimal('price', 8, 2);
+            $table->boolean('requires_location')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
