@@ -14,4 +14,5 @@ class Package extends Model {
         'weight',
         'dimension'
     ];
+    protected $filler = ['status'];
 }
