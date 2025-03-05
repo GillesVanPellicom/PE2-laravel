@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <title>Courier Scan</title>
@@ -119,24 +118,11 @@
         <h2>Package Details</h2>
         <p id="packageInfo"></p>
         <button onclick="updateStatus('delivered')">Delivered</button>
-        <button onclick="showSendOptions()">Send To</button>
+        <button onclick="updateStatus('distribution')">Send to Distribution Center</button>
+        <button onclick="updateStatus('pickup')">Send to Pickup Point</button>
         <button onclick="closeModal()">Close</button>
     </div>
 </div>
-
-
-
-<div id="sendOptionsModal" class="modal">
-    <div class="modal-content">
-        <h2>Send Package To</h2>
-        <button onclick="updateStatus('distribution')">Distribution Center</button>
-        <button onclick="updateStatus('pickup')">Pickup Point</button>
-        <button onclick="updateStatus('airport')">Airport</button>
-        <button onclick="closeModal()">Close</button>
-    </div>
-</div>
-
-
 
 <nav class="navbar">
     <a href="{{ route('route.page') }}"><i class="fas fa-map"></i></a>
@@ -145,17 +131,16 @@
 </nav>
 
 <script>
-    let scannedId = null;
-
     document.addEventListener("DOMContentLoaded", function () {
         const qrReader = new Html5Qrcode("qr-reader");
-        const modal = document.getElementById("packageModal");
+        const packageModal = document.getElementById("packageModal");
         const packageInfo = document.getElementById("packageInfo");
+        let scannedId = null;
 
-        qrReader.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (msg) => {
-            scannedId = msg;
+        qrReader.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (message) => {
+            scannedId = message;
             packageInfo.textContent = "Package ID: " + scannedId;
-            modal.style.display = "flex";
+            packageModal.style.display = "flex";
         });
 
         window.updateStatus = function (status) {
@@ -163,34 +148,22 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    "Accept": "application/json"  // Add Accept header for AJAX response
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
-                body: JSON.stringify({ packageId: scannedId, status: status }),
-                credentials: "same-origin"
+                body: JSON.stringify({
+                    packageId: scannedId,
+                    status: status
+                })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    window.opener.addToList(data.packageId); // Fix here ✅
-                    closeModal();
-                } else {
-                    alert(data.message);
-                }
+                alert(data.message);
+                closeModal();
             });
         };
 
-
-
-        window.showSendOptions = function () {
-            modal.style.display = "none";
-            document.getElementById("sendOptionsModal").style.display = "flex";
-        };
-
         window.closeModal = function () {
-            modal.style.display = "none";
-            document.getElementById("sendOptionsModal").style.display = "none";
+            packageModal.style.display = "none";
             qrReader.resume();
         };
     });

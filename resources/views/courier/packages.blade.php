@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
+    <title>Courier Login</title>
     <style>
         * {
             margin: 0;
@@ -117,14 +118,6 @@
     color: black; /* Hover effect */
 }
 
-.package-item {
-            background: #d32f2f;
-            color: white;
-            padding: 10px;
-            margin: 10px;
-            border-radius: 5px;
-        }
-
     </style>
 </head>
 <body>
@@ -138,16 +131,11 @@
 
 
 
-<h1>Package List 📦</h1>
-<div id="packageList">
-        @if(session()->has('package_list'))
-            @php(session()->reflash()) <!-- This line forces session refresh -->
-            @foreach(session('package_list') as $package)
-                <div class="package-item">Package ID: {{ $package }}</div>
-            @endforeach
-        @endif
+    <h1>Packages List</h1>
+    <div id="packageList"></div>
 
-</div>
+    
+
 
 
     <nav class="navbar">
@@ -161,24 +149,13 @@
 
 
 <script>
-    function addToList(packageId) {
-    let list = document.getElementById("packageList");
-
-    // Check if package is already in the list (no duplicates)
-    if (document.querySelector(`[data-id='${packageId}']`)) {
-        alert("Package already added!");
-        return; 
+    function addToList(package) {
+        let list = document.getElementById("packageList");
+        let item = document.createElement("div");
+        item.textContent = "Package: " + package;
+        list.appendChild(item);
     }
-
-    let item = document.createElement("div");
-    item.classList.add("package-item");
-    item.setAttribute("data-id", packageId);
-    item.textContent = "Package ID: " + packageId;
-    list.appendChild(item);
-}
-
 </script>
-
 
 </body>
 </html>

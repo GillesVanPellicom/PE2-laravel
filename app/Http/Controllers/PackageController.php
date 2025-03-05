@@ -8,48 +8,22 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PackageController extends Controller
 {
-    
     public function updateStatus(Request $request)
     {
-        // Ensure it's an AJAX request by checking the request headers
-        if (!$request->expectsJson()) {
-            return response()->json(['success' => false, 'message' => 'Invalid request']);
-        }
-    
-        // Use the correct column name for the package ID
-        $package = Package::where('id', $request->packageId)->first(); // Use 'id' instead of 'package_id'
-    
+        $package = Package::where('id', $request->packageId)->first();
+
         if ($package) {
             $package->status = $request->status;
             $package->save();
-    
-            // Check if package is already in session to avoid duplicates
-            $packageList = session('package_list', []);
-    
-            if (!in_array($package->id, $packageList)) {
-                session()->push('package_list', $package->id);
-            }
-    
-            return response()->json([
-                'success' => true,
-                'message' => 'Status updated successfully',
-                'packageId' => $package->id
-            ]);
-        }
-    
-        return response()->json([
-            'success' => false,
-            'message' => 'Package not found'
-        ]);
-    }
-<<<<<<< HEAD
-    
 
-=======
+            return response()->json(['success' => true, 'message' => 'Status updated successfully']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Package not found']);
+    }
 
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
     }
->>>>>>> 512b0c8e2e4e32d348b2cae08f71e0c292898919
 }
