@@ -42,14 +42,9 @@ class PackageController extends Controller
             'message' => 'Package not found'
         ]);
     }
-<<<<<<< HEAD
     
-
-=======
-
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
     }
->>>>>>> 512b0c8e2e4e32d348b2cae08f71e0c292898919
 }
