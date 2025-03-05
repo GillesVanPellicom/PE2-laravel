@@ -3,20 +3,20 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 
-Route::get('/courrier', function () {
-    return view('courrier.index');
+Route::get('/courier', function () {
+    return view('courier.index');
 })->name('index.page');
 
-Route::get('/courrier/route', function () {
-    return view('courrier.route');
+Route::get('/courier/route', function () {
+    return view('courier.route');
 })->name('route.page');
 
-Route::get('/courrier/packages', function () {
-    return view('courrier.packages');
+Route::get('/courier/packages', function () {
+    return view('courier.packages');
 })->name('packages.page');
 
-Route::get('/courrier/scan', function () {
-    return view('courrier.scan');
+Route::get('/courier/scan', function () {
+    return view('courier.scan');
 })->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');

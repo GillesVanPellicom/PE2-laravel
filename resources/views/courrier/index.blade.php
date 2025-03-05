@@ -113,7 +113,7 @@
 
 
     <div class="container">
-        <h1>Welcome courrier!</h1>
+        <h1>Welcome courier!</h1>
         <p>Log in to see your route.</p>
         
         <form action="/login" method="POST" class="login-form">
