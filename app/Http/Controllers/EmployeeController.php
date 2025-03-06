@@ -23,39 +23,86 @@ class EmployeeController extends Controller
 
     public function store_employee(Request $request)
     {
+
         //https://stackoverflow.com/questions/47211686/list-of-laravel-validation-rules
         //https://www.youtube.com/watch?v=q9PeXmrQLpI
+
+
 
         /*
             making a custom validation
             php artisan make:rule Validate_Adult    -> creates a new rule in App\Rules
         */
-        $employee = $request->validate([
-            'name' => 'required|string',
-            'firstname' => 'required|string',
-            'email' => 'required|email:rfc',
-            'birthdate' => ['required', 'date', 'before:today', 'after:1900-01-01', new Validate_Adult('employee')],
-            // just in case we want to be able to add employees that are not yet hired or were hired in the past
-            'hire_date' => 'nullable|after_or_equal:birthdate|before_or_equal:today',
-            'vacation_days' => 'nullable|integer',  //removing integer doesnt work
+
+        $request->validate([
+            'street' => 'required',
+            'house_number' => 'required',
+            'city' => 'required|integer|exists:cities,id',
         ],
         [
-            'name.required' => 'Name is required',
-            'firstname.required' => 'Firstname is required',
-            'email.required' => 'Email is required',
-            'email.email' => 'Email is not valid',
-            'birthdate.required' => 'Birthdate is required',
-            'hire_date.required' => 'Hire date is required',
-            'birthdate.before' => 'The birthdate cannot be a future date.',
-            'birthdate.after' => 'The birthdate must be after 1900-01-01.',
-            //'birthdate.date' => 'The birthdate must be a date.',
-            //'hire_date.date' => 'The hire date must be a date.',
-            'hire_date.after_or_equal' => 'The hire date must be after or equal to the birthdate.',
-            'hire_date.before_or_equal' => 'The hire date cannot be a future date.',
+            'street.required' => 'Street is required',
+            'house_number.required' => 'House number is required',
+            'city.required' => 'City is required',
+            'city.exists' => 'Please select a city',
         ]);
 
-        $new_employee = Employee::create($employee);
+        $address = [
+            'street' => $request->street,
+            'house_number' => $request->house_number,
+            'cities_id' => $request->city,
+            'country_id' => City::find($request->city)->country_id,
+        ];
 
-        return redirect()->route('employees.index');
+        $request->validate([
+            'lastname' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'email' => 'required|email|unique:employees,email', // Unique email check
+            'phone' => 'required|string|max:15', // Adjust the max length as needed
+            'birth_date' => 'required|date|before:today', // Ensure the birth date is before today
+            'nationality' => 'required|string|max:255',
+            'leave_balance' => 'required|integer|min:0', // Make sure the leave balance is a positive number
+        ], [
+            'lastname.required' => 'Last name is required.',
+            'firstname.required' => 'First name is required.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'The email has already been taken.',
+            'phone.required' => 'Phone number is required.',
+            'birth_date.required' => 'Birth date is required.',
+            'birth_date.before' => 'Birth date must be a date before today.',
+            'nationality.required' => 'Nationality is required.',
+            'leave_balance.required' => 'Leave balance is required.',
+            'leave_balance.integer' => 'Leave balance must be a valid number.',
+            'leave_balance.min' => 'Leave balance must be at least 0.',
+        ]);
+
+        $existingAddress = Address::where('street', $request->street)->where('house_number', $request->house_number)->where('cities_id', $request->city)->first();
+
+        if ($existingAddress) 
+        {
+            $new_address_id = $existingAddress->id;
+        } else 
+        {
+            $new_address = Address::create($address);
+            $new_address_id = $new_address->id;
+        }
+
+        $employee = [
+            'last_name' => $request->lastname,
+            'first_name' => $request->firstname,
+            'email' => $request->email,
+            'phone_number' => $request->phone,
+            'birth_date' => $request->birth_date,
+            'address_id' => $new_address_id,
+            'nationality' => $request->nationality,
+            'leave_balance' => $request->leave_balance,
+            'city_id' => $request->city,
+        ];
+        dump($address);
+        dump($employee);
+
+        Employee::create($employee);
+
+        return redirect()->route('employees.index')->with('success', 'Employee created successfully');;
     }
 }

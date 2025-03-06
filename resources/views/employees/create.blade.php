@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
+        body {
+            background-color: #aaa;
+        }
         .cent {
             width: 50%; /* or any fixed width */
             margin: 0 auto;
@@ -23,64 +26,95 @@
         <form method="post" action="{{ route('employees.store_employee') }}">
             @csrf           <!--protection against cross-site request forgery-->
             @method('POST')
+            <!-- https://5balloons.info/retain-old-form-data-on-validation-error-in-laravel/ -->
+            <div>
+                <label for="lastname">Lastname:</label>
+                <input type="text" name="lastname" id="lastname"  value="{{ old('lastname') }}">
+            </div>
 
             <div>
-                <label for="name">name</label>
-                <input type="text" name="name" id="name" placeholder="lastname">
-                @error('name')
-                    <div>{{ $message }}</div>
+                <label for="firstname">Firstname:</label>
+                <input type="text" name="firstname" id="firstname"  value="{{ old('firstname') }}">
+            </div>
+
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" name="email" id="email"  value="{{ old('email') }}">
+            </div>
+
+            <div>
+                <label for="phone">Phone:</label>
+                <input type="text" name="phone" id="phone"  value="{{ old('phone') }}">
+            </div>
+
+            <div>
+                <label for="birth_date">Birth date:</label>
+                <input type="date" name="birth_date" id="birth_date"  value="{{ old('birth_date') }}">
+            </div>
+
+            <div>
+                <label for="country">Country:</label>
+                <select name="country" id="country">
+                    <option value="-1">Select a country</option>
+                @foreach($countries as $country)
+                    <option value="{{ $country->id }}">{{ $country->country_name }}</option>
+                @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label for="city">City:</label>
+                <select name="city" id="city">
+                    <option value="-1">Select a city</option>
+                    @foreach($cities as $city)
+                        <option value="{{ $city->id }}">
+                            {{ $city->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('city')
+                    <p>{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="firstname">firstname</label>
-                <input type="text" name="firstname" id="firstname" placeholder="firstname">
-                @error('firstname')
-                    <div>{{ $message }}</div>
+                <label for="street">Street:</label>
+                <input type="text" name="street" id="street"  value="{{ old('street') }}">
+                @error('street')
+                    <p>{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="email">email</label>
-                <input type="email" name="email" id="email" placeholder="example@example.com">
-                @error('email')
-                    <div>{{ $message }}</div>
+                <label for="house_number">House number:</label>
+                <input type="text" name="house_number" id="house_number" value="{{ old('house_number') }}">
+                @error('house_number')
+                    <p>{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="birthdate">birthdate</label>
-                <input type="date" name="birthdate" id="birthdate" placeholder="date of birth">
-                @error('birthdate')
-                    <div>{{ $message }}</div>
-                @enderror
+                <label for="nationality">Nationality:</label>
+                <input type="text" name="nationality" id="nationality" value="{{ old('nationality') }}">
             </div>
 
-            <!--<div>
-                <label for="hire_date">date of hire</label>
-                <input type="date" name="hire_date" id="hire_date" placeholder="date of hire">
-            </div>-->
-
             <div>
-                <label for="vacation_days">vacation days</label>
-                <input type="int" name="vacation_days" id="vacation_days" placeholder="when left empty the default value is 25">
+                <label for="leave_balance">Leave balance:</label>
+                <input type="text" name="leave_balance" id="leave_balance"  value="{{ old('leave_balance') }}">
             </div>
 
-            <!--<div>
-                @if($errors->any())
-                    <ul>
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>-->
-
             <div>
-                <button type="submit">create</button>
+                <button type="submit">Create</button>
             </div>
 
         </form>
+
+        @if (session('success'))
+            <div>
+                {{ session('success') }}
+            </div>
+        @endif
+
     </div>
 </div>
 </body>

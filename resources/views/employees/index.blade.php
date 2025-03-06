@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
+        body {
+            background-color: #aaa;
+        }
         .cent {
             width: 50%; /* or any fixed width */
             margin: 0 auto;
