@@ -126,7 +126,7 @@
 
                         <!-- Dynamic Location Section -->
                         <div id="locationSection" style="display: none;" class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Select Location</h3>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Select a Location</h3>
                             <select name="destination_location_id" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Select a location</option>
                                 @foreach($deliveryMethods as $method)
