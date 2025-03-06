@@ -84,6 +84,17 @@ class LocationsSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            //Parcel Lockers
+            [
+                'name' => 'Antwerp Parcel Locker',
+                'location_type' => 'Parcel Locker',
+                'addresses_id' => 6, // Address ID for Parcel Locker
+                'contact_number' => '+32 2 123 45 67',
+                'opening_hours' => '08:00 - 18:00',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

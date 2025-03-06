@@ -23,7 +23,7 @@ class DeliveryMethodSeeder extends Seeder
                 'is_active' => true
             ],
             [
-                'code' => 'Pickup Point',
+                'code' => 'Parcel Locker',
                 'name' => 'Parcel Locker',
                 'description' => 'Secure parcel locker',
                 'price' => 7.99,

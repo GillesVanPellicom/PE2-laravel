@@ -17,10 +17,9 @@ Route::get('/packages', function () {
     return view('packages');
 })->name('packages.page');
 
-Route::controller(ParcelController::class)->group(function () {
-    Route::get('/send-parcel', 'create')->name('parcel.create');
-    Route::post('/send-parcel', 'store')->name('parcel.store');
-});
+Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
+
+Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
 
 Route::get('/scan', function () {
     return view('scan');

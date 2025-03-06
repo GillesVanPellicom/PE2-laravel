@@ -10,12 +10,13 @@ class Location extends Model
         'location_type',
         'name',
         'address',
+        'contact_number',
         'opening_hours',
         'is_active'
     ];
 
     public function parcels()
     {
-        return $this->hasMany(Parcel::class, 'destination_location_id');
+        return $this->hasMany(Package::class, 'destination_location_id');
     }
 } 

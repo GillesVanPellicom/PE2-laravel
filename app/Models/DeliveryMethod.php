@@ -13,5 +13,5 @@ class DeliveryMethod extends Model
      */
     protected $table = 'delivery_method';
 
-    protected $fillable = ['code', 'name', 'description', 'price', 'is_active'];
+    protected $fillable = ['code', 'name', 'description', 'requires_location', 'price', 'is_active'];
 } 

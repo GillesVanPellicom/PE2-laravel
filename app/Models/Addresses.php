@@ -9,21 +9,19 @@ class Addresses extends Model
 {
     protected $fillable = [
         'street',
-        'number',
-        'bus',
-        'postal_code',
-        'city',
-        'country'
+        'house_number',
+        'cities_id',
+        'country_id'
     ];
 
     public function parcels(): HasMany
     {
-        return $this->hasMany(Parcel::class, 'address_id');
+        return $this->hasMany(Package::class, 'addresses_id');
     }
 
     public function senderParcels(): HasMany
     {
-        return $this->hasMany(Parcel::class, 'sender_address_id');
+        return $this->hasMany(Package::class, 'sender_address_id');
     }
 
     public function locations(): HasMany
