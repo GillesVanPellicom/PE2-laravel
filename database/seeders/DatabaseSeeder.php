@@ -29,6 +29,11 @@ class DatabaseSeeder extends Seeder {
       AirportsSeeder::class,
       ContractsSeeder::class,
       VehiclesSeeder::class,
+      DeliveryMethodSeeder::class,
+      WeightClassSeeder::class,
+      CustomerSeeder::class,
+      PackageSeeder::class,
+      PackageMovementsSeeder::class,
     ]);
 
   }

@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('package_id')->constrained('packages');
             $table->foreignId('from_location_id')->constrained('locations');
             $table->foreignId('to_location_id')->constrained('locations');
-            $table->foreignId('handled_by_courier_id')->constrained('couriers');
+            $table->foreignId('handled_by_courier_id')->nullable()->constrained('couriers');
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
             $table->dateTime('departure_time')->nullable();
             $table->dateTime('arrival_time')->nullable();
-            $table->dateTime('check_in_time');
-            $table->dateTime('check_out_time');
+            $table->dateTime('check_in_time')->nullable();
+            $table->dateTime('check_out_time')->nullable();
         });
     }
 
