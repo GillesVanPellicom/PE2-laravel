@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\ChartController;
 
 Route::get('/courier', function () {
     return view('courier.index');
@@ -21,3 +22,6 @@ Route::get('/courier/scan', function () {
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 Route::get('/package/qr/{id}', [PackageController::class,'generateQRcode'])->name('package.generateqr');
+
+
+Route::get('/package/chart', [ChartController::class, 'getPackageData'])->name('package.chart');
