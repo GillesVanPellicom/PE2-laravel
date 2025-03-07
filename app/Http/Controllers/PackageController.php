@@ -111,4 +111,5 @@ class PackageController extends Controller
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
+    }
 }
