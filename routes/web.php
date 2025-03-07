@@ -42,3 +42,28 @@ Route::get('/manager-calendar', function () {
 Route::get('/manager-calendar', function () {
     return view('employees.manager_calendar');
 })->name('manager-calendar');
+
+Route::get('/holiday-requests', function () {
+    return view('employees.holiday_request');
+});
+
+// test for demo 
+
+Route::get('/manager-calendar', function () {
+    return view('employees.manager_calendar');  // Adjust based on the folder structure
+});
+
+Route::get('/manager-calendar', function () {
+    return view('employees.manager_calendar');
+})->name('manager-calendar');
+
+
+// *** EMPLOYEES ***
+
+Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
+
+Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.create');
+
+Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->name('employees.store_employee');
+
+// *** END EMPLOYEES ***
