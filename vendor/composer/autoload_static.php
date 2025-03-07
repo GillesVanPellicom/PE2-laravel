@@ -548,17 +548,8 @@ class ComposerStaticInit626b9e7ddd47fb7eff9aaa53cce0c9ad
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Controllers\\EmployeeController' => __DIR__ . '/../..' . '/app/Http/Controllers/EmployeeController.php',
         'App\\Http\\Controllers\\PackageController' => __DIR__ . '/../..' . '/app/Http/Controllers/PackageController.php',
-<<<<<<< HEAD
-        'App\\Http\\Controllers\\ParcelController' => __DIR__ . '/../..' . '/app/Http/Controllers/ParcelController.php',
-        'App\\Models\\DeliveryMethod' => __DIR__ . '/../..' . '/app/Models/DeliveryMethod.php',
-        'App\\Models\\Employee' => __DIR__ . '/../..' . '/app/Models/Employee.php',
-        'App\\Models\\Location' => __DIR__ . '/../..' . '/app/Models/Location.php',
-        'App\\Models\\Package' => __DIR__ . '/../..' . '/app/Models/Package.php',
-        'App\\Models\\Parcel' => __DIR__ . '/../..' . '/app/Models/Parcel.php',
-=======
         'App\\Models\\Employee' => __DIR__ . '/../..' . '/app/Models/Employee.php',
         'App\\Models\\Package' => __DIR__ . '/../..' . '/app/Models/Package.php',
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Models\\WeightClass' => __DIR__ . '/../..' . '/app/Models/WeightClass.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',

@@ -11,17 +11,12 @@ return array(
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\EmployeeController' => $baseDir . '/app/Http/Controllers/EmployeeController.php',
     'App\\Http\\Controllers\\PackageController' => $baseDir . '/app/Http/Controllers/PackageController.php',
-<<<<<<< HEAD
     'App\\Http\\Controllers\\ParcelController' => $baseDir . '/app/Http/Controllers/ParcelController.php',
     'App\\Models\\DeliveryMethod' => $baseDir . '/app/Models/DeliveryMethod.php',
-    'App\\Models\\Employee' => $baseDir . '/app/Models/Employee.php',
     'App\\Models\\Location' => $baseDir . '/app/Models/Location.php',
     'App\\Models\\Package' => $baseDir . '/app/Models/Package.php',
     'App\\Models\\Parcel' => $baseDir . '/app/Models/Parcel.php',
-=======
     'App\\Models\\Employee' => $baseDir . '/app/Models/Employee.php',
-    'App\\Models\\Package' => $baseDir . '/app/Models/Package.php',
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',
     'App\\Models\\WeightClass' => $baseDir . '/app/Models/WeightClass.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
