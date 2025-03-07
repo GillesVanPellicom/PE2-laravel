@@ -21,7 +21,24 @@ Route::get('/courier/scan', function () {
 })->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
-Route::get('/package/qr/{id}', [PackageController::class,'generateQRcode'])->name('package.generateqr');
 
 
-Route::get('/package/chart', [ChartController::class, 'getPackageData'])->name('package.chart');
+// ======================= Employee====================== //
+
+Route::get('/calendar', function () {
+    return view('employees.calendar');
+});
+
+Route::get('/holiday-requests', function () {
+    return view('employees.holiday_request');
+});
+
+// test for demo 
+
+Route::get('/manager-calendar', function () {
+    return view('employees.manager_calendar');  // Adjust based on the folder structure
+});
+
+Route::get('/manager-calendar', function () {
+    return view('employees.manager_calendar');
+})->name('manager-calendar');
