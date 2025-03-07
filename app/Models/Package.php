@@ -11,11 +11,8 @@ use App\Models\Customer;
 
 class Package extends Model {
     use HasFactory;
-<<<<<<< HEAD
 
     protected $primaryKey = 'id'; // Custom primary key
-=======
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
     protected $fillable = [
         'reference',
         'customer_id',
@@ -34,7 +31,6 @@ class Package extends Model {
         'weight_price',
         'delivery_price'
     ];
-<<<<<<< HEAD
 
     protected $attributes = [
         'status' => 'pending',
@@ -72,7 +68,5 @@ class Package extends Model {
     {
         return $this->belongsTo(Location::class, 'current_location_id');
     }
-=======
     
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 }
