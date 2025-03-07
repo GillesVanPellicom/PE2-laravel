@@ -22,6 +22,7 @@ Route::post('/send-package', [PackageController::class, 'store'])->name('package
 
 Route::get('/scan', function () {
     return view('scan');
+});
 Route::get('/courier/scan', function () {
     return view('courier.scan');
 })->name('scan.page');
