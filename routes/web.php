@@ -2,7 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
+<<<<<<< HEAD
+use App\Http\Controllers\ParcelController;
+use Pnlinh\GoogleDistance\Facades\GoogleDistance;
+=======
 use App\Http\Controllers\ChartController;
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 
 Route::get('/courier', function () {
     return view('courier.index');
@@ -16,8 +21,17 @@ Route::get('/courier/packages', function () {
     return view('courier.packages');
 })->name('packages.page');
 
+<<<<<<< HEAD
+Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
+
+Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
+
+Route::get('/scan', function () {
+    return view('scan');
+=======
 Route::get('/courier/scan', function () {
     return view('courier.scan');
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 })->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');

@@ -3,7 +3,11 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
+<<<<<<< HEAD
+        'reference' => '22af80a064af9d83675328f62d82b97fb4a1dbe3',
+=======
         'reference' => '4d6c000c6224c872acbceff4429912d90993cb3f',
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -406,7 +410,11 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
+<<<<<<< HEAD
+            'reference' => '22af80a064af9d83675328f62d82b97fb4a1dbe3',
+=======
             'reference' => '4d6c000c6224c872acbceff4429912d90993cb3f',
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -696,6 +704,15 @@
             'install_path' => __DIR__ . '/../phpunit/phpunit',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'pnlinh/laravel-google-distance' => array(
+            'pretty_version' => 'v1.0.9',
+            'version' => '1.0.9.0',
+            'reference' => 'b934137030624ce9fa2b9843e7b7a67b98976225',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../pnlinh/laravel-google-distance',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'psr/clock' => array(
             'pretty_version' => '1.0.0',

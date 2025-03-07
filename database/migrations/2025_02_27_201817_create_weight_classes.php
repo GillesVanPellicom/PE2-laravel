@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('weight_min', 8, 2);
             $table->decimal('weight_max', 8, 2);
             $table->decimal('price', 8, 2);
-            $table->boolean('active');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
