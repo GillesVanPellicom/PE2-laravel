@@ -22,7 +22,7 @@ Route::get('/courier/scan', function () {
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
-Route::post('/package/chart', [ChartController::class, 'getChartData'])->name('package.chart');
+Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
 
 // ======================= Employee====================== //
 

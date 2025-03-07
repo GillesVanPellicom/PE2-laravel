@@ -23,7 +23,7 @@ class ChartController extends Controller
             ->orderBy('day', 'asc')
             ->get();
     
-        return view('package-chart', [
+        return view('packagechart', [
             'incomingDays' => $incomingData->pluck('day'),
             'incomingCounts' => $incomingData->pluck('count'),
             'outgoingDays' => $outgoingData->pluck('day'),
