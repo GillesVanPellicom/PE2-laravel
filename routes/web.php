@@ -3,6 +3,34 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Auth;
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Login
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+// Register
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
+
+// Update
+Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
+
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Customers
+Route::get('/customers', function () {
+    if (!Auth::check()) {
+        return redirect()->route('auth.login');
+    }
+    return view('customers');
+})->name('customers');
 
 Route::get('/courier', function () {
     return view('courier.index');
