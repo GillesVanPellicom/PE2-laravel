@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+<<<<<<< HEAD
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
 use App\Models\Addresses;
+=======
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 
 class PackageController extends Controller
 {
@@ -25,6 +29,7 @@ class PackageController extends Controller
         return response()->json(['success' => false, 'message' => 'Package not found']);
     }
 
+<<<<<<< HEAD
     public function create()
     {
         $weightClasses = WeightClass::where('is_active', true)->get();
@@ -105,5 +110,10 @@ class PackageController extends Controller
         }
 
         return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
+=======
+    public function generateQRcode($packageID){
+        $qrCode = QrCode::size(300)->generate($packageID);
+        return response($qrCode)->header('Content-Type', 'image/svg+xml');
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
     }
 }

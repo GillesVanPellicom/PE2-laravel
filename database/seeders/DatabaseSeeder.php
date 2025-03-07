@@ -30,7 +30,14 @@ class DatabaseSeeder extends Seeder {
       ContractsSeeder::class,
       VehiclesSeeder::class,
       DeliveryMethodSeeder::class,
+<<<<<<< HEAD
       WeightClassesSeeder::class,
+=======
+      WeightClassSeeder::class,
+      CustomerSeeder::class,
+      PackageSeeder::class,
+      PackageMovementsSeeder::class,
+>>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
     ]);
 
   }
