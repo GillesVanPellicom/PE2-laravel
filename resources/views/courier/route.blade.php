@@ -117,7 +117,6 @@
 .back-arrow:hover {
     color: black; /* Hover effect */
 }
-
     </style>
 </head>
 <body>
@@ -130,13 +129,7 @@
 </header>
 
 
-
-    <h1>Packages List</h1>
-    <div id="packageList"></div>
-
     
-
-
 
     <nav class="navbar">
     <ul>
@@ -145,17 +138,6 @@
         <li><a href="{{ route('scan.page') }}"><i class="fas fa-qrcode"></i></a></li> <!-- QR Code Icon -->
     </ul>
 </nav>
-
-
-
-<script>
-    function addToList(package) {
-        let list = document.getElementById("packageList");
-        let item = document.createElement("div");
-        item.textContent = "Package: " + package;
-        list.appendChild(item);
-    }
-</script>
 
 </body>
 </html>
