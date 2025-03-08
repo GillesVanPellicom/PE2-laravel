@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder {
       CustomerSeeder::class,
       PackageSeeder::class,
       PackageMovementsSeeder::class,
+      FlightsSeeder::class,
     ]);
 
   }
