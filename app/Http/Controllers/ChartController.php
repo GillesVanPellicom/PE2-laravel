@@ -9,17 +9,25 @@ class ChartController extends Controller
 {
     public function getPackageData()
     {
-        // Haal de gegevens op, bijvoorbeeld het aantal pakketten per maand
-        $data = Package::selectRaw('COUNT(*) as count, DAY(created_at) as day')
+        // Inkomende pakketten
+        $incomingData = Package::selectRaw('COUNT(*) as count, DATE_FORMAT(created_at, "%d-%m-%Y") as day')
+            ->whereIn('status', ['Pending'])
             ->groupBy('day')
             ->orderBy('day', 'asc')
             ->get();
-
-        // Haal de maand en het aantal uit de data
-        $day = $data->pluck('day');
-        $counts = $data->pluck('count');
-
-        // Stuur de data naar de view
-        return view('package-chart', compact('day', 'counts'));
+    
+        // Uitgaande pakketten
+        $outgoingData = Package::selectRaw('COUNT(*) as count, DATE_FORMAT(created_at, "%d-%m-%Y") as day')
+            ->whereIn('status', ['Delivered'])
+            ->groupBy('day')
+            ->orderBy('day', 'asc')
+            ->get();
+    
+        return view('packagechart', [
+            'incomingDays' => $incomingData->pluck('day'),
+            'incomingCounts' => $incomingData->pluck('count'),
+            'outgoingDays' => $outgoingData->pluck('day'),
+            'outgoingCounts' => $outgoingData->pluck('count')
+        ]);
     }
 }

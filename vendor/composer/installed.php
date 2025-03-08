@@ -697,6 +697,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'pnlinh/laravel-google-distance' => array(
+            'pretty_version' => 'v1.0.9',
+            'version' => '1.0.9.0',
+            'reference' => 'b934137030624ce9fa2b9843e7b7a67b98976225',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../pnlinh/laravel-google-distance',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'psr/clock' => array(
             'pretty_version' => '1.0.0',
             'version' => '1.0.0.0',
