@@ -6,20 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Address extends Model
 {
-    protected $fillable = [
-        'street',
-        'house_number',
-        'cities_id',
-        'country_id',
-    ];    
+    protected $fillable = ['street', 'house_number', 'cities_id', 'country_id'];
 
     public function city()
     {
-        return $this->belongsTo(Cities::class, 'cities_id');
+        return $this->belongsTo(City::class, 'cities_id');
     }
 
-    public function country()
+    public function employees()
     {
-        return $this->belongsTo(Countries::class, 'country_id');
+        return $this->hasMany(Employee::class, 'address_id');
     }
 }

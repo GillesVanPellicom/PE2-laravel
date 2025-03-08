@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+use App\Models\WeightClass;
+use App\Models\DeliveryMethod;
+use App\Models\Location;
+use App\Models\Addresses;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PackageController extends Controller
