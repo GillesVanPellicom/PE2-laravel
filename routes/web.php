@@ -1,13 +1,10 @@
 <?php
 
+use App\Http\Controllers\airportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
-<<<<<<< HEAD
-use App\Http\Controllers\ParcelController;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
-=======
 use App\Http\Controllers\ChartController;
-<<<<<<< HEAD
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,6 +36,8 @@ Route::get('/customers', function () {
 =======
 >>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 >>>>>>> Development
+=======
+>>>>>>> Development
 
 Route::get('/courier', function () {
     return view('courier.index');
@@ -52,21 +51,19 @@ Route::get('/courier/packages', function () {
     return view('courier.packages');
 })->name('packages.page');
 
-<<<<<<< HEAD
 Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
-
 Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
 
 Route::get('/scan', function () {
     return view('scan');
-=======
+});
 Route::get('/courier/scan', function () {
     return view('courier.scan');
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 })->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
+Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
 
 // ======================= Employee====================== //
 
@@ -112,3 +109,34 @@ Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create'
 Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->name('employees.store_employee');
 
 // *** END EMPLOYEES ***
+use App\Http\Controllers\contractController;
+use App\Http\Controllers\flightscontroller;
+
+
+
+
+
+
+
+
+
+Route::get('/employees', function () {
+    return view('employees');
+})->name('employees');
+
+Route::get('/packages', function () {
+    return view('packages');
+})->name('packages');
+
+
+
+
+Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');
+Route::get('/contractcreate', [contractController::class, 'contractcreate'])->name('contractcreate');
+Route::post('/contract', [contractController::class, 'store'])->name('contract.store');
+
+Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
+Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('flightcreate');
+Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
+
+Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');

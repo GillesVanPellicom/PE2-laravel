@@ -5,10 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-<<<<<<< HEAD
-=======
 use Carbon\Carbon;
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
 
 class DeliveryMethodSeeder extends Seeder
 {
@@ -18,14 +15,15 @@ class DeliveryMethodSeeder extends Seeder
     public function run(): void
     {
         DB::table('delivery_method')->insert([
-<<<<<<< HEAD
             [
                 'code' => 'Pickup Point',
                 'name' => 'Pickup Point',
                 'description' => 'Local pickup point',
                 'price' => 5.99,
                 'requires_location' => true,
-                'is_active' => true
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ],
             [
                 'code' => 'Parcel Locker',
@@ -33,7 +31,9 @@ class DeliveryMethodSeeder extends Seeder
                 'description' => 'Secure parcel locker',
                 'price' => 7.99,
                 'requires_location' => true,
-                'is_active' => true
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ],
             [
                 'code' => 'address',
@@ -41,16 +41,10 @@ class DeliveryMethodSeeder extends Seeder
                 'description' => 'Deliver to your doorstep',
                 'price' => 9.99,
                 'requires_location' => false,
-                'is_active' => true
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]
         ]);
     }
-}
-=======
-            'name' => "Standard",
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-        ]);
-    }
-}
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
+};
