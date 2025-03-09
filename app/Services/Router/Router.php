@@ -10,7 +10,28 @@ use InvalidArgumentException;
 
 class Router {
 
-  public function deserialize(string $graphmlFilePath): RouterGraph {
+  private $graph;
+
+  /**
+   * @param $graph
+   */
+
+  /**
+   * Constructs a new Router instance.
+   */
+  public function __construct() {
+    $this->graph = new RouterGraph();
+    $this->deserialize('app/Services/Router/tmp.graphml');
+    }
+
+
+  /**
+   * Deserializes a GraphML file into the router.
+   *
+   * @param  string  $graphmlFilePath  The path to the GraphML file.
+   * @throws InvalidArgumentException If the file is not found or cannot be loaded.
+   */
+  private function deserialize(string $graphmlFilePath): void {
     if (!file_exists($graphmlFilePath)) {
       throw new InvalidArgumentException("File not found: $graphmlFilePath");
     }
@@ -20,19 +41,19 @@ class Router {
       throw new InvalidArgumentException("Failed to load GraphML file: $graphmlFilePath");
     }
 
-    $graph = new RouterGraph();
-
     // Parse nodes
+    // For all nodes
     foreach ($graphml->graph->node as $node) {
       $UUID = (string) $node['id'];
       $attributes = [];
+      // For all data in the node
       foreach ($node->data as $data) {
         $key = (string) $data['key'];
         $value = (string) $data;
         $attributes[$key] = $value;
       }
       $type = NodeType::from($attributes['type']);
-      $graph->addNode(
+      $this->graph->addNode(
         $UUID,
         $attributes['latDeg'],
         $attributes['longDeg'],
@@ -44,46 +65,35 @@ class Router {
 
     // Parse edges
     foreach ($graphml->graph->edge as $edge) {
-      $source = (string) $edge['source'];
-      $target = (string) $edge['target'];
+      $source = (string) $edge['nodeID_1'];
+      $target = (string) $edge['nodeID_2'];
       $weight = (float) $edge->data;
-      $graph->addEdge($source, $target);
+      $this->graph->addEdge($source, $target);
     }
-
-    return $graph;
   }
 
 
-
+  /**
+   * @return void
+   */
   public function test(): void {
-//    $g = new RouterGraph();
-//
-//    $DC1 = $g->addNode("DC1", 40.7128, -74.0060, NodeType::DISTRIBUTION_CENTER, true, false); // New York
-//    $DC2 = $g->addNode("DC2", 34.0522, -118.2437, NodeType::DISTRIBUTION_CENTER, false, false); // Los Angeles
-//    $DC3 = $g->addNode("DC3", 41.8781, -87.6298, NodeType::DISTRIBUTION_CENTER, false, false); // Chicago
-//
-//    $g->addEdge($DC1, $DC2, 2448); // New York to Los Angeles
-//    $g->addEdge($DC2, $DC3, 201); // Los Angeles to Chicago
-//    $g->addEdge($DC1, $DC3, 4000); // New York to Chicago, but in a roundabout way
-    $g = $this->deserialize('app/Services/Router/tmp.graphml');
-    $g->printGraph();
-    $path = $this->aStar($g, 'DC_WARSAW', 'DC_LOS_ANGELES');
+    $this->graph->printGraph();
+    $path = $this->aStar('DC_WARSAW', 'DC_LOS_ANGELES');
 
     echo "Shortest path: ";
-    echo implode(" -> ", array_map(fn($node) => $node->getUUID(), $path));
+    echo implode(" > ", array_map(fn($node) => $node->getUUID(), $path));
   }
+
 
   /**
    * Implements the A* algorithm to find the shortest path between two nodes in a graph.
    *
-   * @param  RouterGraph  $graph  The graph containing the nodes and edges.
    * @param  string  $startNodeUUID  The UUID of the start node.
    * @param  string  $endNodeUUID  The UUID of the end node.
    * @return array The shortest path from start to end node as an array of nodes.
    * @throws InvalidArgumentException If no path is found.
    */
-  public function aStar(
-    RouterGraph $graph,
+  private function aStar(
     string $startNodeUUID,
     string $endNodeUUID
   ): array {
@@ -93,8 +103,8 @@ class Router {
     $openSet->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
 
     // Retrieve start and end nodes from the graph
-    $startNode = $graph->getNode($startNodeUUID);
-    $endNode = $graph->getNode($endNodeUUID);
+    $startNode = $this->graph->getNode($startNodeUUID);
+    $endNode = $this->graph->getNode($endNodeUUID);
 
     // Insert the start node into the open set with its heuristic cost (h(n))
     $openSet->insert($startNodeUUID, -($startNode->getDistanceTo($endNode)));
@@ -105,7 +115,7 @@ class Router {
     $fScore = []; // Estimated cost from start node to end node through this node
 
     // Initialize gScore and fScore for all nodes
-    foreach ($graph->getNodes() as $node) {
+    foreach ($this->graph->getNodes() as $node) {
       $gScore[$node->getUUID()] = PHP_INT_MAX; // ∞
       $fScore[$node->getUUID()] = PHP_INT_MAX; // ∞
     }
@@ -120,7 +130,7 @@ class Router {
       // Extract the node with the lowest fScore
       $extracted = $openSet->extract();
       $currentUUID = $extracted['data'];
-      $current = $graph->getNode($currentUUID);
+      $current = $this->graph->getNode($currentUUID);
       $insertion_fScore = -$extracted['priority'];
       $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
@@ -131,11 +141,11 @@ class Router {
 
       // If the current node is the end node, reconstruct and return the path
       if ($currentUUID === $endNodeUUID) {
-        return $this->reconstructPath($graph, $cameFrom, $currentUUID);
+        return $this->reconstructPath($this->graph, $cameFrom, $currentUUID);
       }
 
       // Iterate through neighbors of the current node
-      foreach ($graph->getNeighbors($currentUUID) as $neighborUUID => $weight) {
+      foreach ($this->graph->getNeighbors($currentUUID) as $neighborUUID => $weight) {
         // Calculate tentative gScore for the neighbor
         $tentativeGScore = $gScore[$currentUUID] + $weight;
 
@@ -143,7 +153,7 @@ class Router {
         if ($tentativeGScore < $gScore[$neighborUUID]) {
           $cameFrom[$neighborUUID] = $currentUUID;
           $gScore[$neighborUUID] = $tentativeGScore;
-          $fScore[$neighborUUID] = $gScore[$neighborUUID] + $graph->getNode($neighborUUID)->getDistanceTo($endNode);
+          $fScore[$neighborUUID] = $gScore[$neighborUUID] + $this->graph->getNode($neighborUUID)->getDistanceTo($endNode);
 
           // Add neighbor to open set with new fScore
           $openSet->insert($neighborUUID, -$fScore[$neighborUUID]);

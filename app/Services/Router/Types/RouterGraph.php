@@ -7,6 +7,7 @@ use App\Services\Router\Types\Factories\NodeFactory;
 use InvalidArgumentException;
 use App\Services\Router\Types\Node;
 
+
 class RouterGraph {
   private array $nodes;
   private array $edges;
@@ -17,25 +18,26 @@ class RouterGraph {
   }
 
 
-//  public function addNode(Node $node): bool {
-//    $NodeUUID = $node->getUUID();
-//    if (!isset($this->nodes[$NodeUUID])) {
-//      $this->nodes[$NodeUUID] = $node;
-//      $this->edges[$NodeUUID] = [];
-//      return true;
-//    }
-//    return false;
-//  }
-
+  /**
+   * Adds a node to the graph.
+   *
+   * @param  string  $UUID  The UUID of the node.
+   * @param  float  $lat  Latitude of the node in degrees.
+   * @param  float  $long  Longitude of the node in degrees.
+   * @param  NodeType  $nodeType  Type of the node.
+   * @param  string  $isEntryNode  Is this node a valid entry point for the route.
+   * @param  string  $isExitNode  Is this node a valid exit point for the route.
+   * @return string|null
+   */
   public function addNode(
-    string $name,
+    string $UUID,
     float $lat,
     float $long,
     NodeType $nodeType,
     string $isEntryNode,
     string $isExitNode
   ): ?string {
-    $node = NodeFactory::createNode($name, $lat, $long, $nodeType, $isEntryNode, $isExitNode);
+    $node = NodeFactory::createNode($UUID, $lat, $long, $nodeType, $isEntryNode, $isExitNode);
     $nodeUUID = $node->getUUID();
     if (!isset($this->nodes[$nodeUUID])) {
       $this->nodes[$nodeUUID] = $node;
@@ -46,6 +48,13 @@ class RouterGraph {
   }
 
 
+  /**
+   * Adds an unidirectional edge between two nodes
+   *
+   * @param  string  $startNodeUUID
+   * @param  string  $endNodeUUID
+   * @return void
+   */
   public function addEdge(string $startNodeUUID, string $endNodeUUID): void {
 
     if (!isset($this->nodes[$startNodeUUID])) {
@@ -74,10 +83,23 @@ class RouterGraph {
     $this->edges[$endNodeUUID][$startNodeUUID] = $weight;
   }
 
+
+  /**
+   * Get all nodes in the graph
+   *
+   * @return array Array of Node objects
+   */
   public function getNodes(): array {
     return array_values($this->nodes);
   }
 
+
+  /**
+   * Get a node by UUID
+   *
+   * @param  string  $NodeUUID  UUID of the node
+   * @return \App\Services\Router\Types\Node Node object
+   */
   public function getNode(string $NodeUUID): Node {
     if (!isset($this->nodes[$NodeUUID])) {
       throw new InvalidArgumentException("Node does not exist: ".$NodeUUID);
@@ -85,6 +107,13 @@ class RouterGraph {
     return $this->nodes[$NodeUUID];
   }
 
+
+  /**
+   * Get the neighbors of a node
+   *
+   * @param  string  $NodeUUID  UUID of the node
+   * @return array Array of neighbors
+   */
   public function getNeighbors(string $NodeUUID): array {
     if (!isset($this->nodes[$NodeUUID])) {
       throw new InvalidArgumentException("Node does not exist: ".$NodeUUID);
@@ -92,10 +121,21 @@ class RouterGraph {
     return $this->edges[$NodeUUID];
   }
 
+
+  /**
+   * Get all edges of the graph
+   *
+   * @return array
+   */
   public function getEdges(): array {
     return $this->edges;
   }
 
+
+  /**
+   * Print all nodes and edges to console
+   * @return void
+   */
   public function printGraph(): void {
     foreach ($this->nodes as $node) {
       echo "Node UUID     : ".$node->getUUID()."\n";

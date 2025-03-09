@@ -176,28 +176,28 @@
 
 
         <!-- Edges -->
-        <edge source="AIR_EBBR" target="DC_BRUSSELS"></edge>
-        <edge source="AIR_EBAW" target="DC_ANTWERP"></edge>
-        <edge source="DC_ANTWERP" target="DC_BRUSSELS"></edge>
-        <edge source="AIR_KLAX" target="AIR_EBAW"></edge>
-        <edge source="AIR_KLAX" target="DC_LOS_ANGELES"></edge>
-        <edge source="DC_ANTWERP" target="DC_TILBURG"></edge>
-        <edge source="DC_BRUSSELS" target="DC_TILBURG"></edge>
-        <edge source="DC_GHENT" target="DC_ANTWERP"></edge>
-        <edge source="DC_GHENT" target="DC_BRUSSELS"></edge>
-        <edge source="DC_GHENT" target="DC_CHARLEROI"></edge>
-        <edge source="DC_GHENT" target="DC_LILLE"></edge>
-        <edge source="DC_PARIS" target="DC_LILLE"></edge>
-        <edge source="AIR_EBBR" target="AIR_EPWA"></edge>
-        <edge source="DC_WARSAW" target="AIR_EPWA"></edge>
-        <edge source="AIR_EBBR" target="AIR_EDDM"></edge>
-        <edge source="DC_MUNICH" target="AIR_EDDM"></edge>
-        <edge source="DC_CHARLEROI" target="DC_BRUSSELS"></edge>
-        <edge source="DC_CHARLEROI" target="AIR_EBCI"></edge>
-        <edge source="DC_CHARLEROI" target="DC_BASTOGNE"></edge>
-        <edge source="DC_BRUSSELS" target="DC_BASTOGNE"></edge>
-        <edge source="AIR_EGKK" target="AIR_EBCI"></edge>
-        <edge source="AIR_EGKK" target="DC_LONDON"></edge>
+        <edge nodeID_1="AIR_EBBR" nodeID_2="DC_BRUSSELS"></edge>
+        <edge nodeID_1="AIR_EBAW" nodeID_2="DC_ANTWERP"></edge>
+        <edge nodeID_1="DC_ANTWERP" nodeID_2="DC_BRUSSELS"></edge>
+        <edge nodeID_1="AIR_KLAX" nodeID_2="AIR_EBAW"></edge>
+        <edge nodeID_1="AIR_KLAX" nodeID_2="DC_LOS_ANGELES"></edge>
+        <edge nodeID_1="DC_ANTWERP" nodeID_2="DC_TILBURG"></edge>
+        <edge nodeID_1="DC_BRUSSELS" nodeID_2="DC_TILBURG"></edge>
+        <edge nodeID_1="DC_GHENT" nodeID_2="DC_ANTWERP"></edge>
+        <edge nodeID_1="DC_GHENT" nodeID_2="DC_BRUSSELS"></edge>
+        <edge nodeID_1="DC_GHENT" nodeID_2="DC_CHARLEROI"></edge>
+        <edge nodeID_1="DC_GHENT" nodeID_2="DC_LILLE"></edge>
+        <edge nodeID_1="DC_PARIS" nodeID_2="DC_LILLE"></edge>
+        <edge nodeID_1="AIR_EBBR" nodeID_2="AIR_EPWA"></edge>
+        <edge nodeID_1="DC_WARSAW" nodeID_2="AIR_EPWA"></edge>
+        <edge nodeID_1="AIR_EBBR" nodeID_2="AIR_EDDM"></edge>
+        <edge nodeID_1="DC_MUNICH" nodeID_2="AIR_EDDM"></edge>
+        <edge nodeID_1="DC_CHARLEROI" nodeID_2="DC_BRUSSELS"></edge>
+        <edge nodeID_1="DC_CHARLEROI" nodeID_2="AIR_EBCI"></edge>
+        <edge nodeID_1="DC_CHARLEROI" nodeID_2="DC_BASTOGNE"></edge>
+        <edge nodeID_1="DC_BRUSSELS" nodeID_2="DC_BASTOGNE"></edge>
+        <edge nodeID_1="AIR_EGKK" nodeID_2="AIR_EBCI"></edge>
+        <edge nodeID_1="AIR_EGKK" nodeID_2="DC_LONDON"></edge>
 
     </graph>
 </graphml>

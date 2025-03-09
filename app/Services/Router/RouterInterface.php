@@ -2,4 +2,4 @@
 
 namespace App\Services\Router;
 
-class RouterWrapper {}
+class RouterInterface {}

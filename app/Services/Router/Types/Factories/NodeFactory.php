@@ -7,6 +7,7 @@ use App\Services\Router\Types\NodeType;
 use InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 
+
 class NodeFactory {
 
   /**
