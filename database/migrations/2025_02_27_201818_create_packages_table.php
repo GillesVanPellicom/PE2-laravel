@@ -23,8 +23,8 @@ return new class extends Migration
             $table->foreignId('weight_id')->constrained('weight_classes');
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
-            $table->string('weight_price');
-            $table->string('delivery_price');
+            $table->string('weight_price')->default(0);
+            $table->string('delivery_price')->default(0);
             $table->string('name');
             $table->string('lastName');
             $table->string('receiverEmail');
