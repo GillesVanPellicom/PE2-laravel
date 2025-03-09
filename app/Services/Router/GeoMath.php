@@ -26,7 +26,7 @@ class GeoMath {
    * - r is the Earth's radius (6371 km)
    * - a is the square of half the chord length between the points
    * - c is the angular distance in radians
-   * - d is the distance between the two points in km
+   * - d is the distance between the two points in kilometers
    *
    * @param  float  $phi1  Latitude of the first point in radians
    * @param  float  $lambda1  Longitude of the first point in radians
