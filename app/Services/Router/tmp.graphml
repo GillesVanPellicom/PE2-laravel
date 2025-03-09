@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+                             http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+    <graph id="G" edgedefault="undirected">
+        <!-- Nodes -->
+
+
+        <!--Brussels-->
+        <node id="AIR_EBBR">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">50.9010</data>
+            <data key="longDeg">4.4844</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_BRUSSELS">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">50.9117</data>
+            <data key="longDeg">4.3909</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+        <!--Antwerp-->
+        <node id="AIR_EBAW">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">51.1894</data>
+            <data key="longDeg">4.4603</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_ANTWERP">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">51.1927</data>
+            <data key="longDeg">4.3629</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Los Angeles-->
+        <node id="AIR_KLAX">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">33.9416</data>
+            <data key="longDeg">-118.4085</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_LOS_ANGELES">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">33.9760</data>
+            <data key="longDeg">-118.2570</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Charleroi-->
+        <node id="AIR_EBCI">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">50.4592</data>
+            <data key="longDeg">4.4538</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_CHARLEROI">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">50.4714</data>
+            <data key="longDeg">4.3668</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Munich-->
+        <node id="AIR_EDDM">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">48.3538</data>
+            <data key="longDeg">11.7861</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_MUNICH">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">48.1851</data>
+            <data key="longDeg">11.4681</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Tilburg-->
+        <node id="DC_TILBURG">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">51.6019</data>
+            <data key="longDeg">4.9968</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--London-->
+        <node id="AIR_EGKK">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">51.1541</data>
+            <data key="longDeg">-0.1817</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_LONDON">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">51.5064</data>
+            <data key="longDeg">-0.4326</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Bastogne-->
+        <node id="DC_BASTOGNE">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">49.9987</data>
+            <data key="longDeg">5.6923</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Ghent-->
+        <node id="DC_GHENT">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">51.1136</data>
+            <data key="longDeg">3.7903</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Lille-->
+        <node id="DC_LILLE">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">50.6390</data>
+            <data key="longDeg">2.9791</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Paris-->
+        <node id="DC_PARIS">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">48.8264</data>
+            <data key="longDeg">2.3960</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!--Warsaw-->
+        <node id="AIR_EPWA">
+            <data key="type">AIRPORT</data>
+            <data key="latDeg">52.1656</data>
+            <data key="longDeg">20.9692</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">false</data>
+        </node>
+        <node id="DC_WARSAW">
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">52.1536</data>
+            <data key="longDeg">20.9913</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">false</data>
+        </node>
+
+
+        <!-- Edges -->
+        <edge source="AIR_EBBR" target="DC_BRUSSELS"></edge>
+        <edge source="AIR_EBAW" target="DC_ANTWERP"></edge>
+        <edge source="DC_ANTWERP" target="DC_BRUSSELS"></edge>
+        <edge source="AIR_KLAX" target="AIR_EBAW"></edge>
+        <edge source="AIR_KLAX" target="DC_LOS_ANGELES"></edge>
+        <edge source="DC_ANTWERP" target="DC_TILBURG"></edge>
+        <edge source="DC_BRUSSELS" target="DC_TILBURG"></edge>
+        <edge source="DC_GHENT" target="DC_ANTWERP"></edge>
+        <edge source="DC_GHENT" target="DC_BRUSSELS"></edge>
+        <edge source="DC_GHENT" target="DC_CHARLEROI"></edge>
+        <edge source="DC_GHENT" target="DC_LILLE"></edge>
+        <edge source="DC_PARIS" target="DC_LILLE"></edge>
+        <edge source="AIR_EBBR" target="AIR_EPWA"></edge>
+        <edge source="DC_WARSAW" target="AIR_EPWA"></edge>
+        <edge source="AIR_EBBR" target="AIR_EDDM"></edge>
+        <edge source="DC_MUNICH" target="AIR_EDDM"></edge>
+        <edge source="DC_CHARLEROI" target="DC_BRUSSELS"></edge>
+        <edge source="DC_CHARLEROI" target="AIR_EBCI"></edge>
+        <edge source="DC_CHARLEROI" target="DC_BASTOGNE"></edge>
+        <edge source="DC_BRUSSELS" target="DC_BASTOGNE"></edge>
+        <edge source="AIR_EGKK" target="AIR_EBCI"></edge>
+        <edge source="AIR_EGKK" target="DC_LONDON"></edge>
+
+    </graph>
+</graphml>

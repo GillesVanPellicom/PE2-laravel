@@ -2,6 +2,7 @@
 
 namespace App\Services\Router\Types;
 
+use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Factories\NodeFactory;
 use InvalidArgumentException;
 use App\Services\Router\Types\Node;
@@ -31,10 +32,10 @@ class RouterGraph {
     float $lat,
     float $long,
     NodeType $nodeType,
-    bool $isEntryNode,
-    bool $isExitNode
+    string $isEntryNode,
+    string $isExitNode
   ): ?string {
-    $node= NodeFactory::createNode($name, $lat, $long, $nodeType, $isEntryNode, $isExitNode);
+    $node = NodeFactory::createNode($name, $lat, $long, $nodeType, $isEntryNode, $isExitNode);
     $nodeUUID = $node->getUUID();
     if (!isset($this->nodes[$nodeUUID])) {
       $this->nodes[$nodeUUID] = $node;
@@ -45,10 +46,10 @@ class RouterGraph {
   }
 
 
-  public function addEdge(string $startNodeUUID, string $endNodeUUID, int $weight): void {
+  public function addEdge(string $startNodeUUID, string $endNodeUUID): void {
 
     if (!isset($this->nodes[$startNodeUUID])) {
-      throw new InvalidArgumentException("Start node does not exist in the graph.");
+      throw new InvalidArgumentException("addEdge(): Start node does not exist in the graph.");
     }
 
     if (!isset($this->nodes[$endNodeUUID])) {
@@ -59,9 +60,15 @@ class RouterGraph {
       throw new InvalidArgumentException("Looping edges are not allowed. Start and end nodes are the same.");
     }
 
-    if ($weight <= 0) {
-      throw new InvalidArgumentException("Weight must be a positive integer. Actual: " . $weight);
-    }
+    $startNode = $this->nodes[$startNodeUUID];
+    $endNode = $this->nodes[$endNodeUUID];
+
+    $weight = GeoMath::haversine(
+        $startNode->getAttribute('latRad'),
+        $startNode->getAttribute('longRad'),
+        $endNode->getAttribute('latRad'),
+        $endNode->getAttribute('longRad')
+      ) * 1.2;
 
     $this->edges[$startNodeUUID][$endNodeUUID] = $weight;
     $this->edges[$endNodeUUID][$startNodeUUID] = $weight;
@@ -73,19 +80,44 @@ class RouterGraph {
 
   public function getNode(string $NodeUUID): Node {
     if (!isset($this->nodes[$NodeUUID])) {
-      throw new InvalidArgumentException("Node does not exist: " . $NodeUUID);
+      throw new InvalidArgumentException("Node does not exist: ".$NodeUUID);
     }
     return $this->nodes[$NodeUUID];
   }
-  
+
   public function getNeighbors(string $NodeUUID): array {
     if (!isset($this->nodes[$NodeUUID])) {
-      throw new InvalidArgumentException("Node does not exist: " . $NodeUUID);
+      throw new InvalidArgumentException("Node does not exist: ".$NodeUUID);
     }
     return $this->edges[$NodeUUID];
   }
 
   public function getEdges(): array {
     return $this->edges;
+  }
+
+  public function printGraph(): void {
+    foreach ($this->nodes as $node) {
+      echo "Node UUID     : ".$node->getUUID()."\n";
+      echo "Latitude      : ".$node->getAttribute('latDeg')."\n";
+      echo "Longitude     : ".$node->getAttribute('longDeg')."\n";
+      echo "Type          : ".$node->getType()->value."\n";
+      echo "Is Entry Node : ".$node->getAttribute('isEntryNode')."\n";
+      echo "Is Exit Node  : ".$node->getAttribute('isExitNode')."\n";
+      echo "-------------------------\n";
+    }
+
+    echo "Edges:\n";
+    $printedEdges = [];
+    foreach ($this->edges as $startNodeUUID => $neighbors) {
+      foreach ($neighbors as $endNodeUUID => $weight) {
+        // Check if the edge has already been printed
+        if (!isset($printedEdges[$endNodeUUID][$startNodeUUID])) {
+          echo $startNodeUUID." - ".$endNodeUUID." (weight: ".$weight.")\n";
+          $printedEdges[$startNodeUUID][$endNodeUUID] = true;
+        }
+      }
+    }
+    echo "\n\n";
   }
 }

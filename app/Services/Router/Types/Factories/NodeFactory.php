@@ -16,8 +16,8 @@ class NodeFactory {
    * @param  float  $lat  Latitude of the Node in degrees
    * @param  float  $long  Longitude of the Node in degrees
    * @param  NodeType  $nodeType  Type of the Node
-   * @param  bool  $isEntryNode  Is this Node a valid entry point for the route
-   * @param  bool  $isExitNode  Is this Node a valid exit point for the route
+   * @param  string  $isEntryNode  Is this Node a valid entry point for the route
+   * @param  string  $isExitNode  Is this Node a valid exit point for the route
    * @return Node
    */
   public static function createNode(
@@ -25,11 +25,10 @@ class NodeFactory {
     float $lat,
     float $long,
     NodeType $nodeType,
-    bool $isEntryNode,
-    bool $isExitNode
+    string $isEntryNode,
+    string $isExitNode
   ): Node {
     $attributes = [
-      'name' => $name,
       'latDeg' => $lat,
       'longDeg' => $long,
       'latRad' => deg2rad($lat),
@@ -38,6 +37,6 @@ class NodeFactory {
       'isExitNode' => $isExitNode
     ];
 
-    return new Node(Uuid::uuid4()->toString(), $nodeType, $attributes);
+    return new Node($name, $nodeType, $attributes);
   }
 }

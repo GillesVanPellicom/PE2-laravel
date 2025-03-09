@@ -10,21 +10,67 @@ use InvalidArgumentException;
 
 class Router {
 
+  public function deserialize(string $graphmlFilePath): RouterGraph {
+    if (!file_exists($graphmlFilePath)) {
+      throw new InvalidArgumentException("File not found: $graphmlFilePath");
+    }
+
+    $graphml = simplexml_load_file($graphmlFilePath);
+    if ($graphml === false) {
+      throw new InvalidArgumentException("Failed to load GraphML file: $graphmlFilePath");
+    }
+
+    $graph = new RouterGraph();
+
+    // Parse nodes
+    foreach ($graphml->graph->node as $node) {
+      $UUID = (string) $node['id'];
+      $attributes = [];
+      foreach ($node->data as $data) {
+        $key = (string) $data['key'];
+        $value = (string) $data;
+        $attributes[$key] = $value;
+      }
+      $type = NodeType::from($attributes['type']);
+      $graph->addNode(
+        $UUID,
+        $attributes['latDeg'],
+        $attributes['longDeg'],
+        $type,
+        $attributes['isEntryNode'],
+        $attributes['isExitNode']
+      );
+    }
+
+    // Parse edges
+    foreach ($graphml->graph->edge as $edge) {
+      $source = (string) $edge['source'];
+      $target = (string) $edge['target'];
+      $weight = (float) $edge->data;
+      $graph->addEdge($source, $target);
+    }
+
+    return $graph;
+  }
+
+
+
   public function test(): void {
-    $g = new RouterGraph();
+//    $g = new RouterGraph();
+//
+//    $DC1 = $g->addNode("DC1", 40.7128, -74.0060, NodeType::DISTRIBUTION_CENTER, true, false); // New York
+//    $DC2 = $g->addNode("DC2", 34.0522, -118.2437, NodeType::DISTRIBUTION_CENTER, false, false); // Los Angeles
+//    $DC3 = $g->addNode("DC3", 41.8781, -87.6298, NodeType::DISTRIBUTION_CENTER, false, false); // Chicago
+//
+//    $g->addEdge($DC1, $DC2, 2448); // New York to Los Angeles
+//    $g->addEdge($DC2, $DC3, 201); // Los Angeles to Chicago
+//    $g->addEdge($DC1, $DC3, 4000); // New York to Chicago, but in a roundabout way
+    $g = $this->deserialize('app/Services/Router/tmp.graphml');
+    $g->printGraph();
+    $path = $this->aStar($g, 'DC_WARSAW', 'DC_LOS_ANGELES');
 
-    $DC1 = $g->addNode("DC1", 40.7128, -74.0060, NodeType::DISTRIBUTION_CENTER, true, false); // New York
-    $DC2 = $g->addNode("DC2", 34.0522, -118.2437, NodeType::DISTRIBUTION_CENTER, false, false); // Los Angeles
-    $DC3 = $g->addNode("DC3", 41.8781, -87.6298, NodeType::DISTRIBUTION_CENTER, false, false); // Chicago
-
-    $g->addEdge($DC1, $DC2, 2448); // New York to Los Angeles
-    $g->addEdge($DC2, $DC3, 201); // Los Angeles to Chicago
-    $g->addEdge($DC1, $DC3, 4000); // New York to Chicago, but in a roundabout way
-
-    $path = $this->aStar($g, $DC1, $DC3);
-
-    echo "Shortest path from DC1 to DC3:\n";
-    echo implode(" -> ", array_map(fn($node) => $node->getAttribute('name'), $path));
+    echo "Shortest path: ";
+    echo implode(" -> ", array_map(fn($node) => $node->getUUID(), $path));
   }
 
   /**
