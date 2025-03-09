@@ -2,6 +2,7 @@
 
 namespace App\Services\Router\Types;
 
+use App\Services\Router\Types\Factories\NodeFactory;
 use InvalidArgumentException;
 use App\Services\Router\Types\Node;
 
@@ -15,20 +16,36 @@ class RouterGraph {
   }
 
 
-  public function addNode(Node $node): bool {
-    $NodeUUID = $node->getName();
-    if (!isset($this->nodes[$NodeUUID])) {
-      $this->nodes[$NodeUUID] = $node;
-      $this->edges[$NodeUUID] = [];
-      return true;
+//  public function addNode(Node $node): bool {
+//    $NodeUUID = $node->getUUID();
+//    if (!isset($this->nodes[$NodeUUID])) {
+//      $this->nodes[$NodeUUID] = $node;
+//      $this->edges[$NodeUUID] = [];
+//      return true;
+//    }
+//    return false;
+//  }
+
+  public function addNode(
+    string $name,
+    float $lat,
+    float $long,
+    NodeType $nodeType,
+    bool $isEntryNode,
+    bool $isExitNode
+  ): ?string {
+    $node= NodeFactory::createNode($name, $lat, $long, $nodeType, $isEntryNode, $isExitNode);
+    $nodeUUID = $node->getUUID();
+    if (!isset($this->nodes[$nodeUUID])) {
+      $this->nodes[$nodeUUID] = $node;
+      $this->edges[$nodeUUID] = [];
+      return $nodeUUID;
     }
-    return false;
+    return null;
   }
 
 
-  public function addEdge(Node $startNode, Node $endNode, int $weight): void {
-    $startNodeUUID = $startNode->getName();
-    $endNodeUUID = $endNode->getName();
+  public function addEdge(string $startNodeUUID, string $endNodeUUID, int $weight): void {
 
     if (!isset($this->nodes[$startNodeUUID])) {
       throw new InvalidArgumentException("Start node does not exist in the graph.");
@@ -38,7 +55,7 @@ class RouterGraph {
       throw new InvalidArgumentException("End node does not exist in the graph.");
     }
 
-    if ($startNode === $endNode) {
+    if ($startNodeUUID === $endNodeUUID) {
       throw new InvalidArgumentException("Looping edges are not allowed. Start and end nodes are the same.");
     }
 
@@ -52,6 +69,13 @@ class RouterGraph {
 
   public function getNodes(): array {
     return array_values($this->nodes);
+  }
+
+  public function getNode(string $NodeUUID): Node {
+    if (!isset($this->nodes[$NodeUUID])) {
+      throw new InvalidArgumentException("Node does not exist: " . $NodeUUID);
+    }
+    return $this->nodes[$NodeUUID];
   }
   
   public function getNeighbors(string $NodeUUID): array {

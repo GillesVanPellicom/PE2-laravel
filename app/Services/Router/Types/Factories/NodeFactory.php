@@ -12,6 +12,7 @@ class NodeFactory {
   /**
    * Generates a new Node for RouterGraph compatible with A* algorithm.
    *
+   * @param  string  $name
    * @param  float  $lat  Latitude of the Node in degrees
    * @param  float  $long  Longitude of the Node in degrees
    * @param  NodeType  $nodeType  Type of the Node
@@ -20,6 +21,7 @@ class NodeFactory {
    * @return Node
    */
   public static function createNode(
+    string $name,
     float $lat,
     float $long,
     NodeType $nodeType,
@@ -27,15 +29,15 @@ class NodeFactory {
     bool $isExitNode
   ): Node {
     $attributes = [
+      'name' => $name,
       'latDeg' => $lat,
       'longDeg' => $long,
       'latRad' => deg2rad($lat),
       'longRad' => deg2rad($long),
-      'nodeType' => $nodeType->value,
       'isEntryNode' => $isEntryNode,
       'isExitNode' => $isExitNode
     ];
 
-    return new Node(Uuid::uuid4()->toString(), $attributes);
+    return new Node(Uuid::uuid4()->toString(), $nodeType, $attributes);
   }
 }

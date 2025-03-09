@@ -2,23 +2,26 @@
 
 namespace App\Services\Router\Types;
 
+use App\Services\Router\GeoMath;
 use InvalidArgumentException;
 
 class Node {
-  private string $name;
+  private string $UUID;
   private array $attributes;
+  private NodeType $type;
 
-  public function __construct(string $name, array $attributes = []) {
-    if (empty($name)) {
-      throw new InvalidArgumentException("Node name cannot be empty.");
+  public function __construct(string $UUID, NodeType $type, array $attributes = []) {
+    if (empty($UUID)) {
+      throw new InvalidArgumentException("Node UUID cannot be empty.");
     }
 
-    $this->name = $name;
+    $this->UUID = $UUID;
+    $this->type = $type;
     $this->attributes = $attributes;
   }
 
-  public function getName(): string {
-    return $this->name;
+  public function getUUID(): string {
+    return $this->UUID;
   }
 
   public function getAttributes(): array {
@@ -38,4 +41,21 @@ class Node {
     }
     $this->attributes[$key] = $value;
   }
+
+  public function getDistanceTo(Node $node): float {
+    return GeoMath::sphericalCosinesDistance(
+      $this->attributes['latRad'],
+      $this->attributes['longRad'],
+      $node->getAttribute('latRad'),
+      $node->getAttribute('longRad'));
+  }
+
+  public function getType(): NodeType {
+    return $this->type;
+  }
+
+  public function setType(NodeType $type): void {
+    $this->type = $type;
+  }
+
 }
