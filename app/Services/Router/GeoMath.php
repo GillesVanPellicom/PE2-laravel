@@ -19,13 +19,14 @@ class GeoMath {
    * d = r * c
    *
    * Where:
-   * - φ1, φ2 are the latitudes in radians,
-   * - Δφ is the difference in latitudes in radians,
-   * - Δλ is the difference in longitudes in radians,
-   * - r is the Earth's radius (6371 km),
-   * - a is the square of half the chord length between the points,
-   * - c is the angular distance in radians,
-   * - d is the distance between the two points.
+   * - φ1, φ2 are the latitudes in radians
+   * - λ₁, λ₂ are the longitudes in radians
+   * - Δφ is the difference in latitudes in radians
+   * - Δλ is the difference in longitudes in radians
+   * - r is the Earth's radius (6371 km)
+   * - a is the square of half the chord length between the points
+   * - c is the angular distance in radians
+   * - d is the distance between the two points
    *
    * @param  float  $lat1  Latitude of the first point in degrees
    * @param  float  $lon1  Longitude of the first point in degrees
@@ -65,10 +66,11 @@ class GeoMath {
    * d = r * acos(sin φ₁ sin φ₂ + cos φ₁ cos φ₂ cos Δλ)
    *
    * Where:
-   * - φ₁, φ₂ are the latitudes in radians,
-   * - Δλ is the difference in longitudes in radians,
-   * - r is the Earth's radius (6371 km).
-   * - d is the distance between the two points.
+   * - φ₁, φ₂ are the latitudes in radians
+   * - λ₁, λ₂ are the longitudes in radians
+   * - Δλ is the difference in longitudes in radians
+   * - r is the Earth's radius (6371 km)
+   * - d is the distance between the two points
    *
    * @param  float  $lat1  Latitude of the first point in degrees
    * @param  float  $lon1  Longitude of the first point in degrees
