@@ -21,6 +21,7 @@ yarn-error.log
 node_modules/
 .DS_Store
 /vendor/_laravel_ide/
+/vendor/composer
 # Add your own gitignore rules below
 
 
