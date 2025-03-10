@@ -15,6 +15,7 @@ function openModal() {
 }
 
 function scan(message) {
+    let usedMODE = MODE;
     console.log("QR FOUND " + message);
     if (message != scannedID) {
         console.log("QR FOUND AND NOT FAILED " + message);
@@ -29,8 +30,15 @@ function scan(message) {
                 mode: MODE,
             }),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                console.log(response);
+                return response.json();
+            })
             .then((data) => {
+                console.log(data);
+                if (usedMODE == "INFO"){
+                    
+                }
                 alert(data.message);
             });
     }

@@ -22,8 +22,8 @@ class PackageMovementsSeeder extends Seeder
                 'handled_by_courier_id' => null, 
                 'vehicle_id' => null, 
                 'departure_time' => null,
-                'arrival_time' => Carbon::now()->subMinutes(1),
-                'check_in_time' => Carbon::now(),
+                'arrival_time' => null,
+                'check_in_time' => null,
                 'check_out_time' => null,
             ],
             [

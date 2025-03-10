@@ -12,6 +12,12 @@
         </button>
     </div>
 
+    <div id="infoModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 relative">
+            
+        </div>
+    </div>
+
     <div id="actionModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-80 relative">
             <h2 class="text-xl font-semibold text-center mb-6">Choose your action</h2>

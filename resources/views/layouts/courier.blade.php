@@ -11,12 +11,14 @@
 
 <body class="flex flex-col h-screen text-center pt-20 pb-16">
     <header class="fixed top-0 left-0 w-full bg-red-700 text-white text-center py-4 text-xl font-bold">
-        <!--@isset($showBack)
+        <!--
+            @isset($showBack)
             <a href="{{ route('courier.scan') }}"
                 class="absolute left-5 top-1/2 transform -translate-y-1/2 text-white text-2xl hover:text-black">
                 <i class="fas fa-arrow-left"></i>
             </a>
-        @endisset -->
+            @endisset 
+        -->
         ShipCompany
         @if (!request()->routeIs('courier'))
             <a href="{{ route('courier') }}"

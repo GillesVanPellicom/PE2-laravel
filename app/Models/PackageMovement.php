@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PackageMovement extends Model
 {
     //
+    public $timestamps = false;
     protected $fillable = [
         'package_id', 
         'from_location_id', 

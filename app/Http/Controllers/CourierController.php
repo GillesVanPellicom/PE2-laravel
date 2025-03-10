@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\PackageMovement;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\Request;
 
 class CourierController extends Controller
@@ -33,24 +35,48 @@ class CourierController extends Controller
     {
         $package = Package::find($request->package_id);
         if (!$package) {
-            return response()->json(['success' => false, 'message' => 'Package not found']);
+            return response()->json(['success' => false, 'message' => 'Package not found'], 500);
         }
 
         $mode = $request->mode;
         $currentMove = PackageMovement::where('package_id', $package->id)->where("from_location_id", $package->current_location_id)->first();
-        switch ($mode) {
-            case 'IN':
-                return response()->json(["success" => true, "message" => "Package successfully scanned IN"]);
+        if ($mode == "INFO"){
+            
+            return response()->json(["success" => true, "package" => $package]);
+        }
 
-            case 'OUT':
-                return response()->json(["success" => true, "message" => "Package successfully scanned OUT"]);
+        if ($package->current_location_id == $package->destination_location_id){
+            return response()->json(['success' => false, 'message' => 'Package has reached its final destination'], 400);
+        }
 
-            case 'INFO':
-                return response()->json(["success" => true, "message" => $currentMove->to_location_id]);
+        if (!$currentMove){
+            return response()->json(['success' => false, 'message' => 'PackageMovement not found'], 500);
+        }
+        
+        $appliedMode = null;
+        if ($currentMove->check_out_time == null){
+            $currentMove->check_out_time = Carbon::now();
+            $appliedMode = "OUT";
+        } else if ($currentMove->departure_time == null){
+            $currentMove->departure_time = Carbon::now();
+            $appliedMode = "IN";
+        } else if ($currentMove->arrival_time == null){
+            $currentMove->arrival_time = Carbon::now();
+            $appliedMode = "OUT";
+        } else if ($currentMove->check_in_time == null){
+            $currentMove->check_in_time = Carbon::now();
+            $package->current_location_id = $currentMove->to_location_id;
+            $appliedMode = "IN";
+        } else {
+            return response()->json(['success' => false, 'message' => 'Something went wrong trying to process this request.'], 500);
+        }
 
-            default:
-                return response()->json(['success' => false, 'message' => 'Invalid operating mode']);
-
+        if ($appliedMode == $mode){
+            $currentMove->save();
+            $package->save();
+            return response()->json(["success" => true, "message" => "Package succesfully scanned " . $mode]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'This package was not previously scanned ' . ($mode == "OUT" ? "in" : "out") . "."], 400);
         }
     }
 }
