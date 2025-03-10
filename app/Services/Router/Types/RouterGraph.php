@@ -77,7 +77,12 @@ class RouterGraph {
         $startNode->getAttribute('longRad'),
         $endNode->getAttribute('latRad'),
         $endNode->getAttribute('longRad')
-      ) * 1.2;
+      );
+
+    if ($startNode->getType() != NodeType::AIRPORT && $endNode->getType() != NodeType::AIRPORT) {
+      // If it isn't a flight, add a penalty to the weight since roads are slower
+      $weight *= 1.2;
+    }
 
     $this->edges[$startNodeUUID][$endNodeUUID] = $weight;
     $this->edges[$endNodeUUID][$startNodeUUID] = $weight;
