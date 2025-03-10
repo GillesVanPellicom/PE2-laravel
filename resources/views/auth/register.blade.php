@@ -43,6 +43,16 @@
     </div>
   
     <div>
+        <label for="country">Country:</label>
+        <select name="country" id="country">
+            <option value="-1">Select a country</option>
+        @foreach($countries as $country)
+            <option value="{{ $country->id }}">{{ $country->country_name }}</option>
+        @endforeach
+        </select>
+    </div>  
+
+    <div>
         <label for="phone_number">Phone Number</label>
         <input type="text" id="phone_number" name="phone_number" value="{{ old('phone_number') }}">
         @error('phone_number')
@@ -54,14 +64,6 @@
         <label for="birth_date">Birth Date</label>
         <input type="date" id="birth_date" name="birth_date" value="{{ old('birth_date') }}">
         @error('birth_date')
-            <div>{{ $message }}</div>
-        @enderror
-    </div>
-  
-    <div>
-        <label for="country">Country</label>
-        <input type="text" id="country" name="country" value="{{ old('country') }}">
-        @error('country')
             <div>{{ $message }}</div>
         @enderror
     </div>

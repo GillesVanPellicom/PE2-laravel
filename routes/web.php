@@ -33,11 +33,6 @@ Route::get('/customers', function () {
     }
     return view('customers');
 })->name('customers');
-=======
->>>>>>> 273ca822b4ef9c588497bf89ad65b8e2f40bd0e9
->>>>>>> Development
-=======
->>>>>>> Development
 
 Route::get('/courier', function () {
     return view('courier.index');

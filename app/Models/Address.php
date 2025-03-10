@@ -17,4 +17,5 @@ class Address extends Model
     {
         return $this->hasMany(Employee::class, 'address_id');
     }
+
 }
