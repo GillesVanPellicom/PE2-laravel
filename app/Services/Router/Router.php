@@ -133,10 +133,6 @@ class Router {
 
     // Main loop of the A* algorithm
     while (!$openSet->isEmpty()) {
-      if ($this->debug) {
-        echo "\n\033[1;36m--- Iteration ---\033[0m\n";
-        echo "Open Set Size: ".$openSet->count()."\n";
-      }
 
       $extracted = $openSet->extract();
       $currentID = $extracted['data'];
@@ -145,7 +141,8 @@ class Router {
       $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
       if ($this->debug) {
-        echo "\033[32mProcessing Node: $currentID ({$current->getAttribute('desc')})\033[0m\n";
+        echo "\n\033[32mProcessing Node: $currentID ({$current->getAttribute('desc')})\033[0m\n";
+        echo "  Open Set Size: ".$openSet->count()."\n";
         echo "  fScore: ".sprintf("%.6f", $insertion_fScore)." | gScore (queue): ".sprintf("%.6f",
             $insertion_gScore)."\n";
       }
@@ -195,7 +192,7 @@ class Router {
 
           if ($this->debug) {
             echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
-                $tentativeGScore)." | New fScore: ".sprintf("%.6f", $fScore[$neighborID])."\n\n";
+                $tentativeGScore)." | New fScore: ".sprintf("%.6f", $fScore[$neighborID])."\n";
             echo "    \033[1;35mHeuristic Info:\033[0m\n";
             echo "      Current: $currentID | Neighbor: $neighborID\n";
             echo "      Σ Path Weight: ".sprintf("%.6f", $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
@@ -204,9 +201,7 @@ class Router {
             // Check heuristic admissibility
             $isAdmissible = $tentativeGScore <= $fScore[$neighborID];
             $admissibilitySymbol = $isAdmissible ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
-            echo "      Heuristic Admissible: $admissibilitySymbol\n";
-
-            echo "    \033[35m------------\033[0m\n";
+            echo "      Heuristic Admissible: $admissibilitySymbol\n\n";
           }
         } else {
           if ($this->debug) {
