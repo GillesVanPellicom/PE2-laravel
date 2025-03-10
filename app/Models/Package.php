@@ -69,4 +69,9 @@ class Package extends Model {
         return $this->belongsTo(Location::class, 'current_location_id');
     }
     
+    public function movements()
+{
+    return $this->hasMany(PackageMovement::class, 'package_id');
+}
+
 }

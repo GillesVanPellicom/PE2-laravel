@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\TrackPackageController;
 
 Route::get('/courier', function () {
     return view('courier.index');
@@ -107,3 +108,8 @@ Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('f
 Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
 
 Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+
+
+//--------------------------------- Tracking Packages ---------------------------------//
+Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
+//--------------------------------- ENDTracking Packages ---------------------------------//
