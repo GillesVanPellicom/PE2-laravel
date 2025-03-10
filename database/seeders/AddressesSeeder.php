@@ -17,7 +17,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Brussels Airport Street',
                 'house_number' => '1',
                 'cities_id' => 2, // Brussels
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -25,7 +24,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Schiphol Boulevard',
                 'house_number' => '101',
                 'cities_id' => 3, // Amsterdam
-                'country_id' => 2, // Netherlands
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -33,7 +31,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Willy-Brandt-Platz',
                 'house_number' => '1',
                 'cities_id' => 4, // Berlin
-                'country_id' => 3, // Germany
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -43,7 +40,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Brussels DC Street',
                 'house_number' => '50',
                 'cities_id' => 1, // Brussels
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -51,7 +47,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Amsterdam DC Street',
                 'house_number' => '75',
                 'cities_id' => 2, // Amsterdam
-                'country_id' => 2, // Netherlands
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -61,7 +56,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Antwerp Pickup Street',
                 'house_number' => '12',
                 'cities_id' => 4, // Antwerp
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -69,7 +63,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Berlin Pickup Street',
                 'house_number' => '25',
                 'cities_id' => 3, // Berlin
-                'country_id' => 3, // Germany
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -77,7 +70,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Jan Pieter De Nayerlaan',
                 'house_number' => '5',
                 'cities_id' => 2, // Brussels
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],

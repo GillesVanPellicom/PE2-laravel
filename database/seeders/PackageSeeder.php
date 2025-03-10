@@ -16,7 +16,7 @@ class PackageSeeder extends Seeder
     {
         DB::table('packages')->insert([
             'reference' => 'REF125496',
-            'customer_id' => 1,
+            'user_id' => 1,
             'origin_location_id' => 1,
             'current_location_id' => 2,
             'destination_location_id' => 3,
