@@ -18,7 +18,7 @@ class PackageSeeder extends Seeder
             'reference' => 'REF125496',
             'customer_id' => 1,
             'origin_location_id' => 1,
-            'current_location_id' => 2,
+            'current_location_id' => 1,
             'destination_location_id' => 3,
             'addresses_id' => 4,
             'status' => 'Pending',
