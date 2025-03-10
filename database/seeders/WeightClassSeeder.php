@@ -19,7 +19,7 @@ class WeightClassSeeder extends Seeder
             'weight_min' => 0.50,
             'weight_max' => 5.00,
             'price' => 10.99,
-            'active' => true,
+            'is_active' => true,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
