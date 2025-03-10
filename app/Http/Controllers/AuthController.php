@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
 use App\Models\User;
 use App\Models\Address;
-use App\Models\Cities;
-use App\Models\Countries;
-
+use App\Models\City;
+use App\Models\Country;
+use carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -21,7 +21,8 @@ class AuthController extends Controller
 
     public function register()
     {
-        return view('auth.register');
+        $countries = Country::all();
+        return view('auth.register', compact('countries'));
     }
 
     public function update(Request $request)
@@ -89,8 +90,8 @@ class AuthController extends Controller
             'password' => 'required|min:8',
             'confirm-password' => 'required|same:password',
             'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-            'birth_date' => 'required|date',
-            'country' => 'required|string|max:100',
+            'birth_date' => 'required|date|before:' . Carbon::now()->subYears(18)->format('Y-m-d'),
+            'country' => 'required',
             'postal_code' => 'required|string|max:100',
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
@@ -104,10 +105,10 @@ class AuthController extends Controller
         $user = User::create($userData);
     
         // Create or find the country
-        $country = Countries::firstOrCreate(['country_name' => $validated['country']]);
+        $country = Country::firstOrCreate(['name' => $validated['country']]);
     
         // Create or find the city
-        $city = Cities::firstOrCreate([
+        $city = City::firstOrCreate([
             'name' => $validated['city'],
             'postcode' => $validated['postal_code'],
             'country_id' => $country->id,
