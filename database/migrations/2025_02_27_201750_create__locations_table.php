@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('contact_number');
             $table->string('opening_hours');
             $table->boolean('is_active');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 10, 8)->nullable();
             $table->timestamps();
         });
     }
