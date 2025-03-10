@@ -22,11 +22,10 @@ class Router {
 
   public function printRoute(string $nodeId_1, string $nodeId_2): void {
     $path = $this->aStar($nodeId_1, $nodeId_2);
-    if ($this->debug) {
-      echo "\033[1;32mShortest path:\033[0m ".implode(" > ", array_map(fn($node) => $node->getID(), $path))."\n";
-    } else {
-      echo implode(" > ", array_map(fn($node) => $node->getID(), $path))."\n";
-    }
+    echo "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ",
+        array_map(fn($node) => $node->getID(), $path))."\n\n";
+    echo "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ",
+        array_map(fn($node) => $node->getAttribute('desc'), $path))."\n";
   }
 
   /**
@@ -71,6 +70,7 @@ class Router {
       // Add the node to the graph
       $this->graph->addNode(
         $ID,
+        $attributes['desc'],
         $attributes['latDeg'],
         $attributes['longDeg'],
         $type,
@@ -145,7 +145,7 @@ class Router {
       $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
       if ($this->debug) {
-        echo "\033[32mProcessing Node: $currentID\033[0m\n";
+        echo "\033[32mProcessing Node: $currentID ({$current->getAttribute('desc')})\033[0m\n";
         echo "  fScore: ".sprintf("%.6f", $insertion_fScore)." | gScore (queue): ".sprintf("%.6f",
             $insertion_gScore)."\n";
       }

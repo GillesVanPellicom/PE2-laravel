@@ -22,6 +22,7 @@ class RouterGraph {
    * Adds a node to the graph.
    *
    * @param  string  $ID  The ID of the node.
+   * @param  string  $description Display name of the node.
    * @param  float  $lat  Latitude of the node in degrees.
    * @param  float  $long  Longitude of the node in degrees.
    * @param  NodeType  $nodeType  Type of the node.
@@ -31,6 +32,7 @@ class RouterGraph {
    */
   public function addNode(
     string $ID,
+    string $description,
     float $lat,
     float $long,
     NodeType $nodeType,
@@ -76,6 +78,7 @@ class RouterGraph {
 
     // Create the node attributes array
     $attributes = [
+      'desc' => $description,
       'latDeg' => $lat,
       'longDeg' => $long,
       'latRad' => deg2rad($lat),
@@ -132,7 +135,7 @@ class RouterGraph {
       $startNode->getAttribute('longRad'),
       $endNode->getAttribute('latRad'),
       $endNode->getAttribute('longRad')
-    )*1.2; // Magic number. Slightly inflate results as hack compensation for actual road curvature and speed limits.
+    );
 
     // Add the edge to the graph
     $this->edges[$startNodeID][$endNodeID] = $weight;
@@ -199,6 +202,7 @@ class RouterGraph {
     echo "\033[1;32mNodes:\033[0m\n";
     foreach ($this->nodes as $node) {
       echo "\033[32mNode: ".$node->getID()."\033[0m\n";
+      echo "  Desc.      :  ".$node->getAttribute('desc')."\n";
       echo "  Latitude   :  ".sprintf("%.4f", $node->getAttribute('latDeg'))."\n";
       echo "  Longitude  :  ".sprintf("%.4f", $node->getAttribute('longDeg'))."\n";
       echo "  Type       :  ".$node->getType()->value."\n";
@@ -214,7 +218,7 @@ class RouterGraph {
       foreach ($neighbors as $endNodeID => $weight) {
         $edgeKey = min($startNodeID, $endNodeID).'-'.max($startNodeID, $endNodeID);
         if (!isset($printedEdges[$edgeKey])) {
-          printf("\033[36m%-16s ↔ %-16s\033[0m (Weight: %.4f km)\n", $startNodeID, $endNodeID, $weight);
+          printf("\033[36m%-16s ↔ %-16s\033[0m (%.4f km)\n", $startNodeID, $endNodeID, $weight);
           $printedEdges[$edgeKey] = true;
         }
       }
