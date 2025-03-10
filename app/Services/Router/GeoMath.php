@@ -14,9 +14,9 @@ class GeoMath {
    * - Haversine formula is slower but more accurate
    *
    * The formula used is:
-   * a = sin²(Δφ / 2) + cos(φ1) * cos(φ2) * sin²(Δλ / 2)
-   * c = 2 * atan2(√a, √(1-a))
-   * d = r * c
+   * - a = sin²(Δφ / 2) + cos(φ1) * cos(φ2) * sin²(Δλ / 2)
+   * - c = 2 * atan2(√a, √(1-a))
+   * - d = r * c
    *
    * Where:
    * - φ1, φ2 are the latitudes in radians
@@ -61,7 +61,7 @@ class GeoMath {
    * - Spherical law of cosines is faster but less accurate
    *
    * The formula used is:
-   * d = r * acos(sin φ₁ sin φ₂ + cos φ₁ cos φ₂ cos Δλ)
+   * - d = r * acos(sin φ₁ sin φ₂ + cos φ₁ cos φ₂ cos Δλ)
    *
    * Where:
    * - φ₁, φ₂ are the latitudes in radians

@@ -8,32 +8,32 @@ use InvalidArgumentException;
 class Node {
 
   // Local globals
-  private string $UUID;
+  private string $ID;
   private array $attributes;
   private NodeType $type;
 
 
   /**
-   * @param  string  $UUID  UUID of the Node
+   * @param  string  $ID  ID of the Node
    * @param  NodeType  $type  Type of the Node
    * @param  array  $attributes  Associative array containing attributes of the Node
    */
-  public function __construct(string $UUID, NodeType $type, array $attributes = []) {
-    if (empty($UUID)) {
-      throw new InvalidArgumentException("Node UUID cannot be empty.");
+  public function __construct(string $ID, NodeType $type, array $attributes = []) {
+    if (empty($ID)) {
+      throw new InvalidArgumentException("Node ID cannot be empty.");
     }
 
-    $this->UUID = $UUID;
+    $this->ID = $ID;
     $this->type = $type;
     $this->attributes = $attributes;
   }
 
 
   /**
-   * @return string UUID of the Node
+   * @return string ID of the Node
    */
-  public function getUUID(): string {
-    return $this->UUID;
+  public function getID(): string {
+    return $this->ID;
   }
 
 
