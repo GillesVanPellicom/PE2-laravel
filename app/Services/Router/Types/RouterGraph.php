@@ -4,7 +4,6 @@ namespace App\Services\Router\Types;
 
 use App\Helpers\ConsoleHelper;
 use App\Services\Router\GeoMath;
-use App\Services\Router\Types\Factories\NodeFactory;
 use App\Services\Router\Types\Node;
 use InvalidArgumentException;
 

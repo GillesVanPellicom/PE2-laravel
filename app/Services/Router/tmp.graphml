@@ -40,7 +40,7 @@
             <data key="latDeg">51.1927</data>
             <data key="longDeg">4.3629</data>
             <data key="isEntryNode">true</data>
-            <data key="isExitNode">false</data>
+            <data key="isExitNode">true</data>
         </node>
 
 
@@ -59,7 +59,7 @@
             <data key="latDeg">33.9760</data>
             <data key="longDeg">-118.2570</data>
             <data key="isEntryNode">true</data>
-            <data key="isExitNode">false</data>
+            <data key="isExitNode">true</data>
         </node>
 
 
@@ -78,7 +78,7 @@
             <data key="latDeg">50.4714</data>
             <data key="longDeg">4.3668</data>
             <data key="isEntryNode">true</data>
-            <data key="isExitNode">false</data>
+            <data key="isExitNode">true</data>
         </node>
 
 
@@ -97,7 +97,7 @@
             <data key="latDeg">48.1851</data>
             <data key="longDeg">11.4681</data>
             <data key="isEntryNode">true</data>
-            <data key="isExitNode">false</data>
+            <data key="isExitNode">true</data>
         </node>
 
 

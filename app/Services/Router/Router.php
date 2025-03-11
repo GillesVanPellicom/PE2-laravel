@@ -19,6 +19,101 @@ class Router {
     $this->deserialize('app/Services/Router/tmp.graphml');
   }
 
+  public function route(string $arg1, string $arg2): void {
+    $startNode = null;
+    $arg1IsID = $arg1[0] == '$';
+    $endNode = null;
+    $arg2IsID = $arg2[0] == '$';
+
+    if (!$arg1IsID) {
+      $startNode = $this->createAddressNode($arg1);
+      $arg1 = $this->findClosestNode($startNode->getAttribute('latRad'), $startNode->getAttribute('longRad'), true, false);
+      echo "\033[32mNode: ".$startNode->getID()."\033[0m\n";
+      echo "  Desc.      :  ".$startNode->getAttribute('desc')."\n";
+      echo "  Latitude   :  ".sprintf("%.4f", $startNode->getAttribute('latDeg'))."\n";
+      echo "  Longitude  :  ".sprintf("%.4f", $startNode->getAttribute('longDeg'))."\n";
+      echo "  Type       :  ".$startNode->getType()->value."\n";
+      echo "\033[33m--------------------\033[0m\n";
+    } else {
+      $arg1 = substr($arg1, 1);
+    }
+
+    if (!$arg2IsID) {
+      $endNode = $this->createAddressNode($arg2);
+      $arg2 = $this->findClosestNode($endNode->getAttribute('latRad'), $endNode->getAttribute('longRad'), false, true);
+      echo "\033[32mNode: ".$endNode->getID()."\033[0m\n";
+      echo "  Desc.      :  ".$endNode->getAttribute('desc')."\n";
+      echo "  Latitude   :  ".sprintf("%.4f", $endNode->getAttribute('latDeg'))."\n";
+      echo "  Longitude  :  ".sprintf("%.4f", $endNode->getAttribute('longDeg'))."\n";
+      echo "  Type       :  ".$endNode->getType()->value."\n";
+      echo "\033[33m--------------------\033[0m\n";
+    } else {
+      $arg2 = substr($arg2, 1);
+    }
+
+    $path = $this->aStar($arg1, $arg2);
+
+    if (!$arg1IsID) {
+      array_unshift($path, $startNode);
+    }
+    if (!$arg2IsID) {
+      $path[] = $endNode;
+    }
+
+    echo "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ",
+        array_map(fn($node) => $node->getID(), $path))."\n\n";
+    echo "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ",
+        array_map(fn($node) => $node->getAttribute('desc'), $path))."\n";
+  }
+
+
+  private function createAddressNode(string $address): Node {
+    $coords = GeoMath::getCoordinates($address);
+
+    if (!isset($coords['latDeg']) || !isset($coords['longDeg'])) {
+      throw new InvalidArgumentException("Invalid coordinates for address: $address");
+    }
+
+    // Create the node attributes array
+    $attributes = [
+      'desc' => $address,
+      'latDeg' => $coords['latDeg'],
+      'longDeg' => $coords['longDeg'],
+      'latRad' => deg2rad($coords['latDeg']),
+      'longRad' => deg2rad($coords['longDeg'])
+    ];
+    // Create a new node
+    return new Node('$$_address_node_$$', NodeType::ADDRESS, $attributes);
+
+  }
+
+
+  private function findClosestNode(float $latRad, float $longRad, bool $mustBeEntry, bool $mustBeExit): ?string {
+    $closestNode = null;
+    $minDistance = PHP_INT_MAX;
+
+    foreach ($this->graph->getNodes() as $node) {
+      if ($mustBeExit && $node->getAttribute('isExitNode') == 'false') {
+        continue;
+      }
+      if ($mustBeEntry && $node->getAttribute('isEntryNode') == 'false') {
+        continue;
+      }
+
+      $distance = GeoMath::sphericalCosinesDistance(
+        $latRad,
+        $longRad,
+        $node->getAttribute('latRad'),
+        $node->getAttribute('longRad'));
+      if ($distance < $minDistance) {
+        $minDistance = $distance;
+        $closestNode = $node;
+      }
+    }
+
+    return $closestNode->getID();
+  }
+
 
   public function printRoute(string $nodeId_1, string $nodeId_2): void {
     $path = $this->aStar($nodeId_1, $nodeId_2);
