@@ -98,4 +98,23 @@ class Node {
     $this->type = $type;
   }
 
+  public function printNode(): void {
+    echo "\033[32mNode: ".$this->getID()."\033[0m\n";
+    echo "  Desc.      :  ".$this->getAttribute('desc')."\n";
+    echo "  Latitude   :  ".sprintf("%.4f", $this->getAttribute('latDeg'))."\n";
+    echo "  Longitude  :  ".sprintf("%.4f", $this->getAttribute('longDeg'))."\n";
+    echo "  Type       :  ".$this->getType()->value."\n";
+    echo "  Entry Node :  ".$this->getAttribute('isEntryNode')."\n";
+    echo "  Exit Node  :  ".$this->getAttribute('isExitNode')."\n";
+    echo "\033[33m--------------------\033[0m\n";
+  }
+
+  public function printAddressNode(): void {
+    echo "\033[32mAddress node: ".$this->getID()."\033[0m\n";
+    echo "  Desc.      :  ".$this->getAttribute('desc')."\n";
+    echo "  Latitude   :  ".sprintf("%.4f", $this->getAttribute('latDeg'))."\n";
+    echo "  Longitude  :  ".sprintf("%.4f", $this->getAttribute('longDeg'))."\n";
+    echo "  Type       :  ".$this->getType()->value."\n";
+    echo "\033[33m--------------------\033[0m\n";
+  }
 }

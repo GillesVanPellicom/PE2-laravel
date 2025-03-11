@@ -19,54 +19,100 @@ class Router {
     $this->deserialize('app/Services/Router/tmp.graphml');
   }
 
-  public function route(string $arg1, string $arg2): void {
-    $startNode = null;
-    $arg1IsID = $arg1[0] == '$';
-    $endNode = null;
-    $arg2IsID = $arg2[0] == '$';
 
-    if (!$arg1IsID) {
-      $startNode = $this->createAddressNode($arg1);
-      $arg1 = $this->findClosestNode($startNode->getAttribute('latRad'), $startNode->getAttribute('longRad'), true, false);
-      echo "\033[32mNode: ".$startNode->getID()."\033[0m\n";
-      echo "  Desc.      :  ".$startNode->getAttribute('desc')."\n";
-      echo "  Latitude   :  ".sprintf("%.4f", $startNode->getAttribute('latDeg'))."\n";
-      echo "  Longitude  :  ".sprintf("%.4f", $startNode->getAttribute('longDeg'))."\n";
-      echo "  Type       :  ".$startNode->getType()->value."\n";
-      echo "\033[33m--------------------\033[0m\n";
-    } else {
-      $arg1 = substr($arg1, 1);
-    }
+  /**
+   * Generates a path between two points
+   *
+   * @param  string  $arg1  Starting point (ID with '$' prefix or address)
+   * @param  string  $arg2  Ending point (ID with '$' prefix or address)
+   * @return void
+   */
+  public function generate(string $origin, string $destination): ?array {
+    // Print debug header if debug mode is enabled
+    $this->debug && print "\033[1;34mROUTER DEBUG BEGIN >>>\n\n=== Imaginary Node(s) ===\033[0m\n\n";
 
-    if (!$arg2IsID) {
-      $endNode = $this->createAddressNode($arg2);
-      $arg2 = $this->findClosestNode($endNode->getAttribute('latRad'), $endNode->getAttribute('longRad'), false, true);
-      echo "\033[32mNode: ".$endNode->getID()."\033[0m\n";
-      echo "  Desc.      :  ".$endNode->getAttribute('desc')."\n";
-      echo "  Latitude   :  ".sprintf("%.4f", $endNode->getAttribute('latDeg'))."\n";
-      echo "  Longitude  :  ".sprintf("%.4f", $endNode->getAttribute('longDeg'))."\n";
-      echo "  Type       :  ".$endNode->getType()->value."\n";
-      echo "\033[33m--------------------\033[0m\n";
-    } else {
-      $arg2 = substr($arg2, 1);
-    }
+    // Process start and end nodes
+    [$startNode, $origin] = $this->processNode($origin, true);
+    [$endNode, $destination] = $this->processNode($destination, false);
 
-    $path = $this->aStar($arg1, $arg2);
+    // Print newline separator in debug mode
+    $this->debug && print "\n";
 
-    if (!$arg1IsID) {
-      array_unshift($path, $startNode);
-    }
-    if (!$arg2IsID) {
-      $path[] = $endNode;
-    }
-
-    echo "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ",
-        array_map(fn($node) => $node->getID(), $path))."\n\n";
-    echo "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ",
-        array_map(fn($node) => $node->getAttribute('desc'), $path))."\n";
+    // Build and print the path
+    return $this->buildPath($origin, $destination, $startNode, $endNode);
   }
 
 
+  /**
+   * Processes a node argument and returns the node object and ID
+   *
+   * @param  string  $arg  Node argument (ID or address)
+   * @param  bool  $isStart  Whether this is the starting node
+   * @return array [?object Node object or null, string Processed ID]
+   */
+  private function processNode(string $arg, bool $isStart): array {
+    $isID = $arg[0] === '@';
+    $node = null;
+
+    if (!$isID) {
+      // Create node from address and find closest existing node
+      $node = $this->createAddressNode($arg);
+      $latRad = $node->getAttribute('latRad');
+      $longRad = $node->getAttribute('longRad');
+      $arg = $this->findClosestNode($latRad, $longRad, $isStart, !$isStart);
+
+      // Print node details if in debug mode
+      $this->debug && $node->printAddressNode();
+    }
+    return [$node, $arg];
+  }
+
+
+  /**
+   * Builds the complete path including imaginary nodes if needed
+   *
+   * @param  string  $startId  Starting node ID
+   * @param  string  $endId  Ending node ID
+   * @param ?object  $startNode  Starting imaginary node if created
+   * @param ?object  $endNode  Ending imaginary node if created
+   * @return array Array of node objects representing the path
+   */
+  private function buildPath(string $startId, string $endId, ?object $startNode, ?object $endNode): array {
+    // Get core path using A* algorithm
+    $path = $this->aStar($startId, $endId);
+
+    // Add imaginary nodes if they exist
+    $startNode && array_unshift($path, $startNode);
+    $endNode && $path[] = $endNode;
+
+    return $path;
+  }
+
+
+  /**
+   * Prints the path in both ID and description formats
+   *
+   * @param  array  $path  Array of node objects
+   * @return void
+   */
+  public function printPath(array $path): void {
+    // Extract IDs and descriptions from path nodes
+    $ids = array_map(fn($node) => $node->getID(), $path);
+    $descs = array_map(fn($node) => $node->getAttribute('desc'), $path);
+
+    // Print path with color formatting
+    print "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ", $ids)."\n\n";
+    print "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ", $descs)."\n";
+  }
+
+
+  /**
+   * Creates a new address node from an address string.
+   * Disconnected from the main graph, linking is done after routing using haversine.
+   *
+   * @param  string  $address Address as string
+   * @return Node
+   */
   private function createAddressNode(string $address): Node {
     $coords = GeoMath::getCoordinates($address);
 
@@ -114,14 +160,6 @@ class Router {
     return $closestNode->getID();
   }
 
-
-  public function printRoute(string $nodeId_1, string $nodeId_2): void {
-    $path = $this->aStar($nodeId_1, $nodeId_2);
-    echo "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ",
-        array_map(fn($node) => $node->getID(), $path))."\n\n";
-    echo "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ",
-        array_map(fn($node) => $node->getAttribute('desc'), $path))."\n";
-  }
 
   /**
    * Enable or disable debug mode.

@@ -195,19 +195,12 @@ class RouterGraph {
    */
   public function printGraph(): void {
 
-    echo "\033[1;34m>>> ROUTER DEBUG BEGIN\n\n=== Graph Structure ===\033[0m\n\n";
+    echo "\033[1;34m=== Graph Structure ===\033[0m\n\n";
 
     // Nodes Section
     echo "\033[1;32mNodes:\033[0m\n";
     foreach ($this->nodes as $node) {
-      echo "\033[32mNode: ".$node->getID()."\033[0m\n";
-      echo "  Desc.      :  ".$node->getAttribute('desc')."\n";
-      echo "  Latitude   :  ".sprintf("%.4f", $node->getAttribute('latDeg'))."\n";
-      echo "  Longitude  :  ".sprintf("%.4f", $node->getAttribute('longDeg'))."\n";
-      echo "  Type       :  ".$node->getType()->value."\n";
-      echo "  Entry Node :  ".$node->getAttribute('isEntryNode')."\n";
-      echo "  Exit Node  :  ".$node->getAttribute('isExitNode')."\n";
-      echo "\033[33m--------------------\033[0m\n";
+      $node->printNode();
     }
 
     // Edges Section
