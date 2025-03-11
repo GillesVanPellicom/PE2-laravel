@@ -6,61 +6,43 @@ use App\Services\Router\Types\NodeType;
 use PHPUnit\Framework\TestCase;
 use App\Services\Router\Types\Node;
 use InvalidArgumentException;
-use TypeError;
-use Ramsey\Uuid\Uuid;
 
-class NodeTest extends TestCase
-{
-  public function testNodeCreation()
-  {
-    $node = new Node('testNode', NodeType::AIRPORT);
-    $this->assertEquals('testNode', $node->getUUID());
-    $this->assertEquals(NodeType::AIRPORT, $node->getType());
+class NodeTest extends TestCase {
+  public function testNodeCreationValid() {
+    $node = new Node('1', NodeType::DISTRIBUTION_CENTER, ['latDeg' => 37.422, 'longDeg' => -122.084]);
+    $this->assertInstanceOf(Node::class, $node);
+    $this->assertEquals('1', $node->getID());
+    $this->assertEquals(NodeType::DISTRIBUTION_CENTER, $node->getType());
   }
 
-  public function testNodeCreationRandom()
-  {
-    $node = new Node(Uuid::uuid4()->toString(), NodeType::AIRPORT);
-    $this->assertNotEmpty($node->getUUID());
-  }
-
-  public function testEmptyNodeNameThrowsException()
-  {
+  public function testNodeCreationInvalid() {
     $this->expectException(InvalidArgumentException::class);
-    new Node('', NodeType::AIRPORT);
+    new Node('', NodeType::DISTRIBUTION_CENTER);
   }
 
-  public function testEmptyNodeNameThrowsExceptionRandom()
-  {
-    $this->expectException(InvalidArgumentException::class);
-    new Node('', NodeType::AIRPORT);
+  public function testGetAndSetAttributes() {
+    $node = new Node('1', NodeType::DISTRIBUTION_CENTER, ['latDeg' => 37.422, 'longDeg' => -122.084]);
+    $this->assertEquals(37.422, $node->getAttribute('latDeg'));
+    $this->assertNull($node->getAttribute('nonExistentKey'));
+
+    $node->setAttribute('desc', 'Test Node');
+    $this->assertEquals('Test Node', $node->getAttribute('desc'));
   }
 
-  public function testSetAttribute()
-  {
-    $node = new Node('testNode', NodeType::AIRPORT);
-    $node->setAttribute('key', 'value');
-    $this->assertEquals('value', $node->getAttribute('key'));
-  }
-
-  public function testSetAttributeRandom()
-  {
-    $node = new Node(Uuid::uuid4()->toString(), NodeType::AIRPORT);
-    $node->setAttribute('key', 'value');
-    $this->assertEquals('value', $node->getAttribute('key'));
-  }
-
-  public function testEmptyAttributeKeyThrowsException()
-  {
-    $node = new Node('testNode', NodeType::AIRPORT);
+  public function testSetAttributeInvalidKey() {
+    $node = new Node('1', NodeType::DISTRIBUTION_CENTER);
     $this->expectException(InvalidArgumentException::class);
     $node->setAttribute('', 'value');
   }
 
-  public function testEmptyAttributeKeyThrowsExceptionRandom()
-  {
-    $node = new Node(Uuid::uuid4()->toString(), NodeType::AIRPORT);
-    $this->expectException(InvalidArgumentException::class);
-    $node->setAttribute('', 'value');
+  public function testGetDistanceTo() {
+    $node1 = new Node('1', NodeType::DISTRIBUTION_CENTER,
+      ['latRad' => deg2rad(37.422), 'longRad' => deg2rad(-122.084)]);
+    $node2 = new Node('2', NodeType::DISTRIBUTION_CENTER,
+      ['latRad' => deg2rad(37.7749), 'longRad' => deg2rad(-122.4194)]);
+
+    $distance = $node1->getDistanceTo($node2);
+    $this->assertIsFloat($distance);
+    $this->assertGreaterThan(0, $distance);
   }
 }

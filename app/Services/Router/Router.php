@@ -23,9 +23,9 @@ class Router {
   /**
    * Generates a path between two points
    *
-   * @param  string  $arg1  Starting point (ID with '$' prefix or address)
-   * @param  string  $arg2  Ending point (ID with '$' prefix or address)
-   * @return void
+   * @param  string  $origin  Origin address or node ID
+   * @param  string  $destination  Destination address or node ID
+   * @return array|null Array of node objects representing the path in hops
    */
   public function generate(string $origin, string $destination): ?array {
     // Print debug header if debug mode is enabled
@@ -110,15 +110,11 @@ class Router {
    * Creates a new address node from an address string.
    * Disconnected from the main graph, linking is done after routing using haversine.
    *
-   * @param  string  $address Address as string
+   * @param  string  $address  Address as string
    * @return Node
    */
   private function createAddressNode(string $address): Node {
     $coords = GeoMath::getCoordinates($address);
-
-    if (!isset($coords['latDeg']) || !isset($coords['longDeg'])) {
-      throw new InvalidArgumentException("Invalid coordinates for address: $address");
-    }
 
     // Create the node attributes array
     $attributes = [
@@ -134,6 +130,15 @@ class Router {
   }
 
 
+  /**
+   * Finds the closest Node to a given point.
+   *
+   * @param  float  $latRad  Latitude in radians
+   * @param  float  $longRad  Longitude in radians
+   * @param  bool  $mustBeEntry  Whether closest the node must be an entry node
+   * @param  bool  $mustBeExit  Whether closest the node must be an exit node
+   * @return string|null Closest node ID
+   */
   private function findClosestNode(float $latRad, float $longRad, bool $mustBeEntry, bool $mustBeExit): ?string {
     $closestNode = null;
     $minDistance = PHP_INT_MAX;
@@ -170,6 +175,7 @@ class Router {
   public function setDebug(bool $enable): void {
     $this->debug = $enable;
   }
+
 
   /**
    * Deserialize GraphML into RouterGraph object.
@@ -216,11 +222,11 @@ class Router {
     foreach ($graphml->graph->edge as $edge) {
       $source = (string) $edge['nodeID_1'];
       $target = (string) $edge['nodeID_2'];
-      $weight = (float) $edge->data;
       // Add the edge to the graph
       $this->graph->addEdge($source, $target);
     }
   }
+
 
   /**
    * Finds the shortest path between two nodes.

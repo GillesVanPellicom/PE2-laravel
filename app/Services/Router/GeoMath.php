@@ -2,7 +2,9 @@
 
 namespace App\Services\Router;
 
+use App\Helpers\ConsoleHelper;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * A class that provides methods for handling geospatial data.
@@ -95,8 +97,12 @@ class GeoMath {
     return $r * $theta;
   }
 
+  /**
+   * @param  string  $address
+   * @return array|null
+   */
   public static function getCoordinates(string $address): ?array {
-    $url = "https://nominatim.openstreetmap.org/search?" . http_build_query([
+    $url = "https://nominatim.openstreetmap.org/search?".http_build_query([
         'q' => $address,
         'format' => 'json',
         'limit' => 1
@@ -107,25 +113,24 @@ class GeoMath {
         "header" => "User-Agent: YourApp/1.0 (your@email.com)"
       ]
     ];
+
     $context = stream_context_create($opts);
     $response = file_get_contents($url, false, $context);
 
     // Debugging output
     if ($response === false) {
-      throw new InvalidArgumentException("Failed to fetch coordinates for address: $address");
+      ConsoleHelper::error("GeoMath::getCoordinates() - Failed to fetch coordinates for address: $address. Please check your internet connection.");
+      throw new RuntimeException();
     }
 
     $data = json_decode($response, true);
 
     // Debugging output
     if (empty($data)) {
-      throw new InvalidArgumentException("No data returned for address: $address");
+      ConsoleHelper::error("GeoMath::getCoordinates() - No data returned for address: $address. Is the address spelled correctly?");
+      throw new InvalidArgumentException();
     }
-
-    if (!empty($data)) {
-      return ['latDeg' => $data[0]['lat'], 'longDeg' => $data[0]['lon']];
-    }
-    return null;
+    return ['latDeg' => $data[0]['lat'], 'longDeg' => $data[0]['lon']];
   }
 }
 

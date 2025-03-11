@@ -47,31 +47,31 @@ class RouterGraph {
 
     // Check if the node already exists
     if (isset($this->nodes[$ID])) {
-      ConsoleHelper::error("RouterGraph::addNode() - Node (ID: {$ID}) already exists. IDs must be unique.");
+      ConsoleHelper::error("RouterGraph::addNode() - Node (ID: $ID) already exists. IDs must be unique.");
       throw new InvalidArgumentException();
     }
 
     // Check if the latitude is within valid range
     if ($lat < -90.0 || $lat > 90.0) {
-      ConsoleHelper::error("RouterGraph::addNode() - Node (ID: {$ID}) latitude must be between -90 and 90 degrees.");
+      ConsoleHelper::error("RouterGraph::addNode() - Node (ID: $ID) latitude must be between -90 and 90 degrees.");
       throw new InvalidArgumentException();
     }
 
     // Check if the longitude is within valid range
     if ($long < -180.0 || $long > 180.0) {
-      ConsoleHelper::error("RouterGraph::addNode() - Node (ID: {$ID}) longitude must be between -180 and 180 degrees.");
+      ConsoleHelper::error("RouterGraph::addNode() - Node (ID: $ID) longitude must be between -180 and 180 degrees.");
       throw new InvalidArgumentException();
     }
 
     // Check if isEntryNode and isExitNode are valid boolean strings
     if (!in_array($isEntryNode, ['true', 'false'], true)) {
-      ConsoleHelper::error("RouterGraph::addNode() - isEntryNode (ID: {$ID}) must be 'true' or 'false'.");
+      ConsoleHelper::error("RouterGraph::addNode() - isEntryNode (ID: $ID) must be 'true' or 'false'.");
       throw new InvalidArgumentException();
     }
 
     // Check if isEntryNode and isExitNode are valid boolean strings
     if (!in_array($isExitNode, ['true', 'false'], true)) {
-      ConsoleHelper::error("RouterGraph::addNode() - isExitNode (ID: {$ID}) must be 'true' or 'false'.");
+      ConsoleHelper::error("RouterGraph::addNode() - isExitNode (ID: $ID) must be 'true' or 'false'.");
       throw new InvalidArgumentException();
     }
 
@@ -108,19 +108,19 @@ class RouterGraph {
   public function addEdge(string $startNodeID, string $endNodeID): void {
     // Check if the start node exists
     if (!isset($this->nodes[$startNodeID])) {
-      ConsoleHelper::error("RouterGraph::addEdge() - Start node (ID: {$startNodeID}) does not exist.");
+      ConsoleHelper::error("RouterGraph::addEdge() - Start node (ID: $startNodeID) does not exist.");
       throw new InvalidArgumentException();
     }
 
     // Check if the end node exists
     if (!isset($this->nodes[$endNodeID])) {
-      ConsoleHelper::error("RouterGraph::addEdge() - End node  (ID: {$startNodeID}) does not exist.");
+      ConsoleHelper::error("RouterGraph::addEdge() - End node  (ID: $startNodeID) does not exist.");
       throw new InvalidArgumentException();
     }
 
     // Check if the start and end nodes are the same
     if ($startNodeID === $endNodeID) {
-      ConsoleHelper::error("RouterGraph::addEdge() - Start and end node (IDs: {$startNodeID}) are the same. Looping edges are not allowed.");
+      ConsoleHelper::error("RouterGraph::addEdge() - Start and end node (IDs: $startNodeID) are the same. Looping edges are not allowed.");
       throw new InvalidArgumentException();
     }
 
@@ -137,6 +137,7 @@ class RouterGraph {
     );
 
     // Add the edge to the graph
+    // Add both directions to the edge list to make the edge bidirectional
     $this->edges[$startNodeID][$endNodeID] = $weight;
     $this->edges[$endNodeID][$startNodeID] = $weight;
   }
@@ -159,7 +160,7 @@ class RouterGraph {
   public function getNode(string $NodeID): Node {
     // Check if the node exists
     if (!isset($this->nodes[$NodeID])) {
-      ConsoleHelper::error("RouterGraph::getNode() - Node (ID: {$NodeID}) does not exist.");
+      ConsoleHelper::error("RouterGraph::getNode() - Node (ID: $NodeID) does not exist.");
       throw new InvalidArgumentException();
     }
     return $this->nodes[$NodeID];
@@ -174,7 +175,7 @@ class RouterGraph {
   public function getNeighbors(string $NodeID): array {
     // Check if the node exists
     if (!isset($this->nodes[$NodeID])) {
-      ConsoleHelper::error("RouterGraph::getNeighbors() - Node (ID: {$NodeID}) does not exist.");
+      ConsoleHelper::error("RouterGraph::getNeighbors() - Node (ID: $NodeID) does not exist.");
       throw new InvalidArgumentException();
     }
     return $this->edges[$NodeID];
