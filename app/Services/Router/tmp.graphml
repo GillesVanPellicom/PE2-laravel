@@ -193,6 +193,16 @@
             <data key="isExitNode">false</data>
         </node>
 
+        <!--TEST NODES-->
+        <node id="@DISCONNECTED_TEST_NODE">
+            <data key="desc">Disconnected test node</data>
+            <data key="type">DISTRIBUTION_CENTER</data>
+            <data key="latDeg">54.1536</data>
+            <data key="longDeg">16.9913</data>
+            <data key="isEntryNode">true</data>
+            <data key="isExitNode">true</data>
+        </node>
+
 
         <!-- Edges -->
         <edge nodeID_1="@AIR_EBBR" nodeID_2="@DC_BRUSSELS"></edge>
@@ -217,6 +227,5 @@
         <edge nodeID_1="@DC_BRUSSELS" nodeID_2="@DC_BASTOGNE"></edge>
         <edge nodeID_1="@AIR_EGKK" nodeID_2="@AIR_EBCI"></edge>
         <edge nodeID_1="@AIR_EGKK" nodeID_2="@DC_LONDON"></edge>
-
     </graph>
 </graphml>

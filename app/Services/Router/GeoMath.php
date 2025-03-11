@@ -2,9 +2,7 @@
 
 namespace App\Services\Router;
 
-use App\Helpers\ConsoleHelper;
-use InvalidArgumentException;
-use RuntimeException;
+use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
 
 /**
  * A class that provides methods for handling geospatial data.
@@ -100,6 +98,7 @@ class GeoMath {
   /**
    * @param  string  $address
    * @return array|null
+   * @throws FailedCoordinatesFetchException
    */
   public static function getCoordinates(string $address): ?array {
     $url = "https://nominatim.openstreetmap.org/search?".http_build_query([
@@ -119,16 +118,14 @@ class GeoMath {
 
     // Debugging output
     if ($response === false) {
-      ConsoleHelper::error("GeoMath::getCoordinates() - Failed to fetch coordinates for address: $address. Please check your internet connection.");
-      throw new RuntimeException();
+      throw new FailedCoordinatesFetchException($address);
     }
 
     $data = json_decode($response, true);
 
     // Debugging output
     if (empty($data)) {
-      ConsoleHelper::error("GeoMath::getCoordinates() - No data returned for address: $address. Is the address spelled correctly?");
-      throw new InvalidArgumentException();
+      throw new FailedCoordinatesFetchException($address);
     }
     return ['latDeg' => $data[0]['lat'], 'longDeg' => $data[0]['lon']];
   }
