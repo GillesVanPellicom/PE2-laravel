@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->nullable();
-            $table->foreignId('customer_id')->constrained('customers');
+            $table->foreignId('user_id')->constrained('users');
             $table->foreignId('origin_location_id')->constrained('locations');
             $table->foreignId('current_location_id')->nullable()->constrained('locations');
             $table->foreignId('destination_location_id')->nullable()->constrained('locations');

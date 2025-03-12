@@ -20,8 +20,8 @@ return new class extends Migration
             $table->date('birth_date');
             $table->foreignId('address_id')->constrained('addresses');
             $table->string('nationality');
-            $table->foreignId('city_id')->constrained('cities');
             $table->integer('leave_balance');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
