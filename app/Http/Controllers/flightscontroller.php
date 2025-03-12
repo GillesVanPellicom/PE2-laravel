@@ -28,6 +28,6 @@ class flightscontroller extends Controller
 
         flight::create($data);
 
-        return redirect(route('flights'));
+        return redirect(route('airport.flights'));
     }
 }
