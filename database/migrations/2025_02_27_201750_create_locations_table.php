@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('location_type', ['Pickup Point', 'Parcel Locker', 'Distribution Center', 'Airport', 'Private Individu']);
             $table->foreignId('addresses_id')->constrained('addresses');
             $table->string('contact_number');
-            $table->string('opening_hours');
+            $table->string('opening_hours')->nullable();
             $table->boolean('is_active');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 10, 8)->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('_locations');
+        Schema::dropIfExists('locations');
     }
 };

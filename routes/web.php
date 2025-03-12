@@ -5,29 +5,25 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 
-Route::get('/courier', function () {
-    return view('courier.index');
-})->name('index.page');
 
-Route::get('/courier/route', function () {
-    return view('courier.route');
-})->name('route.page');
+# => Courier Mobile app
 
-Route::get('/courier/packages', function () {
-    return view('courier.packages');
-})->name('packages.page');
+Route::get('/courier', [CourierController::class, "index"])->name('courier');
+Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
+Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
+Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
+Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
+
+# Test Route
+Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
+
+# <= END Courier Mobile App 
 
 Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
 Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
-
-Route::get('/scan', function () {
-    return view('scan');
-});
-Route::get('/courier/scan', function () {
-    return view('courier.scan');
-})->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
@@ -84,14 +80,6 @@ Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employe
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
 
-
-
-
-
-
-
-
-
 Route::get('/employees', function () {
     return view('employees');
 })->name('employees');
@@ -99,8 +87,6 @@ Route::get('/employees', function () {
 Route::get('/packages', function () {
     return view('packages');
 })->name('packages');
-
-
 
 
 Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');
