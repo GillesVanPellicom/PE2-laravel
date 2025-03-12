@@ -38,7 +38,12 @@ class TrackPackageController extends Controller
         }
     }
 
-    return view('Track_App.track', compact('package', 'movements', 'currentLocation'));
+    return view('Track_App.track', compact('package', 'movements', 'currentLocation'))
+    ->with('currentLat', $currentLocation ? $currentLocation->latitude : null)
+    ->with('currentLng', $currentLocation ? $currentLocation->longitude : null);
+
+    
+
 }
 
 }

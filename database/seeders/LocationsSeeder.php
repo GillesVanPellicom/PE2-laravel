@@ -95,6 +95,17 @@ class LocationsSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            //Private Individu test
+            [
+                'name' => 'Customer Home Test',
+                'location_type' => 'Private Individu',
+                'addresses_id' => 9, // Address ID for Parcel Locker
+                'contact_number' => '+32 2 123 45 67',
+                'opening_hours' => null,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

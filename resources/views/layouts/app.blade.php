@@ -29,8 +29,8 @@
 
             <!-- Page Content -->
             <main>
-                {{ $slot }}
-            </main>
+        @yield('content')
+        </main>
             <!-- Footer -->
             @include('layouts.footer')
         </div>

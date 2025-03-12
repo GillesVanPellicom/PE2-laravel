@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
@@ -15,17 +16,19 @@ use App\Http\Controllers\airportController;
 
 // ======================= Start Courier ====================== //
 
-Route::get('/courier', function () {
-    return view('courier.index');
-})->name('index.page');
 
-Route::get('/courier/route', function () {
-    return view('courier.route');
-})->name('route.page');
+# => Courier Mobile app
 
-Route::get('/courier/packages', function () {
-    return view('courier.packages');
-})->name('packages.page');
+Route::get('/courier', [CourierController::class, "index"])->name('courier');
+Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
+Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
+Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
+Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
+
+# Test Route
+Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
+
+# <= END Courier Mobile App 
 
 Route::get('/scan', function () {
     return view('scan');
