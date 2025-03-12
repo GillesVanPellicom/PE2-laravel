@@ -15,7 +15,8 @@
         "laravel/tinker": "^2.9",
         "pnlinh/laravel-google-distance": "^1.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
-        "spatie/laravel-permission": "^6.14"
+        "spatie/laravel-permission": "^6.14",
+      "ext-simplexml": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
