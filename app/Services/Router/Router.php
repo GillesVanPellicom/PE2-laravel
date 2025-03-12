@@ -20,6 +20,7 @@ namespace App\Services\Router {
   use App\Services\Router\Types\NodeType;
   use App\Services\Router\Types\RouterGraph;
   use App\Services\Router\Types\Node;
+  use Exception;
   use SplPriorityQueue;
 
 
@@ -33,7 +34,7 @@ namespace App\Services\Router {
       try {
         $this->graph = new RouterGraph();
         $this->deserialize('app/Services/Router/tmp.graphml');
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);
       }
@@ -49,7 +50,7 @@ namespace App\Services\Router {
     public function generate(string $origin, string $destination): ?array {
       try {
         return $this->generateInternal($origin, $destination);
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);
       }
@@ -165,6 +166,7 @@ namespace App\Services\Router {
      * @param  string  $address  Address as string
      * @return Node
      * @throws InvalidRouterArgumentException
+     * @throws InvalidCoordinateException
      * @throws FailedCoordinatesFetchException
      */
     private function createAddressNode(string $address): Node {
