@@ -47,6 +47,17 @@ class PackageMovementsSeeder extends Seeder
                 'arrival_time' => null,
                 'check_in_time' => null,
                 'check_out_time' => null,
+            ],
+            [
+                'package_id' => 1, 
+                'from_location_id' => 7, 
+                'to_location_id' => 9, 
+                'handled_by_courier_id' => null, 
+                'vehicle_id' => null,
+                'departure_time' => null,
+                'arrival_time' => null,
+                'check_in_time' => null,
+                'check_out_time' => null,
             ]
 
         ]);

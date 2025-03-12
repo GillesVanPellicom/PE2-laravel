@@ -52,9 +52,8 @@ class CourierController extends Controller
             return response()->json(['success' => false, 'message' => 'PackageMovement not found'], 500);
         }
 
-        //UNTESTED BECAUSE I NEED UPDATED DB
         if ($mode == "DELIVER"){
-            if ($package->destinationLocation->location_type != "PLACEHOLDER"){
+            if ($package->destinationLocation->location_type != "Private Individu"){
                 return response()->json(['success' => false, 'message' => 'This package is not fit for delivery.'], 400);
             }
             if ($package->destination_location_id != $currentMove->to_location_id){
@@ -71,10 +70,11 @@ class CourierController extends Controller
                 $currentMove->save();
                 $package->save();
                 return response()->json(["success" => true, "message" => "Package succesfully delivered "]);
+            } else {
+                return response()->json(["success" => false, "message" => "Package already delivered "], 400);
             }
         }
-        // END OF UNTESTED
-        
+
         $appliedMode = null;
         if ($currentMove->check_out_time == null){
             $currentMove->check_out_time = Carbon::now();
