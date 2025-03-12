@@ -43,7 +43,11 @@ Route::get('/holiday-requests', function () {
     return view('employees.holiday_request');
 });
 
-// test for demo 
+
+// ======================= Pick Up Point====================== //
+Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+
+// test for demo
 
 Route::get('/manager-calendar', function () {
     return view('employees.manager_calendar');  // Adjust based on the folder structure
