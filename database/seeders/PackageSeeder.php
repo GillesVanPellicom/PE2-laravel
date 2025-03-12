@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Package;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
@@ -32,5 +33,6 @@ class PackageSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
+        Package::factory()->count(10)->create();
     }
 }
