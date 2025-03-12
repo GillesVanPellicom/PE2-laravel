@@ -1,13 +1,20 @@
 <?php
 
-use App\Http\Controllers\airportController;
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PackageController;
+
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
+
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
+use App\Http\Controllers\contractController;
+use App\Http\Controllers\flightscontroller;
+use App\Http\Controllers\PackageController;
+use App\Http\Controllers\airportController;
 
+
+// ======================= Start Courier ====================== //
 
 # => Courier Mobile app
 
@@ -22,14 +29,17 @@ Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"
 
 # <= END Courier Mobile App 
 
-Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
-Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
-
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
+
+// ======================= End Courier ====================== //
+
+// ======================= Start Distribution ====================== //
 
 Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
 
-// ======================= Employee====================== //
+// ======================= End Distribution ====================== //
+
+// ======================= Start Employee ====================== //
 
 Route::get('/calendar', function () {
     return view('employees.calendar');
@@ -38,10 +48,6 @@ Route::get('/calendar', function () {
 Route::get('/holiday-requests', function () {
     return view('employees.holiday_request');
 });
-
-
-// ======================= Pick Up Point====================== //
-Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
 
 // test for demo
 
@@ -67,39 +73,52 @@ Route::get('/manager-calendar', function () {
     return view('employees.manager_calendar');
 })->name('manager-calendar');
 
-
-// *** EMPLOYEES ***
-
 Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
 
 Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.create');
 
 Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->name('employees.store_employee');
 
-// *** END EMPLOYEES ***
-use App\Http\Controllers\contractController;
-use App\Http\Controllers\flightscontroller;
+// ======================= End Employee ====================== //
 
-Route::get('/employees', function () {
-    return view('employees');
-})->name('employees');
+// ======================= Start Pick Up Point ====================== //
+
+Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+
+// ======================= End Pick Up Point ====================== //
+
+// ======================= Start Airport ====================== //
 
 Route::get('/packages', function () {
     return view('packages');
 })->name('packages');
 
-
 Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');
+
 Route::get('/contractcreate', [contractController::class, 'contractcreate'])->name('contractcreate');
+
 Route::post('/contract', [contractController::class, 'store'])->name('contract.store');
 
 Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
+
 Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('flightcreate');
+
 Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
 
 Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
 
+// ======================= End Airport ====================== //
+
+// ======================= Start Customer ====================== //
+
+Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
+
+Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
 
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
 //--------------------------------- ENDTracking Packages ---------------------------------//
+
+// ======================= End Customer ====================== //
+
+
