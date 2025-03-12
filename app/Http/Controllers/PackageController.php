@@ -9,9 +9,16 @@ use App\Models\DeliveryMethod;
 use App\Models\Location;
 use App\Models\Addresses;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Mail\PackageCreatedMail;
+use Illuminate\Support\Facades\Mail;
 
 class PackageController extends Controller
 {
+    public function index()
+    {
+        $packages = Package::paginate(10);
+        return view('pickup.dashboard', compact('packages'));
+    }
     public function updateStatus(Request $request)
     {
         $package = Package::where('id', $request->packageId)->first();
@@ -76,6 +83,8 @@ class PackageController extends Controller
         }
 
         $package = Package::create($validatedData);
+
+        Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
 
         if (!$deliveryMethod->requires_location) {
             // Create address for the package

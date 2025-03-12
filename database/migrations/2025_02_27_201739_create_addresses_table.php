@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('street');
             $table->string('house_number');
+            $table->string('bus_number')->nullable();
             $table->foreignId('cities_id')->constrained('cities');
-            $table->foreignId('country_id')->constrained('countries');
             $table->timestamps();
         });
     }

@@ -11,7 +11,16 @@ class FlightsSeeder extends Seeder
     public function run(): void
     {
         DB::table('flights')->insert([
-            ['airplane_id' => 1,'depart_location_id'=>1,'arrive_location_id'=>1,'departure_time'=>Carbon::now(),'arrival_time'=>Carbon::now(),'status'=>'flying','created_at' => Carbon::now(), 'updated_at' => Carbon::now()]
+            ['airplane_id' => 1,
+            'depart_location_id'=>1,
+            'arrive_location_id'=>1,
+            'departure_time'=>Carbon::now(),
+            'time_flight_minutes'=>480,
+            'departure_day_of_week'=>'Monday',
+            'departure_date'=>Carbon::now(),
+            'status'=>'On Time',
+            'created_at' => Carbon::now(), 
+            'updated_at' => Carbon::now()]
         ]);
     }
 }
