@@ -6,6 +6,7 @@ use App\Http\Controllers\PackageController;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CourierController;
+use App\Http\Controllers\TrackPackageController;
 
 
 # => Courier Mobile app
@@ -38,7 +39,11 @@ Route::get('/holiday-requests', function () {
     return view('employees.holiday_request');
 });
 
-// test for demo 
+
+// ======================= Pick Up Point====================== //
+Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+
+// test for demo
 
 Route::get('/manager-calendar', function () {
     return view('employees.manager_calendar');  // Adjust based on the folder structure
@@ -93,3 +98,8 @@ Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('f
 Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
 
 Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+
+
+//--------------------------------- Tracking Packages ---------------------------------//
+Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
+//--------------------------------- ENDTracking Packages ---------------------------------//
