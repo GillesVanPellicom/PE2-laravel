@@ -18,7 +18,7 @@ class PackageFactory extends Factory
     {
         return [
             "reference" => "REF".$this->faker->unique()->randomNumber(8),
-            "customer_id" => 1,
+            "user_id" => 1,
             "origin_location_id" => 1,
             "current_location_id" => 1,
             "destination_location_id" => 1,
