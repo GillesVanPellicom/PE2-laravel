@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
-use App\Models\Addresses;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\PackageCreatedMail;
 use Illuminate\Support\Facades\Mail;
@@ -49,7 +49,7 @@ class PackageController extends Controller
 
         $validationRules = [
             'reference' => 'string|max:255',
-            'customer_id' => 'required|exists:customers,id',
+            'user_id' => 'required|exists:users,id',
             'origin_location_id' => 'required|exists:locations,id',
             'destination_location_id' => 'exists:locations,id',
             'address_id' => 'exists:addresses,id',           
@@ -88,7 +88,7 @@ class PackageController extends Controller
 
         if (!$deliveryMethod->requires_location) {
             // Create address for the package
-            $address = Addresses::create([
+            $address = Address::create([
                 'street' => $validatedData['street'],
                 'house_number' => $validatedData['house_number'],
                 'cities_id' => $validatedData['cities_id'],
