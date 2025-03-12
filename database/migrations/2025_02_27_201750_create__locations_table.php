@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('location_type', ['Pickup Point', 'Parcel Locker', 'Distribution Center', 'Airport']);
+            $table->enum('location_type', ['Pickup Point', 'Parcel Locker', 'Distribution Center', 'Airport', 'Private Individu']);
             $table->foreignId('addresses_id')->constrained('addresses');
             $table->string('contact_number');
             $table->string('opening_hours');
