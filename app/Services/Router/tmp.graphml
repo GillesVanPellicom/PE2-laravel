@@ -42,6 +42,14 @@
             <data key="isEntryNode">true</data>
             <data key="isExitNode">true</data>
         </node>
+        <node id="@PIP_0001">
+            <data key="desc">Pick-up Point Antwerp 1</data>
+            <data key="type">PICKUP_POINT</data>
+            <data key="latDeg">52.1927</data>
+            <data key="longDeg">5.3629</data>
+            <data key="isEntryNode">false</data>
+            <data key="isExitNode">true</data>
+        </node>
 
 
         <!--Los Angeles-->
@@ -208,6 +216,7 @@
         <edge nodeID_1="@AIR_EBBR" nodeID_2="@DC_BRUSSELS"></edge>
         <edge nodeID_1="@AIR_EBAW" nodeID_2="@DC_ANTWERP"></edge>
         <edge nodeID_1="@DC_ANTWERP" nodeID_2="@DC_BRUSSELS"></edge>
+        <edge nodeID_1="@DC_ANTWERP" nodeID_2="@PIP_0001"></edge>
         <edge nodeID_1="@AIR_KLAX" nodeID_2="@AIR_EBAW"></edge>
         <edge nodeID_1="@AIR_KLAX" nodeID_2="@DC_LOS_ANGELES"></edge>
         <edge nodeID_1="@DC_ANTWERP" nodeID_2="@DC_TILBURG"></edge>

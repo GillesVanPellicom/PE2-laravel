@@ -4,9 +4,10 @@
 namespace App\Services\Router {
 
   use App\Helpers\ConsoleHelper;
+  use App\Services\Router\Types\CoordType;
+  use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
   use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
   use App\Services\Router\Types\Exceptions\FileNotFoundException;
-  use App\Services\Router\Types\Exceptions\InvalidBooleanStringException;
   use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
   use App\Services\Router\Types\Exceptions\InvalidGraphMLException;
   use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
@@ -76,7 +77,7 @@ namespace App\Services\Router {
       }
 
       // Check if both origin and destination are the same nodes
-      if ($origin[0] === '@' && $destination[0] === '@' && $origin === $destination) {
+      if ($origin === $destination) {
         throw new SelfLoopException($origin);
       }
       // Print debug header if debug mode is enabled
@@ -108,8 +109,8 @@ namespace App\Services\Router {
       if (!$isID) {
         // Create node from address and find closest existing node
         $node = $this->createAddressNode($arg);
-        $latRad = $node->getAttribute('latRad');
-        $longRad = $node->getAttribute('longRad');
+        $latRad = $node->getLat(CoordType::RADIAN);
+        $longRad = $node->getLong(CoordType::RADIAN);
         $arg = $this->findClosestNode($latRad, $longRad, $isStart, !$isStart);
 
         // Print node details if in debug mode
@@ -147,10 +148,10 @@ namespace App\Services\Router {
      * @param  array  $path  Array of node objects
      * @return void
      */
-    public function printPath(array $path): void {
+    public static function printPath(array $path): void {
       // Extract IDs and descriptions from path nodes
       $ids = array_map(fn($node) => $node->getID(), $path);
-      $descs = array_map(fn($node) => $node->getAttribute('desc'), $path);
+      $descs = array_map(fn($node) => $node->getDescription(), $path);
 
       // Print path with color formatting
       print "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ", $ids)."\n\n";
@@ -169,16 +170,8 @@ namespace App\Services\Router {
     private function createAddressNode(string $address): Node {
       $coords = GeoMath::getCoordinates($address);
 
-      // Create the node attributes array
-      $attributes = [
-        'desc' => $address,
-        'latDeg' => $coords['latDeg'],
-        'longDeg' => $coords['longDeg'],
-        'latRad' => deg2rad($coords['latDeg']),
-        'longRad' => deg2rad($coords['longDeg'])
-      ];
       // Create a new node
-      return new Node('$$_address_node_$$', NodeType::ADDRESS, $attributes);
+      return new Node('$$_address_node_$$', $address, NodeType::ADDRESS, $coords['latDeg'], $coords['longDeg']);
     }
 
     /**
@@ -195,19 +188,20 @@ namespace App\Services\Router {
       $closestNode = null;
       $minDistance = PHP_INT_MAX;
 
+      /** @var Node $node */
       foreach ($this->graph->getNodes() as $node) {
-        if ($mustBeExit && $node->getAttribute('isExitNode') == 'false') {
+        if ($mustBeExit && !$node->isExitNode()) {
           continue;
         }
-        if ($mustBeEntry && $node->getAttribute('isEntryNode') == 'false') {
+        if ($mustBeEntry && !$node->isEntryNode()) {
           continue;
         }
 
         $distance = GeoMath::sphericalCosinesDistance(
           $latRad,
           $longRad,
-          $node->getAttribute('latRad'),
-          $node->getAttribute('longRad'));
+          $node->getLat(CoordType::RADIAN),
+          $node->getLong(CoordType::RADIAN));
         if ($distance < $minDistance) {
           $minDistance = $distance;
           $closestNode = $node;
@@ -238,13 +232,13 @@ namespace App\Services\Router {
      * @return void
      * @throws NodeNotFoundException
      * @throws InvalidGraphMLException
-     * @throws FileNotFoundException|
+     * @throws FileNotFoundException
      * @throws InvalidNodeIDException
      * @throws NodeAlreadyExistsException
      * @throws InvalidCoordinateException
-     * @throws InvalidBooleanStringException|
      * @throws SelfLoopException
-     * @throws InvalidRouterArgumentException|Types\Exceptions\EdgeAlreadyExistsException
+     * @throws EdgeAlreadyExistsException
+     * @throws InvalidRouterArgumentException
      */
     private function deserialize(string $graphmlFilePath): void {
       // Check if the file exists
@@ -276,8 +270,8 @@ namespace App\Services\Router {
           (float) $attributes['latDeg'],
           (float) $attributes['longDeg'],
           $type,
-          $attributes['isEntryNode'],
-          $attributes['isExitNode']
+          $attributes['isEntryNode'] === 'true',
+          $attributes['isExitNode'] === 'true'
         );
       }
 
@@ -344,7 +338,7 @@ namespace App\Services\Router {
         $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
         if ($this->debug) {
-          echo "\n\033[32mProcessing Node: $currentID ({$current->getAttribute('desc')})\033[0m\n";
+          echo "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n";
           echo "  Open Set Size: ".$openSet->count()."\n";
           echo "  fScore: ".sprintf("%.6f", $insertion_fScore)." | gScore (queue): ".sprintf("%.6f",
               $insertion_gScore)."\n";
@@ -366,20 +360,17 @@ namespace App\Services\Router {
 
         // Check if the current node is the goal
         if ($currentID === $endNodeID) {
-          if ($this->debug) {
-            echo "\033[1;32mGoal Reached: $currentID\033[0m\n\n>>> ROUTER DEBUG END\n\n";
-          }
+          $this->debug && print "\033[1;34m>>> ROUTER DEBUG END\033[0m\n\n";
+
           return $this->reconstructPath($this->graph, $cameFrom, $currentID);
         }
 
-        if ($this->debug) {
-          echo "\n\033[1;33mNeighbors:\033[0m\n";
-        }
+        $this->debug && print "\n\033[1;33mNeighbors:\033[0m\n";
 
         // Iterate over each neighbor of the current node
         foreach ($this->graph->getNeighbors($currentID) as $neighborID => $weight) {
           if ($this->debug) {
-            echo "  \033[36m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f", $weight)."\n";
+            echo "  \033[38;2;255;140;0m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f", $weight)."\n";
           }
 
           $tentativeGScore = $gScore[$currentID] + $weight;

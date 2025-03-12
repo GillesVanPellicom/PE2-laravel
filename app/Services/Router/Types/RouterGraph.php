@@ -4,7 +4,6 @@ namespace App\Services\Router\Types;
 
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
-use App\Services\Router\Types\Exceptions\InvalidBooleanStringException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
@@ -26,31 +25,30 @@ class RouterGraph {
    *
    * @param  string  $ID  The ID of the node.
    * @param  string  $description  Display name of the node.
-   * @param  float  $lat  Latitude of the node in degrees.
-   * @param  float  $long  Longitude of the node in degrees.
+   * @param  float  $latDeg  Latitude of the node in degrees.
+   * @param  float  $longDeg  Longitude of the node in degrees.
    * @param  NodeType  $nodeType  Type of the node.
-   * @param  string  $isEntryNode  Is this node a valid entry point for the route.
-   * @param  string  $isExitNode  Is this node a valid exit point for the route.
+   * @param  bool  $isEntryNode  Is this node a valid entry point for the route.
+   * @param  bool  $isExitNode  Is this node a valid exit point for the route.
    * @return string|null
    * @throws InvalidNodeIDException
    * @throws NodeAlreadyExistsException
    * @throws InvalidCoordinateException
-   * @throws InvalidBooleanStringException
    * @throws InvalidRouterArgumentException
    */
   public function addNode(
     string $ID,
     string $description,
-    float $lat,
-    float $long,
+    float $latDeg,
+    float $longDeg,
     NodeType $nodeType,
-    string $isEntryNode,
-    string $isExitNode
+    bool $isEntryNode,
+    bool $isExitNode
   ): ?string {
 
     // Check if the node ID is empty
     if (empty($ID)) {
-      throw new Exceptions\InvalidNodeIDException();
+      throw new InvalidNodeIDException();
     }
 
     // Check if the node already exists
@@ -59,37 +57,17 @@ class RouterGraph {
     }
 
     // Check if the latitude is within valid range
-    if ($lat < -90.0 || $lat > 90.0) {
-      throw new InvalidCoordinateException($ID, 'latitude', $lat);
+    if ($latDeg < -90.0 || $latDeg > 90.0) {
+      throw new InvalidCoordinateException($ID, 'latitude', $latDeg);
     }
 
     // Check if the longitude is within valid range
-    if ($long < -180.0 || $long > 180.0) {
-      throw new InvalidCoordinateException($ID, 'longitude', $long);
+    if ($longDeg < -180.0 || $longDeg > 180.0) {
+      throw new InvalidCoordinateException($ID, 'longitude', $longDeg);
     }
 
-    // Check if isEntryNode and isExitNode are valid boolean strings
-    if (!in_array($isEntryNode, ['true', 'false'], true)) {
-      throw new InvalidBooleanStringException($ID, 'isEntryNode');
-    }
-
-    // Check if isEntryNode and isExitNode are valid boolean strings
-    if (!in_array($isExitNode, ['true', 'false'], true)) {
-      throw new InvalidBooleanStringException($ID, 'isExitNode');
-    }
-
-    // Create the node attributes array
-    $attributes = [
-      'desc' => $description,
-      'latDeg' => $lat,
-      'longDeg' => $long,
-      'latRad' => deg2rad($lat),
-      'longRad' => deg2rad($long),
-      'isEntryNode' => $isEntryNode,
-      'isExitNode' => $isExitNode
-    ];
     // Create a new node
-    $node = new Node($ID, $nodeType, $attributes);
+    $node = new Node($ID, $description, $nodeType, $latDeg, $longDeg, $isEntryNode, $isExitNode);
 
     // Add the node to the graph if it doesn't already exist
     $nodeID = $node->getID();
@@ -138,10 +116,10 @@ class RouterGraph {
 
     // Calculate the weight of the edge using the spherical law of cosines
     $weight = GeoMath::sphericalCosinesDistance(
-      $startNode->getAttribute('latRad'),
-      $startNode->getAttribute('longRad'),
-      $endNode->getAttribute('latRad'),
-      $endNode->getAttribute('longRad')
+      $startNode->getLat(CoordType::RADIAN),
+      $startNode->getLong(CoordType::RADIAN),
+      $endNode->getLat(CoordType::RADIAN),
+      $endNode->getLong(CoordType::RADIAN)
     );
 
     // Add the edge to the graph
@@ -204,16 +182,14 @@ class RouterGraph {
    */
   public function printGraph(): void {
 
-    echo "\033[1;34m=== Graph Structure ===\033[0m\n\n";
-
     // Nodes Section
-    echo "\033[1;32mNodes:\033[0m\n";
+    echo "\033[1;34m=== Nodes ===\033[0m\n\n";
     foreach ($this->nodes as $node) {
       $node->printNode();
     }
 
     // Edges Section
-    echo "\n\033[1;36mEdges:\033[0m\n";
+    print "\033[1;34m=== Edges ===\033[0m\n\n";
     $printedEdges = []; // Track printed edges to avoid duplicates
     foreach ($this->edges as $startNodeID => $neighbors) {
       foreach ($neighbors as $endNodeID => $weight) {
