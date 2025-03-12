@@ -16,7 +16,6 @@ use App\Http\Controllers\airportController;
 
 // ======================= Start Courier ====================== //
 
-
 # => Courier Mobile app
 
 Route::get('/courier', [CourierController::class, "index"])->name('courier');
@@ -29,14 +28,6 @@ Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("cour
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
 # <= END Courier Mobile App 
-
-Route::get('/scan', function () {
-    return view('scan');
-});
-
-Route::get('/courier/scan', function () {
-    return view('courier.scan');
-})->name('scan.page');
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
@@ -129,4 +120,5 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 //--------------------------------- ENDTracking Packages ---------------------------------//
 
 // ======================= End Customer ====================== //
+
 
