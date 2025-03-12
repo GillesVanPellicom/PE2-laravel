@@ -13,16 +13,18 @@ return new class extends Migration
     {
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
-            $table->string('reference');
-            $table->foreignId('customer_id')->constrained('customers');
+            $table->string('reference')->nullable();
+            $table->foreignId('user_id')->constrained('users');
             $table->foreignId('origin_location_id')->constrained('locations');
             $table->foreignId('current_location_id')->nullable()->constrained('locations');
             $table->foreignId('destination_location_id')->nullable()->constrained('locations');
-            $table->foreignId('addresses_id')->constrained('addresses');
+            $table->foreignId('addresses_id')->nullable()->constrained('addresses');
             $table->string('status');
             $table->foreignId('weight_id')->constrained('weight_classes');
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
+            $table->string('weight_price')->default(0);
+            $table->string('delivery_price')->default(0);
             $table->string('name');
             $table->string('lastName');
             $table->string('receiverEmail');
