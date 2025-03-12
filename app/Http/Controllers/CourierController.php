@@ -41,7 +41,6 @@ class CourierController extends Controller
         $mode = $request->mode;
         $currentMove = PackageMovement::where('package_id', $package->id)->where("from_location_id", $package->current_location_id)->first();
         if ($mode == "INFO"){
-            
             return response()->json(["success" => true, "package" => $package]);
         }
 
@@ -52,6 +51,29 @@ class CourierController extends Controller
         if (!$currentMove){
             return response()->json(['success' => false, 'message' => 'PackageMovement not found'], 500);
         }
+
+        //UNTESTED BECAUSE I NEED UPDATED DB
+        if ($mode == "DELIVER"){
+            if ($package->destinationLocation->location_type != "PLACEHOLDER"){
+                return response()->json(['success' => false, 'message' => 'This package is not fit for delivery.'], 400);
+            }
+            if ($package->destination_location_id != $currentMove->to_location_id){
+                return response()->json(['success' => false, 'message' => 'Destination does not match delivery address.'], 400);
+            }
+            if ($currentMove->check_out_time == null){
+                return response()->json(['success' => false, 'message' => 'This package was not previously scanned OUT'], 400);
+            } else if ($currentMove->departure_time == null){
+                return response()->json(['success' => false, 'message' => 'This package was not previously scanned IN'], 400);
+            } else if ($currentMove->arrival_time == null){
+                $currentMove->arrival_time = Carbon::now();
+                $currentMove->check_in_time = Carbon::now();
+                $package->current_location_id = $currentMove->to_location_id;
+                $currentMove->save();
+                $package->save();
+                return response()->json(["success" => true, "message" => "Package succesfully delivered "]);
+            }
+        }
+        // END OF UNTESTED
         
         $appliedMode = null;
         if ($currentMove->check_out_time == null){

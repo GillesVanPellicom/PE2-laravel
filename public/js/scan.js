@@ -16,9 +16,17 @@ function openModal() {
 
 function scan(message) {
     let usedMODE = MODE;
-    console.log("QR FOUND " + message);
     if (message != scannedID) {
-        console.log("QR FOUND AND NOT FAILED " + message);
+        let divs = document.querySelectorAll("#qr-shaded-region > div");
+        for (let div of divs) {
+            div.style.backgroundColor = "#00ff00";
+        }
+        setTimeout(() => {
+            let divs = document.querySelectorAll("#qr-shaded-region > div");
+            for (let div of divs) {
+                div.style.backgroundColor = "white";
+            }
+        }, 500);
         fetch(scanQrRoute, {
             method: "POST",
             headers: {
@@ -31,15 +39,14 @@ function scan(message) {
             }),
         })
             .then((response) => {
-                console.log(response);
                 return response.json();
             })
             .then((data) => {
-                console.log(data);
-                if (usedMODE == "INFO"){
-                    
+                if (usedMODE == "INFO") {
+                    alert("All package data (test): " + data.package);
+                } else {
+                    alert("Status (test):" + data.message);
                 }
-                alert(data.message);
             });
     }
     scannedID = message;
@@ -61,29 +68,4 @@ document.addEventListener("DOMContentLoaded", function () {
             scan
         )
         .catch((err) => {});
-
-    /*
-            window.updateStatus = function(status) {
-                fetch("{{ route('package.update') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                        },
-                        body: JSON.stringify({
-                            packageId: scannedId,
-                            status: status
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        closeModal();
-                    });
-            };
-
-            window.closeModal = function() {
-                packageModal.style.display = "none";
-                qrReader.resume();
-            }; */
 });

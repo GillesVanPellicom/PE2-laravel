@@ -37,6 +37,11 @@
                     <i class="fa-solid fa-info text-2xl"></i>
                     <span class="mt-2 text-md">Info</span>
                 </button>
+                <button onclick="chooseAction('DELIVER')"
+                    class="flex flex-col items-center justify-center bg-red-700 hover:bg-red-800 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    <i class="fa-solid fa-house-flag text-2xl"></i>
+                    <span class="mt-2 text-md">Deliver</span>
+                </button>
             </div>
         </div>
     </div>
