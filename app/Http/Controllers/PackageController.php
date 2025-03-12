@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Mail;
 
 class PackageController extends Controller
 {
+    public function index()
+    {
+        $packages = Package::paginate(10);
+        return view('pickup.dashboard', compact('packages'));
+    }
     public function updateStatus(Request $request)
     {
         $package = Package::where('id', $request->packageId)->first();
