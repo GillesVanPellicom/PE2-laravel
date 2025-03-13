@@ -13,11 +13,11 @@
     <p>Your first name: {{ Auth::user()->first_name }}</p>
     <p>Your last name: {{ Auth::user()->last_name }}</p>
     <p>Your email: {{ Auth::user()->email }}</p>
-    <p>Your country: {{ Auth::user()->country }}</p>
-    <p>Your postal code: {{ Auth::user()->postal_code }}</p>
-    <p>Your city: {{ Auth::user()->city }}</p>
-    <p>Your street: {{ Auth::user()->street }}</p>
-    <p>Your house number: {{ Auth::user()->house_number }}</p>
+    <p>Your country: {{ Auth::user()->address->city->country->country_name }}</p>
+    <p>Your postal code: {{ Auth::user()->address->city->postcode }}</p>
+    <p>Your city: {{ Auth::user()->address->city->name }}</p>
+    <p>Your street: {{ Auth::user()->address->street }}</p>
+    <p>Your house number: {{ Auth::user()->address->house_number }}</p>
     <p>Your phone number: {{ Auth::user()->phone_number }}</p>
 
     <form action="{{ route('auth.logout') }}" method="POST">
@@ -42,23 +42,28 @@
         </p>
         <p>
             <label for="country">Country:</label>
-            <input type="text" id="country" name="country" value="{{ Auth::user()->country }}">
+            <select name="country" id="country">
+                <option value="">Select a country</option>
+                @foreach($countries as $country)
+                    <option value="{{ $country->country_name }}" {{ Auth::user()->address->city->country->country_name == $country->country_name ? 'selected' : '' }}>{{ $country->country_name }}</option>
+                @endforeach
+            </select>
         </p>
         <p>
             <label for="postal_code">Postal Code:</label>
-            <input type="text" id="postal_code" name="postal_code" value="{{ Auth::user()->postal_code }}">
+            <input type="text" id="postal_code" name="postal_code" value="{{ Auth::user()->address->city->postcode }}">
         </p>
         <p>
             <label for="city">City:</label>
-            <input type="text" id="city" name="city" value="{{ Auth::user()->city }}">
+            <input type="text" id="city" name="city" value="{{ Auth::user()->address->city->name }}">
         </p>
         <p>
             <label for="street">Street:</label>
-            <input type="text" id="street" name="street" value="{{ Auth::user()->street }}">
+            <input type="text" id="street" name="street" value="{{ Auth::user()->address->street }}">
         </p>
         <p>
             <label for="house_number">House Number:</label>
-            <input type="text" id="house_number" name="house_number" value="{{ Auth::user()->house_number }}">
+            <input type="text" id="house_number" name="house_number" value="{{ Auth::user()->address->house_number }}">
         </p>
         <p>
             <label for="phone_number">Phone Number:</label>

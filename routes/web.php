@@ -36,6 +36,8 @@ Route::get('/customers', function () {
     }
     return view('customers');
 })->name('customers');
+Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
 use App\Http\Controllers\PackageController;

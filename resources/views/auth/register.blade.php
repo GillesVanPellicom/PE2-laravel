@@ -1,3 +1,4 @@
+<!-- filepath: resources/views/auth/register.blade.php -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -55,7 +56,7 @@
             <select name="country" id="country">
                 <option value="">Select a country</option>
                 @foreach($countries as $country)
-                    <option value="{{ $country->name }}" {{ old('country') == $country->name ? 'selected' : '' }}>{{ $country->name }}</option>
+                    <option value="{{ $country->country_name }}" {{ old('country') == $country->country_name ? 'selected' : '' }}>{{ $country->country_name }}</option>
                 @endforeach
             </select>
             @error('country')
