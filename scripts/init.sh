@@ -4,7 +4,7 @@
 set -e
 
 # Define the container name (default Laravel Sail service name)
-CONTAINER_NAME=" pe2-laravel-laravel.test-1"
+CONTAINER_NAME="pe2-laravel-laravel.test-1"
 
 # Run Composer install inside the container
 docker exec -it "$CONTAINER_NAME" composer install
