@@ -15,8 +15,6 @@ docker exec -it "$CONTAINER_NAME" npm install
 # Run database migrations and seed
 docker exec -it "$CONTAINER_NAME" php artisan migrate:fresh --seed
 
-npm run build
-
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
