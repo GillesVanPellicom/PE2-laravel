@@ -9,59 +9,64 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>incomming</h1>
     <a href="{{ route('airports') }}">airports</a>
+    <h1>incomming</h1>
     <table>
         <thead>
             <tr>
                 <th>flightnumber</th>
                 <th>departure time</th>
                 <th>departure place</th>
-                <th>arrival time</th>
+                <th>flight duration</th>
+                <th>estimated arrival time</th>
                 <th>arrival place</th>
                 <th>status<th>
             </tr>
         </thead>
         <tbody>
             @foreach($flights as $flight)
-            <tr>
-                @if($arrive_location_id = 1)
-                    <td>{{$flight->flight_id}}</td>
+            @if($flight->arrive_location_id == 1)
+                <tr>
+                    <td>{{$flight->id}}</td>
                     <td>{{$flight->departure_time}}</td>
-                    <td>{{$flight->depart_location_id}}</td>
+                    <td>{{$flight->departureAirport->name}}</td>
+                    <td>{{$flight->time_flight_minutes}}</td>
                     <td>{{$flight->arrival_time}}</td>
-                    <td>{{$flight->arrive_location_id}}</td>
+                    <td>{{$flight->arrivalAirport->name}}</td>
                     <td>{{$flight->status}}</td>  
-                @endif 
-            </tr>
+                </tr>
+            @endif 
             @endforeach
         </tbody>
     </table>
     <h1>outgoing</h1>
-    <a href="{{ route('airports') }}">airports</a>
     <table>
         <thead>
             <tr>
                 <th>flightnumber</th>
                 <th>departure time</th>
                 <th>departure place</th>
-                <th>arrival time</th>
+                <th>flight duration</th>
+                <th>estimated arrival time</th>
                 <th>arrival place</th>
                 <th>status<th>
             </tr>
         </thead>
         <tbody>
             @foreach($flights as $flight)
-            <tr>
-                @if($depart_location_id = 1)
-                    <td>{{$flight->flight_id}}</td>
+            @if($flight->depart_location_id == 1)
+                <tr>
+                
+                    <td>{{$flight->id}}</td>
                     <td>{{$flight->departure_time}}</td>
-                    <td>{{$flight->depart_location_id}}</td>
+                    <td>{{$flight->departureAirport->name}}</td>
+                    <td>{{$flight->time_flight_minutes}}</td>
                     <td>{{$flight->arrival_time}}</td>
-                    <td>{{$flight->arrive_location_id}}</td>
+                    <td>{{$flight->arrivalAirport->name}}</td>
                     <td>{{$flight->status}}</td>  
-                @endif 
-            </tr>
+                
+                </tr>
+            @endif 
             @endforeach
         </tbody>
     </table>
