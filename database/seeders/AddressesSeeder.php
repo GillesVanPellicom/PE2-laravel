@@ -73,6 +73,13 @@ class AddressesSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'street' => 'Jan Pieter De Nayerlaan',
+                'house_number' => '6',
+                'cities_id' => 2, // Brussels
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
     }
 }

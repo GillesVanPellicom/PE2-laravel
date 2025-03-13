@@ -10,6 +10,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "ext-simplexml": "*",
+        "aws/aws-sdk-php": "^3.342",
+        "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "pnlinh/laravel-google-distance": "^1.0",
