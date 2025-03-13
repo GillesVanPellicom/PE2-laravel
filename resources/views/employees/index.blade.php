@@ -23,6 +23,12 @@
         <h1><a href="{{ route('employees.create') }}">create employee</a></h1>
     </div>
 
+    @if (session('success'))
+        <div>
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div>
         <table>
             <thead>
@@ -51,7 +57,7 @@
                         <td>{{ $employee->email }}</td>
                         <td>{{ $employee->phone_number }}</td>
                         <td>{{ $employee->birth_date }}</td>
-                        <td>{{ $employee->address->street }} {{ $employee->address->house_number }}</td>
+                        <td>{{ $employee->address->street }} {{ $employee->address->house_number }} {{ $employee->address->bus_number }}</td>
                         <td>{{ $employee->nationality }}</td>
                         <td>{{ $employee->address->city->name }}</td>
                         <td>{{ $employee->address->city->country->country_name }}</td>

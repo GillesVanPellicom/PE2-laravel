@@ -30,26 +30,43 @@
             <div>
                 <label for="lastname">Lastname:</label>
                 <input type="text" name="lastname" id="lastname"  value="{{ old('lastname') }}">
+                @error('lastname')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
+            
 
             <div>
                 <label for="firstname">Firstname:</label>
                 <input type="text" name="firstname" id="firstname"  value="{{ old('firstname') }}">
+                @error('firstname')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
+            
 
             <div>
                 <label for="email">Email:</label>
                 <input type="email" name="email" id="email"  value="{{ old('email') }}">
+                @error('email')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label for="phone">Phone:</label>
                 <input type="text" name="phone" id="phone"  value="{{ old('phone') }}">
+                @error('phone')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label for="birth_date">Birth date:</label>
                 <input type="date" name="birth_date" id="birth_date"  value="{{ old('birth_date') }}">
+                @error('birth_date')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -60,6 +77,9 @@
                     <option value="{{ $country->id }}">{{ $country->country_name }}</option>
                 @endforeach
                 </select>
+                @error('country')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -94,13 +114,19 @@
             </div>
 
             <div>
-                <label for="nationality">Nationality:</label>
-                <input type="text" name="nationality" id="nationality" value="{{ old('nationality') }}">
+                <label for="bus_number">Bus number:</label>
+                <input type="text" name="bus_number" id="bus_number" value="{{ old('bus_number') }}">
+                @error('bus_number')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
-                <label for="leave_balance">Leave balance:</label>
-                <input type="text" name="leave_balance" id="leave_balance"  value="{{ old('leave_balance') }}">
+                <label for="nationality">Nationality:</label>
+                <input type="text" name="nationality" id="nationality" value="{{ old('nationality') }}">
+                @error('nationality')
+                    <p>{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -108,12 +134,6 @@
             </div>
 
         </form>
-
-        @if (session('success'))
-            <div>
-                {{ session('success') }}
-            </div>
-        @endif
 
     </div>
 </div>
