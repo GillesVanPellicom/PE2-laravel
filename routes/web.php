@@ -115,6 +115,8 @@ Route::get('/send-package', [PackageController::class, 'create'])->name('package
 
 Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
 
+Route::get('/generate-package-label', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
+
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
 //--------------------------------- ENDTracking Packages ---------------------------------//
