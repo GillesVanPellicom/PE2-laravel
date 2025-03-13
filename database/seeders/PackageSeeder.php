@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Package;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
@@ -18,8 +19,8 @@ class PackageSeeder extends Seeder
             'reference' => 'REF125496',
             'user_id' => 1,
             'origin_location_id' => 1,
-            'current_location_id' => 2,
-            'destination_location_id' => 3,
+            'current_location_id' => 1,
+            'destination_location_id' => 9,
             'addresses_id' => 4,
             'status' => 'Pending',
             'weight_id' => 1,
@@ -32,5 +33,6 @@ class PackageSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
+        Package::factory()->count(10)->create();
     }
 }
