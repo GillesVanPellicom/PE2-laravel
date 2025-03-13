@@ -85,7 +85,7 @@ class PackageController extends Controller
 
         $package = Package::create($validatedData);
 
-        //Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
+        Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
 
         if (!$deliveryMethod->requires_location) {
             // Create address for the package
