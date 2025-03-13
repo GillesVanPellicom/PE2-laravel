@@ -352,11 +352,7 @@ class Filesystem
     public function link($target, $link)
     {
         if (! windows_os()) {
-            if (function_exists('symlink')) {
-                return symlink($target, $link);
-            } else {
-                return exec('ln -s '.escapeshellarg($target).' '.escapeshellarg($link)) !== false;
-            }
+            return symlink($target, $link);
         }
 
         $mode = $this->isDirectory($target) ? 'J' : 'H';
@@ -547,9 +543,9 @@ class Filesystem
      */
     public function hasSameHash($firstFile, $secondFile)
     {
-        $hash = @hash_file('xxh128', $firstFile);
+        $hash = @md5_file($firstFile);
 
-        return $hash && hash_equals($hash, (string) @hash_file('xxh128', $secondFile));
+        return $hash && hash_equals($hash, (string) @md5_file($secondFile));
     }
 
     /**

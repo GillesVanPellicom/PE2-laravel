@@ -94,10 +94,6 @@ class ValidationRuleParser
         }
 
         if (is_object($rule)) {
-            if ($rule instanceof Date || $rule instanceof Numeric) {
-                return explode('|', (string) $rule);
-            }
-
             return Arr::wrap($this->prepareRule($rule, $attribute));
         }
 
