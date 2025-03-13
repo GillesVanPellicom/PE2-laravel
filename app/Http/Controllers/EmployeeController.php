@@ -32,7 +32,7 @@ class EmployeeController extends Controller
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email',
-            'phone' => 'required|string|unique:employees,phone_number|regex:/^([0-9\s-+()]*)$/|min:10',,
+            'phone' => 'required|string|unique:employees,phone_number|regex:/^([0-9\s-+()]*)$/|min:10',
             'birth_date' => ['required', 'date', new Validate_Adult('employee')],
             'nationality' => 'required|string|max:255',
         ],
