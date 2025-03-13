@@ -5,7 +5,6 @@ namespace Illuminate\Foundation\Testing\Concerns;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Bootstrap\HandleExceptions;
@@ -170,7 +169,6 @@ trait InteractsWithTestCaseLifecycle
         Component::forgetComponentsResolver();
         Component::forgetFactory();
         ConvertEmptyStringsToNull::flushState();
-        Factory::flushState();
         EncryptCookies::flushState();
         HandleExceptions::flushState();
         Migrator::withoutMigrations([]);
