@@ -613,6 +613,7 @@ class ComposerStaticInit626b9e7ddd47fb7eff9aaa53cce0c9ad
         'AWS\\CRT\\Options' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Options.php',
         'App\\Console\\Commands\\Tinker' => __DIR__ . '/../..' . '/app/Console/Commands/Tinker.php',
         'App\\Helpers\\ConsoleHelper' => __DIR__ . '/../..' . '/app/Helpers/ConsoleHelper.php',
+        'App\\Http\\Controllers\\AuthController' => __DIR__ . '/../..' . '/app/Http/Controllers/AuthController.php',
         'App\\Http\\Controllers\\ChartController' => __DIR__ . '/../..' . '/app/Http/Controllers/ChartController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Controllers\\CourierController' => __DIR__ . '/../..' . '/app/Http/Controllers/CourierController.php',

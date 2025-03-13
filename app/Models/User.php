@@ -23,11 +23,12 @@ class User extends Authenticatable
         'phone_number', 
         'birth_date',
         'address_id',
+        'password',
     ];
 
     public function address()
     {
-        return $this->hasOne(Address::class);
+        return $this->belongsTo(Address::class);
     }
 
     /**

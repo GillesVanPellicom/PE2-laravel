@@ -31,6 +31,7 @@ return array(
     'AWS\\CRT\\Options' => $vendorDir . '/aws/aws-crt-php/src/AWS/CRT/Options.php',
     'App\\Console\\Commands\\Tinker' => $baseDir . '/app/Console/Commands/Tinker.php',
     'App\\Helpers\\ConsoleHelper' => $baseDir . '/app/Helpers/ConsoleHelper.php',
+    'App\\Http\\Controllers\\AuthController' => $baseDir . '/app/Http/Controllers/AuthController.php',
     'App\\Http\\Controllers\\ChartController' => $baseDir . '/app/Http/Controllers/ChartController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\CourierController' => $baseDir . '/app/Http/Controllers/CourierController.php',

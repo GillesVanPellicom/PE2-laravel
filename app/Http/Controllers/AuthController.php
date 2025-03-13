@@ -91,21 +91,15 @@ class AuthController extends Controller
             'confirm-password' => 'required|same:password',
             'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'birth_date' => 'required|date|before:' . Carbon::now()->subYears(18)->format('Y-m-d'),
-            'country' => 'required',
+            'country' => 'required|string|max:100',
             'postal_code' => 'required|string|max:100',
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
             'house_number' => 'required|string|max:100',
         ]);
-
-        $userData = $request->only(['first_name', 'last_name', 'email', 'phone_number', 'birth_date']);
-        $userData['password'] = Hash::make($request->password);
-    
-        // Create the user
-        $user = User::create($userData);
     
         // Create or find the country
-        $country = Country::firstOrCreate(['name' => $validated['country']]);
+        $country = Country::firstOrCreate(['country_name' => $validated['country']]);
     
         // Create or find the city
         $city = City::firstOrCreate([
@@ -115,12 +109,19 @@ class AuthController extends Controller
         ]);
     
         // Create the address
-        Address::create([
+        $address = Address::create([
             'street' => $validated['street'],
             'house_number' => $validated['house_number'],
             'cities_id' => $city->id,
             'country_id' => $country->id,
         ]);
+    
+        // Create the user with the address_id
+        $userData = $request->only(['first_name', 'last_name', 'email', 'phone_number', 'birth_date']);
+        $userData['password'] = Hash::make($request->password);
+        $userData['address_id'] = $address->id;
+    
+        User::create($userData);
     
         // Redirect to the login page
         return redirect('/login');
