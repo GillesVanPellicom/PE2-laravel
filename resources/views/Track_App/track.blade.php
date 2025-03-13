@@ -8,6 +8,14 @@
     {{-- Timeline Bullets --}}
     <h3 class="text-xl font-semibold mb-4">Tijdlijn</h3>
     <div class="relative flex items-center justify-between mb-10">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+
 
         @foreach ($movements as $index => $movement)
             @php
@@ -62,4 +70,39 @@
         @endforeach
     </div>
 </div>
+
+
+
+
+<h3 class="text-xl font-semibold mb-4 mt-10 text-center">📍 Current location on the map</h3>
+<div id="map" class="w-3/4 h-[350px] rounded-lg shadow-md border m-auto"></div>
+
+<script>
+    const lat = {!! json_encode($currentLat) !!};
+    const lng = {!! json_encode($currentLng) !!};
+
+    console.log('Latitude:', lat);
+    console.log('Longitude:', lng);
+
+    const mapDiv = document.getElementById('map');
+
+    if (lat !== null && lng !== null) {
+        console.log('Rendering map...');
+        const map = L.map('map').setView([lat, lng], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        L.marker([lat, lng]).addTo(map)
+            .bindPopup('Package current location')
+            .openPopup();
+    } else {
+        console.log('No coordinates, showing message.');
+        mapDiv.innerHTML = '<p>Current location does not exists.</p>';
+    }
+</script>
+
+
+
 @endsection

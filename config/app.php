@@ -123,4 +123,11 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+//    'providers' => [
+//      // Other Service Providers
+//      Illuminate\Filesystem\FilesystemServiceProvider::class,
+//      App\Providers\RouterServiceProvider::class,
+//    ],
+
 ];

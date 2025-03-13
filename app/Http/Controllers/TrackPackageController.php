@@ -4,11 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+use App\Services\Router\Router;
+use App\Services\Router\Types\Node;
+// use Illuminate\Support\Facades\App;
 
 class TrackPackageController extends Controller
 {
     public function track($reference)
 {
+    // try{
+    // $router = new Router();
+    // }
+    // catch (Exception $e){
+    //     echo 'Caught exception: ',  $e->getMessage(), "\n";
+    // }
+
+   
+
     $package = Package::where('reference', $reference)
         ->with('movements.toLocation', 'movements.fromLocation')
         ->firstOrFail();
@@ -38,7 +50,12 @@ class TrackPackageController extends Controller
         }
     }
 
-    return view('Track_App.track', compact('package', 'movements', 'currentLocation'));
+    return view('Track_App.track', compact('package', 'movements', 'currentLocation'))
+    ->with('currentLat', $currentLocation ? $currentLocation->latitude : null)
+    ->with('currentLng', $currentLocation ? $currentLocation->longitude : null);
+
+    
+
 }
 
 }
