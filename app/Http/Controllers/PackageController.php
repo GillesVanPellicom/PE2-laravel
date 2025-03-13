@@ -11,6 +11,7 @@ use App\Models\Location;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\PackageCreatedMail;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PackageController extends Controller
 {
@@ -114,11 +115,18 @@ class PackageController extends Controller
             return back()->withErrors(['error' => 'Failed to create package']);
         }
 
+        //return redirect()->route('generate-package-label')->with('success', 'Package created successfully');
         return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
     }
     
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
+    }
+
+    public function generatePackageLabel()
+    {
+        $pdf = Pdf::loadView('packages.generate-package-label');
+        return $pdf->download('package-label.pdf');
     }
 }
