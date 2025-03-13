@@ -22,6 +22,9 @@
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                         {{ __('Send Package') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
+                        {{ __('Employees') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -82,6 +85,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                 {{ __('Send Package') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
+                {{ __('Employees') }}
             </x-responsive-nav-link>
         </div>
 
