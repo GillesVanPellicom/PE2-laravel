@@ -10,6 +10,8 @@ use App\Models\DeliveryMethod;
 use App\Models\Location;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\PackageCreatedMail;
+use App\Models\Country;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -85,7 +87,7 @@ class PackageController extends Controller
 
         $package = Package::create($validatedData);
 
-        Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
+        //Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
 
         if (!$deliveryMethod->requires_location) {
             // Create address for the package
@@ -124,9 +126,27 @@ class PackageController extends Controller
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
     }
 
-    public function generatePackageLabel()
+    public function generatePackageLabel($packageID)
     {
-        $pdf = Pdf::loadView('packages.generate-package-label');
-        return $pdf->download('package-label.pdf');
+        $package = Package::with(['address.city'])->findOrFail($packageID);
+        
+        if (!$package->address) {
+            abort(404, 'Address not found for this package');
+        }
+
+        $qrCode = base64_encode(QrCode::format('png')
+        ->size(150)
+        ->margin(0)
+        ->generate($packageID));
+
+        $data = [
+            'receiver_address' => $package->address,
+            'package' => $package,
+            'tracking_number' => $package->tracking_number ?? '1Z 999 999 99 9999 999 9',
+            'qr_code' => $qrCode
+        ];
+
+        $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('package-label.pdf');
     }
 }
