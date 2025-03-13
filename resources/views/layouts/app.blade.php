@@ -12,10 +12,12 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div id="main-div" class="min-h-screen bg-gray-100 dark:bg-gray-900">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
@@ -29,8 +31,9 @@
 
             <!-- Page Content -->
             <main>
-        @yield('content')
-        </main>
+                @yield('content')
+                {{ $slot ?? '' }}
+            </main>
             <!-- Footer -->
             @include('layouts.footer')
         </div>

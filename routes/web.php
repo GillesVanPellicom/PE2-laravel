@@ -27,7 +27,7 @@ Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("cour
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
-# <= END Courier Mobile App 
+# <= END Courier Mobile App
 
 Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
@@ -63,7 +63,7 @@ Route::get('/holiday-requests', function () {
     return view('employees.holiday_request');
 });
 
-// test for demo 
+// test for demo
 
 Route::get('/manager-calendar', function () {
     return view('employees.manager_calendar');  // Adjust based on the folder structure
@@ -114,6 +114,8 @@ Route::get('/airport', [airportController::class, 'airportindex'])->name('airpor
 Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
 
 Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
+
+Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
