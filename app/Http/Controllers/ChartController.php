@@ -13,14 +13,14 @@ class ChartController extends Controller
         $incomingData = Package::selectRaw('COUNT(*) as count, DATE_FORMAT(created_at, "%d-%m-%Y") as day')
             ->whereIn('status', ['Pending'])
             ->groupBy('day')
-            ->orderBy('day', 'asc')
+            ->orderBy('year', 'asc')
             ->get();
     
         // Uitgaande pakketten
         $outgoingData = Package::selectRaw('COUNT(*) as count, DATE_FORMAT(created_at, "%d-%m-%Y") as day')
             ->whereIn('status', ['Delivered'])
             ->groupBy('day')
-            ->orderBy('day', 'asc')
+            ->orderBy('year', 'asc')
             ->get();
     
         return view('packagechart', [
