@@ -11,6 +11,34 @@ use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Login
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+// Register
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
+
+// Update
+Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
+
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Customers
+Route::get('/customers', function () {
+    if (!Auth::check()) {
+        return redirect()->route('auth.login');
+    }
+    return view('customers');
+})->name('customers');
+Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
 use App\Http\Controllers\PackageController;
