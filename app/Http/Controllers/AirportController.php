@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 use App\Models\airport;
 
 
-class airportController extends Controller
+class AirportController extends Controller
 {
     public function airportindex(){
         $airports = airport::all();
