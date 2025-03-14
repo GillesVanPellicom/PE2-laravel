@@ -3,8 +3,6 @@
 # Exit immediately if a command fails
 set -e
 
-# Define the container name (default Laravel Sail service name)
-CONTAINER_NAME="pe2-laravel-laravel.test-1"
 
 # Run Composer install inside the container
 ./vendor/bin/sail composer install
@@ -20,5 +18,5 @@ CONTAINER_NAME="pe2-laravel-laravel.test-1"
 ./vendor/bin/sail php artisan route:clear
 ./vendor/bin/sail php artisan view:clear
 
-./vendor/bin/sail git add .
+git add .
 
