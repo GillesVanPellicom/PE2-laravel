@@ -7,6 +7,6 @@ class airportController extends Controller
 {
     public function airportindex(){
         $airports = airport::all();
-        return view('airports',['airports'=>$airports]);
+        return view('airport.airports',['airports'=>$airports]);
     }
 }

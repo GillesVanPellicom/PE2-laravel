@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
-use App\Models\Addresses;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\PackageCreatedMail;
+use App\Models\Country;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PackageController extends Controller
 {
@@ -49,7 +52,7 @@ class PackageController extends Controller
 
         $validationRules = [
             'reference' => 'string|max:255',
-            'customer_id' => 'required|exists:customers,id',
+            'user_id' => 'required|exists:users,id',
             'origin_location_id' => 'required|exists:locations,id',
             'destination_location_id' => 'exists:locations,id',
             'address_id' => 'exists:addresses,id',           
@@ -84,11 +87,11 @@ class PackageController extends Controller
 
         $package = Package::create($validatedData);
 
-        Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
+        //Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
 
         if (!$deliveryMethod->requires_location) {
             // Create address for the package
-            $address = Addresses::create([
+            $address = Address::create([
                 'street' => $validatedData['street'],
                 'house_number' => $validatedData['house_number'],
                 'cities_id' => $validatedData['cities_id'],
@@ -114,11 +117,36 @@ class PackageController extends Controller
             return back()->withErrors(['error' => 'Failed to create package']);
         }
 
+        //return redirect()->route('generate-package-label')->with('success', 'Package created successfully');
         return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
     }
     
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
+    }
+
+    public function generatePackageLabel($packageID)
+    {
+        $package = Package::with(['address.city'])->findOrFail($packageID);
+        
+        if (!$package->address) {
+            abort(404, 'Address not found for this package');
+        }
+
+        $qrCode = base64_encode(QrCode::format('png')
+        ->size(150)
+        ->margin(0)
+        ->generate($packageID));
+
+        $data = [
+            'receiver_address' => $package->address,
+            'package' => $package,
+            'tracking_number' => $package->tracking_number ?? '1Z 999 999 99 9999 999 9',
+            'qr_code' => $qrCode
+        ];
+
+        $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('package-label.pdf');
     }
 }

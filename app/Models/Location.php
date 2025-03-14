@@ -16,7 +16,9 @@ class Location extends Model
         'addresses_id',
         'contact_number',
         'opening_hours',
-        'is_active'
+        'is_active',
+        'latitude',
+        'longitude',
     ];
 
     public function parcels()

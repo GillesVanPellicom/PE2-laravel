@@ -51,7 +51,7 @@
                         <div class="bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="customer_id" placeholder="Customer ID" required 
+                                <input type="text" name="user_id" placeholder="Customer ID" required 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <input type="text" name="origin_location_id" placeholder="Origin Location ID" required 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">

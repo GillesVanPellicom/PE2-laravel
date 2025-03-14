@@ -15,7 +15,7 @@ class Package extends Model {
     protected $primaryKey = 'id'; // Custom primary key
     protected $fillable = [
         'reference',
-        'customer_id',
+        'user_id',
         'origin_location_id',
         'current_location_id',
         'destination_location_id',
@@ -39,6 +39,10 @@ class Package extends Model {
         'addresses_id' => null
     ];
 
+    public function user(){
+        return $this->belongsTo(User::class, "user_id");
+    }
+
     public function weightClass()
     {
         return $this->belongsTo(WeightClass::class, 'weight_id');
@@ -56,7 +60,7 @@ class Package extends Model {
 
     public function address()
     {
-        return $this->belongsTo(Addresses::class, 'addresses_id');
+        return $this->belongsTo(Address::class, 'addresses_id');
     }
 
     public function originLocation()
