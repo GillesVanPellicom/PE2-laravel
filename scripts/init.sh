@@ -20,3 +20,7 @@ set -e
 
 git add .
 
+./vendor/bin/sail stop
+./vendor/bin/sail up -d
+
+
