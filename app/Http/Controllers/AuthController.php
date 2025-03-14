@@ -40,16 +40,13 @@ class AuthController extends Controller
 
         // Validate the request data
         $validated = $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-            'birth_date' => 'required|date',
             'country' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:100',
+            'postal_code' => 'required|integer',
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
-            'house_number' => 'required|string|max:100',
+            'house_number' => 'required|integer',
         ]);
 
         // Update or create the country
@@ -74,11 +71,8 @@ class AuthController extends Controller
 
         // Update the user's information
         $user->update([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'phone_number' => $validated['phone_number'],
-            'birth_date' => $validated['birth_date'],
             'address_id' => $address->id,
         ]);
 
@@ -110,13 +104,13 @@ class AuthController extends Controller
             'email' => 'required|unique:users,email',
             'password' => 'required|min:8',
             'confirm-password' => 'required|same:password',
-            'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|unique:users,phone_number',
             'birth_date' => 'required|date|before:' . Carbon::now()->subYears(18)->format('Y-m-d'),
             'country' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:100',
+            'postal_code' => 'required|integer',
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
-            'house_number' => 'required|string|max:100',
+            'house_number' => 'required|integer',
         ]);
 
         // Create or find the country
@@ -130,7 +124,7 @@ class AuthController extends Controller
         ]);
 
         // Create the address
-        $address = Address::create([
+        $address = Address::firstOrCreate([
             'street' => $validated['street'],
             'house_number' => $validated['house_number'],
             'cities_id' => $city->id,

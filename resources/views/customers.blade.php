@@ -13,6 +13,7 @@
     <p>Your first name: {{ Auth::user()->first_name }}</p>
     <p>Your last name: {{ Auth::user()->last_name }}</p>
     <p>Your email: {{ Auth::user()->email }}</p>
+    <p>Your birth data: {{ Auth::user()->birth_date }}</p>
     <p>Your country: {{ Auth::user()->address->city->country->country_name }}</p>
     <p>Your postal code: {{ Auth::user()->address->city->postcode }}</p>
     <p>Your city: {{ Auth::user()->address->city->name }}</p>
@@ -28,14 +29,6 @@
     <h2>Edit Your Information</h2>
     <form action="{{ route('auth.update') }}" method="POST">
         @csrf
-        <p>
-            <label for="first_name">First Name:</label>
-            <input type="text" id="first_name" name="first_name" value="{{ Auth::user()->first_name }}">
-        </p>
-        <p>
-            <label for="last_name">Last Name:</label>
-            <input type="text" id="last_name" name="last_name" value="{{ Auth::user()->last_name }}">
-        </p>
         <p>
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" value="{{ Auth::user()->email }}">

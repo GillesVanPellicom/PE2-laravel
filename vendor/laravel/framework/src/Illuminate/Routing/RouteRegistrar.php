@@ -18,7 +18,6 @@ use InvalidArgumentException;
  * @method \Illuminate\Routing\Route post(string $uri, \Closure|array|string|null $action = null)
  * @method \Illuminate\Routing\Route put(string $uri, \Closure|array|string|null $action = null)
  * @method \Illuminate\Routing\RouteRegistrar as(string $value)
- * @method \Illuminate\Routing\RouteRegistrar can(\UnitEnum|string  $ability, array|string $models = [])
  * @method \Illuminate\Routing\RouteRegistrar controller(string $controller)
  * @method \Illuminate\Routing\RouteRegistrar domain(\BackedEnum|string $value)
  * @method \Illuminate\Routing\RouteRegistrar middleware(array|string|null $middleware)
@@ -65,7 +64,6 @@ class RouteRegistrar
      */
     protected $allowedAttributes = [
         'as',
-        'can',
         'controller',
         'domain',
         'middleware',
@@ -76,7 +74,6 @@ class RouteRegistrar
         'scopeBindings',
         'where',
         'withoutMiddleware',
-        'withoutScopedBindings',
     ];
 
     /**
@@ -87,7 +84,6 @@ class RouteRegistrar
     protected $aliases = [
         'name' => 'as',
         'scopeBindings' => 'scope_bindings',
-        'withoutScopedBindings' => 'scope_bindings',
         'withoutMiddleware' => 'excluded_middleware',
     ];
 
@@ -129,10 +125,6 @@ class RouteRegistrar
             $value = array_merge(
                 (array) ($this->attributes[$attributeKey] ?? []), Arr::wrap($value)
             );
-        }
-
-        if ($key === 'withoutScopedBindings') {
-            $value = false;
         }
 
         if ($value instanceof BackedEnum && ! is_string($value = $value->value)) {
