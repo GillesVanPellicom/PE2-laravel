@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\contractController;
@@ -36,6 +37,8 @@ Route::post('/update-package-status', [PackageController::class, 'updateStatus']
 // ======================= Start Distribution ====================== //
 
 Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
+
+Route::get('/packagelist', [PackageListController::class, 'index'])->name('package.list');
 
 // ======================= End Distribution ====================== //
 
