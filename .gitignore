@@ -15,13 +15,13 @@ yarn-error.log
 /auth.json
 /.fleet
 /.idea
-/.nova
+/.novas
 /.vscode
 /.zed
 node_modules/
 .DS_Store
 vendor/*
-vendor/composer
+vendor/composer/
 !vendor/bin/
 !vendor/laravel/
 !vendor/symfony/
