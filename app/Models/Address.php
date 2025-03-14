@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Address extends Model
 {
-    protected $fillable = ['street', 'house_number', 'cities_id', 'country_id'];
+    protected $fillable = ['street', 'house_number', 'cities_id', 'bus_number'];
 
     public function parcels(): HasMany
     {
@@ -33,4 +33,5 @@ class Address extends Model
     {
         return $this->hasMany(Employee::class, 'address_id');
     }
+
 }

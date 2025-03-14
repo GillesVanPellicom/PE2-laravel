@@ -2,7 +2,7 @@
     @section("pageName","Pickup Point")
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight text-center">
+        <h2 class="font-semibold text-xl text-gray-800  leading-tight text-center">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
@@ -31,7 +31,7 @@
     <div class="overflow-x-auto py-12 max-w-7xl sm:rounded-lg mx-auto sm:px-6 lg:px-8">
 
 
-        <table class="min-w-full table-auto bg-white dark:shadow-none shadow-lg  sm:rounded-b-lg overflow-hidden">
+        <table class="min-w-full table-auto bg-white  shadow-lg  sm:rounded-b-lg overflow-hidden">
             <div class="bg-gray-50 overflow-hidden shadow-sm sm:rounded-t-lg flex sm:justify-between p-3">
                 <div class="relative w-full max-w-xs">
                     <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -59,7 +59,7 @@
             </thead>
             <tbody>
             @foreach($packages as $package)
-                <tr class="border-b last:border-b-0 text-center hover:bg-gray-50 bg-gray-50 dark:hover:bg-gray-200">
+                <tr class="border-b last:border-b-0 text-center hover:bg-gray-50 bg-gray-50 ">
                     <td class="py-3 px-4">{{ $package->id }}</td>
                     <td class="py-3 px-4">{{ $package->customer_id }}</td>
                     <td class="py-3 px-4">{{ $package->reference }}</td>
@@ -73,7 +73,7 @@
         </table>
         <div class="min-w-full flex justify-center items-center gap-6 mt-4">
             <x-primary-button><p class="text-xl"> < </p></x-primary-button>
-            <div class="flex items-center px-4 py-2 p-4 rounded bg-gray-300 dark:bg-gray-600"><p class="text-black text-xl dark:text-gray-400">1</p></div>
+            <div class="flex items-center px-4 py-2 p-4 rounded bg-gray-300 "><p class="text-black text-xl ">1</p></div>
             <x-primary-button><p class="text-xl"> > </p></x-primary-button>
         </div>
     </div>
