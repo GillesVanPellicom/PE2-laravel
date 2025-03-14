@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->integer('leave_balance')->default(0);
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('team_id')->constrained('teams');
+            $table->string('department');
+            $table->foreignId('manager_id')->constrained('users');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('teams');
     }
 };

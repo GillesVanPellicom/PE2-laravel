@@ -19,25 +19,25 @@ class TeamsSeeder extends Seeder
             ],
             [
                 'department' => 'IT',
-                'manager_id' => 2, // Szymon
+                'manager_id' => 1, // Szymon
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
                 'department' => 'HR',
-                'manager_id' => 3, // Thomas
+                'manager_id' => 1, // Thomas
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
                 'department' => 'Finance',
-                'manager_id' => 4, // Julien
+                'manager_id' => 1, // Julien
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
                 'department' => 'Operations',
-                'manager_id' => 5, // Keith
+                'manager_id' => 1, // Keith
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
