@@ -4,39 +4,36 @@
     <meta charset="utf-8">
     <title>Package Label</title>
     <style>
+        @page {
+            size: landscape;
+            margin: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f0f0f0;
-            display: flex;
-            justify-content: center;
+            padding: 0;
         }
         .label-container {
             border: 2px solid #000;
             padding: 15px;
-            width: 600px;
-            height: 400px;
-            background: white;
-            display: flex;
-            gap: 20px;
+            width: 750px;
+            height: 300px;
+            position: relative;
         }
-        .left-section {
-            flex: 1.5;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        .address-section {
+            width: 60%;
+            float: left;
         }
-        .right-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .qr-section {
+            width: 35%;
+            float: right;
             border-left: 1px dashed #000;
-            padding-left: 20px;
+            padding-left: 15px;
+            height: 270px;
+            text-align: center;
         }
         .section {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .section-title {
             font-weight: bold;
@@ -46,11 +43,11 @@
         }
         .address {
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.4;
         }
         .qr-placeholder {
-            width: 200px;
-            height: 200px;
+            width: 150px;
+            height: 150px;
             border: 1px dashed #000;
             margin: 10px auto;
             display: flex;
@@ -61,23 +58,23 @@
         .tracking-number {
             text-align: center;
             font-family: 'Courier New', monospace;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="label-container">
-        <div class="left-section">
+        <div class="address-section">
             <!-- From Section -->
             <div class="section">
                 <div class="section-title">From:</div>
                 <div class="address">
-                    John Smith<br>
-                    123 Sender Street<br>
-                    Shipping City, ST 12345<br>
-                    United States
+                    Company Name<br>
+                    Company Street 123<br>
+                    1234 AB Amsterdam<br>
+                    Netherlands
                 </div>
             </div>
 
@@ -85,24 +82,21 @@
             <div class="section">
                 <div class="section-title">To:</div>
                 <div class="address">
-                    Jane Doe<br>
-                    456 Receiver Avenue<br>
-                    Delivery Town, ST 67890<br>
-                    United States
+                    {{ $package->name }} {{ $package->lastName }}<br>
+                    {{ $receiver_address->street }} {{ $receiver_address->house_number }}<br>
+                    {{ $receiver_address->city->name }}, {{ $receiver_address->city->postcode }}<br>
+                    
                 </div>
             </div>
         </div>
 
-        <div class="right-section">
-            <!-- QR Code Section -->
-            <div class="section">
-                <div class="section-title">Tracking Number:</div>
-                <div class="tracking-number">1Z 999 999 99 9999 999 9</div>
-                <div class="qr-placeholder">
-                    QR Code<br>
-                    Place Here<br>
-                    (200x200)
-                </div>
+        <div class="qr-section">
+            <div class="section-title">Tracking Number:</div>
+            <div class="tracking-number">{{ $tracking_number }}</div>
+            <div class="qr-code">
+                <img src="data:image/png;base64,{{ $qr_code }}" 
+                     alt="Package QR Code"
+                     style="width: 150px; height: 150px; margin: 10px auto; display: block;">
             </div>
         </div>
     </div>

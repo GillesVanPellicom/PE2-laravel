@@ -15,9 +15,7 @@ class PackageListController extends Controller
         $packagesByLocation = [];
         foreach ($locations as $location) {
             $packages = Package::where(function ($query) use ($location) {
-                $query->where('origin_location_id', $location->id)
-                      ->orWhere('current_location_id', $location->id)
-                      ->orWhere('destination_location_id', $location->id);
+                $query->where('current_location_id', $location->id);
             })->get();
 
             $packagesByLocation[$location->name] = $packages;

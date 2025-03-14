@@ -33,7 +33,7 @@ namespace App\Services\Router {
     public function __construct() {
       try {
         $this->graph = new RouterGraph();
-        $this->deserialize('app/Services/Router/tmp.graphml');
+        $this->deserialize(base_path('app/Services/Router/tmp.graphml'));
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);

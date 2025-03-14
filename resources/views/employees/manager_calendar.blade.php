@@ -159,6 +159,19 @@
             max-width: 65%;
             margin: 0 auto;
         }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
@@ -166,7 +179,10 @@
     <div class="sidebar">
         <h2>Employee Status</h2>
         <div id="employeeList"></div>
+        <h2>Sick Employees</h2>
+        <div id="sickEmployeeList"></div>
     </div>
+
     <div class="calendar-container">
         <h1>Manager Calendar</h1>
         <div class="notification-container">
@@ -177,113 +193,155 @@
         <button onclick="clearStorage()">Clear All Data</button>
         <div id="calendar"></div>
     </div>
+    <a href="calendar" class="btn">View Calendar</a>
+
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let employees = [{
-                    name: "Alice",
-                    status: "present"
-                },
-                {
-                    name: "Bob",
-                    status: "sick"
-                },
-                {
-                    name: "Charlie",
-                    status: "holiday"
-                },
-                {
-                    name: "David",
-                    status: "present"
-                },
-                {
-                    name: "Eve",
-                    status: "sick"
-                }
-            ];
-            let employeeList = document.getElementById("employeeList");
-            employees.forEach(emp => {
-                let div = document.createElement("div");
-                div.className = `employee ${emp.status}`;
-                div.innerText = `${emp.name} - ${emp.status}`;
-                employeeList.appendChild(div);
-            });
-            let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
-            let events = approvedHolidays.flatMap(holiday => {
-                return holiday.holidays.map(date => ({
-                    title: `${holiday.name}'s Holiday`,
-                    start: new Date(date).toISOString().split('T')[0],
-                    allDay: true
-                }));
-            });
-            let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth',
-                events: events,
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                editable: false,
-                droppable: false
-            });
-            calendar.render();
-            loadNotifications();
+    document.addEventListener('DOMContentLoaded', function() {
+        let employees = @json($employees);
+        let sickEmployees = JSON.parse(localStorage.getItem('sickEmployees')) || [];
+
+        let employeeList = document.getElementById("employeeList");
+        employees.forEach(emp => {
+            let div = document.createElement("div");
+            div.className = "employee";
+            div.innerText = emp.first_name;
+            div.onclick = function() { markSick(emp.first_name); };
+            employeeList.appendChild(div);
         });
 
-        function clearStorage() {
-            localStorage.clear();
-            alert("All data has been cleared.");
-            location.reload();
-        }
+        updateSickEmployees();
 
-        function loadNotifications() {
-            let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
-            let unreadCount = requests.length;
-            let badge = document.getElementById('notificationBadge');
-            let dropdown = document.getElementById('notificationDropdown');
-            if (unreadCount > 0) {
-                badge.textContent = unreadCount;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
-            dropdown.innerHTML = '';
-            requests.forEach((request, index) => {
-                let item = document.createElement('div');
-                item.className = 'notification-item';
-                item.innerHTML = `<strong>${request.name}</strong> requested holidays: ${request.holidays.join(', ')}`;
-                item.onclick = function() {
-                    approveRequest(index);
-                };
-                dropdown.appendChild(item);
+        // Load approved holidays
+        let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
+        let events = [];
+
+        approvedHolidays.forEach(holiday => {
+            Object.entries(holiday.holidays).forEach(([date, period]) => {
+                let startTime, endTime;
+
+                if (period === "AM") {
+                    startTime = `${date}T08:00:00`;
+                    endTime = `${date}T12:00:00`;
+                } else if (period === "PM") {
+                    startTime = `${date}T13:00:00`;
+                    endTime = `${date}T17:00:00`;
+                } else {
+                    startTime = date;
+                    endTime = date;
+                }
+
+                events.push({
+                    title: `${holiday.name}'s Holiday (${period})`,
+                    start: startTime,
+                    end: endTime,
+                    allDay: period === "Full Day",
+                    backgroundColor: '#ff7f7f',
+                    borderColor: '#ff4f4f',
+                    textColor: 'white'
+                });
             });
-            let markAllRead = document.createElement('button');
-            markAllRead.textContent = 'Mark all as read';
-            markAllRead.onclick = function() {
-                localStorage.removeItem('holidayRequests');
-                loadNotifications();
+        });
+
+        let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            initialView: 'timeGridWeek',
+            events: events,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'timeGridWeek,timeGridDay'
+            },
+            editable: false,
+            droppable: false
+        });
+
+        calendar.render();
+        loadNotifications();
+    });
+
+    function markSick(employeeName) {
+        let sickEmployees = JSON.parse(localStorage.getItem('sickEmployees')) || [];
+        if (!sickEmployees.includes(employeeName)) {
+            sickEmployees.push(employeeName);
+            localStorage.setItem('sickEmployees', JSON.stringify(sickEmployees));
+            updateSickEmployees();
+        }
+    }
+
+    function updateSickEmployees() {
+        let sickEmployeeList = document.getElementById("sickEmployeeList");
+        sickEmployeeList.innerHTML = "";
+        let sickEmployees = JSON.parse(localStorage.getItem('sickEmployees')) || [];
+        sickEmployees.forEach(emp => {
+            let div = document.createElement("div");
+            div.className = "sick-employee";
+            div.innerText = emp;
+            sickEmployeeList.appendChild(div);
+        });
+    }
+
+    function clearStorage() {
+        localStorage.clear();
+        alert("All data has been cleared.");
+        location.reload();
+    }
+
+    function loadNotifications() {
+        let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
+        let unreadCount = requests.length;
+        let badge = document.getElementById('notificationBadge');
+        let dropdown = document.getElementById('notificationDropdown');
+
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        dropdown.innerHTML = '';
+        requests.forEach((request, index) => {
+            let item = document.createElement('div');
+            item.className = 'notification-item';
+            item.innerHTML = `<strong>${request.name}</strong> requested holidays: ${Object.entries(request.holidays).map(([date, period]) => `${date} (${period})`).join(', ')}`;
+            item.onclick = function() {
+                approveRequest(index);
             };
-            dropdown.appendChild(markAllRead);
-        }
+            dropdown.appendChild(item);
+        });
 
-        function toggleNotifications() {
-            let dropdown = document.getElementById('notificationDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function approveRequest(index) {
-            let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
-            let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
-            approvedHolidays.push(requests[index]);
-            localStorage.setItem('approvedHolidays', JSON.stringify(approvedHolidays));
-            requests.splice(index, 1);
-            localStorage.setItem('holidayRequests', JSON.stringify(requests));
-            alert("Holiday request approved!");
+        let markAllRead = document.createElement('button');
+        markAllRead.textContent = 'Mark all as read';
+        markAllRead.onclick = function() {
+            localStorage.removeItem('holidayRequests');
             loadNotifications();
-            location.reload();
-        }
-    </script>
+        };
+        dropdown.appendChild(markAllRead);
+    }
+
+    function toggleNotifications() {
+        let dropdown = document.getElementById('notificationDropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function approveRequest(index) {
+        let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
+        let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
+        
+        approvedHolidays.push(requests[index]);
+        localStorage.setItem('approvedHolidays', JSON.stringify(approvedHolidays));
+        
+        requests.splice(index, 1);
+        localStorage.setItem('holidayRequests', JSON.stringify(requests));
+        
+        alert("Holiday request approved!");
+        loadNotifications();
+        location.reload();
+    }
+</script>
+
 </body>
+
 
 </html>

@@ -14,9 +14,8 @@
                         <tr>
                             <th>ID</th>
                             <th>Referentie</th>
-                            <th>Naam Ontvanger</th>
                             <th>Status</th>
-                            <th>Acties</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -24,11 +23,7 @@
                             <tr>
                                 <td>{{ $package->id }}</td>
                                 <td>{{ $package->reference }}</td>
-                                <td>{{ $package->name }} {{ $package->lastName }}</td>
                                 <td>{{ $package->status }}</td>
-                                <td>
-                                    <a href="{{ route('package.show', $package->id) }}" class="btn btn-primary">Bekijk</a>
-                                </td>
                             </tr>
                         @endforeach
                     </tbody>
