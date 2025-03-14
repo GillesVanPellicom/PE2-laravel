@@ -100,7 +100,7 @@
             <label for="street">Street</label>
             <input type="text" id="street" name="street" value="{{ old('street') }}">
             @error('street')
-                <div>{{ $message }}</div>
+            <div>{{ $message }}</div>
             @enderror
         </div>
       
@@ -109,6 +109,14 @@
             <input type="text" id="house_number" name="house_number" value="{{ old('house_number') }}">
             @error('house_number')
                 <div>{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div>
+            <label for="bus_number">Bus Number</label>
+            <input type="text" id="bus_number" name="bus_number" value="{{ old('bus_number') }}">
+            @error('bus_number')
+            <div>{{ $message }}</div>
             @enderror
         </div>
       
