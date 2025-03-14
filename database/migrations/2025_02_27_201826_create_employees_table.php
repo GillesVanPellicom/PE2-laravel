@@ -13,15 +13,9 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('email');
-            $table->string('phone_number');
-            $table->date('birth_date');
-            $table->foreignId('address_id')->constrained('addresses');
-            $table->string('nationality');
             $table->integer('leave_balance')->default(0);
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('team_id')->constrained('teams');
             $table->timestamps();
         });
     }
