@@ -75,9 +75,15 @@ Route::get('/manager-calendar', function () {
 
 Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
 
-Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.create');
+Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.Create');
 
 Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->name('employees.store_employee');
+
+Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@contracts')->name('employees.contracts');
+
+Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->name('employee.contracts.updateEndDate');
+
+
 
 // ======================= End Employee ====================== //
 
