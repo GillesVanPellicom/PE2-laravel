@@ -13,9 +13,7 @@
     <br>
     <a href="{{ route('flights') }}">Flights</a>
     <br>
-    <a href="{{ route('employees') }}">Employees</a>
-    <br>
-    <a href="{{ route('packages') }}">Packages</a>^
+    <a href="{{ route('packages') }}">Packages</a>
     <br/>
     <tbody>
         @foreach($airports as $airport)
