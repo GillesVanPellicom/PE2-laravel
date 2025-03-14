@@ -9,11 +9,41 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
+use App\http\Controllers\AuthController;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
+use App\Http\Controllers\EmployeeController;
 
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Login
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+// Register
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
+
+// Update
+Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
+
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Customers
+Route::get('/customers', function () {
+    if (!Auth::check()) {
+        return redirect()->route('auth.login');
+    }
+    return view('customers');
+})->name('customers');
+Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 
 // ======================= Start Courier ====================== //
 
@@ -44,37 +74,13 @@ Route::get('/packagelist', [PackageListController::class, 'index'])->name('packa
 
 // ======================= Start Employee ====================== //
 
-Route::get('/calendar', function () {
-    return view('employees.calendar');
-});
 
-Route::get('/holiday-requests', function () {
-    return view('employees.holiday_request');
-});
+Route::get('/calendar', function () {return view('employees.calendar');});
 
-// test for demo
+Route::get('/holiday-requests', function () {return view('employees.holiday_request');})->name('holiday-requests');
 
-Route::get('/manager-calendar', function () {
-    return view('employees.manager_calendar');  // Adjust based on the folder structure
-});
+Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager-calendar');
 
-Route::get('/manager-calendar', function () {
-    return view('employees.manager_calendar');
-})->name('manager-calendar');
-
-Route::get('/holiday-requests', function () {
-    return view('employees.holiday_request');
-});
-
-// test for demo
-
-Route::get('/manager-calendar', function () {
-    return view('employees.manager_calendar');  // Adjust based on the folder structure
-});
-
-Route::get('/manager-calendar', function () {
-    return view('employees.manager_calendar');
-})->name('manager-calendar');
 
 Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
 

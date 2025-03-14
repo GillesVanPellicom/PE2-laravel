@@ -5,27 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\contract;
 
-class contractController extends Controller
+
+class ContractController extends Controller
 {
     public function contractindex(){
         $contracts = contract::all();
-        return view('contract',['contracts'=>$contracts]);
+        
+        return view('airport.contract', ['contracts' => $contracts]);
     }
 
     public function contractcreate(){
-        return view('contractcreate');
+
+        return view('contractcreate', compact('flights', 'airlines'));
     }
 
     public function store(Request $request){
-        $data = $request->validate([
-        'airline' => 'required',
-        'flight' => 'required|integer',
-        'weight' => 'required|numeric',
-        'room' => 'required|numeric'
+
+        Contract::create([
+            'flight_id' => 'flight_id',
+            'airline_id' => 'airline_id',
+            'max_capacity' => 'max_capacity',
+            'price' => 'price'
         ]);
 
-        contract::create($data);
-
-        return redirect(route('contract'));
+        return redirect(route('airport.contract'));
     }
 }
