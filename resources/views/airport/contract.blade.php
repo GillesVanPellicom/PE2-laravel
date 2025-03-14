@@ -14,17 +14,18 @@
         <thead>
             <tr>
                 <th>airline</th>
-                <th>#airplanes</th>
-                <th>room/weight on airplanes</th>
+                <th>flight</th>
+                <th>wheight available (kg)</th>
+                <th>price (€)
             </tr>
         </thead>
         <tbody>
             @foreach($contracts as $contract)
             <tr>
-                <td>{{$contract->airline}}</td>
-                <td>{{$contract->flight}}</td>
-                <td>{{$contract->weight}}</td>
-                <td>{{$contract->room}}</td>
+                <td>{{$contract->airline_id}}</td>
+                <td>{{$contract->flight_id}}</td>
+                <td>{{$contract->max_capacity}}</td>
+                <td>{{$contract->price}}</td>
             </tr>
             @endforeach
         </tbody>

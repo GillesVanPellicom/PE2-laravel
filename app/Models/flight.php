@@ -21,4 +21,13 @@ class Flight extends Model
         'arrive_location_id',
         'status'
     ];
+    public function departureAirport()
+    {
+        return $this->hasOne(Airport::class, 'location_id', 'depart_location_id');
+    }
+
+    public function arrivalAirport()
+    {
+        return $this->hasOne(Airport::class, 'location_id', 'arrive_location_id');
+    }
 }
