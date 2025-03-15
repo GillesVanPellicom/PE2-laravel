@@ -11,6 +11,7 @@ use App\Http\Controllers\TrackPackageController;
 use App\http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
 
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -137,3 +138,11 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 // ======================= End Customer ====================== //
 
 
+// ======================= Start CourierRouteCreator ====================== //
+
+use App\Http\Controllers\RouteCreatorController;
+
+Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+
+
+// ======================= End CourierRouteCreator ====================== //
