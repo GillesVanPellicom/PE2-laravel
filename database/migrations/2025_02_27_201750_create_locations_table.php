@@ -13,14 +13,17 @@ return new class extends Migration
     {
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->enum('location_type', ['Pickup Point', 'Parcel Locker', 'Distribution Center', 'Airport', 'Private Individu']);
+            $table->string('location_id')->nullable()->default(NULL);
+            $table->string('description');
+            $table->enum('location_type', ['PICKUP_POINT', 'PARCEL_LOCKER', 'DISTRIBUTION_CENTER', 'AIRPORT', 'PRIVATE_INDIVIDU']);
             $table->foreignId('addresses_id')->constrained('addresses');
             $table->string('contact_number');
             $table->string('opening_hours')->nullable();
             $table->boolean('is_active');
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 10, 8)->nullable();
+            $table->decimal('latitude', 12, 8)->nullable();
+            $table->decimal('longitude', 12, 8)->nullable();
+            $table->boolean('isEntry')->default(false);
+            $table->boolean('isExit')->default(false);
             $table->timestamps();
         });
     }

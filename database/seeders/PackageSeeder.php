@@ -33,6 +33,6 @@ class PackageSeeder extends Seeder
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
-        Package::factory()->count(10)->create();
+        Package::factory()->count(100)->create();
     }
 }
