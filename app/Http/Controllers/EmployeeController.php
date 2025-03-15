@@ -15,6 +15,12 @@ class EmployeeController extends Controller
         return view('employees.index', compact('employees'));
     }
 
+    public function managerCalendar()
+    {
+        $employees = Employee::all();
+        return view('employees.manager_calendar', compact('employees')); 
+    }
+
     public function create()
     {
         return view('employees.create', ['countries' => Country::all()], ['cities' => City::all()]);

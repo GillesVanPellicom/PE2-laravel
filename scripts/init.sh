@@ -3,21 +3,24 @@
 # Exit immediately if a command fails
 set -e
 
-# Define the container name (default Laravel Sail service name)
-CONTAINER_NAME="pe2-laravel-laravel.test-1"
 
 # Run Composer install inside the container
-docker exec -it "$CONTAINER_NAME" composer install
+./vendor/bin/sail composer install
 
 # Fetch Node modules inside the container
-docker exec -it "$CONTAINER_NAME" npm install
+./vendor/bin/sail npm install
 
 # Run database migrations and seed
-docker exec -it "$CONTAINER_NAME" php artisan migrate:fresh --seed
+./vendor/bin/sail php artisan migrate:fresh --seed
 
-docker exec -it "$CONTAINER_NAME" php artisan config:clear
-docker exec -it "$CONTAINER_NAME" php artisan cache:clear
-docker exec -it "$CONTAINER_NAME" php artisan route:clear
-docker exec -it "$CONTAINER_NAME" php artisan view:clear
+./vendor/bin/sail php artisan config:clear
+./vendor/bin/sail php artisan cache:clear
+./vendor/bin/sail php artisan route:clear
+./vendor/bin/sail php artisan view:clear
 
-docker exec -it "$CONTAINER_NAME" php artisan queue:restart
+git add .
+
+./vendor/bin/sail stop
+./vendor/bin/sail up -d
+
+
