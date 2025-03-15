@@ -41,6 +41,7 @@ class CourierController extends Controller
         $mode = $request->mode;
         $currentMove = PackageMovement::where('package_id', $package->id)->where("from_location_id", $package->current_location_id)->first();
         if ($mode == "INFO"){
+            //This is a test commit
             return response()->json(["success" => true, "package" => $package]);
         }
 
