@@ -12,4 +12,9 @@ class Employee extends Model
     {
         return $this->belongsTo(Address::class, 'address_id');
     }
+
+    public function contracts()
+    {
+        return $this->hasMany(EmployeeContract::class, 'employee_id');
+    }
 }
