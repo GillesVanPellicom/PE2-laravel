@@ -115,10 +115,10 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="nationality" class="block text-sm font-medium text-gray-700">Nationality:</label>
-                    <input type="text" name="nationality" id="nationality" value="{{ old('nationality') }}"
+                    <label for="team" class="block text-sm font-medium text-gray-700">Team:</label>
+                    <input type="text" name="team" id="team" value="{{ old('team') }}"
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    @error('nationality')
+                    @error('team')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>

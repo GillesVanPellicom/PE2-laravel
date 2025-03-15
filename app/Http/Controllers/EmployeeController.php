@@ -3,15 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address, EmployeeContract};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User};
+use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
+use carbon\Carbon;
 
 class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::with('address.city.country')->get();
+        $employees = User::whereHas('employee', function ($query) {
+            /*$query->whereHas('contracts', function ($subQuery) {
+                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+            });*/
+        })->get();
         return view('employees.index', compact('employees'));
     }
 
@@ -37,10 +43,9 @@ class EmployeeController extends Controller
 
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'phone' => 'required|string|unique:employees,phone_number|regex:/^\+?[0-9\s\-()]{10,}$/',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|unique:users,phone_number|regex:/^\+?[0-9\s\-()]{10,}$/',
             'birth_date' => ['required', 'date', new Validate_Adult('employee')],
-            'nationality' => 'required|string|max:255',
         ],
         [
             'street.required' => 'Street is required',
@@ -83,15 +88,23 @@ class EmployeeController extends Controller
             $new_address_id = $new_address->id;
         }
 
-        $employee = [
+        $user = [
             'last_name' => $request->lastname,
             'first_name' => $request->firstname,
             'email' => $request->email,
             'phone_number' => $request->phone,
             'birth_date' => $request->birth_date,
             'address_id' => $new_address_id,
-            'nationality' => $request->nationality,
+            'password' => Hash::make('password123')
+        ];
+
+        $new_user = User::create($user);
+        $user_id = $new_user->id;
+
+        $employee = [
             'leave_balance' => 0,
+            'user_id' => $user_id,
+            'team_id' => $request->team,
         ];
 
         Employee::create($employee);
@@ -101,14 +114,16 @@ class EmployeeController extends Controller
 
     public function contracts()
     {
-        return view('employees.contracts', ['contracts' => EmployeeContract::all()]);
+        //$contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->get();
+        $contracts = EmployeeContract::all();
+        return view('employees.contracts', compact('contracts'));
 
     }
 
-    public function updateEndTime($id)
+    public function updateEndTime(Request $request, $id)
     {
         $contract = EmployeeContract::find($id, ['contract_id']);
-        $contract->end_date = now();
+        $contract->end_date = $request->end_date;
         $contract->save();
 
         return redirect()->route('employees.contracts')->with('success', 'Contract ended successfully');
