@@ -19,6 +19,7 @@
     <p>Your city: {{ Auth::user()->address->city->name }}</p>
     <p>Your street: {{ Auth::user()->address->street }}</p>
     <p>Your house number: {{ Auth::user()->address->house_number }}</p>
+    <p>Your bus number: {{ Auth::user()->address->bus_number }}</p>
     <p>Your phone number: {{ Auth::user()->phone_number }}</p>
 
     <form action="{{ route('auth.logout') }}" method="POST">
@@ -57,6 +58,10 @@
         <p>
             <label for="house_number">House Number:</label>
             <input type="text" id="house_number" name="house_number" value="{{ Auth::user()->address->house_number }}">
+        </p>
+        <p>
+            <label for="bus_number">Bus Number:</label>
+            <input type="text" id="bus_number" name="bus_number" value="{{ Auth::user()->address->bus_number }}">
         </p>
         <p>
             <label for="phone_number">Phone Number:</label>
