@@ -23,7 +23,12 @@ Route::get('/', function () {
 })->name('welcome');
 
 // Login
-Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect()->route('welcome');
+    }
+    return view('auth.login');
+})->name('auth.login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
 
 // Register
