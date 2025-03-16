@@ -12,6 +12,7 @@
     <a href="{{ route('auth.login') }}">Login</a>
     <br>
     <a href="{{ route('auth.register') }}">Register</a>
+    <br>
 </div>
 </body>
 </html>
