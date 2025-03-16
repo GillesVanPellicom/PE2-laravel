@@ -8,7 +8,7 @@ use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
-use App\http\Controllers\AuthController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
