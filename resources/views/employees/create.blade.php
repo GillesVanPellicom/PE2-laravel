@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section("pageName","Employees")
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold mb-4">New Employee</h1>

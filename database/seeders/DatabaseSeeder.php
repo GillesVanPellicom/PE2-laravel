@@ -33,7 +33,6 @@ class DatabaseSeeder extends Seeder {
       DeliveryMethodSeeder::class,
       WeightClassSeeder::class,
       PackageSeeder::class,
-      PackageMovementsSeeder::class,
       FlightsSeeder::class,
       VacationSeeder::class,
       FlightsContractSeeder::class
