@@ -47,6 +47,7 @@ class AuthController extends Controller
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
             'house_number' => 'required|integer',
+            'bus_number' => 'nullable|string|max:10',
         ]);
 
         // Update or create the country
@@ -66,6 +67,7 @@ class AuthController extends Controller
                 'street' => $validated['street'],
                 'house_number' => $validated['house_number'],
                 'cities_id' => $city->id,
+                'bus_number' => $validated['bus_number'],
             ]
         );
 
@@ -111,6 +113,7 @@ class AuthController extends Controller
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
             'house_number' => 'required|integer',
+            'bus_number' => 'nullable|string|max:10',
         ]);
 
         // Create or find the country
@@ -128,6 +131,7 @@ class AuthController extends Controller
             'street' => $validated['street'],
             'house_number' => $validated['house_number'],
             'cities_id' => $city->id,
+            'bus_number' => $validated['bus_number'],
         ]);
 
         // Create the user with the address_id

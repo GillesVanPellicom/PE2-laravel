@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\flight;
 use Carbon\Carbon;
 
-class flightscontroller extends Controller
+class Flightscontroller extends Controller
 {
     public function flightindex()
 {

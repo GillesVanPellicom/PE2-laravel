@@ -1,10 +1,15 @@
 <x-app-layout>
+    @section("pageName","Employees")
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold mb-4">Employees</h1>
-            <a href="{{ route('employees.create') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
+            <a href="{{ route('employees.Create') }}" 
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
                 Create Employee
+            </a>
+            <a href="{{ route('employees.contracts') }}" 
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
+                Show Contracts
             </a>
         </div>
 

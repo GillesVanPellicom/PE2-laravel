@@ -9,15 +9,27 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
-use App\http\Controllers\AuthController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\contractController;
+use App\Http\Controllers\flightscontroller;
+use App\Http\Controllers\PackageController;
+use App\Http\Controllers\airportController;
+use App\Http\Controllers\EmployeeController;
+
+// ======================= Start Authentication ====================== //
 
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
 // Login
-Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect()->route('welcome');
+    }
+    return view('auth.login');
+})->name('auth.login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
 
 // Register
@@ -39,12 +51,7 @@ Route::get('/customers', function () {
 })->name('customers');
 Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 
-use App\Http\Controllers\contractController;
-use App\Http\Controllers\flightscontroller;
-use App\Http\Controllers\PackageController;
-use App\Http\Controllers\airportController;
-use App\Http\Controllers\EmployeeController;
-
+// ======================= End Authentication ====================== //
 
 Route::get('/', function () {
     return view('welcome');
@@ -112,9 +119,15 @@ Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])-
 
 Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
 
-Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.create');
+Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.Create');
 
 Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->name('employees.store_employee');
+
+Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@contracts')->name('employees.contracts');
+
+Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->name('employee.contracts.updateEndDate');
+
+
 
 // ======================= End Employee ====================== //
 
@@ -161,3 +174,11 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 // ======================= End Customer ====================== //
 
 
+// ======================= Start CourierRouteCreator ====================== //
+
+use App\Http\Controllers\RouteCreatorController;
+
+Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+
+
+// ======================= End CourierRouteCreator ====================== //
