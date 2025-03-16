@@ -10,7 +10,13 @@ use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\contractController;
+use App\Http\Controllers\flightscontroller;
+use App\Http\Controllers\PackageController;
+use App\Http\Controllers\airportController;
+use App\Http\Controllers\EmployeeController;
 
+// ======================= Start Authentication ====================== //
 
 Route::get('/', function () {
     return view('welcome');
@@ -39,12 +45,7 @@ Route::get('/customers', function () {
 })->name('customers');
 Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 
-use App\Http\Controllers\contractController;
-use App\Http\Controllers\flightscontroller;
-use App\Http\Controllers\PackageController;
-use App\Http\Controllers\airportController;
-use App\Http\Controllers\EmployeeController;
-
+// ======================= End Authentication ====================== //
 
 // ======================= Start Courier ====================== //
 
