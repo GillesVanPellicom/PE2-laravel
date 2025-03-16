@@ -49,9 +49,10 @@ use App\Http\Controllers\EmployeeController;
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
+use App\Http\Controllers\CourierRouteController;
 
 Route::get('/courier', [CourierController::class, "index"])->name('courier');
-Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
+Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
 Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
 Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
@@ -132,11 +133,4 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 // ======================= End Customer ====================== //
 
 
-// ======================= Start CourierRouteCreator ====================== //
 
-use App\Http\Controllers\RouteCreatorController;
-
-Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
-
-
-// ======================= End CourierRouteCreator ====================== //

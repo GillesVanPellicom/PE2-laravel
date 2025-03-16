@@ -78,4 +78,6 @@ class Package extends Model {
     return $this->hasMany(PackageMovement::class, 'package_id');
 }
 
+
+
 }
