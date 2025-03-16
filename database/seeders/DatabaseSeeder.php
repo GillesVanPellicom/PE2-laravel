@@ -35,7 +35,9 @@ class DatabaseSeeder extends Seeder {
       PackageSeeder::class,
       FlightsSeeder::class,
       VacationSeeder::class,
-      FlightsContractSeeder::class
+      FlightsContractSeeder::class,
+      RouterNodesSeeder::class,
+      RouterEdgesSeeder::class
     ]);
 
   }
