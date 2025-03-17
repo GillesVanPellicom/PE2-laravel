@@ -7,6 +7,9 @@ use App\Services\Router\Types\NodeType;
 
 class RouterNodes extends Model {
   protected $table = 'router_nodes';
+  protected $primaryKey = 'id';
+  protected $keyType = 'string';
+  public $incrementing = false;
 
   protected $casts = [
     'location_type' => NodeType::class,
