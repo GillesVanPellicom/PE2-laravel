@@ -97,7 +97,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="house_number" class="block text-sm font-medium text-gray-700">House number:</label>
+                    <label for="house_number" class="block text-sm font-medium text-gray-700">House number (Optional):</label>
                     <input type="text" name="house_number" id="house_number" value="{{ old('house_number') }}"
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     @error('house_number')

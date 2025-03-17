@@ -92,7 +92,9 @@ Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@cont
 
 Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->name('employee.contracts.updateEndDate');
 
+Route::get('/employees/create-contract', 'App\Http\Controllers\EmployeeController@create_employeecontract')->name('employees.create_contract');
 
+Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@store_contract')->name('employees.store_contract');
 
 // ======================= End Employee ====================== //
 

@@ -129,44 +129,39 @@ class EmployeeController extends Controller
         return redirect()->route('employees.contracts')->with('success', 'Contract ended successfully');
     }
 
-    /*public function create_contract()
+    public function create_employeecontract()
     {
-        return view('employees.create_contract', ['employees' => Employee::all()]);
-    }*/
+        return view('employees.create_employeecontract', ['employees' => Employee::all()]);
+    }
 
-    /*public function store_contract(Request $request)
+    public function store_contract(Request $request)
     {
         $request->validate([
             'employee_id' => 'required|integer',
-            'job_id' => 'required|integer',
+            //'job_id' => 'required|integer',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'status' => 'required|string',
         ],
         [
             'employee_id.required' => 'Employee is required.',
             'employee_id.integer' => 'Employee must be a number.',
-            'job_id.required' => 'Job is required.',
-            'job_id.integer' => 'Job must be a number.',
+            //'job_id.required' => 'Job is required.',
+            //'job_id.integer' => 'Job must be a number.',
             'start_date.required' => 'Start date is required.',
             'start_date.date' => 'Start date must be a date.',
-            'end_date.required' => 'End date is required.',
-            'end_date.date' => 'End date must be a date.',
-            'end_date.after' => 'End date must be after start date.',
-            'status.required' => 'Status is required.',
-            'status.string' => 'Status must be a string.',
+            //'end_date.required' => 'End date is required.',
+            //'end_date.date' => 'End date must be a date.',
+            //'end_date.after' => 'End date must be after start date.',
         ]);
 
         $contract = [
-            'employee_id' => $request->employee_id,
-            'job_id' => $request->job_id,
+            'employee_id' => $request->employee,
+            'job_id' => 1,
             'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'status' => $request->status,
+            'status' => 'active',
         ];
 
         EmployeeContract::create($contract);
 
         return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
-    }*/
+    }
 }
