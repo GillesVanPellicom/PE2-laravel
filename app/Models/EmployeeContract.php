@@ -13,12 +13,12 @@ class EmployeeContract extends Model
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     public function function()
     {
-        return $this->belongsTo(EmployeeFunctions::class);
+        return $this->belongsTo(EmployeeFunctions::class, 'job_id');
     }
 }
 
