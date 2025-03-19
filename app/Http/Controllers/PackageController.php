@@ -14,6 +14,8 @@ use App\Models\Country;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
+
 
 class PackageController extends Controller
 {
@@ -126,27 +128,50 @@ class PackageController extends Controller
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
     }
 
-    public function generatePackageLabel($packageID)
-    {
-        $package = Package::with(['address.city'])->findOrFail($packageID);
-        
-        if (!$package->address) {
-            abort(404, 'Address not found for this package');
-        }
+    /**
+ * Generate a package label PDF
+ * 
+ * @param int $packageID
+ * @return \Illuminate\Http\Response
+ * @throws \Illuminate\Auth\Access\AuthorizationException
+ */
+public function generatePackageLabel($packageID)
+{
+    if (!Auth::check()) {
+        abort(401, 'Unauthorized access');
+    }
 
-        $qrCode = base64_encode(QrCode::format('png')
+    $package = Package::with([
+        'address.city.country',
+        'user.address.city.country'
+    ])->findOrFail($packageID);
+
+    if (Auth::user()->id !== $package->user_id) {
+        abort(403, 'You are not authorized to access this package label');
+    }
+
+    if (!$package->address) {
+        abort(404, 'Address not found for this package');
+    }
+
+    // Generate QR code
+    $qrCode = base64_encode(QrCode::format('png')
         ->size(150)
         ->margin(0)
         ->generate($packageID));
 
-        $data = [
-            'receiver_address' => $package->address,
-            'package' => $package,
-            'tracking_number' => $package->tracking_number ?? '1Z 999 999 99 9999 999 9',
-            'qr_code' => $qrCode
-        ];
+    $data = [
+        'receiver_address' => $package->address,
+        'receiver_country' => $package->address->city->country,
+        'customer' => $package->user,
+        'customer_address' => $package->user->address,
+        'customer_country' => $package->user->address->city->country,
+        'package' => $package,
+        'tracking_number' => $package->reference ?? '1Z 999 999 99 9999 999 9',
+        'qr_code' => $qrCode
+    ];
 
-        $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
-        return $pdf->stream('package-label.pdf');
-    }
+    $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
+    return $pdf->stream('package-label.pdf');
+}
 }
