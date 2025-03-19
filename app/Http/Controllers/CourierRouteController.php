@@ -13,6 +13,7 @@ class CourierRouteController extends Controller
     public function showRoute()
     {
         // Step 1: Retrieve all packages with destination type PRIVATE_INDIVIDU
+    
         $packages = Package::with(['currentLocation', 'destinationLocation'])
             ->whereHas('destinationLocation', function ($query) {
                 $query->where('location_type', 'PRIVATE_INDIVIDU');
@@ -37,16 +38,18 @@ class CourierRouteController extends Controller
 
         // Step 3: Check if there are any filtered packages
         if ($filteredPackages->isEmpty()) {
-            dd('Filtered Packages:', $filteredPackages->toArray());
+            return view('courier.route', ['route' => []]);
         }
 
         // Step 4: Prepare package data for route calculation
         $packageData = $filteredPackages->map(function ($package) {
             return [
-                'latitude' => $package->currentLocation->latitude,
-                'longitude' => $package->currentLocation->longitude,
+                'latitude' => $package->destinationLocation->latitude,
+                'longitude' => $package->destinationLocation->longitude,
+                'ref' => $package->reference, // Include the reference number
             ];
         })->toArray();
+
 
         // Step 5: Calculate the route using RouteTrace
         $routeCreator = new RouteTrace();

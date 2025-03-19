@@ -17,8 +17,11 @@ class RouteTrace
         $route = [];
         $totalDistance = 0;
 
-        $currentLocation = $packages[0];
+        if (empty($packages)) {
+            return $route;
+        }
 
+        $currentLocation = $packages[0];
         $route[] = $currentLocation;
 
         while (count($route) < count($packages) && $totalDistance < $this->maxDistance) {
@@ -55,7 +58,7 @@ class RouteTrace
 
         foreach ($packages as $package) {
             if (in_array($package, $route)) {
-                continue; 
+                continue; // Skip packages already in the route
             }
 
             $distance = GeoMath::sphericalCosinesDistance(
