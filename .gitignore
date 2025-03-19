@@ -21,10 +21,12 @@ yarn-error.log
 node_modules/
 .DS_Store
 vendor/*
+vendor/composer/
 !vendor/bin/
 !vendor/laravel/
 !vendor/symfony/
 .editorconfig
+/*.sql
 
 # Add your own gitignore rules below
 
