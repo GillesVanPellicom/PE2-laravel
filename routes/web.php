@@ -133,9 +133,13 @@ Route::get('/airport', [airportController::class, 'airportindex'])->name('airpor
 
 // ======================= Start Customer ====================== //
 
-Route::get('/send-package', [PackageController::class, 'create'])->name('packages.send-package');
+Route::get('/send-package', [PackageController::class, 'create'])
+    ->middleware('auth')
+    ->name('packages.send-package');
 
-Route::post('/send-package', [PackageController::class, 'store'])->name('package.store');
+Route::post('/send-package', [PackageController::class, 'store'])
+    ->middleware('auth')
+    ->name('package.store');
 
 Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 

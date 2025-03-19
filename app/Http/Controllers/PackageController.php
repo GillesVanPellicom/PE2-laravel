@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PackageController extends Controller
 {
+
     public function index()
     {
         $packages = Package::paginate(10);
@@ -49,16 +50,15 @@ class PackageController extends Controller
 
     public function store(Request $request)
     {
+        $userId = Auth::user()->id;
+
         $deliveryMethod = DeliveryMethod::findOrFail($request->delivery_method_id);
         $weightClass = WeightClass::findOrFail($request->weight_id);
 
         $validationRules = [
-            'reference' => 'string|max:255',
-            'user_id' => 'required|exists:users,id',
             'origin_location_id' => 'required|exists:locations,id',
             'destination_location_id' => 'exists:locations,id',
             'address_id' => 'exists:addresses,id',           
-            'status' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'receiverEmail' => 'required|email|max:255',
@@ -87,7 +87,9 @@ class PackageController extends Controller
             return back()->withErrors(['price' => 'Invalid price calculation']);
         }
 
-        $package = Package::create($validatedData);
+        $validatedData['reference'] = $this->generateUniqueTrackingNumber();
+        $validatedData['user_id'] = $userId;
+        $validatedData['status'] = 'pending';
 
         //Mail::to($package->receiverEmail)->send(new PackageCreatedMail($package));
 
@@ -122,6 +124,44 @@ class PackageController extends Controller
         //return redirect()->route('generate-package-label')->with('success', 'Package created successfully');
         return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
     }
+
+    /**
+ * Generate a unique tracking number for a package
+ * Format: PK + YYYY + MM + XXXXXXXX (where X is random number)
+ * Example: PK20250312345678
+ *
+ * @return string
+ * @throws \Exception if unable to generate unique number after maximum attempts
+ */
+private function generateUniqueTrackingNumber()
+{
+    $maxAttempts = 100;
+    $attempt = 0;
+    
+    do {
+        if ($attempt >= $maxAttempts) {
+            throw new \Exception('Unable to generate unique tracking number after ' . $maxAttempts . ' attempts');
+        }
+
+        $year = date('Y');
+        $month = date('m');
+        
+        $random = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
+        
+        $trackingNumber = sprintf(
+            'PK%s%s%s',
+            $year,
+            $month,
+            $random
+        );
+        
+        $exists = Package::where('reference', $trackingNumber)->exists();
+        
+        $attempt++;
+    } while ($exists);
+
+    return $trackingNumber;
+}
     
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
@@ -150,8 +190,18 @@ public function generatePackageLabel($packageID)
         abort(403, 'You are not authorized to access this package label');
     }
 
-    if (!$package->address) {
-        abort(404, 'Address not found for this package');
+    if ($package->deliveryMethod->requires_location) {
+        if (!$package->destinationLocation || !$package->destinationLocation->address) {
+            abort(404, 'Destination location address not found for this package');
+        }
+        $receiverAddress = $package->destinationLocation->address;
+        $receiverCountry = $package->destinationLocation->address->city->country;
+    } else {
+        if (!$package->address) {
+            abort(404, 'Address not found for this package');
+        }
+        $receiverAddress = $package->address;
+        $receiverCountry = $package->address->city->country;
     }
 
     // Generate QR code
@@ -160,16 +210,16 @@ public function generatePackageLabel($packageID)
         ->margin(0)
         ->generate($packageID));
 
-    $data = [
-        'receiver_address' => $package->address,
-        'receiver_country' => $package->address->city->country,
-        'customer' => $package->user,
-        'customer_address' => $package->user->address,
-        'customer_country' => $package->user->address->city->country,
-        'package' => $package,
-        'tracking_number' => $package->reference ?? '1Z 999 999 99 9999 999 9',
-        'qr_code' => $qrCode
-    ];
+        $data = [
+            'receiver_address' => $receiverAddress,
+            'receiver_country' => $receiverCountry,
+            'customer' => $package->user,
+            'customer_address' => $package->user->address,
+            'customer_country' => $package->user->address->city->country,
+            'package' => $package,
+            'tracking_number' => $package->reference ?? '1Z 999 999 99 9999 999 9',
+            'qr_code' => $qrCode
+        ];
 
     $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
     return $pdf->stream('package-label.pdf');
