@@ -35,6 +35,7 @@ namespace App\Services\Router {
     public function __construct() {
       try {
         $this->graph = new RouterGraph();
+        echo("Deserializing database...\n");
         $this->deserializeDb();
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());

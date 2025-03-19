@@ -16,6 +16,7 @@ use App\Models\DeliveryMethod;
 use App\Models\Location;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 
 class Package extends Model {
   use HasFactory;
@@ -84,6 +85,85 @@ class Package extends Model {
   public function getMovements(): ?array {
     /** @var Router $router */
     $router = App::make(Router::class);
-    return $router->getPath($this->getAttribute('originLocation'), $this->getAttribute('destinationLocation'));
+
+    if (!$this->hasMovementsInDb()) {
+      $path = $router->getPath($this->getAttribute('originLocation'), $this->getAttribute('destinationLocation'));
+      $this->commitMovements($path);
+      return $path;
+    } else {
+      return $this->getMovementsFromDb();
+    }
+  }
+
+  
+  private function commitMovements(array $path): void {
+    DB::transaction(function () use ($path) {
+      $previousMovement = null;
+      $previousNode = null;
+
+      foreach ($path as $index => $node) {
+        $movement = $this->movements()->create([
+          'package_id' => $this->getAttribute('id'),
+          'handled_by_courier_id' => null,
+          'vehicle_id' => null,
+          'departure_time' => null,
+          'arrival_time' => null,
+          'check_in_time' => null,
+          'check_out_time' => null,
+          'current_node_id' => $node->getID(),
+          'next_movement' => null,
+          'router_edge_id' => null,
+        ]);
+
+        if ($previousMovement) {
+          $routerEdge = RouterEdges::where('origin_node', $previousNode->getID())
+            ->where('destination_node', $node->getID())
+            ->first();
+          $routerEdgeId = $routerEdge ? $routerEdge->id : null;
+
+          $previousMovement->update([
+            'next_movement' => $movement->getAttribute('id'),
+            'router_edge_id' => $routerEdgeId,
+          ]);
+        }
+
+        $previousMovement = $movement;
+        $previousNode = $node;
+      }
+    });
+  }
+
+
+  private function hasMovementsInDb(): bool {
+    return $this->movements()->exists();
+  }
+
+
+  /**
+   * @throws InvalidRouterArgumentException
+   * @throws InvalidCoordinateException
+   */
+  public function getMovementsFromDb(): array {
+    $movements = $this->movements()
+      ->join('router_nodes', 'package_movements.next_movement', '=', 'router_nodes.id')
+      ->get([
+        'router_nodes.id', 'router_nodes.description', 'router_nodes.location_type', 'router_nodes.latDeg',
+        'router_nodes.lonDeg'
+      ]);
+
+    $nodes = [];
+
+    foreach ($movements as $movement) {
+      $node = new Node(
+        $movement->id,
+        $movement->description,
+        $movement->location_type,
+        $movement->latDeg,
+        $movement->lonDeg
+      );
+      $nodes[] = $node;
+    }
+
+    return $nodes;
   }
 }
