@@ -86,16 +86,20 @@ class Package extends Model {
     /** @var Router $router */
     $router = App::make(Router::class);
 
+    // Check cache
     if (!$this->hasMovementsInDb()) {
+      // Cache miss
+      // New package movement
       $path = $router->getPath($this->getAttribute('originLocation'), $this->getAttribute('destinationLocation'));
       $this->commitMovements($path);
       return $path;
     } else {
+      // Cache hit
       return $this->getMovementsFromDb();
     }
   }
 
-  
+
   private function commitMovements(array $path): void {
     DB::transaction(function () use ($path) {
       $previousMovement = null;
@@ -116,9 +120,16 @@ class Package extends Model {
         ]);
 
         if ($previousMovement) {
-          $routerEdge = RouterEdges::where('origin_node', $previousNode->getID())
-            ->where('destination_node', $node->getID())
-            ->first();
+          $routerEdge = RouterEdges::where(function ($query) use ($previousNode, $node) {
+            $query->where('origin_node', $previousNode->getID())
+              ->where('destination_node', $node->getID())
+              ->orWhere(function ($query) use ($previousNode, $node) {
+                $query->where('origin_node', $node->getID())
+                  ->where('destination_node', $previousNode->getID())
+                  ->where('isUniDirectional', 0);
+              });
+          })->first();
+
           $routerEdgeId = $routerEdge ? $routerEdge->id : null;
 
           $previousMovement->update([
@@ -144,24 +155,23 @@ class Package extends Model {
    * @throws InvalidCoordinateException
    */
   public function getMovementsFromDb(): array {
-    $movements = $this->movements()
-      ->join('router_nodes', 'package_movements.next_movement', '=', 'router_nodes.id')
-      ->get([
-        'router_nodes.id', 'router_nodes.description', 'router_nodes.location_type', 'router_nodes.latDeg',
-        'router_nodes.lonDeg'
-      ]);
-
+    $movements = $this->movements()->orderBy('id')->get();
     $nodes = [];
 
     foreach ($movements as $movement) {
-      $node = new Node(
-        $movement->id,
-        $movement->description,
-        $movement->location_type,
-        $movement->latDeg,
-        $movement->lonDeg
-      );
-      $nodes[] = $node;
+      $routerNode = RouterNodes::find($movement->current_node_id);
+      if ($routerNode) {
+        $node = new Node(
+          $routerNode->id,
+          $routerNode->description,
+          $routerNode->location_type,
+          $routerNode->latDeg,
+          $routerNode->lonDeg,
+          $routerNode->isEntry,
+          $routerNode->isExit
+        );
+        $nodes[] = $node;
+      }
     }
 
     return $nodes;
