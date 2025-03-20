@@ -77,6 +77,11 @@ class PackageController extends Controller
         ->where('id', $packageID)
         ->first();
 
+        $qrCode = base64_encode(QrCode::format('png')
+        ->size(150)
+        ->margin(0)
+        ->generate($packageID));
+
         if (!$package) {
             abort(404, 'Package not found');
         }
@@ -95,7 +100,7 @@ class PackageController extends Controller
             }
         }
     
-        return view('Packages.package-details', compact('package'));
+        return view('Packages.package-details', compact('package'), compact('qrCode'));
     }
 
     public function create()

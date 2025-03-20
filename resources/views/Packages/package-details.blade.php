@@ -14,6 +14,55 @@
             <div class="bg-white rounded-lg shadow-md p-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-8">Package Details</h1>
 
+                <!-- Package Label and QR Code Section -->
+                <div class="mb-8">
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center">
+                                <i class="fas fa-tag text-yellow-600 mr-3"></i>
+                                <h2 class="text-xl font-semibold text-gray-800">Package Information</h2>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- QR Code Section -->
+                                <div class="bg-white rounded-lg border border-gray-200 p-6 flex flex-col items-center">
+                                    <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                                        <img src="data:image/png;base64,{{ $qrCode }}" 
+                                        alt="Package QR Code"
+                                        style="width: 150px; height: 150px; margin: 10px auto; display: block;">
+                                    </div>
+                                    <p class="text-sm text-gray-600 text-center mb-2">Show this QR code when collecting your package</p>
+                                    <p class="text-sm font-medium text-gray-800 text-center">Tracking Number: {{$package->reference}}</p>
+                                </div>
+
+                                <!-- Package Label Section -->
+                                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                    <div class="flex flex-col h-full">
+                                        <div class="flex-grow">
+                                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Package Label</h3>
+                                            <div class="space-y-2 mb-6">
+                                                <p class="text-sm text-gray-600">Download the package label for printing or reference.</p>
+                                                <p class="text-sm text-gray-600">Available formats: PDF</p>
+                                            </div>
+                                            <div class="space-y-3">
+                                                <a href="{{ route('generate-package-label', $package->id) }}" class="w-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 transition-colors duration-200 py-2 px-4 rounded-md flex items-center justify-center space-x-2">
+                                                    <i class="fas fa-file-pdf text-xl"></i>
+                                                    <span class="font-medium">Download PDF Label</span>
+                                                </a>
+                                                <a href="{{ route('generate-package-label', $package->id) }}" class="mt-4 w-full bg-gradient-to-r from-gray-700 to-gray-800 text-white py-3 px-4 rounded-md hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center space-x-2">
+                                                    <i class="fas fa-print"></i>
+                                                    <span class="font-medium">Print Label</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <!-- Sender Information -->
                     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
