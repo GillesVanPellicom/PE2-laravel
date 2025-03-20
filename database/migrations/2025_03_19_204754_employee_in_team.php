@@ -9,22 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('employeeInTeam', function (Blueprint $table) {
-            $table->foreignId('employee_id')->constrained('employees');
-            $table->foreignId('team_id')->constrained('teams');
-            $table->timestamps();
-        });
-    }
+    public function up()
+{
+    Schema::create('employee_in_teams', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('employee_id')->constrained()->onDelete('cascade');
+        $table->foreignId('team_id')->constrained()->onDelete('cascade');
+        $table->timestamps();
+    });
+}
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('team', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('employee_in_teams');
     }
 };
