@@ -39,6 +39,65 @@ class PackageController extends Controller
         return response()->json(['success' => false, 'message' => 'Package not found']);
     }
 
+    public function mypackages()
+    {
+        $packages = Package::with([
+            'user',
+            'deliveryMethod',
+            'destinationLocation.address.city.country',
+            'address.city.country'
+        ])
+        ->where('user_id', Auth::user()->id)
+        ->get();
+    
+        foreach ($packages as $package) {
+            if ($package->deliveryMethod->requires_location) {
+                if (!$package->destinationLocation || !$package->destinationLocation->address) {
+                    abort(404, 'Destination location address not found for this package');
+                }
+            } else {
+                if (!$package->address) {
+                    abort(404, 'Address not found for this package');
+                }
+            }
+        }
+    
+        return view('Packages.my-packages', compact('packages'));
+    }
+
+    public function packagedetails($packageID)
+    {
+        $package = Package::with([
+            'user',
+            'deliveryMethod',
+            'destinationLocation.address.city.country',
+            'address.city.country'
+        ])
+        ->where('user_id', Auth::user()->id)
+        ->where('id', $packageID)
+        ->first();
+
+        if (!$package) {
+            abort(404, 'Package not found');
+        }
+
+        if (Auth::user()->id !== $package->user_id) {
+            abort(403, 'You are not authorized to access this package label');
+        }
+    
+        if ($package->deliveryMethod->requires_location) {
+            if (!$package->destinationLocation || !$package->destinationLocation->address) {
+                abort(404, 'Destination location address not found for this package');
+            }
+        } else {
+            if (!$package->address) {
+                abort(404, 'Address not found for this package');
+            }
+        }
+    
+        return view('Packages.package-details', compact('package'));
+    }
+
     public function create()
     {
         $weightClasses = WeightClass::where('is_active', true)->get();
