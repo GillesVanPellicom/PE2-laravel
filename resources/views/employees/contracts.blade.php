@@ -36,17 +36,24 @@
                     @foreach($contracts as $contract)
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->first_name }} {{ $contract->employee->last_name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->start_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->end_date }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_status }}</td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                @if($contract->end_date > now() or $contract->end_date == NULL)
+                                    Active
+                                @else
+                                    Expired
+                                @endif
+                            </td>
                             <td class="border border-gray-300 px-4 py-2 flex justify-center">
                                 <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST">
                                     @csrf
                                     @method('POST')
                                     <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
-                                        Set End Date to Today
+                                        Set End Date to:
                                     </button>
+                                    <input name="end_date" type="date" value="{{ date('Y-m-d') }}">
                                 </form>
                             </td>
                         </tr>

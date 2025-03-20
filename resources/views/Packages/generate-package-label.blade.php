@@ -71,10 +71,10 @@
             <div class="section">
                 <div class="section-title">From:</div>
                 <div class="address">
-                    Company Name<br>
-                    Company Street 123<br>
-                    1234 AB Amsterdam<br>
-                    Netherlands
+                    {{ $customer->first_name }} {{ $customer->last_name }}<br>
+                    {{ $customer_address->street }} {{ $customer_address->house_number }}<br>
+                    {{ $customer_address->city->postcode }} {{ $customer_address->city->name }}<br>
+                    {{ $customer_country->country_name }}
                 </div>
             </div>
 
@@ -84,8 +84,8 @@
                 <div class="address">
                     {{ $package->name }} {{ $package->lastName }}<br>
                     {{ $receiver_address->street }} {{ $receiver_address->house_number }}<br>
-                    {{ $receiver_address->city->name }}, {{ $receiver_address->city->postcode }}<br>
-                    
+                    {{ $receiver_address->city->postcode }} {{ $receiver_address->city->name }}<br>
+                    {{ $receiver_country->country_name }}
                 </div>
             </div>
         </div>
