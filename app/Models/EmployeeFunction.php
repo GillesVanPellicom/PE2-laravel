@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class EmployeeFunctions extends Model
+class EmployeeFunction extends Model
 {
     protected $table = 'functions';
     protected $fillable = ['name', 'description', 'salary_min', 'salary_max'];
