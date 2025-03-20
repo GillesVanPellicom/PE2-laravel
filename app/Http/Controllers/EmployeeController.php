@@ -144,6 +144,7 @@ class EmployeeController extends Controller
             'employee' => 'required|integer|min:1',
             'function' => 'required|integer|min:1',
             'start_date' => 'required|date',
+            'vacation_days' => 'required|integer|min:0',
         ],
         [
             'employee.required' => 'Employee is required.',
@@ -151,17 +152,35 @@ class EmployeeController extends Controller
             'function.required' => 'Job is required.',
             'function.integer' => 'Job must be a number.',
             'start_date.required' => 'Start date is required.',
-            'start_date.date' => 'Start date must be a date.'
+            'start_date.date' => 'Start date must be a date.',
+            'vacation_days.required' => 'It would be nice if the employee could have some vacation days.',
+            'vacation_days.min' => 'Cannot give a negative amount of vacation days.',
         ]);
     
-        $contract = [
-            'employee_id' => $request->employee,
-            'job_id' => $request->function,
-            'start_date' => $request->start_date
-        ];
+        $active_contract = EmployeeContract::where('employee_id', $request->employee)->where(function ($query) 
+        {
+            $query->where('end_date', '>', Carbon::now())
+                  ->orWhereNull('end_date');
+        })->first();
+
+        if($active_contract == NULL) {
+            $contract = [
+                'employee_id' => $request->employee,
+                'job_id' => $request->function,
+                'start_date' => $request->start_date
+            ];
+            
+            if ($request->vacations_days) {
+                $employee = Employee::find($request->employee);
+                $employee->leave_balance = $request->vacation_days;
+                $employee->save();
+            }
     
-        EmployeeContract::create($contract);
-        dump($contract);
-        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
+            EmployeeContract::create($contract);
+            return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
+        }
+        else {
+            return redirect()->route('employees.contracts')->with('error', 'Employee already has a contract');
+        }
     }
 }

@@ -4,8 +4,16 @@
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold mb-4">New Employee</h1>
             <a href="{{ route('employees.index') }}" 
-               class="text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
                 Home
+            </a>
+            <a href="{{ route('employees.contracts') }}" 
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
+                Show Contracts
+            </a>
+            <a href="{{ route('employees.create_contract') }}" 
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
+                Create Contract
             </a>
         </div>
 

@@ -6,17 +6,25 @@
             <h1 class="text-4xl font-bold mb-4">Contracts</h1>
             <a href="{{ route('employees.index') }}" 
                class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Show Employees
+                Home
             </a>
-            <a href="{{ route('employees.Create') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
+            <a href="{{ route('employees.Create') }}"
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
                 Create Employee
+            </a>
+            <a href="{{ route('employees.create_contract') }}" 
+               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
+                Create Contract
             </a>
         </div>
 
         @if (session('success'))
             <div class="bg-green-100 text-green-800 p-4 mb-6 rounded shadow">
                 {{ session('success') }}
+            </div>
+        @elseif (session('error'))
+            <div class="bg-red-100 text-red-800 p-4 mb-6 rounded shadow">
+                {{ session('error') }}
             </div>
         @endif
 
