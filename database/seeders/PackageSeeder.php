@@ -24,6 +24,7 @@ class PackageSeeder extends Seeder
             'addresses_id' => 4,
             'status' => 'Pending',
             'weight_id' => 1,
+            'weight' => 1.0,
             'delivery_method_id' => 1,
             'dimension' => '30x20x15',
             'name' => 'John',
