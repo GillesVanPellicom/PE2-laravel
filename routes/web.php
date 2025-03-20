@@ -143,6 +143,14 @@ Route::post('/send-package', [PackageController::class, 'store'])
 
 Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
+Route::get('/my-packages', [PackageController::class, 'mypackages'])
+    ->middleware('auth')
+    ->name('packages.mypackages');
+
+Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
+    ->middleware('auth')
+    ->name('packages.packagedetails');
+
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
 //--------------------------------- ENDTracking Packages ---------------------------------//
