@@ -116,8 +116,13 @@
 
                 <div class="mb-4">
                     <label for="team" class="block text-sm font-medium text-gray-700">Team:</label>
-                    <input type="text" name="team" id="team" value="{{ old('team') }}"
+                    <select name="team" id="team"
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="-1">Select a team</option>
+                        @foreach($teams as $team)
+                            <option value="{{ $team->id }}">{{ $team->department }}</option>
+                        @endforeach
+                    </select>
                     @error('team')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -132,4 +137,26 @@
             </form>
         </div>
     </div>
+
+    <!--<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_DISTANCE_API_KEY') }}&libraries=places"></script>
+    <script>
+        function initializeAutocomplete() {
+            streetInput = document.getElementById('street');
+            autocomplete = new google.maps.places.Autocomplete(streetInput);
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+
+                if (!place.geometry) {
+                    alert('No details available for the selected address.');
+                    return;
+                }
+
+                console.log('Selected Place:', place);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeAutocomplete);
+    </script>-->
+
 </x-app-layout>
