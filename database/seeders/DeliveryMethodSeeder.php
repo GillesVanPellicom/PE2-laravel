@@ -16,7 +16,7 @@ class DeliveryMethodSeeder extends Seeder
     {
         DB::table('delivery_method')->insert([
             [
-                'code' => 'Pickup Point',
+                'code' => 'PICKUP_POINT',
                 'name' => 'Pickup Point',
                 'description' => 'Local pickup point',
                 'price' => 5.99,

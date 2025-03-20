@@ -3,15 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User};
+use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
+use carbon\Carbon;
 
 class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::with('address.city.country')->get();
+        $employees = User::whereHas('employee', function ($query) {
+            /*$query->whereHas('contracts', function ($subQuery) {
+                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+            });*/
+        })->get();
         return view('employees.index', compact('employees'));
     }
 
@@ -37,10 +43,9 @@ class EmployeeController extends Controller
 
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'phone' => 'required|string|unique:employees,phone_number|regex:/^([0-9\s-+()]*)$/|min:10',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|unique:users,phone_number|regex:/^\+?[0-9\s\-()]{10,}$/',
             'birth_date' => ['required', 'date', new Validate_Adult('employee')],
-            'nationality' => 'required|string|max:255',
         ],
         [
             'street.required' => 'Street is required',
@@ -83,19 +88,80 @@ class EmployeeController extends Controller
             $new_address_id = $new_address->id;
         }
 
-        $employee = [
+        $user = [
             'last_name' => $request->lastname,
             'first_name' => $request->firstname,
             'email' => $request->email,
             'phone_number' => $request->phone,
             'birth_date' => $request->birth_date,
             'address_id' => $new_address_id,
-            'nationality' => $request->nationality,
+            'password' => Hash::make('password123')
+        ];
+
+        $new_user = User::create($user);
+        $user_id = $new_user->id;
+
+        $employee = [
             'leave_balance' => 0,
+            'user_id' => $user_id,
+            'team_id' => $request->team,
         ];
 
         Employee::create($employee);
 
         return redirect()->route('employees.index')->with('success', 'Employee created successfully');;
+    }
+
+    public function contracts()
+    {
+        //$contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->get();
+        $contracts = EmployeeContract::all();
+        return view('employees.contracts', compact('contracts'));
+
+    }
+
+    public function updateEndTime(Request $request, $id)
+    {
+        $contract = EmployeeContract::find($id, ['contract_id']);
+        $contract->end_date = $request->end_date;
+        $contract->save();
+
+        return redirect()->route('employees.contracts')->with('success', 'Contract ended successfully');
+    }
+
+    public function create_employeecontract()
+    {
+        return view('employees.create_employeecontract', ['employees' => Employee::all()]);
+    }
+
+    public function store_contract(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|integer',
+            //'job_id' => 'required|integer',
+            'start_date' => 'required|date',
+        ],
+        [
+            'employee_id.required' => 'Employee is required.',
+            'employee_id.integer' => 'Employee must be a number.',
+            //'job_id.required' => 'Job is required.',
+            //'job_id.integer' => 'Job must be a number.',
+            'start_date.required' => 'Start date is required.',
+            'start_date.date' => 'Start date must be a date.',
+            //'end_date.required' => 'End date is required.',
+            //'end_date.date' => 'End date must be a date.',
+            //'end_date.after' => 'End date must be after start date.',
+        ]);
+
+        $contract = [
+            'employee_id' => $request->employee,
+            'job_id' => 1,
+            'start_date' => $request->start_date,
+            'status' => 'active',
+        ];
+
+        EmployeeContract::create($contract);
+
+        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
     }
 }
