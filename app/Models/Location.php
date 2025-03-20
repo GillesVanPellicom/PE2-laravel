@@ -30,4 +30,9 @@ class Location extends Model
     {
         return $this->hasMany(Package::class, 'current_location_id');
     }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class, 'addresses_id');
+    }
 } 
