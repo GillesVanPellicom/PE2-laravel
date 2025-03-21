@@ -9,7 +9,7 @@ class EmployeeContract extends Model
     protected $table = 'contracts';
     protected $primaryKey = 'contract_id';
                                           //function_id
-    protected $fillable = ['employee_id', 'job_id', 'start_date', 'end_date', 'status'];
+    protected $fillable = ['employee_id', 'job_id', 'start_date', 'end_date'];
 
     public function employee()
     {
@@ -18,7 +18,7 @@ class EmployeeContract extends Model
 
     public function function()
     {
-        return $this->belongsTo(EmployeeFunctions::class, 'job_id');
+        return $this->belongsTo(EmployeeFunction::class, 'job_id');
     }
 }
 
