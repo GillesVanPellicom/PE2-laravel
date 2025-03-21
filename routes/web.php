@@ -59,7 +59,12 @@ Route::middleware("authenticate")->group(function () {
 
 # => Courier Mobile app
 
-Route::get('/courier', [CourierController::class, "index"])->name('courier');
+Route::get('/courier', function () {
+    if (Auth::check()) {
+        return redirect()->route('courier.scan');
+    }
+    return app(CourierController::class)->index();
+})->name('courier');
 Route::post('/courier', function (\Illuminate\Http\Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
