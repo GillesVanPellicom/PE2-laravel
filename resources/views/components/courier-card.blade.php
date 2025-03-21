@@ -1,6 +1,6 @@
 @php
     $packageids = session()->get('scanned_packages', []);
-    $packages = collect(\App\Models\Package::whereIn('id', $packageids)
+    $packages = empty($packageids) ? [] : collect(\App\Models\Package::whereIn('id', $packageids)
         ->orderByRaw('FIELD(id, ' . implode(',', $packageids) . ')')
         ->get())->reverse();
 @endphp
