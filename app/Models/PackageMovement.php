@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\View\Components\Courier;
+use App\Models\RouterEdges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,7 +45,7 @@ class PackageMovement extends Model {
   }
 
   public function routerEdge() {
-    return $this->belongsTo(RouterEdge::class, 'router_edge_id');
+    return $this->belongsTo(RouterEdges::class, 'router_edge_id');
   }
 
   public function getHopDepartedAttribute(): bool {

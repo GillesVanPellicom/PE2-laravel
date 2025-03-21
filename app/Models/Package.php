@@ -75,24 +75,28 @@ class Package extends Model {
   }
 
   /**
-   * @return Node[]|null
-   * @throws RouterException
-   * @throws InvalidRouterArgumentException
-   * @throws NodeNotFoundException
-   * @throws InvalidCoordinateException
-   * @throws NoPathFoundException
+   * @return Node[]|null Array of Node objects representing chronological package movements
+   * @throws InvalidCoordinateException If any input coordinates are blatantly wrong
+   * @throws InvalidRouterArgumentException General bad argument exception
+   * @throws NoPathFoundException No possible path found. There may not exist a route
+   * @throws NodeNotFoundException Given node ID might not exists
+   * @throws RouterException General router error
    */
   public function getMovements(): ?array {
     /** @var Router $router */
-    $router = App::make(Router::class);
 
     // Check cache
-    if (!$this->hasMovementsInDb()) {
+    if (!$this->movements()->exists()) {
       // Cache miss
       // New package movement
-      $path = $router->getPath($this->getAttribute('originLocation'), $this->getAttribute('destinationLocation'));
+      $router = App::make(Router::class);
+
+      $path = $router->getPath(
+        $this->getAttribute('originLocation'),
+        $this->getAttribute('destinationLocation'));
       $this->commitMovements($path);
       return $path;
+
     } else {
       // Cache hit
       return $this->getMovementsFromDb();
@@ -100,12 +104,16 @@ class Package extends Model {
   }
 
 
+  /**
+   * @param  Node[]  $path Array of Node objects to commit as movements
+   * @return void
+   */
   private function commitMovements(array $path): void {
     DB::transaction(function () use ($path) {
       $previousMovement = null;
       $previousNode = null;
 
-      foreach ($path as $index => $node) {
+      foreach ($path as $i => $node) {
         $movement = $this->movements()->create([
           'package_id' => $this->getAttribute('id'),
           'handled_by_courier_id' => null,
@@ -145,16 +153,13 @@ class Package extends Model {
   }
 
 
-  private function hasMovementsInDb(): bool {
-    return $this->movements()->exists();
-  }
-
-
   /**
-   * @throws InvalidRouterArgumentException
+   * @return Node[]|null
+   * @note Does not check existence before query. Function is expected to only be called after internal checks.
    * @throws InvalidCoordinateException
+   * @throws InvalidRouterArgumentException
    */
-  public function getMovementsFromDb(): array {
+  private function getMovementsFromDb(): ?array {
     $movements = $this->movements()->orderBy('id')->get();
     $nodes = [];
 
