@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
-use App\Models\Addresses;
-use App\Models\Customer;
+use App\Models\Address;
+use App\Models\User;
 
 class Package extends Model {
     use HasFactory;
