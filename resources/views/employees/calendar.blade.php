@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Holiday Request System</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
@@ -92,13 +94,13 @@
 <body>
     <div class="container">
         <div id="holidayInfo">
-            Remaining Holidays: <span id="remainingHolidays">5</span> | 
+            Remaining Holidays: <span id="remainingHolidays">0</span> | 
             Sick Days Taken: <span id="sickDaysTaken">0</span>
         </div>
         <div id="calendar"></div>
         <div class="button-container">
             <button id="saveRequests">Save Requests</button>
-            <a href="/holiday-requests" class="btn">View Requests</a>
+            <a href="/manager-calendar" class="btn">View Requests</a>
             <button id="clearStorage">Clear Data</button>
         </div>
     </div>
@@ -111,8 +113,9 @@
             var calendarEl = document.getElementById('calendar');
             var selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
             var selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-            var remainingHolidays = 5; 
-            var sickDaysTaken = selectedSickDays.size; 
+            var remainingHolidays = {{ auth()->user()->employee->leave_balance }}; 
+            var sickDaysTaken = selectedSickDays.size;
+            var loggedInUser = @json(auth()->user()->name); // Get logged-in user's name
 
             function updateCounters() {
                 document.getElementById('remainingHolidays').textContent = remainingHolidays;
@@ -193,6 +196,7 @@
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                locale: 'en-gb',
                 firstDay: 1,
                 dateClick: function(info) {
                     toggleEvent(info.dateStr);
@@ -205,17 +209,35 @@
             updateCounters();
 
             document.getElementById('saveRequests').addEventListener('click', function() {
-                let employeeName = prompt("Enter your name to save requests:");
-                if (!employeeName) {
-                    alert("Name is required.");
-                    
-                    return;
-                }
-                let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
-                requests.push({ name: employeeName, holidays: selectedHolidays, sickDays: Array.from(selectedSickDays) });
-                localStorage.setItem('holidayRequests', JSON.stringify(requests));
-                alert("Requests saved successfully!");
+                let requestData = JSON.stringify({
+                    holidays: selectedHolidays
+                });
+
+                fetch('/save-vacation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: requestData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert("✅ Holiday requests saved successfully!");
+                        remainingHolidays = data.remainingHolidays; // Update remaining holidays from the response
+                        updateCounters(); // Refresh UI
+                    } else {
+                        alert("⚠️ Something went wrong!");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("❌ Failed to save requests. Please try again.");
+                });
             });
+
+
 
             document.getElementById('clearStorage').addEventListener('click', function() {
                 localStorage.clear();
@@ -225,4 +247,5 @@
         });
     </script>
 </body>
+
 </html>
