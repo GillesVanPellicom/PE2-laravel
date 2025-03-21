@@ -53,15 +53,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const map = L.map('map').setView([50.8503, 4.3517], 13); // Default center (Brussels)
+            const map = L.map('map').setView([50.8503, 4.3517], 13); // default center (Brussels)
 
-            // Add OpenStreetMap tiles
+            // add OpenStreetMap tiles (generating map)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap'
             }).addTo(map);
 
-            // Add markers for each package
+            // add a marker for each package
             const route = @json($route);
             const coordinates = route.map(location => [location.latitude, location.longitude]);
 
@@ -71,7 +71,7 @@
                     .bindPopup(`<strong>Package Ref:</strong> ${location.ref ?? 'N/A'}`);
             });
 
-            // Use OSRM to calculate the route
+            // Use OSRM to calculate the route point to point by streets
             if (coordinates.length > 1) {
                 const osrmCoordinates = coordinates.map(coord => coord.reverse()).join(';'); // Reverse lat/lng to lng/lat for OSRM
                 const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordinates}?overview=full&geometries=geojson`;

@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder {
       FlightsSeeder::class,
       VacationSeeder::class,
       FlightsContractSeeder::class
+      
     ]);
 
   }

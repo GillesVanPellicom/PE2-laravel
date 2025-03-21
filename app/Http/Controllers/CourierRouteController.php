@@ -12,7 +12,7 @@ class CourierRouteController extends Controller
 {
     public function showRoute()
     {
-        // Step 1: Retrieve all packages with destination type PRIVATE_INDIVIDU
+        // Step 1 get all packages with destination type PRIVATE_INDIVIDU
     
         $packages = Package::with(['currentLocation', 'destinationLocation'])
             ->whereHas('destinationLocation', function ($query) {
@@ -20,20 +20,20 @@ class CourierRouteController extends Controller
             })
             ->get();
 
-        // Step 2: Filter packages by their last movement's current location being a DISTRIBUTION_CENTER
+        // Step 2 filter packages by  last movement's current location being a DISTRIBUTION_CENTER
         $filteredPackages = $packages->filter(function ($package) {
             $lastMovement = PackageMovement::where('package_id', $package->id)
                 ->latest('created_at')
                 ->first();
 
             if (!$lastMovement) {
-                return false; // Skip packages with no movements
+                return false; // skips package without movements
             }
 
             // Ensure the last movement's destination is PRIVATE_INDIVIDU and hopArrived is FALSE
             return $lastMovement->toLocation
                 && $lastMovement->toLocation->location_type === 'PRIVATE_INDIVIDU'
-                && !$lastMovement->hopArrived;
+                && (!$lastMovement->hopArrived || $lastMovement->hopArrived === 0);
         });
 
         // Step 3: Check if there are any filtered packages

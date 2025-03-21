@@ -23,7 +23,7 @@ return new class extends Migration
             $table->dateTime('check_in_time')->nullable();
             $table->dateTime('check_out_time')->nullable();
             $table->foreignId('node_id')->constrained('locations');
-            $table->foreignId('next_hop')->nullable()->constrained('package_movements');
+            // $table->foreignId('next_hop')->nullable()->constrained('package_movements');
             $table->foreignId('router_edge_id')->nullable()->constrained('route_edges')->nullable();
             $table->boolean('hopDeparted');
             $table->boolean('hopArrived');

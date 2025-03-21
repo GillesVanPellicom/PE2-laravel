@@ -10,7 +10,7 @@ class RouteTrace
         
       }
 
-    protected $maxDistance = 250; // Maximum distance for the route in kilometers
+    protected $maxDistance = 250; //MAX work distance in KM
 
     public function generateRoute(array $packages)
     {
