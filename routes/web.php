@@ -1,6 +1,8 @@
 <?php
 
 
+use App\Http\Middleware\Authenticate;
+use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
 
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
@@ -29,7 +31,10 @@ Route::get('/login', function () {
     }
     return view('auth.login');
 })->name('auth.login');
-Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+Route::post('/login', function (\Illuminate\Http\Request $request) {
+    return app(AuthController::class)->authenticate($request, "customers");
+})->name('auth.authenticate');
 
 // Register
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
@@ -42,13 +47,9 @@ Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // Customers
-Route::get('/customers', function () {
-    if (!Auth::check()) {
-        return redirect()->route('auth.login');
-    }
-    return view('customers');
-})->name('customers');
-Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+Route::middleware([Authenticate::class])->group(function () {
+    Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+});
 
 // ======================= End Authentication ====================== //
 
@@ -57,17 +58,24 @@ Route::get('/customers', [AuthController::class, 'showCustomers'])->name('custom
 # => Courier Mobile app
 
 Route::get('/courier', [CourierController::class, "index"])->name('courier');
-Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
-Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
-Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
-Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
+Route::post('/courier', function (\Illuminate\Http\Request $request) {
+    return app(AuthController::class)->authenticate($request, "courier.scan");
+})->name('courier.authenticate');
+
+Route::middleware([Authenticate::class])->group(function () {
+    Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
+    Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
+    Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
+    Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])->name("courier.lastPackages");
+    Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
+});
 
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
 # <= END Courier Mobile App
 
-Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
+// Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
 // ======================= End Courier ====================== //
 
@@ -80,9 +88,11 @@ Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('p
 // ======================= Start Employee ====================== //
 
 
-Route::get('/calendar', function () {return view('employees.calendar');});
+Route::get('/calendar', function () {
+    return view('employees.calendar'); });
 
-Route::get('/holiday-requests', function () {return view('employees.holiday_request');})->name('holiday-requests');
+Route::get('/holiday-requests', function () {
+    return view('employees.holiday_request'); })->name('holiday-requests');
 
 Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager-calendar');
 
@@ -105,7 +115,7 @@ Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@sto
 
 // ======================= Start Pick Up Point ====================== //
 
-Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+Route::get('/pickup', [PackageController::class, 'index'])->name('pickup.dashboard');
 
 // ======================= End Pick Up Point ====================== //
 
@@ -133,23 +143,21 @@ Route::get('/airport', [airportController::class, 'airportindex'])->name('airpor
 
 // ======================= Start Customer ====================== //
 
+Route::middleware([Authenticate::class])->group(function () {
 Route::get('/send-package', [PackageController::class, 'create'])
-    ->middleware('auth')
     ->name('packages.send-package');
 
 Route::post('/send-package', [PackageController::class, 'store'])
-    ->middleware('auth')
     ->name('package.store');
 
 Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
 Route::get('/my-packages', [PackageController::class, 'mypackages'])
-    ->middleware('auth')
     ->name('packages.mypackages');
 
 Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
-    ->middleware('auth')
     ->name('packages.packagedetails');
+});
 
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
