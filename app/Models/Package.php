@@ -1,22 +1,15 @@
 <?php
-
 namespace App\Models;
 
-use App\Services\Router\Router;
-use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
-use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
-use App\Services\Router\Types\Exceptions\NodeNotFoundException;
-use App\Services\Router\Types\Exceptions\NoPathFoundException;
-use App\Services\Router\Types\Exceptions\RouterException;
-use App\Services\Router\Types\Node;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
-
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use App\Models\Address;
+use App\Models\User;
 
 class Package extends Model {
   use HasFactory;
@@ -70,9 +63,15 @@ class Package extends Model {
     return $this->belongsTo(Location::class, 'origin_location_id');
   }
 
-  public function movements() {
-    return $this->hasMany(PackageMovement::class, 'package_id');
-  }
+    public function currentLocation()
+    {
+        return $this->belongsTo(Location::class, 'current_location_id');
+    }
+
+    public function movements()
+    {
+        return $this->hasMany(PackageMovement::class, 'package_id');
+    }
 
   /**
    * @return Node[]|null Array of Node objects representing chronological package movements
