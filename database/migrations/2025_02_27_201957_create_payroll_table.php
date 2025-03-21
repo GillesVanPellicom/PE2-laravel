@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id('salary_id');
-            $table->foreignId('employee_id')->constrained('employees');
+            $table->foreignId('user_id')->constrained('users');
             $table->decimal('base_salary', 8, 2);
             $table->decimal('bonus', 8, 2)->nullable();
             $table->decimal('taxes', 8, 2);
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payroll');
+        Schema::dropIfExists('payrolls');
     }
 };

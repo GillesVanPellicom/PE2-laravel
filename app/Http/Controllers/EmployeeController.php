@@ -3,15 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address, EmployeeContract};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team};
+use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
+use carbon\Carbon;
 
 class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::with('address.city.country')->get();
+        $employees = User::whereHas('employee', function ($query) {
+            $query->whereHas('contracts', function ($subQuery) {
+                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+            });
+        })->get();
         return view('employees.index', compact('employees'));
     }
 
@@ -23,7 +29,7 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        return view('employees.create', ['countries' => Country::all()], ['cities' => City::all()]);
+        return view('employees.create', ['countries' => Country::all(), 'cities' => City::all(), 'teams' => Team::all()]);
     }
 
     public function store_employee(Request $request)
@@ -33,14 +39,14 @@ class EmployeeController extends Controller
             'street' => 'required',
             'house_number' => 'required|integer|min:0',
             'bus_number' => 'nullable|alpha',
-            'city' => 'required|integer',
+            'city' => 'required|integer|min:1',
 
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'phone' => 'required|string|unique:employees,phone_number|regex:/^\+?[0-9\s\-()]{10,}$/',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|unique:users,phone_number|regex:/^\+?[0-9\s\-()]{10,}$/',
             'birth_date' => ['required', 'date', new Validate_Adult('employee')],
-            'nationality' => 'required|string|max:255',
+            'team' => 'required|integer|min:1',
         ],
         [
             'street.required' => 'Street is required',
@@ -48,6 +54,7 @@ class EmployeeController extends Controller
             'house_number.integer' => 'House number must be a number',
             'house_number.min' => 'House number must be larger than 0',
             'city.required' => 'City is required',
+            'city.min' => 'Please enter a city',
 
             'lastname.required' => 'Lastname is required.',
             'lastname.max' => 'Lastname is too long.',
@@ -63,6 +70,8 @@ class EmployeeController extends Controller
             'birth_date.required' => 'Birth date is required.',
             'nationality.required' => 'Nationality is required.',
             'nationality.max' => 'Nationality is too long.',
+            'team.required' => 'Team is required.',
+            'team.min' => 'Please enter a team',
         ]);
 
         $address = [
@@ -83,15 +92,23 @@ class EmployeeController extends Controller
             $new_address_id = $new_address->id;
         }
 
-        $employee = [
+        $user = [
             'last_name' => $request->lastname,
             'first_name' => $request->firstname,
             'email' => $request->email,
             'phone_number' => $request->phone,
             'birth_date' => $request->birth_date,
             'address_id' => $new_address_id,
-            'nationality' => $request->nationality,
+            'password' => Hash::make('password123')
+        ];
+
+        $new_user = User::create($user);
+        $user_id = $new_user->id;
+
+        $employee = [
             'leave_balance' => 0,
+            'user_id' => $user_id,
+            'team_id' => $request->team,
         ];
 
         Employee::create($employee);
@@ -101,57 +118,69 @@ class EmployeeController extends Controller
 
     public function contracts()
     {
-        return view('employees.contracts', ['contracts' => EmployeeContract::all()]);
+        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->get();
+        $contracts = EmployeeContract::all();
+        return view('employees.contracts', compact('contracts'));
 
     }
 
-    public function updateEndTime($id)
+    public function updateEndTime(Request $request, $id)
     {
         $contract = EmployeeContract::find($id, ['contract_id']);
-        $contract->end_date = now();
+        $contract->end_date = $request->end_date;
         $contract->save();
 
         return redirect()->route('employees.contracts')->with('success', 'Contract ended successfully');
     }
 
-    /*public function create_contract()
+    public function create_employeecontract()
     {
-        return view('employees.create_contract', ['employees' => Employee::all()]);
-    }*/
+        return view('employees.create_employeecontract', ['employees' => Employee::all()], ['functions' => EmployeeFunction::all()]);
+    }
 
-    /*public function store_contract(Request $request)
+    public function store_contract(Request $request)
     {
         $request->validate([
-            'employee_id' => 'required|integer',
-            'job_id' => 'required|integer',
+            'employee' => 'required|integer|min:1',
+            'function' => 'required|integer|min:1',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'status' => 'required|string',
+            'vacation_days' => 'required|integer|min:0',
         ],
         [
-            'employee_id.required' => 'Employee is required.',
-            'employee_id.integer' => 'Employee must be a number.',
-            'job_id.required' => 'Job is required.',
-            'job_id.integer' => 'Job must be a number.',
+            'employee.required' => 'Employee is required.',
+            'employee.integer' => 'Employee must be a number.',
+            'function.required' => 'Job is required.',
+            'function.integer' => 'Job must be a number.',
             'start_date.required' => 'Start date is required.',
             'start_date.date' => 'Start date must be a date.',
-            'end_date.required' => 'End date is required.',
-            'end_date.date' => 'End date must be a date.',
-            'end_date.after' => 'End date must be after start date.',
-            'status.required' => 'Status is required.',
-            'status.string' => 'Status must be a string.',
+            'vacation_days.required' => 'It would be nice if the employee could have some vacation days.',
+            'vacation_days.min' => 'Cannot give a negative amount of vacation days.',
         ]);
+    
+        $active_contract = EmployeeContract::where('employee_id', $request->employee)->where(function ($query) 
+        {
+            $query->where('end_date', '>', Carbon::now())
+                  ->orWhereNull('end_date');
+        })->first();
 
-        $contract = [
-            'employee_id' => $request->employee_id,
-            'job_id' => $request->job_id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'status' => $request->status,
-        ];
-
-        EmployeeContract::create($contract);
-
-        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
-    }*/
+        if($active_contract == NULL) {
+            $contract = [
+                'employee_id' => $request->employee,
+                'job_id' => $request->function,
+                'start_date' => $request->start_date
+            ];
+            
+            if ($request->vacations_days) {
+                $employee = Employee::find($request->employee);
+                $employee->leave_balance = $request->vacation_days;
+                $employee->save();
+            }
+    
+            EmployeeContract::create($contract);
+            return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
+        }
+        else {
+            return redirect()->route('employees.contracts')->with('error', 'Employee already has a contract');
+        }
+    }
 }

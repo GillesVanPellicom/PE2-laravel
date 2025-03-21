@@ -6,15 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
-    protected $fillable = ['first_name', 'last_name', 'email', 'phone_number', 'birth_date', 'address_id', 'nationality', 'leave_balance'];
-
-    public function address()
-    {
-        return $this->belongsTo(Address::class, 'address_id');
-    }
+    protected $fillable = ['user_id', 'leave_balance', 'team_id'];
 
     public function contracts()
     {
         return $this->hasMany(EmployeeContract::class, 'employee_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class, 'team_id');
     }
 }
