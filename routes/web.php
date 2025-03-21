@@ -60,6 +60,7 @@ Route::get('/courier', [CourierController::class, "index"])->name('courier');
 Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
 Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
 Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
+Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])->name("courier.lastPackages");
 Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
 
 # Test Route
