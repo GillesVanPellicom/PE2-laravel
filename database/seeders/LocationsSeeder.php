@@ -1,353 +1,58 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class LocationsSeeder extends Seeder
-{
-    public function run(): void
-    {
-        DB::table('locations')->insert([
-            // Airports
-            [
-                'location_id' => '@AIR_EBBR',
-                'description' => 'Brussels Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => 4.48444,
-                'latitude' => 50.90138,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 1, // Address ID for Brussels Airport
-                'contact_number' => '+32 2 753 77 53',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@AIR_EBAW',
-                'description' => 'Antwerp International Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => 4.46027,
-                'latitude' => 51.18944,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 2, // Address ID for Schiphol
-                'contact_number' => '+31 20 794 0800',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@AIR_KLAX',
-                'description' => 'Los Angeles International Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => -118.4080,
-                'latitude' => 33.94277,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 3, // Address ID for Berlin Brandenburg
-                'contact_number' => '+49 30 609160910',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@AIR_EBCI',
-                'description' => 'Brussels South Charleroi Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => 4.45388,
-                'latitude' => 50.45916,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 3, // Address ID for Berlin Brandenburg
-                'contact_number' => '+49 30 609160910',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@AIR_EDDM',
-                'description' => 'Munich International Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => 11.78611,
-                'latitude' => 48.35388,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 3, // Address ID for Berlin Brandenburg
-                'contact_number' => '+49 30 609160910',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@AIR_EGKK',
-                'description' => 'London Gatwick Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => -0.19027,
-                'latitude' => 51.14805,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 3, // Address ID for Berlin Brandenburg
-                'contact_number' => '+49 30 609160910',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@AIR_EPWA',
-                'description' => 'Warsaw Chopin Airport',
-                'location_type' => 'AIRPORT',
-                'longitude' => 20.96722,
-                'latitude' => 52.16583,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 3, // Address ID for Berlin Brandenburg
-                'contact_number' => '+49 30 609160910',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            
+class LocationsSeeder extends Seeder {
+  public function run(): void {
 
-            // DISTRIBUTION_CENTERs
-            [
-                'location_id' => '@DC_BRUSSELS',
-                'description' => 'EU Distribution Hub Brussels',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 4.48444,
-                'latitude' => 50.9013,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 4, // Address ID for Distribution Center
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_ANTWERP',
-                'description' => 'Distribution Center Antwerp',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 4.46027,
-                'latitude' => 51.18944,
-                'isEntry' => true,
-                'isExit' => true,
-                'addresses_id' => 5, // Address ID for DISTRIBUTION_CENTER
-                'contact_number' => '+31 20 345 67 89',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_LOS_ANGELES',
-                'description' => 'NA Distribution Hub Los Angeles',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => -118.40805,
-                'latitude' => 33.94277,
-                'isEntry' => true,
-                'isExit' => true,
-                'addresses_id' => 6, // Address ID for Pickup Point
-                'contact_number' => '+32 3 456 78 90',
-                'opening_hours' => '09:00 - 17:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_CHARLEROI',
-                'description' => 'Charleroi Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 4.45388,
-                'latitude' => 50.45916,
-                'isEntry' => true,
-                'isExit' => true,
-                'addresses_id' => 7, // Address ID for Pickup Point
-                'contact_number' => '+49 30 123 456 789',
-                'opening_hours' => '09:00 - 17:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_MUNICH',
-                'description' => 'Munich Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 11.78611,
-                'latitude' => 48.35388,
-                'isEntry' => true,
-                'isExit' => true,
-                'addresses_id' => 8, // Address ID for Pickup Point
-                'contact_number' => '+49 30 123 456 789',
-                'opening_hours' => '09:00 - 17:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_LONDON',
-                'description' => 'London Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => -0.19027,
-                'latitude' => 51.1480,
-                'isEntry' => true,
-                'isExit' => true,
-                'addresses_id' => 9, // Address ID for Pickup Point
-                'contact_number' => '+49 30 123 456 789',
-                'opening_hours' => '09:00 - 17:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_WARSAW',
-                'description' => 'Warsaw Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 20.96722,
-                'latitude' => 52.16583,
-                'isEntry' => true,
-                'isExit' => true,
-                'addresses_id' => 9, // Address ID for Pickup Point
-                'contact_number' => '+49 30 123 456 789',
-                'opening_hours' => '09:00 - 17:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_TILBURG',
-                'description' => 'Tilburg Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 5.09111,
-                'latitude' => 51.565,
-                'isEntry' => true,
-                'isExit' => false,
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_BASTOGNE',
-                'description' => 'Bastogne Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 5.72083,
-                'latitude' => 50.00361,
-                'isEntry' => true,
-                'isExit' => false,
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_GHENT',
-                'description' => 'Ghent Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 3.71666,
-                'latitude' => 51.05,
-                'isEntry' => true,
-                'isExit' => false,
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_LILLE',
-                'description' => 'Lille Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 3.06666,
-                'latitude' => 50.63333,
-                'isEntry' => true,
-                'isExit' => false,
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'location_id' => '@DC_PARIS',
-                'description' => 'Paris Distribution Center',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 2.35222,
-                'latitude' => 48.85666,
-                'isEntry' => true,
-                'isExit' => false,
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            //pickup_points
-            [
-                'location_id' => '@PIP_0001',
-                'description' => 'Pick-up Point Antwerp 1',
-                'location_type' => 'PICKUP_POINT',
-                'longitude' => 4.46027,
-                'latitude' => 51.18944,
-                'isEntry' => false,
-                'isExit' => true,
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            //Private Individu test
-            [
-                'location_id' => '@IND_ADD1',
-                'description' => 'Brussels Private Individu',
-                'location_type' => 'PRIVATE_INDIVIDU',
-                'longitude' => 4.48444,
-                'latitude' => 50.90138,
-                'isEntry' => false,
-                'isExit' => false,
-                'addresses_id' => 9, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => null,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+    // NOTICE
+    // Make sure any latitude and longitude values are realistic.
+    // Actually check them on a map.
+    // The router does not work if you use fictional values.
 
-            //TEST_NODE
-            [
-                'location_id' => '@DISCONNECTED_TEST_NODE',
-                'description' => 'Disconnected test node',
-                'location_type' => 'DISTRIBUTION_CENTER',
-                'longitude' => 16.9913,
-                'latitude' => 54.1536,
-                'isEntry' => false,
-                'isExit' => true,
-                'addresses_id' => 9, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => null,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-    }
+    DB::table('locations')->insert([
+      [
+        'description' => 'tmpdesc: 7019 Forbes Ave, Lake Balboa, CA 91406, USA',
+        'location_type' => 'ADDRESS',
+        'infrastructure_id' => null,
+        'latitude' => 34.19831,
+        'longitude' => -118.49897,
+        'addresses_id' => 1, // placeholder
+        'contact_number' => '+32 2 123 45 67', // placeholder
+        'opening_hours' => null, // placeholder
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ],
+      [
+        'description' => 'Antwerp Pickup Point 1',
+        'location_type' => 'PICKUP_POINT',
+        'infrastructure_id' => '@PIP_0001',
+        'latitude' => 51.18944,
+        'longitude' => 4.46027,
+        'addresses_id' => 1, // placeholder
+        'contact_number' => '+32 2 123 45 67', // placeholder
+        'opening_hours' => null, // placeholder
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ],
+      [
+        'description' => 'Brussels Private Individu 1',
+        'location_type' => 'ADDRESS',
+        'infrastructure_id' => null,
+        'latitude' => 50.84927,
+        'longitude' => 4.41279,
+        'addresses_id' => 1, // placeholder
+        'contact_number' => '+32 2 123 45 67', // placeholder
+        'opening_hours' => null, // placeholder
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ],
+    ]);
+  }
 }
-?>
