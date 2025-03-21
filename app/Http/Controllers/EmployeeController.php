@@ -23,9 +23,17 @@ class EmployeeController extends Controller
 
     public function managerCalendar()
     {
-        $employees = Employee::all();
+        $employees = Employee::with('user')->get(); // Fetch employees + user data
         return view('employees.manager_calendar', compact('employees')); 
     }
+
+    public function holidayRequest()
+    {
+        $employees = Employee::with('user')->get(); // Fetch employees with user data
+        return view('holiday-request', compact('employees'));
+    }
+
+
 
     public function create()
     {
