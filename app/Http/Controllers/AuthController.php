@@ -81,7 +81,7 @@ class AuthController extends Controller
         return redirect()->back()->with('success', 'User information updated successfully.');
     }
 
-    public function authenticate(Request $request)
+    public function authenticate(Request $request, $route = "welcome")
     {
         $credentials = $request->validate([
             'email' => 'required|email|exists:users,email',
@@ -90,7 +90,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('customers');
+            return redirect()->route($route);
         }
 
         return back()->withErrors([
