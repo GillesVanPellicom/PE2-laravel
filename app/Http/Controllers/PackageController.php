@@ -16,9 +16,29 @@ class PackageController extends Controller
 {
     public function index()
     {
-        $packages = Package::paginate(10);
+        if (request()->has('search')) {
+            $packages = Package::where('reference', 'like', '%' . request('search','') . '%')
+                ->orWhere('name', 'like', '%' . request('search','') . '%')
+                ->orWhere('receiverEmail', 'like', '%' . request('search','') . '%')
+                ->orWhere('receiver_phone_number', 'like', '%' . request('search','') . '%')
+                ->paginate(10)->withQueryString();
+        } else {
+            $packages = Package::paginate(10)->withQueryString();
+        }
         return view('pickup.dashboard', compact('packages'));
     }
+    public function show ($id) {
+        $id= $id !== ' ' ? $id  :request()->get('id');
+        $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
+        return view('pickup.packageInfo',compact('package'));
+    }
+    public function setStatusPackage ($id) {
+        $package = Package::findOrFail($id);
+        $statusToSet = request()->get('status')?? '';
+        $package->update(['status' => $statusToSet]);
+        return redirect()->route('pickup.dashboard')->with('success', 'Package updated successfully!');
+    }
+
     public function updateStatus(Request $request)
     {
         $package = Package::where('id', $request->packageId)->first();
@@ -38,7 +58,7 @@ class PackageController extends Controller
         $weightClasses = WeightClass::where('is_active', true)->get();
         $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
         $locations = Location::all();
-        
+
         return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations'));
     }
 
@@ -52,7 +72,7 @@ class PackageController extends Controller
             'user_id' => 'required|exists:users,id',
             'origin_location_id' => 'required|exists:locations,id',
             'destination_location_id' => 'exists:locations,id',
-            'address_id' => 'exists:addresses,id',           
+            'address_id' => 'exists:addresses,id',
             'status' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
@@ -77,7 +97,7 @@ class PackageController extends Controller
         $validatedData = $request->validate($validationRules);
 
         // Verify that the prices match the actual prices from the database
-        if ($validatedData['weight_price'] != $weightClass->price || 
+        if ($validatedData['weight_price'] != $weightClass->price ||
             $validatedData['delivery_price'] != $deliveryMethod->price) {
             return back()->withErrors(['price' => 'Invalid price calculation']);
         }
@@ -116,7 +136,7 @@ class PackageController extends Controller
 
         return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
     }
-    
+
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');

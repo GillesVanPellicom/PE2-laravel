@@ -14,4 +14,9 @@ class DeliveryMethod extends Model
     protected $table = 'delivery_method';
 
     protected $fillable = ['code', 'name', 'description', 'requires_location', 'price', 'is_active'];
-} 
+
+    public function packages () {
+        return $this->hasMany(Package::class, 'delivery_method_id');
+
+    }
+}

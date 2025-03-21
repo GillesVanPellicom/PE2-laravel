@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\View\Components\Courier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,5 +37,11 @@ class PackageMovement extends Model
     public function toLocation()
     {
         return $this->belongsTo(Location::class, 'to_location_id');
+    }
+    public function vehicle () {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+    }
+    public function handledByCourier () {
+        return $this->belongsTo(Courier::class, 'handled_by_courier_id');
     }
 }

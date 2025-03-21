@@ -33,4 +33,7 @@ class Address extends Model
     {
         return $this->hasMany(Employee::class, 'address_id');
     }
+    public function packages () {
+        return $this->hasMany(Package::class, 'addresses_id');
+    }
 }
