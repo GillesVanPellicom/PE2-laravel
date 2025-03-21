@@ -168,5 +168,7 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 
 // ======================= End Customer ====================== //
 
+use App\Http\Controllers\RouteCreatorController;
 
+Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 

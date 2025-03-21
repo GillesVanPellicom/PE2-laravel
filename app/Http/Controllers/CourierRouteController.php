@@ -12,22 +12,27 @@ class CourierRouteController extends Controller
 {
     public function showRoute()
     {
-        // Step 1 get all packages with destination type PRIVATE_INDIVIDU
-    
-        $packages = Package::with(['currentLocation', 'destinationLocation'])
+        // Step 1: Get all packages with destination type PRIVATE_INDIVIDU
+        $packages = Package::with(['currentLocation', 'destinationLocation', 'movements'])
             ->whereHas('destinationLocation', function ($query) {
                 $query->where('location_type', 'PRIVATE_INDIVIDU');
             })
             ->get();
+        
+            dump($packages);
 
-        // Step 2 filter packages by  last movement's current location being a DISTRIBUTION_CENTER
+
+        // Debug: Check if packages are retrieved
+        if ($packages->isEmpty()) {
+            return view('courier.route', ['route' => []]);
+        }
+
+        // Step 2: Filter packages by last movement's current location being a DISTRIBUTION_CENTER
         $filteredPackages = $packages->filter(function ($package) {
-            $lastMovement = PackageMovement::where('package_id', $package->id)
-                ->latest('created_at')
-                ->first();
+            $lastMovement = $package->movements()->latest('created_at')->first();
 
             if (!$lastMovement) {
-                return false; // skips package without movements
+                return false; // Skip packages without movements
             }
 
             // Ensure the last movement's destination is PRIVATE_INDIVIDU and hopArrived is FALSE
@@ -36,12 +41,12 @@ class CourierRouteController extends Controller
                 && (!$lastMovement->hopArrived || $lastMovement->hopArrived === 0);
         });
 
-        // Step 3: Check if there are any filtered packages
+        // Debug: Check if filtered packages are retrieved
         if ($filteredPackages->isEmpty()) {
             return view('courier.route', ['route' => []]);
         }
 
-        // Step 4: Prepare package data for route calculation
+        // Step 3: Prepare package data for route calculation
         $packageData = $filteredPackages->map(function ($package) {
             return [
                 'latitude' => $package->destinationLocation->latitude,
@@ -50,12 +55,21 @@ class CourierRouteController extends Controller
             ];
         })->toArray();
 
+        // Debug: Check if package data is prepared
+        if (empty($packageData)) {
+            return view('courier.route', ['route' => []]);
+        }
 
-        // Step 5: Calculate the route using RouteTrace
-        $routeCreator = new RouteTrace();
-        $route = $routeCreator->generateRoute($packageData);
+        // Step 4: Calculate the route using RouteTrace
+        $route = [];
+        if (!empty($packageData)) {
+            $routeCreator = new RouteTrace();
+            $route = $routeCreator->generateRoute($packageData);
+        }
 
-        // Step 6: Pass the route to the Blade view
-        return view('courier.route', ['route' => $route]);
+
+        // Step 5: Pass the route to the Blade view
+        // return view('courier.route', ['route' => $route ?? []]);
+    
     }
 }

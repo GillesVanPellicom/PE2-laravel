@@ -3,3 +3,4 @@
 - add click on button near to it to chose actions for each packages ('signature', 'deliver' 'send back to DC or PP')
 - add a dispatcher page (page where all packages in a DC 'ready to be delivered' to dispatch packages to couriers) --> HR courier manager 'dispatcher'
 - add a page for the dispatcher which can MANUALLY adapt hops 'if delated, or cancelled' --> HR 
+- add a comment in the track and trace which shows it on courier route

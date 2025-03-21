@@ -62,7 +62,6 @@
             }).addTo(map);
 
             // add a marker for each package
-            const route = @json($route);
             const coordinates = route.map(location => [location.latitude, location.longitude]);
 
             route.forEach(location => {

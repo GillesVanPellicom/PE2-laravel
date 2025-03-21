@@ -14,13 +14,14 @@ class RouteTrace
 
     public function generateRoute(array $packages)
     {
+        
         $route = [];
         $totalDistance = 0;
 
         if (empty($packages)) {
             return $route;
         }
-
+dd($packages);
         $currentLocation = $packages[0];
         $route[] = $currentLocation;
 
@@ -50,7 +51,6 @@ class RouteTrace
 
         return $route;
     }
-
     private function findClosestPackage($currentLocation, $packages, $route)
     {
         $closestDistance = PHP_INT_MAX;
