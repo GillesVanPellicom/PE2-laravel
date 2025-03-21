@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('flight_id')->constrained('flights');
             $table->foreignId('airline_id')->constrained('airlines');
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
             $table->float('max_capacity');
             $table->float('price');
             $table->timestamps();

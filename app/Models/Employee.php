@@ -21,4 +21,9 @@ class Employee extends Model
     {
         return $this->hasMany(Vacation::class, 'employee_id');
     }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class, 'team_id');
+    }
 }
