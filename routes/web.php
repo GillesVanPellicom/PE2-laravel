@@ -20,6 +20,8 @@ use App\Http\Controllers\EmployeeController;
 
 // ======================= Start Authentication ====================== //
 
+
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -47,7 +49,7 @@ Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // Customers
-Route::middleware([Authenticate::class])->group(function () {
+Route::middleware("authenticate")->group(function () {
     Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 });
 
@@ -62,7 +64,7 @@ Route::post('/courier', function (\Illuminate\Http\Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
 
-Route::middleware([Authenticate::class])->group(function () {
+Route::middleware("authenticate")->group(function () {
     Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
     Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
     Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
@@ -143,7 +145,7 @@ Route::get('/airport', [airportController::class, 'airportindex'])->name('airpor
 
 // ======================= Start Customer ====================== //
 
-Route::middleware([Authenticate::class])->group(function () {
+Route::middleware("authenticate")->group(function () {
 Route::get('/send-package', [PackageController::class, 'create'])
     ->name('packages.send-package');
 
