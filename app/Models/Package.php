@@ -78,9 +78,5 @@ class Package extends Model {
         return $this->hasMany(PackageMovement::class, 'package_id');
     }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 
 }
