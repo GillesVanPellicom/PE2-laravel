@@ -4,6 +4,7 @@
 namespace App\Services\Router {
 
   use App\Helpers\ConsoleHelper;
+  use App\Models\Location;
   use App\Services\Router\Types\CoordType;
   use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
   use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
@@ -17,6 +18,7 @@ namespace App\Services\Router {
   use App\Services\Router\Types\Exceptions\NoPathFoundException;
   use App\Services\Router\Types\Exceptions\RouterException;
   use App\Services\Router\Types\Exceptions\SelfLoopException;
+  use App\Services\Router\Types\LocationType;
   use App\Services\Router\Types\NodeType;
   use App\Services\Router\Types\RouterGraph;
   use App\Services\Router\Types\Node;
@@ -33,92 +35,66 @@ namespace App\Services\Router {
     public function __construct() {
       try {
         $this->graph = new RouterGraph();
-        $this->deserialize(base_path('app/Services/Router/tmp.graphml'));
+        echo("Deserializing database...\n");
+        $this->deserializeDb();
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);
       }
     }
 
-    /**
-     * Generates a path between two points
-     *
-     * @param  string  $origin  Origin address or node ID
-     * @param  string  $destination  Destination address or node ID
-     * @return array|null Array of node objects representing the path in hops
-     */
-    public function generate(string $origin, string $destination): ?array {
-      try {
-        return $this->generateInternal($origin, $destination);
-      } catch (Exception $e) {
-        ConsoleHelper::error($e->getMessage());
-        exit(1);
-      }
-    }
 
     /**
-     * Generates a path between two points. Internal version with exception handling.
-     *
-     * @param  string  $origin  Origin address or node ID
-     * @param  string  $destination  Destination address or node ID
-     * @return array|null Array of node objects representing the path in hops
-     *
+     * @returns Node[]|null Array of node objects representing the path in movements
      * @throws RouterException
      * @throws InvalidRouterArgumentException
+     * @throws InvalidCoordinateException
      * @throws NodeNotFoundException
      * @throws NoPathFoundException
-     * @throws SelfLoopException
      */
-    private function generateInternal(string $origin, string $destination): ?array {
-      if (empty($origin)) {
-        throw new NodeNotFoundException('null');
-      }
-      if (empty($destination)) {
-        throw new NodeNotFoundException('null');
-      }
+    public function getPath(Location $origin, Location $destination): ?array {
+      $oN = $this->createImaginaryNode(
+        $origin->getAttribute('location_type') == LocationType::ADDRESS
+          ? $origin->getAttribute('id')
+          : $origin->getAttribute('infrastructure_id'),
+        $origin->getAttribute('description'),
+        $origin->getAttribute('latitude'),
+        $origin->getAttribute('longitude'),
+        $origin->getAttribute('location_type') == LocationType::ADDRESS ?
+          NodeType::ADDRESS
+          : NodeType::PICKUP_POINT);
 
-      // Check if both origin and destination are the same nodes
-      if ($origin === $destination) {
-        throw new SelfLoopException($origin);
-      }
-      // Print debug header if debug mode is enabled
-      $this->debug && print "\033[1;34mROUTER DEBUG BEGIN >>>\n\n=== Imaginary Node(s) ===\033[0m\n\n";
 
-      // Process start and end nodes
-      [$startNode, $origin] = $this->processNode($origin, true);
-      [$endNode, $destination] = $this->processNode($destination, false);
+      $dN = $this->createImaginaryNode(
+        $destination->getAttribute('location_type') == LocationType::ADDRESS
+          ? $destination->getAttribute('id')
+          : $destination->getAttribute('infrastructure_id'),
+        $destination->getAttribute('description'),
+        $destination->getAttribute('latitude'),
+        $destination->getAttribute('longitude'),
+        $origin->getAttribute('location_type') == LocationType::ADDRESS
+          ? NodeType::ADDRESS
+          : NodeType::PICKUP_POINT);
 
-      // Print newline separator in debug mode
-      $this->debug && print "\n";
+      $path = $this->aStar(
+        $this->findClosestNode(
+          $oN->getLat(CoordType::RADIAN),
+          $oN->getLong(CoordType::RADIAN),
+          true,
+          false),
 
-      // Build and print the path
-      return $this->buildPath($origin, $destination, $startNode, $endNode);
+        $this->findClosestNode(
+          $dN->getLat(CoordType::RADIAN),
+          $dN->getLong(CoordType::RADIAN),
+          false,
+          true
+        ));
+
+      array_unshift($path, $oN);
+      $path[] = $dN;
+      return $path;
     }
 
-    /**
-     * Processes a node argument and returns the node object and ID
-     *
-     * @param  string  $arg  Node argument (ID or address)
-     * @param  bool  $isStart  Whether this is the starting node
-     * @return array [?object Node object or null, string Processed ID]
-     * @throws RouterException
-     */
-    private function processNode(string $arg, bool $isStart): array {
-      $isID = $arg[0] === '@';
-      $node = null;
-
-      if (!$isID) {
-        // Create node from address and find closest existing node
-        $node = $this->createAddressNode($arg);
-        $latRad = $node->getLat(CoordType::RADIAN);
-        $longRad = $node->getLong(CoordType::RADIAN);
-        $arg = $this->findClosestNode($latRad, $longRad, $isStart, !$isStart);
-
-        // Print node details if in debug mode
-        $this->debug && $node->printAddressNode();
-      }
-      return [$node, $arg];
-    }
 
     /**
      * Builds the complete path including imaginary nodes if needed
@@ -143,6 +119,7 @@ namespace App\Services\Router {
       return $path;
     }
 
+
     /**
      * Prints the path in both ID and description formats
      *
@@ -159,22 +136,22 @@ namespace App\Services\Router {
       print "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ", $descs)."\n";
     }
 
+
     /**
      * Creates a new address node from an address string.
      * Disconnected from the main graph, linking is done after routing using haversine.
      *
-     * @param  string  $address  Address as string
+     * @param  string  $identifier
+     * @param  float  $latDeg
+     * @param  float  $lonDeg
      * @return Node
-     * @throws InvalidRouterArgumentException
      * @throws InvalidCoordinateException
-     * @throws FailedCoordinatesFetchException
+     * @throws InvalidRouterArgumentException
      */
-    private function createAddressNode(string $address): Node {
-      $coords = GeoMath::getCoordinates($address);
-
-      // Create a new node
-      return new Node('$$_address_node_$$', $address, NodeType::ADDRESS, $coords['latDeg'], $coords['longDeg']);
+    private function createImaginaryNode(string $ID, string $desc, float $latDeg, float $lonDeg, NodeType $type): Node {
+      return new Node($ID, $desc, $type, $latDeg, $lonDeg);
     }
+
 
     /**
      * Finds the closest Node to a given point.
@@ -217,6 +194,7 @@ namespace App\Services\Router {
       return $closestNode->getID();
     }
 
+
     /**
      * Enable or disable debug mode.
      *
@@ -227,62 +205,39 @@ namespace App\Services\Router {
       $this->debug = $enable;
     }
 
+
     /**
-     * Deserialize GraphML into RouterGraph object.
-     *
-     * @param  string  $graphmlFilePath  Path to the GraphML file
-     * @return void
-     * @throws NodeNotFoundException
-     * @throws InvalidGraphMLException
-     * @throws FileNotFoundException
-     * @throws InvalidNodeIDException
      * @throws NodeAlreadyExistsException
+     * @throws InvalidRouterArgumentException
+     * @throws InvalidNodeIDException
      * @throws InvalidCoordinateException
      * @throws SelfLoopException
+     * @throws NodeNotFoundException
      * @throws EdgeAlreadyExistsException
-     * @throws InvalidRouterArgumentException
      */
-    private function deserialize(string $graphmlFilePath): void {
-      // Check if the file exists
-      if (!file_exists($graphmlFilePath)) {
-        throw new FileNotFoundException($graphmlFilePath);
-      }
+    private function deserializeDb(): void {
+      // Fetch all nodes from the database
+      $nodes = \App\Models\RouterNodes::all();
+      // Iterate over each node and add it to the graph
+      foreach ($nodes as $node) {
 
-      // Load the GraphML file
-      $graphml = simplexml_load_file($graphmlFilePath);
-      if ($graphml === false) {
-        throw new InvalidGraphMLException($graphmlFilePath);
-      }
-
-      // Iterate over each node in the GraphML file
-      foreach ($graphml->graph->node as $node) {
-        $ID = (string) $node['id'];
-        $attributes = [];
-        // Collect node attributes
-        foreach ($node->data as $data) {
-          $key = (string) $data['key'];
-          $value = (string) $data;
-          $attributes[$key] = $value;
-        }
-        $type = NodeType::from($attributes['type']);
-        // Add the node to the graph (RouterGraph exceptions will bubble up)
         $this->graph->addNode(
-          $ID,
-          $attributes['desc'],
-          (float) $attributes['latDeg'],
-          (float) $attributes['longDeg'],
-          $type,
-          $attributes['isEntryNode'] === 'true',
-          $attributes['isExitNode'] === 'true'
+          $node->id,
+          $node->description,
+          (float) $node->latDeg,
+          (float) $node->lonDeg,
+          $node->location_type,
+          $node->isEntry,
+          $node->isExit
         );
       }
 
-      // Iterate over each edge in the GraphML file
-      foreach ($graphml->graph->edge as $edge) {
-        $source = (string) $edge['nodeID_1'];
-        $target = (string) $edge['nodeID_2'];
-        // Add the edge to the graph (RouterGraph exceptions will bubble up)
-        $this->graph->addEdge($source, $target);
+      // Fetch all edges from the database
+      $edges = \App\Models\RouterEdges::all();
+
+      // Iterate over each edge and add it to the graph
+      foreach ($edges as $edge) {
+        $this->graph->addEdge($edge->origin_node, $edge->destination_node);
       }
     }
 

@@ -12,8 +12,8 @@ class AirportsSeeder extends Seeder
     {
         DB::table('airports')->insert([
             ['location_id' => 1, 'name' => 'BRU', 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()], // Brussels Airport
-            ['location_id' => 2, 'name' => 'AMS', 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()], // Liège Airport
-            ['location_id' => 3, 'name' => 'BER', 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()], // Antwerp International Airport
+            ['location_id' => 1, 'name' => 'AMS', 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()], // Liège Airport
+            ['location_id' => 1, 'name' => 'BER', 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()], // Antwerp International Airport
         ]);
     }
 }
