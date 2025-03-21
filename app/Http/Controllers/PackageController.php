@@ -224,4 +224,14 @@ public function generatePackageLabel($packageID)
     $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
     return $pdf->stream('package-label.pdf');
 }
+public function packagePayment($packageID) {
+    $package = Package::with([
+        'user'
+    ])
+    ->where('user_id', Auth::user()->id)
+    ->where('id', $packageID)
+    ->first();
+    return view('packagepayment',compact('package')); 
+}
+
 }
