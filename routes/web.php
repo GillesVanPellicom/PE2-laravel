@@ -17,6 +17,7 @@ use App\Http\Controllers\flightscontroller;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\VacationController;
 
 // ======================= Start Authentication ====================== //
 
@@ -102,7 +103,17 @@ Route::get('/calendar', function () {
 Route::get('/holiday-requests', function () {
     return view('employees.holiday_request'); })->name('holiday-requests');
 
-Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager-calendar');
+Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager.calendar');
+
+Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
+
+Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
+
+Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
+
+Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+
+
 
 
 Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
