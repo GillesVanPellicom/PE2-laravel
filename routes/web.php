@@ -75,6 +75,7 @@ Route::middleware("authenticate")->group(function () {
     Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
     Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])->name("courier.lastPackages");
     Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
+    Route::get('/courier/logout', [AuthController::class, "logout"])->name("courier.logout");
 });
 
 # Test Route

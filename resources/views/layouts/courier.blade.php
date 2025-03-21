@@ -21,7 +21,7 @@
         -->
         ShipCompany
         @if (!request()->routeIs('courier'))
-            <a href="{{ route('courier') }}"
+            <a href="{{ route('courier.logout') }}"
                 class="absolute right-5 top-1/2 transform -translate-y-1/2 text-white text-2xl hover:text-black">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </a>
