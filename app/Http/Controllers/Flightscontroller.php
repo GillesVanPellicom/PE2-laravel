@@ -11,35 +11,34 @@ class Flightscontroller extends Controller
     public function flightindex()
     {
         $today = Carbon::now()->format('l'); 
-        $weekNumber = Carbon::now()->weekOfYear;
 
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])
             ->where('departure_day_of_week', $today)
             ->get();
 
-        $flights = $flights->sortBy(function ($flight) use ($weekNumber) {
-            return crc32($flight->id . $weekNumber); 
-        });
-
         foreach ($flights as $flight) {
             $random = mt_rand(1, 100); 
 
             if ($random <= 80) {
-                $flight->status = 'On Time'; // 80% chance
+                $flight->status = 'On Time';
             } elseif ($random <= 95) {
-                $flight->status = 'Delayed'; // 15% chance
+                $randomDelay = mt_rand(1, 120);
+
+                $flight->departure_time = Carbon::parse($flight->departure_time)->addMinutes($randomDelay)->format('H:i');
+                $flight->status = 'Delayed';
+                $flight->delay_minutes = $randomDelay;
             } else {
-                $flight->status = 'Canceled'; // 5% chance
+                $flight->status = 'Canceled';
+                $flight->departure_time = null;
+                $flight->arrival_time = null;
+                continue;
             }
+    
+            $departureTime = Carbon::parse($flight->departure_time);
+            $flightDuration = $flight->time_flight_minutes;
 
-            // Calculate arrival time for each flight
-            $departureTime = Carbon::parse($flight->departure_time); // Parse departure time
-            $flightDuration = $flight->time_flight_minutes; // Time in minutes
-
-            // Calculate arrival time
             $arrivalTime = $departureTime->addMinutes($flightDuration);
 
-            // Store the arrival time in the flight object for later use in view
             $flight->arrival_time = $arrivalTime;
         }
 
@@ -65,19 +64,17 @@ class Flightscontroller extends Controller
         return redirect(route('airport.flights'));
     }
 
-    public function delayFlight(Request $request, $id)
+    public function delayFlight($id)
     {
         $flight = Flight::findOrFail($id);
 
-        $data = $request->validate([
-            'delay_minutes' => 'required|integer|min:1',
-        ]);
+        $randomDelay = mt_rand(1, 120);
 
-        $flight->departure_time = Carbon::parse($flight->departure_time)->addMinutes($data['delay_minutes']);
+        $flight->departure_time = Carbon::parse($flight->departure_time)->addMinutes($randomDelay);
         $flight->status = 'Delayed';
         $flight->save();
 
-        return redirect()->back()->with('success', 'Flight delayed successfully.');
+        return redirect()->back()->with('success', "Flight delayed by $randomDelay minutes successfully.");
     }
 
     public function cancelFlight($id)

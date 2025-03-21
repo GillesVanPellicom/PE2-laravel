@@ -10,6 +10,11 @@
 </head>
 <body>
     <a href="{{ route('airports') }}">airports</a>
-    <p>wachten</p>
+    <h2>Packages</h2>
+    <ul>
+        @foreach ($packages as $package)
+            <li>{{ $package->name }} - {{ $package->description }}</li>
+        @endforeach
+    </ul>
 </body>
 </html>

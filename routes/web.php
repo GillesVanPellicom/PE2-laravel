@@ -112,7 +112,7 @@ Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboar
 // ======================= Start Airport ====================== //
 
 Route::get('/packages', function () {
-    return view('packages');
+    return view('airport.packages');
 })->name('packages');
 
 Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');

@@ -33,9 +33,17 @@
                     <td>{{$flight->time_flight_minutes}}</td>
                     <td>{{$flight->arrival_time}}</td>
                     <td>{{$flight->arrivalAirport->name}}</td>
-                    <td>{{$flight->status}}</td>  
+                    <td>
+                        @if($flight->status == 'On Time')
+                            {{$flight->status}}
+                        @elseif($flight->status == 'Delayed')
+                            {{$flight->status}} (Delayed by {{$flight->delay_minutes ?? 'N/A'}} minutes)
+                        @elseif($flight->status == 'Canceled')
+                            {{$flight->status}}
+                        @endif
+                    </td>
                 </tr>
-            @endif 
+            @endif
             @endforeach
         </tbody>
     </table>
@@ -56,17 +64,23 @@
             @foreach($flights as $flight)
             @if($flight->depart_location_id == 1)
                 <tr>
-                
                     <td>{{$flight->id}}</td>
                     <td>{{$flight->departure_time}}</td>
                     <td>{{$flight->departureAirport->name}}</td>
                     <td>{{$flight->time_flight_minutes}}</td>
                     <td>{{$flight->arrival_time}}</td>
                     <td>{{$flight->arrivalAirport->name}}</td>
-                    <td>{{$flight->status}}</td>  
-                
+                    <td>
+                        @if($flight->status == 'On Time')
+                            {{$flight->status}}
+                        @elseif($flight->status == 'Delayed')
+                            {{$flight->status}} (Delayed by {{$flight->delay_minutes ?? 'N/A'}} minutes)
+                        @elseif($flight->status == 'Canceled')
+                            {{$flight->status}} (Flight has been canceled)
+                        @endif
+                    </td>
                 </tr>
-            @endif 
+            @endif
             @endforeach
         </tbody>
     </table>
