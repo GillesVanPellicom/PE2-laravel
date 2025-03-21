@@ -44,7 +44,7 @@
 
     @endsection
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-black  leading-tight text-center">
+        <h2 class="font-semibold text-xl text-gray-800  leading-tight text-center">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>

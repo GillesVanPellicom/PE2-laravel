@@ -1,196 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FullCalendar in Laravel</title>
+    <title>Holiday Request System</title>
 
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 
     <style>
-        /* Custom styles for your page */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
-        #calendar {
+        .container {
             max-width: 900px;
-            margin: 20px auto;
-            background-color: white;
+            background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
 
         #holidayInfo {
-            text-align: center;
             font-size: 18px;
-            margin-bottom: 20px;
             font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+
+        #calendar {
+            margin: 20px 0;
         }
 
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-top: 20px;
         }
 
-        #saveHolidays {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
+        button, .btn {
+            padding: 12px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        #saveRequests {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #saveRequests:hover {
+            background-color: #218838;
         }
 
         .btn {
-            display: inline-block;
-            padding: 10px 20px;
             background-color: #007bff;
             color: white;
-            border: none;
-            border-radius: 5px;
             text-decoration: none;
         }
 
         .btn:hover {
             background-color: #0056b3;
         }
+
+        #clearStorage {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        #clearStorage:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
-
 <body>
-
-    <div id="holidayInfo">
-        Remaining Holidays: <span id="remainingHolidays">5</span>
+    <div class="container">
+        <div id="holidayInfo">
+            Remaining Holidays: <span id="remainingHolidays">5</span> | 
+            Sick Days Taken: <span id="sickDaysTaken">0</span>
+        </div>
+        <div id="calendar"></div>
+        <div class="button-container">
+            <button id="saveRequests">Save Requests</button>
+            <a href="/holiday-requests" class="btn">View Requests</a>
+            <button id="clearStorage">Clear Data</button>
+        </div>
     </div>
-
-    <div id="calendar"></div>
 
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 
-    <div class="button-container">
-        <button id="saveHolidays">Save Holidays</button>
-        <!-- Link to navigate to the Holiday Requests page -->
-        <a href="/holiday-requests" class="btn">View Holiday Requests</a>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
+            var selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
+            var remainingHolidays = 5; 
+            var sickDaysTaken = selectedSickDays.size; 
 
-    <button onclick="clearStorage()">Clear All Data</button>
-
-<script>
-    function clearStorage() {
-        localStorage.clear(); // Clears all localStorage data
-        alert("All data has been cleared.");
-        location.reload(); // Reload the page to reset the state
-    }
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
-        var selectedHolidays = new Set(JSON.parse(localStorage.getItem('selectedHolidays')) || []);
-        var remainingHolidays = 5; // Adjust this number based on your requirements
-
-        function updateRemainingHolidays() {
-            document.getElementById('remainingHolidays').textContent = remainingHolidays;
-        }
-
-        function addHoliday(date) {
-            calendar.addEvent({
-                id: date,
-                title: 'Holiday',
-                start: date,
-                allDay: true,
-                backgroundColor: '#ff7f7f',
-                borderColor: '#ff7f7f',
-                textColor: 'white'
-            });
-        }
-
-        function removeHoliday(date) {
-            let event = calendar.getEventById(date);
-            if (event) event.remove();
-        }
-
-        function toggleHoliday(date) {
-            let dateObj = new Date(date);
-            let today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (dateObj < today) {
-                alert('You cannot select a past date as a holiday.');
-                return;
+            function updateCounters() {
+                document.getElementById('remainingHolidays').textContent = remainingHolidays;
+                document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
             }
 
-            if (dateObj.getDay() === 0 || dateObj.getDay() === 6) {
-                alert('You cannot select weekends as holidays.');
-                return;
+            function addEvent(date, type, period = "Full Day") {
+                let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
+                calendar.addEvent({
+                    id: date,
+                    title: title,
+                    start: date,
+                    allDay: true,
+                    backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+                    borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+                    textColor: 'white'
+                });
             }
 
-            if (selectedHolidays.has(date)) {
-                selectedHolidays.delete(date);
-                removeHoliday(date);
-                remainingHolidays++;
-            } else {
-                if (remainingHolidays > 0) {
-                    selectedHolidays.add(date);
-                    addHoliday(date);
-                    remainingHolidays--;
-                } else {
-                    alert('You have no remaining holidays.');
+            function removeEvent(date) {
+                let event = calendar.getEventById(date);
+                if (event) event.remove();
+            }
+
+            function toggleEvent(date) {
+                let dateObj = new Date(date);
+                let today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (dateObj < today) {
+                    alert('You cannot select a past date.');
+                    return;
                 }
+
+                if (dateObj.getDay() === 0 || dateObj.getDay() === 6) {
+                    alert('You cannot select weekends.');
+                    return;
+                }
+
+                let choice = prompt("Choose: Type '1' for Paid Holiday, Type '2' for Sick Day");
+
+                if (choice === "1") {
+                    if (selectedHolidays[date]) {
+                        delete selectedHolidays[date];
+                        removeEvent(date);
+                        remainingHolidays++;
+                    } else {
+                        if (remainingHolidays > 0) {
+                            let period = prompt("Enter '1' for Full Day, '2' for AM, '3' for PM");
+                            let periodText = period === "1" ? "Full Day" : period === "2" ? "AM" : "PM";
+
+                            selectedHolidays[date] = periodText;
+                            addEvent(date, "holiday", periodText);
+                            remainingHolidays--;
+                        } else {
+                            alert('No remaining holidays.');
+                        }
+                    }
+                } else if (choice === "2") {
+                    if (selectedSickDays.has(date)) {
+                        selectedSickDays.delete(date);
+                        removeEvent(date);
+                        sickDaysTaken--;
+                    } else {
+                        selectedSickDays.add(date);
+                        addEvent(date, "sick");
+                        sickDaysTaken++;
+                    }
+                } else {
+                    alert("Invalid choice.");
+                    return;
+                }
+
+                updateCounters();
+                localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
+                localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
             }
 
-            updateRemainingHolidays();
-            localStorage.setItem('selectedHolidays', JSON.stringify([...selectedHolidays]));
-        }
-
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            firstDay: 1,
-            dateClick: function(info) {
-                toggleHoliday(info.dateStr);
-            }
-        });
-
-        calendar.render();
-
-        // Load saved holidays
-        selectedHolidays.forEach(date => addHoliday(date));
-        updateRemainingHolidays();
-
-        // Handle "Save Holidays" button
-        document.getElementById('saveHolidays').addEventListener('click', function() {
-            let employeeName = prompt("Enter your name to save holidays:");
-
-            if (!employeeName) {
-                alert("Name is required to save holidays.");
-                return;
-            }
-
-            let holidays = Array.from(selectedHolidays);
-            let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
-
-            requests.push({
-                name: employeeName,
-                holidays: holidays
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                firstDay: 1,
+                dateClick: function(info) {
+                    toggleEvent(info.dateStr);
+                }
             });
 
-            localStorage.setItem('holidayRequests', JSON.stringify(requests));
+            calendar.render();
+            Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
+            selectedSickDays.forEach(date => addEvent(date, "sick"));
+            updateCounters();
 
-            alert("Holidays saved successfully!");
+            document.getElementById('saveRequests').addEventListener('click', function() {
+                let employeeName = prompt("Enter your name to save requests:");
+                if (!employeeName) {
+                    alert("Name is required.");
+                    
+                    return;
+                }
+                let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
+                requests.push({ name: employeeName, holidays: selectedHolidays, sickDays: Array.from(selectedSickDays) });
+                localStorage.setItem('holidayRequests', JSON.stringify(requests));
+                alert("Requests saved successfully!");
+            });
+
+            document.getElementById('clearStorage').addEventListener('click', function() {
+                localStorage.clear();
+                alert("All data has been cleared.");
+                location.reload();
+            });
         });
-    });
-</script>
-
+    </script>
 </body>
-
 </html>

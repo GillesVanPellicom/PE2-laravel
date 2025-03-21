@@ -7,7 +7,12 @@
 </head>
 <body>
 <div>
-    <h1>Hello there.</h1>
+    <h1>Homepage</h1>
+    <p>This is the homepage.</p>
+    <a href="{{ route('auth.login') }}">Login</a>
+    <br>
+    <a href="{{ route('auth.register') }}">Register</a>
+    <br>
 </div>
 </body>
 </html>

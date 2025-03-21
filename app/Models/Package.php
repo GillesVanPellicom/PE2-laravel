@@ -39,6 +39,10 @@ class Package extends Model {
         'addresses_id' => null
     ];
 
+    public function user(){
+        return $this->belongsTo(User::class, "user_id");
+    }
+
     public function weightClass()
     {
         return $this->belongsTo(WeightClass::class, 'weight_id');

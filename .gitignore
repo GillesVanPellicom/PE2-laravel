@@ -20,8 +20,14 @@ yarn-error.log
 /.zed
 node_modules/
 .DS_Store
-/vendor/_laravel_ide/
-/vendor/composer
+vendor/*
+vendor/composer/
+!vendor/bin/
+!vendor/laravel/
+!vendor/symfony/
+.editorconfig
+/*.sql
+
 # Add your own gitignore rules below
 
 

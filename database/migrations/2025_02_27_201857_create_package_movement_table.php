@@ -22,6 +22,12 @@ return new class extends Migration
             $table->dateTime('arrival_time')->nullable();
             $table->dateTime('check_in_time')->nullable();
             $table->dateTime('check_out_time')->nullable();
+            $table->foreignId('node_id')->constrained('locations');
+            $table->foreignId('next_hop')->nullable()->constrained('package_movements');
+            $table->foreignId('router_edge_id')->nullable()->constrained('route_edges');
+            $table->boolean('hopDeparted');
+            $table->boolean('hopArrived');
+            $table->timestamps();
         });
     }
 
@@ -30,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('package_movement');
+        Schema::dropIfExists('package_movements');
     }
 };
