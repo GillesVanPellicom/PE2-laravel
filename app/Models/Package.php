@@ -83,12 +83,13 @@ class Package extends Model {
    * @throws RouterException General router error
    */
   public function getMovements(): ?array {
-    /** @var Router $router */
 
     // Check cache
     if (!$this->movements()->exists()) {
       // Cache miss
       // New package movement
+
+      /** @var Router $router */
       $router = App::make(Router::class);
 
       $path = $router->getPath(
@@ -105,7 +106,7 @@ class Package extends Model {
 
 
   /**
-   * @param  Node[]  $path Array of Node objects to commit as movements
+   * @param  Node[]  $path  Array of Node objects to commit as movements
    * @return void
    */
   private function commitMovements(array $path): void {

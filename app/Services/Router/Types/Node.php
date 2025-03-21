@@ -45,15 +45,19 @@ class Node {
     bool $isEntryNode = false,
     bool $isExitNode = false
   ) {
+
     if (empty($ID)) {
       throw new InvalidRouterArgumentException("Node ID cannot be empty.");
     }
+
     if (empty($description)) {
       throw new InvalidRouterArgumentException("Description cannot be empty.");
     }
+
     if ($latDeg < -90.0 || $latDeg > 90.0) {
       throw new InvalidCoordinateException("Node::__construct", "latitude", $latDeg);
     }
+
     if ($longDeg < -180.0 || $longDeg > 180.0) {
       throw new InvalidCoordinateException("Node::__construct", "latitude", $longDeg);
     }

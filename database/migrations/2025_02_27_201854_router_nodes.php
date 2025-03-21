@@ -9,7 +9,7 @@ return new class extends Migration {
     Schema::create('router_nodes', function (Blueprint $table) {
       $table->string('id')->primary();
       $table->string('description');
-      $table->enum('location_type', ['PICKUP_POINT', 'PARCEL_LOCKER', 'DISTRIBUTION_CENTER', 'AIRPORT']);
+      $table->enum('location_type', ['PICKUP_POINT', 'DISTRIBUTION_CENTER', 'AIRPORT']);
       $table->decimal('latDeg', 12, 8)->nullable();
       $table->decimal('lonDeg', 12, 8)->nullable();
       $table->boolean('isEntry')->default(false);

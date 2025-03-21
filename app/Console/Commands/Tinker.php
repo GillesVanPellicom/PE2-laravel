@@ -36,6 +36,6 @@ class Tinker extends Command {
     } catch (Exception $e) {
       ConsoleHelper::error($e->getMessage());
     }
-    dd ($path);
+    dd($path);
   }
 }

@@ -54,30 +54,41 @@ namespace App\Services\Router {
      */
     public function getPath(Location $origin, Location $destination): ?array {
       $oN = $this->createImaginaryNode(
-        $origin->getAttribute('location_type') == LocationType::ADDRESS ? $origin->getAttribute('id') : $origin->getAttribute('infrastructure_id'),
+        $origin->getAttribute('location_type') == LocationType::ADDRESS
+          ? $origin->getAttribute('id')
+          : $origin->getAttribute('infrastructure_id'),
         $origin->getAttribute('description'),
         $origin->getAttribute('latitude'),
         $origin->getAttribute('longitude'),
-        $origin->getAttribute('location_type') == LocationType::ADDRESS ? NodeType::ADDRESS : NodeType::PICKUP_POINT);
+        $origin->getAttribute('location_type') == LocationType::ADDRESS ?
+          NodeType::ADDRESS
+          : NodeType::PICKUP_POINT);
 
 
       $dN = $this->createImaginaryNode(
-        $destination->getAttribute('location_type') == LocationType::ADDRESS ? $destination->getAttribute('id') : $destination->getAttribute('infrastructure_id'),
+        $destination->getAttribute('location_type') == LocationType::ADDRESS
+          ? $destination->getAttribute('id')
+          : $destination->getAttribute('infrastructure_id'),
         $destination->getAttribute('description'),
         $destination->getAttribute('latitude'),
         $destination->getAttribute('longitude'),
-        $origin->getAttribute('location_type') == LocationType::ADDRESS ? NodeType::ADDRESS : NodeType::PICKUP_POINT);
+        $origin->getAttribute('location_type') == LocationType::ADDRESS
+          ? NodeType::ADDRESS
+          : NodeType::PICKUP_POINT);
 
-      $path = $this->aStar($this->findClosestNode(
-        $oN->getLat(CoordType::RADIAN),
-        $oN->getLong(CoordType::RADIAN),
-        true,
-        false), $this->findClosestNode(
-        $dN->getLat(CoordType::RADIAN),
-        $dN->getLong(CoordType::RADIAN),
-        false,
-        true
-      ));
+      $path = $this->aStar(
+        $this->findClosestNode(
+          $oN->getLat(CoordType::RADIAN),
+          $oN->getLong(CoordType::RADIAN),
+          true,
+          false),
+
+        $this->findClosestNode(
+          $dN->getLat(CoordType::RADIAN),
+          $dN->getLong(CoordType::RADIAN),
+          false,
+          true
+        ));
 
       array_unshift($path, $oN);
       $path[] = $dN;
