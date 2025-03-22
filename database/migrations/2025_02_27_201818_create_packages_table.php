@@ -15,6 +15,7 @@ return new class extends Migration {
       $table->foreignId('user_id')->constrained('users');
       $table->foreignId('origin_location_id')->constrained('locations');
       $table->foreignId('destination_location_id')->nullable()->constrained('locations');
+      $table->string('current_location_id')->nullable();
       $table->foreignId('addresses_id')->nullable()->constrained('addresses');
       $table->string('status');
       $table->foreignId('weight_id')->constrained('weight_classes');
