@@ -57,20 +57,31 @@ Route::middleware("auth")->group(function () {
 
 # => Courier Mobile app
 
-Route::get('/courier', [CourierController::class, "index"])->middleware("guest")->name('courier');
+Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
 
 Route::post('/courier', function (\Illuminate\Http\Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
 
 Route::middleware("auth")->group(function () {
-    Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
-    Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
-    Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
-    Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])->name("courier.lastPackages");
-    Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
-    Route::get('/courier/logout', [AuthController::class, "logout"])->name("courier.logout");
-});
+    Route::get('/courier/route', [CourierController::class, "route"])
+        ->middleware("permission:courier.route")->name('courier.route');
+
+    Route::get('/courier/packages', [CourierController::class, "packages"])
+        ->middleware("permission:courier.packages")->name('courier.packages');
+
+    Route::get("/courier/scan", [CourierController::class, "scan"])
+        ->middleware("permission:scan")->name("courier.scan");
+
+    Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])
+        ->middleware("permission:scan")->name("courier.lastPackages");
+
+    Route::post("/courier/scanQr", [CourierController::class, "scanQr"])
+        ->middleware("permission:scan")->name("courier.scanQr");
+    
+    Route::get('/courier/logout', [AuthController::class, "logout"])
+        ->middleware("permission:scan")->name("courier.logout");
+}); 
 
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
