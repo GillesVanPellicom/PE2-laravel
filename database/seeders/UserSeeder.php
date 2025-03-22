@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -65,8 +66,22 @@ class UserSeeder extends Seeder
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
+            ],
+            [
+                'first_name' => 'Bob',
+                'last_name' => 'Courier',
+                'phone_number' => '0987654321',
+                'birth_date' => '1990-01-01',
+                'email' => 'courier@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('courier'),
+                'address_id' => 4,
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         ]);
-
+        $user = User::find(5);
+        $user->assignRole("courier");
     }
 }

@@ -10,7 +10,7 @@
 </head>
 
 <body class="flex flex-col h-screen text-center pt-20 pb-16">
-    <header class="fixed top-0 left-0 w-full bg-red-700 text-white text-center py-4 text-xl font-bold">
+    <header class="fixed top-0 left-0 w-full bg-red-700 text-white text-center py-4 text-xl font-bold z-50">
         <!--
             @isset($showBack)
             <a href="{{ route('courier.scan') }}"
@@ -21,7 +21,7 @@
         -->
         ShipCompany
         @if (!request()->routeIs('courier'))
-            <a href="{{ route('courier') }}"
+            <a href="{{ route('courier.logout') }}"
                 class="absolute right-5 top-1/2 transform -translate-y-1/2 text-white text-2xl hover:text-black">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </a>
