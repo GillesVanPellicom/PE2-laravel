@@ -17,6 +17,7 @@ use App\Http\Controllers\flightscontroller;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\VacationController;
 
 // ======================= Start Authentication ====================== //
 
@@ -28,11 +29,8 @@ Route::get('/', function () {
 
 // Login
 Route::get('/login', function () {
-    if (Auth::check()) {
-        return redirect()->route('welcome');
-    }
     return view('auth.login');
-})->name('auth.login');
+})->middleware("guest")->name('auth.login');
 
 Route::post('/login', function (\Illuminate\Http\Request $request) {
     return app(AuthController::class)->authenticate($request, "customers");
@@ -49,7 +47,7 @@ Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // Customers
-Route::middleware("authenticate")->group(function () {
+Route::middleware("auth")->group(function () {
     Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 });
 
@@ -59,18 +57,31 @@ Route::middleware("authenticate")->group(function () {
 
 # => Courier Mobile app
 
-Route::get('/courier', [CourierController::class, "index"])->name('courier');
+Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
+
 Route::post('/courier', function (\Illuminate\Http\Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
 
-Route::middleware("authenticate")->group(function () {
-    Route::get('/courier/route', [CourierController::class, "route"])->name('courier.route');
-    Route::get('/courier/packages', [CourierController::class, "packages"])->name('courier.packages');
-    Route::get("/courier/scan", [CourierController::class, "scan"])->name("courier.scan");
-    Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])->name("courier.lastPackages");
-    Route::post("/courier/scanQr", [CourierController::class, "scanQr"])->name("courier.scanQr");
-});
+Route::middleware("auth")->group(function () {
+    Route::get('/courier/route', [CourierController::class, "route"])
+        ->middleware("permission:courier.route")->name('courier.route');
+
+    Route::get('/courier/packages', [CourierController::class, "packages"])
+        ->middleware("permission:courier.packages")->name('courier.packages');
+
+    Route::get("/courier/scan", [CourierController::class, "scan"])
+        ->middleware("permission:scan")->name("courier.scan");
+
+    Route::get("/courier/getlastpackages", [CourierController::class, "getLastPackages"])
+        ->middleware("permission:scan")->name("courier.lastPackages");
+
+    Route::post("/courier/scanQr", [CourierController::class, "scanQr"])
+        ->middleware("permission:scan")->name("courier.scanQr");
+    
+    Route::get('/courier/logout', [AuthController::class, "logout"])
+        ->middleware("permission:scan")->name("courier.logout");
+}); 
 
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
@@ -91,12 +102,24 @@ Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('p
 
 
 Route::get('/calendar', function () {
-    return view('employees.calendar'); });
+    return view('employees.calendar');
+});
 
 Route::get('/holiday-requests', function () {
-    return view('employees.holiday_request'); })->name('holiday-requests');
+    return view('employees.holiday_request');
+})->name('holiday-requests');
 
-Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager-calendar');
+Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager.calendar');
+
+Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
+
+Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
+
+Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
+
+Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+
+
 
 
 Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
@@ -118,6 +141,8 @@ Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@sto
 // ======================= Start Pick Up Point ====================== //
 
 Route::get('/pickup', [PackageController::class, 'index'])->name('pickup.dashboard');
+Route::get('/pickup/package/{id}', [PackageController::class, 'show'])->name('pickup.package.id');
+Route::patch('/pickup/package/{id}', [PackageController::class, 'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
 
 // ======================= End Pick Up Point ====================== //
 
@@ -145,20 +170,20 @@ Route::get('/airport', [airportController::class, 'airportindex'])->name('airpor
 
 // ======================= Start Customer ====================== //
 
-Route::middleware("authenticate")->group(function () {
-Route::get('/send-package', [PackageController::class, 'create'])
-    ->name('packages.send-package');
+Route::middleware("auth")->group(function () {
+    Route::get('/send-package', [PackageController::class, 'create'])
+        ->name('packages.send-package');
 
-Route::post('/send-package', [PackageController::class, 'store'])
-    ->name('package.store');
+    Route::post('/send-package', [PackageController::class, 'store'])
+        ->name('package.store');
 
-Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
+    Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
-Route::get('/my-packages', [PackageController::class, 'mypackages'])
-    ->name('packages.mypackages');
+    Route::get('/my-packages', [PackageController::class, 'mypackages'])
+        ->name('packages.mypackages');
 
-Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
-    ->name('packages.packagedetails');
+    Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
+        ->name('packages.packagedetails');
 });
 
 //--------------------------------- Tracking Packages ---------------------------------//

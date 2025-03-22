@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Services\Router\Router;
@@ -20,6 +19,8 @@ use App\Models\Location;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use App\Models\Address;
+use App\Models\User;
 
 class Package extends Model {
   use HasFactory;
@@ -74,9 +75,15 @@ class Package extends Model {
     return $this->belongsTo(Location::class, 'origin_location_id');
   }
 
-  public function movements() {
-    return $this->hasMany(PackageMovement::class, 'package_id');
-  }
+    public function currentLocation()
+    {
+        return $this->belongsTo(Location::class, 'current_location_id');
+    }
+
+    public function movements()
+    {
+        return $this->hasMany(PackageMovement::class, 'package_id');
+    }
 
 
   /**
