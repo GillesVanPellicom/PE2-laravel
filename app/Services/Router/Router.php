@@ -92,7 +92,6 @@ namespace App\Services\Router {
 
       array_unshift($path, $oN);
       $path[] = $dN;
-      echo("hi");
       return $path;
     }
 

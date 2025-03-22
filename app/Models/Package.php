@@ -143,7 +143,8 @@ class Package extends Model {
    * Move the package forward one step.
    *
    * This method updates the package's movement by setting the appropriate scan times (arrival, check-in, check-out, departure).
-   * It handles the edge case where the final movement only sets the departure time without moving to the next location.
+   * If the final node is not and ADDRESS, you can keep running move() to set the final timestamps as you would, without moving.
+   * If the final node is an ADDRESS, it automatically fills all timestamps in that movement with now() upon arrival.
    *
    * E.g.:
    * Location A:
@@ -162,7 +163,7 @@ class Package extends Model {
    */
   public function move(): void {
     if (!$this->movements()->exists()) {
-      throw new Exception("No movements found for this package. Generate movements first using Package::getMovements().");
+      throw new Exception('No movements found for this package. Generate movements first using Package::getMovements().');
     }
 
     DB::transaction(function () {
@@ -171,33 +172,35 @@ class Package extends Model {
         throw new Exception('Current movement not found.');
       }
 
-      // Set the appropriate scan time based on the current state
-      if (is_null($currentMovement->arrival_time)) {
-        // Set the arrival scan time
+      // If the final node is an ADDRESS, set all timestamps to now()
+      if ($this->getCurrentMovement()->getType() == NodeType::ADDRESS) {
         $currentMovement->arrival_time = now();
-      } elseif (is_null($currentMovement->check_in_time)) {
-        // Set the check-in scan time
         $currentMovement->check_in_time = now();
-      } elseif (is_null($currentMovement->check_out_time)) {
-        // Set the check-out scan time
         $currentMovement->check_out_time = now();
-      } elseif (is_null($currentMovement->departure_time)) {
-        // Set the departure scan time
         $currentMovement->departure_time = now();
-
-        // Attempt to get the next location
-        try {
-          $nextLocation = $this->getNextMovement();
-          if ($nextLocation) {
-            // Update the package's current location if next location exists
-            $this->setCurrentLocation($nextLocation->getID());
-          }
-        } catch (Exception $e) {
-          // If no next location is found, just set the departure time
-        }
       } else {
-        // All timestamps are set, refuse to work
-        throw new Exception('All timestamps are already set for the current movement.');
+        // Set the appropriate scan time based on the current state
+        if (is_null($currentMovement->arrival_time)) {
+          $currentMovement->arrival_time = now();
+        } elseif (is_null($currentMovement->check_in_time)) {
+          $currentMovement->check_in_time = now();
+        } elseif (is_null($currentMovement->check_out_time)) {
+          $currentMovement->check_out_time = now();
+        } elseif (is_null($currentMovement->departure_time)) {
+          $currentMovement->departure_time = now();
+
+          // Attempt to get the next location
+          try {
+            $nextLocation = $this->getNextMovement();
+            if ($nextLocation) {
+              $this->setCurrentMovement($nextLocation->getID());
+            }
+          } catch (Exception $e) {
+            // If no next location is found, just set the departure time
+          }
+        } else {
+          throw new Exception('All timestamps are already set for the current movement.');
+        }
       }
 
       $currentMovement->save();
@@ -313,7 +316,7 @@ class Package extends Model {
       $this->getAttribute('originLocation'),
       $this->getAttribute('destinationLocation'));
     $this->commitMovements($path);
-    $this->setCurrentLocation($path[0]->getID());
+    $this->setCurrentMovement($path[0]->getID());
   }
 
 
@@ -324,7 +327,7 @@ class Package extends Model {
    * @param  string  $location  either Location or RouterNode ID.
    * @return void
    */
-  private function setCurrentLocation(string $location): void {
+  private function setCurrentMovement(string $location): void {
     $this->current_location_id = $location;
     $this->save();
   }
