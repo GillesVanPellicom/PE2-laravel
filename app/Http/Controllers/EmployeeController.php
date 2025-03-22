@@ -17,8 +17,8 @@ class EmployeeController extends Controller
             $query->whereHas('contracts', function ($subQuery) {
                 $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
             });
-        })->get();
-        return view('employees.index', compact('employees'));
+        })->with(['employee', 'employee.contracts', 'employee.team'])->get();
+        return view('employees.index', compact('employees'), ['teams' => Team::all()]);
     }
 
     public function managerCalendar()
@@ -34,12 +34,12 @@ class EmployeeController extends Controller
 
     public function store_employee(Request $request)
     {
-
         $request->validate([
             'street' => 'required',
             'house_number' => 'required|integer|min:0',
-            'bus_number' => 'nullable|alpha',
-            'city' => 'required|integer|min:1',
+            'Apartment_number' => 'nullable|alpha',
+            'city' => 'required|alpha',
+            'postcode' => 'required|integer',
 
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
@@ -54,7 +54,7 @@ class EmployeeController extends Controller
             'house_number.integer' => 'House number must be a number',
             'house_number.min' => 'House number must be larger than 0',
             'city.required' => 'City is required',
-            'city.min' => 'Please enter a city',
+            'city.alpha' => 'City must be a alphabetical characters only',
 
             'lastname.required' => 'Lastname is required.',
             'lastname.max' => 'Lastname is too long.',
@@ -74,11 +74,23 @@ class EmployeeController extends Controller
             'team.min' => 'Please enter a team',
         ]);
 
+        $country = Country::where('country_name', $request->country)->first();
+        $city = City::where('name', $request->city)->where('country_id', $country->id)->first();
+
+        if (!$city) 
+        {
+            $city = City::create([
+                'name' => $request->city,
+                'country_id' => $country->id,
+                'postcode' => $request->postcode,
+            ]);
+        }
+
         $address = [
             'street' => $request->street,
             'house_number' => $request->house_number,
             'bus_number' => strtoupper($request->bus_number),
-            'cities_id' => $request->city,
+            'cities_id' => $city->id,
         ];
 
         $existingAddress = Address::where('street', $request->street)->where('house_number', $request->house_number)->where('cities_id', $request->city)->where(strtoupper('bus_number'), strtoupper($request->bus_number))->first();
@@ -170,11 +182,9 @@ class EmployeeController extends Controller
                 'start_date' => $request->start_date
             ];
             
-            if ($request->vacations_days) {
-                $employee = Employee::find($request->employee);
-                $employee->leave_balance = $request->vacation_days;
-                $employee->save();
-            }
+            $employee = Employee::find($request->employee);
+            $employee->leave_balance = $request->vacation_days;
+            $employee->save();
     
             EmployeeContract::create($contract);
             return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');

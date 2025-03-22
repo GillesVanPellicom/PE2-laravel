@@ -12,4 +12,9 @@ class Team extends Model
     {
         return $this->hasMany(Employee::class, 'team_id');
     }
+    
+    public function manager()
+    {
+        return $this->belongsTo(Employee::class, 'manager_id');
+    }
 }
