@@ -33,9 +33,11 @@ class Tinker extends Command {
     $package = Package::find(1);
     try {
       $path = $package->getMovements();
+      $package->move();
+      dd($package->getCurrentLocation());
     } catch (Exception $e) {
       ConsoleHelper::error($e->getMessage());
     }
-    dd($path);
+//    dd($path);
   }
 }
