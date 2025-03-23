@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto p-4">
     <h2 class="text-2xl font-bold mb-4">Track & Trace - Pakket: {{ $package->reference }}</h2>
-    <h4 class="text-lg mb-6">Huidige Locatie: {{ $currentLocation ? $currentLocation->name : 'Onbekend' }}</h4>
+    <h4 class="text-lg mb-6">Huidige Locatie: {{ $currentLocation ? $currentLocation->description : 'Onbekend' }}</h4>
 
     {{-- Timeline Bullets --}}
     <h3 class="text-xl font-semibold mb-4">Tijdlijn</h3>
@@ -49,7 +49,7 @@
 
                 <div class="flex justify-between">
                     <div>
-                        <h4 class="font-semibold text-lg">{{ $movement->fromLocation->name }} → {{ $movement->toLocation->name }}</h4>
+                        <h4 class="font-semibold text-lg">{{ $movement->fromLocation->description }} → {{ $movement->toLocation->description }}</h4>
                         
                         {{-- Show check-in and optional check-out times --}}
                         @if ($movement->status == 'completed')

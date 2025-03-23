@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\DispatcherController;
 
 // ======================= Start Authentication ====================== //
 
@@ -56,6 +57,7 @@ Route::middleware("auth")->group(function () {
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
+use App\Http\Controllers\CourierRouteController;
 
 Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
 
@@ -204,12 +206,9 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 
 // ======================= End Customer ====================== //
 
-
-// ======================= Start CourierRouteCreator ====================== //
-
 use App\Http\Controllers\RouteCreatorController;
 
 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
+Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
-// ======================= End CourierRouteCreator ====================== //
