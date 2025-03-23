@@ -7,35 +7,33 @@ use App\Models\RouterNodes;
 use App\Services\RouteTracer\RouteTrace;
 use App\Services\Router\Types\NodeType;
 use Illuminate\Http\Request;
+use App\Services\Router\Types\CoordType;
 
-class PackageController extends Controller
+class CourierRouteController extends Controller
 {
     public function showRoute()
     {
         // Retrieve all packages
         $packages = Package::all();
-
         $filteredPackages = [];
-
         foreach ($packages as $package) {
             // Get the last movement of the package
             $lastMovement = $package->getCurrentMovement();
+            $nextMovement = $package->getNextMovement();
 
-            if ($lastMovement && $lastMovement->location_type === NodeType::ADDRESS) {
+            if ($nextMovement->getType() === NodeType::ADDRESS && $lastMovement->getType() === NodeType::DISTRIBUTION_CENTER) {
                 // Get the second-to-last movement
                 $movements = $package->movements()->orderBy('id', 'desc')->get();
                 $secondToLastMovement = $movements->skip(1)->first();
-
                 if ($secondToLastMovement) {
                     $routerNode = RouterNodes::find($secondToLastMovement->current_node_id);
 
-                    if ($routerNode && $routerNode->location_type === NodeType::DISTRIBUTION_CENTER) {
                         $filteredPackages[] = [
-                            'latitude' => $lastMovement->latitude,
-                            'longitude' => $lastMovement->longitude,
+                            'latitude' => $nextMovement->getLat(CoordType::DEGREE),
+                            'longitude' => $nextMovement->getLong(CoordType::DEGREE),
                             'ref' => $package->reference,
                         ];
-                    }
+                    
                 }
             }
         }

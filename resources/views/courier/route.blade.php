@@ -5,6 +5,8 @@
     <div class="container mx-auto p-6">
         <h1 class="text-2xl font-bold mb-4">Courier Route</h1>
 
+        <a href="{{ route('courier.route') }}">View Courier Route</a>
+
         @if (empty($route))
             <p class="text-gray-500">No packages to deliver.</p>
         @else
@@ -51,7 +53,12 @@
     <!-- Include JavaScript for Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+        
+    
     <script>
+ const route = @json($route);
+
         document.addEventListener('DOMContentLoaded', function () {
             const map = L.map('map').setView([50.8503, 4.3517], 13); // default center (Brussels)
 

@@ -88,6 +88,8 @@ Route::middleware("auth")->group(function () {
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
+Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
+
 # <= END Courier Mobile App
 
 // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');

@@ -21,10 +21,9 @@ class RouteTrace
         if (empty($packages)) {
             return $route;
         }
-dd($packages);
         $currentLocation = $packages[0];
         $route[] = $currentLocation;
-
+        
         while (count($route) < count($packages) && $totalDistance < $this->maxDistance) {
             $nextPackage = $this->findClosestPackage($currentLocation, $packages, $route);
 

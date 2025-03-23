@@ -30,11 +30,11 @@ class Tinker extends Command {
    */
   public function handle(): void {
     /** @var Package $package */
-    for ($i = 1; $i <= 100; $i++) {
+    for ($i = 1; $i <= 101; $i++) {
       $package = Package::find($i);
       try {
         $path = $package->getMovements();
-        for($j = 0; $j <= 17; $j++) {
+        for($j = 0; $j <= 16; $j++) {
           $package->move();
         }
       } catch (Exception $e) {
