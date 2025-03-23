@@ -33,8 +33,8 @@ class Tinker extends Command {
     $package = Package::find(1);
     try {
       $path = $package->getMovements();
-//      $package->move();
-//      dd($package->getCurrentMovement()->getType());
+      $package->move();
+      dd($package->getCurrentMovement());
     } catch (Exception $e) {
       ConsoleHelper::error($e->getMessage());
     }

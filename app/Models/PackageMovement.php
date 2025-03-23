@@ -55,4 +55,9 @@ class PackageMovement extends Model {
   public function getHopArrivedAttribute(): bool {
     return !is_null($this->arrival_time);
   }
+
+  public function toLocation()
+  {
+    return $this->belongsTo(Location::class, 'current_node_id', 'id');
+  }
 }

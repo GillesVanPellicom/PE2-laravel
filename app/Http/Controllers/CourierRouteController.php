@@ -2,74 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Package;
-use App\Models\PackageMovement;
-use App\Models\Location;
+use App\Models\RouterNodes;
 use App\Services\RouteTracer\RouteTrace;
+use App\Services\Router\Types\NodeType;
+use Illuminate\Http\Request;
 
-class CourierRouteController extends Controller
+class PackageController extends Controller
 {
     public function showRoute()
     {
-        // Step 1: Get all packages with destination type PRIVATE_INDIVIDU
-        $packages = Package::with(['currentLocation', 'destinationLocation', 'movements'])
-            ->whereHas('destinationLocation', function ($query) {
-                $query->where('location_type', 'PRIVATE_INDIVIDU');
-            })
-            ->get();
-        
-            dump($packages);
+        // Retrieve all packages
+        $packages = Package::all();
 
+        $filteredPackages = [];
 
-        // Debug: Check if packages are retrieved
-        if ($packages->isEmpty()) {
-            return view('courier.route', ['route' => []]);
-        }
+        foreach ($packages as $package) {
+            // Get the last movement of the package
+            $lastMovement = $package->getCurrentMovement();
 
-        // Step 2: Filter packages by last movement's current location being a DISTRIBUTION_CENTER
-        $filteredPackages = $packages->filter(function ($package) {
-            $lastMovement = $package->movements()->latest('created_at')->first();
+            if ($lastMovement && $lastMovement->location_type === NodeType::ADDRESS) {
+                // Get the second-to-last movement
+                $movements = $package->movements()->orderBy('id', 'desc')->get();
+                $secondToLastMovement = $movements->skip(1)->first();
 
-            if (!$lastMovement) {
-                return false; // Skip packages without movements
+                if ($secondToLastMovement) {
+                    $routerNode = RouterNodes::find($secondToLastMovement->current_node_id);
+
+                    if ($routerNode && $routerNode->location_type === NodeType::DISTRIBUTION_CENTER) {
+                        $filteredPackages[] = [
+                            'latitude' => $lastMovement->latitude,
+                            'longitude' => $lastMovement->longitude,
+                            'ref' => $package->reference,
+                        ];
+                    }
+                }
             }
-
-            // Ensure the last movement's destination is PRIVATE_INDIVIDU and hopArrived is FALSE
-            return $lastMovement->toLocation
-                && $lastMovement->toLocation->location_type === 'PRIVATE_INDIVIDU'
-                && (!$lastMovement->hopArrived || $lastMovement->hopArrived === 0);
-        });
-
-        // Debug: Check if filtered packages are retrieved
-        if ($filteredPackages->isEmpty()) {
-            return view('courier.route', ['route' => []]);
         }
 
-        // Step 3: Prepare package data for route calculation
-        $packageData = $filteredPackages->map(function ($package) {
-            return [
-                'latitude' => $package->destinationLocation->latitude,
-                'longitude' => $package->destinationLocation->longitude,
-                'ref' => $package->reference, // Include the reference number
-            ];
-        })->toArray();
+        // Use RouteTracer to calculate the best route
+        $routeTracer = new RouteTrace();
+        $route = $routeTracer->generateRoute($filteredPackages);
 
-        // Debug: Check if package data is prepared
-        if (empty($packageData)) {
-            return view('courier.route', ['route' => []]);
-        }
-
-        // Step 4: Calculate the route using RouteTrace
-        $route = [];
-        if (!empty($packageData)) {
-            $routeCreator = new RouteTrace();
-            $route = $routeCreator->generateRoute($packageData);
-        }
-
-
-        // Step 5: Pass the route to the Blade view
-        // return view('courier.route', ['route' => $route ?? []]);
-    
+        // Pass the route to the view
+        return view('courier.route', compact('route'));
     }
 }

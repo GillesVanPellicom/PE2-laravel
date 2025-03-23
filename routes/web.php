@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\DispatcherController;
 
 // ======================= Start Authentication ====================== //
 
@@ -196,4 +197,6 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 use App\Http\Controllers\RouteCreatorController;
 
 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+
+Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
