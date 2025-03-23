@@ -60,20 +60,38 @@
 
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4">Create Employee Contract</h1>
+            <h1 class="text-4xl font-bold mb-4">Create Team</h1>
         </div>
+
+        @if (session('success'))
+            <div class="bg-green-100 text-green-800 p-4 mb-6 rounded shadow">
+                {{ session('success') }}
+            </div>
+        @elseif (session('error'))
+            <div class="bg-red-100 text-red-800 p-4 mb-6 rounded shadow">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="max-w-3xl mx-auto p-6 bg-white rounded shadow-lg mt-8">
-        
-            <form action="{{ route('employees.store_contract') }}" method="POST" class="space-y-6">
+            <form action="{{ route('employees.store_team') }}" method="POST" class="space-y-6">
                 @csrf
-                @method('POST')
 
                 <div class="mb-4">
-                    <label for="employee" class="block text-sm font-medium text-gray-700">Employee:</label>
+                    <label for="department" class="block text-sm font-medium text-gray-700">Department:</label>
+                    <input type="text" name="department" id="department" value="{{ old('department') }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('department')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="employee" class="block text-sm font-medium text-gray-700">Manager:</label>
                     <select name="employee" id="employee"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="-1">Select an employee</option>
-                        @foreach($employees as $employee)
+                        <option value="">Select Manager</option>
+                        @foreach ($employees as $employee)
                             <option value="{{ $employee->id }}" 
                                 @if(old('employee') == $employee->id) selected @endif>
                                 {{ $employee->user->first_name }} {{ $employee->user->last_name }}
@@ -85,44 +103,10 @@
                     @enderror
                 </div>
 
-                <div class="mb-4">
-                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date') }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    @error('start_date')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="mb-4">
-                    <label for="function" class="block text-sm font-medium text-gray-700">Function:</label>
-                    <select name="function" id="function"
-                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="-1">Select a function</option>
-                        @foreach($functions as $function)
-                            <option value="{{ $function->id }}"
-                            @if(old('function') == $function->id) selected @endif>    
-                            {{ $function->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('function')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="mb-4">
-                    <label for="vacation_days" class="block text-sm font-medium text-gray-700">Enter the amount of vacation days this employee gets:</label>
-                    <input type="number" name="vacation_days" id="vacation_days" value="{{ old('vacation_days') }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    @error('vacation_days')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
                 <div>
                     <button type="submit"
                         class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow">
-                        Create Contract
+                        Create Team
                     </button>
                 </div>
             </form>
