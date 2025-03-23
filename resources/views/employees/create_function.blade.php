@@ -60,61 +60,55 @@
 
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4">Create Employee Contract</h1>
+            <h1 class="text-4xl font-bold mb-4">Create Function</h1>
         </div>
+
+        @if (session('success'))
+            <div class="bg-green-100 text-green-800 p-4 mb-6 rounded shadow">
+                {{ session('success') }}
+            </div>
+        @elseif (session('error'))
+            <div class="bg-red-100 text-red-800 p-4 mb-6 rounded shadow">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="max-w-3xl mx-auto p-6 bg-white rounded shadow-lg mt-8">
-        
-            <form action="{{ route('employees.store_contract') }}" method="POST" class="space-y-6">
+            <form action="{{ route('employees.store_function') }}" method="POST" class="space-y-6">
                 @csrf
-                @method('POST')
 
                 <div class="mb-4">
-                    <label for="employee" class="block text-sm font-medium text-gray-700">Employee:</label>
-                    <select name="employee" id="employee"
+                    <label for="name" class="block text-sm font-medium text-gray-700">Function:</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="-1">Select an employee</option>
-                        @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" 
-                                @if(old('employee') == $employee->id) selected @endif>
-                                {{ $employee->user->first_name }} {{ $employee->user->last_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('employee')
+                    @error('name')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date') }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    @error('start_date')
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
+                    <textarea name="description" id="description"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('description') }}</textarea>
+                    @error('description')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label for="function" class="block text-sm font-medium text-gray-700">Function:</label>
-                    <select name="function" id="function"
-                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="-1">Select a function</option>
-                        @foreach($functions as $function)
-                            <option value="{{ $function->id }}"
-                            @if(old('function') == $function->id) selected @endif>    
-                            {{ $function->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('function')
+                    <label for="salary_min" class="block text-sm font-medium text-gray-700">Salary Min:</label>
+                    <input type="number" name="salary_min" id="salary_min" value="{{ old('salary_min') }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('salary_min')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label for="vacation_days" class="block text-sm font-medium text-gray-700">Enter the amount of vacation days this employee gets:</label>
-                    <input type="number" name="vacation_days" id="vacation_days" value="{{ old('vacation_days') }}"
+                    <label for="salary_max" class="block text-sm font-medium text-gray-700">Salary Max:</label>
+                    <input type="number" name="salary_max" id="salary_max" value="{{ old('salary_max') }}"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    @error('vacation_days')
+                    @error('salary_max')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -122,7 +116,7 @@
                 <div>
                     <button type="submit"
                         class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow">
-                        Create Contract
+                        Create Function
                     </button>
                 </div>
             </form>
