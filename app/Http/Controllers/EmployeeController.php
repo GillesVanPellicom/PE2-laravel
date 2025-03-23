@@ -46,7 +46,7 @@ class EmployeeController extends Controller
             'street' => 'required',
             'house_number' => 'required|integer|min:0',
             'Apartment_number' => 'nullable|alpha',
-            'city' => 'required|alpha',
+            'city' => 'required|string',
             'postcode' => 'required|integer',
 
             'lastname' => 'required|string|max:255',
@@ -62,7 +62,7 @@ class EmployeeController extends Controller
             'house_number.integer' => 'House number must be a number',
             'house_number.min' => 'House number must be larger than 0',
             'city.required' => 'City is required',
-            'city.alpha' => 'City must be a alphabetical characters only',
+            'city.string' => 'City must be a string',
 
             'lastname.required' => 'Lastname is required.',
             'lastname.max' => 'Lastname is too long.',
@@ -200,5 +200,80 @@ class EmployeeController extends Controller
         else {
             return redirect()->route('employees.contracts')->with('error', 'Employee already has a contract');
         }
+    }
+
+    public function teams()
+    {
+        $teams = Team::all();
+        return view('employees.teams', compact('teams'));
+    }
+
+    public function create_team()
+    {
+        $employees = Employee::all();
+        return view('employees.create_team', compact('employees'));
+    }
+
+    public function store_team(Request $request)
+    {
+        $request->validate([
+            'department' => 'required|string|max:255|unique:teams,department',
+            'employee' => 'required|integer|min:1',
+        ],
+        [
+            'department.required' => 'Department is required.',
+            'department.string' => 'Department must be a string.',
+            'department.max' => 'Department name is too long.',
+            'department.unique' => 'Department already exists.',
+
+            'employee.required' => 'Manager is required.',
+            'employee.min' => 'Please select a manager',
+        ]);
+
+        $team = [
+            'department' => $request->department,
+            'manager_id' => $request->employee,
+        ];
+
+        Team::create($team);
+        return redirect()->route('employees.teams')->with('success', 'Team created successfully');
+    }
+
+    public function functions()
+    {
+        $functions = EmployeeFunction::all();
+        return view('employees.functions', compact('functions'));
+    }
+
+    public function create_function()
+    {
+        return view('employees.create_function');
+    }
+
+    public function store_function(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:functions,name',
+            'description' => 'required|string',
+            'salary_min' => 'required|numeric|min:0',
+            'salary_max' => 'required|numeric|min:0',
+        ],
+        [
+            'name.required' => 'Name is required.',
+            'name.string' => 'Name must be a string.',
+            'name.max' => 'Name is too long.',
+            'name.unique' => 'Name already exists.',
+            'description.required' => 'Description is required.',
+            'description.string' => 'Description must be a string.',
+            'salary_min.required' => 'Minimum salary is required.',
+            'salary_min.numeric' => 'Minimum salary must be a number.',
+            'salary_min.min' => 'Minimum salary must be larger than 0.',
+            'salary_max.required' => 'Maximum salary is required.',
+            'salary_max.numeric' => 'Maximum salary must be a number.',
+            'salary_max.min' => 'Maximum salary must be larger than 0.',
+        ]);
+
+        EmployeeFunction::create($request->all());
+        return redirect()->route('employees.functions')->with('success', 'Function created successfully');
     }
 }

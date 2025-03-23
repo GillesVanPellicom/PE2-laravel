@@ -124,7 +124,10 @@
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select a team</option>
                         @foreach($teams as $team)
-                            <option value="{{ $team->id }}">{{ $team->department }}</option>
+                            
+                            <option value="{{ $team->id }}"
+                                @if(old('team') == $team->id) selected @endif>
+                                {{ $team->department }}</option>
                         @endforeach
                     </select>
                     @error('team')

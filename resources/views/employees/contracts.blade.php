@@ -55,31 +55,20 @@
                                 @endif
                             </td>
                             <td class="border border-gray-300 px-4 py-2 flex justify-center">
-                                @if($contract->end_date < now() or $contract->end_date == NULL)
-                                <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST" class="flex items-center space-x-2">
-                                    @csrf
-                                    @method('POST')
-                                    <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded shadow text-xs">
-                                        Set End Date to:
-                                    </button>
-                                    <input name="end_date" type="date" value="{{ date('Y-m-d') }}" class="text-xs">
-                                </form>
+                                @if(is_null($contract->end_date) || $contract->end_date > now())
+                                    <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST" class="flex items-center space-x-2">
+                                        @csrf
+                                        @method('POST')
+                                        <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded shadow text-xs">
+                                            Set End Date to:
+                                        </button>
+                                        <input name="end_date" type="date" value="{{ date('Y-m-d') }}" class="text-xs">
+                                    </form>
                                 @else
-                                <button type="submit" disabled class="text-white bg-gray-400 hover:bg-gray-500 px-4 py-2 rounded-md shadow-md text-xs cursor-not-allowed opacity-50">
-                                    End date already set
-                                </button>
-                                @endif
-
-                                <!--
-                                <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST" class="flex items-center space-x-2">
-                                    @csrf
-                                    @method('POST')
-                                    <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded shadow text-xs">
-                                        Set End Date to:
+                                    <button type="submit" disabled class="text-white bg-gray-400 hover:bg-gray-500 px-4 py-2 rounded-md shadow-md text-xs cursor-not-allowed opacity-50">
+                                        End date already set
                                     </button>
-                                    <input name="end_date" type="date" value="{{ date('Y-m-d') }}" class="text-xs">
-                                </form>
-                                -->
+                                @endif
                             </td>
                         </tr>
                     @endforeach

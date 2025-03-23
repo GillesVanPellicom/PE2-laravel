@@ -27,7 +27,10 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select an employee</option>
                         @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">{{ $employee->user->first_name }} {{ $employee->user->last_name }}</option>
+                            <option value="{{ $employee->id }}" 
+                                @if(old('employee') == $employee->id) selected @endif>
+                                {{ $employee->user->first_name }} {{ $employee->user->last_name }}
+                            </option>
                         @endforeach
                     </select>
                     @error('employee')
@@ -50,7 +53,9 @@
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select a function</option>
                         @foreach($functions as $function)
-                            <option value="{{ $function->id }}">{{ $function->name }}</option>
+                            <option value="{{ $function->id }}"
+                            @if(old('function') == $function->id) selected @endif>    
+                            {{ $function->name }}</option>
                         @endforeach
                     </select>
                     @error('function')
