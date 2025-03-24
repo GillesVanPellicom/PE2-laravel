@@ -16,6 +16,19 @@ class UserSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
+                'first_name' => 'Admin',
+                'last_name' => 'Admin',
+                'phone_number' => '0987664321',
+                'birth_date' => '1990-01-01',
+                'email' => 'Admin@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('Admin'),
+                'address_id' => 1,
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'first_name' => 'John',
                 'last_name' => 'Doe',
                 'phone_number' => '1234567890',
@@ -81,7 +94,14 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ]
         ]);
-        $user = User::find(5);
-        $user->assignRole("courier");
+        $courier = User::where('email', 'courier@example.com')->first();
+        if ($courier) {
+            $courier->assignRole("courier");
+        }
+
+        $admin = User::where('email', 'Admin@example.com')->first();
+        if ($admin) {
+            $admin->assignRole("admin");
+        }
     }
 }

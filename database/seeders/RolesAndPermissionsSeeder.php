@@ -22,18 +22,41 @@ class RolesAndPermissionsSeeder extends Seeder
         'scan',
         "courier.route",
         "scan.deliver",
+
+        /* START Employees */
         "courier.packages",
+        "employees.checkall",
+        "employees.create",
+        "employees.assign",
+        /* END Employees */
     ];
 
 
     private array $roles = [
+        /* ADMIN */
+        "admin" => ["*"],
+        /* ADMIN */
+
+        /* START Courier */
         "scan" => ["scan"],
         "courier" => ["courier.route", "scan.deliver", "courier.packages"],
+        /* END Courier */
+
+        /* START Employees */
+        "employeeManager" => ["employees.create", "employees.assign"],
+        "employee" => ["employees.checkall"],
+        /* END Employees */
     ];
 
 
     private array $roleInheritance = [
-        "scan" => "courier"
+        /* START Courier */
+        "scan" => "courier",
+        /* END Courier */
+
+        /* START Employees */
+        "employee" => "employeeManager",
+        /* END Employees */
     ];
 
 
