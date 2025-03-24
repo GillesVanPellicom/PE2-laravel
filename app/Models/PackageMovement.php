@@ -58,6 +58,65 @@ class PackageMovement extends Model {
 
   public function toLocation()
   {
-    return $this->belongsTo(Location::class, 'current_node_id', 'id');
+    return $this->belongsTo(RouterNodes::class, 'to_node_id', 'id');
+  }
+
+  public function fromLocation()
+  {
+    return $this->belongsTo(RouterNodes::class, 'from_node_id', 'id');
+  }
+
+  public function getArrivedAt()
+  {
+    return $this->arrival_time;
+  }
+
+  public function getCheckedInAt()
+  {
+    return $this->check_in_time;
+  }
+
+  public function getCheckedOutAt()
+  {
+    return $this->check_out_time;
+  }
+
+  public function getDepartedAt()
+  {
+    return $this->departure_time;
+  }
+
+  public function getFromNodeDescription(): string
+  {
+    if ($this->fromLocation) {
+        $node = new Node(
+            $this->fromLocation->id,
+            NodeType::from($this->fromLocation->location_type),
+            $this->fromLocation->description,
+            $this->fromLocation->latDeg,
+            $this->fromLocation->lonDeg,
+            $this->fromLocation->isEntry,
+            $this->fromLocation->isExit
+        );
+        return $node->getDescription();
+    }
+    return 'Unknown';
+  }
+
+  public function getToNodeDescription(): string
+  {
+    if ($this->toLocation) {
+        $node = new Node(
+            $this->toLocation->id,
+            NodeType::from($this->toLocation->location_type),
+            $this->toLocation->description,
+            $this->toLocation->latDeg,
+            $this->toLocation->lonDeg,
+            $this->toLocation->isEntry,
+            $this->toLocation->isExit
+        );
+        return $node->getDescription();
+    }
+    return 'Unknown';
   }
 }

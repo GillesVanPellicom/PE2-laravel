@@ -86,38 +86,73 @@
     </div>
 
     <script>
+        // Select elements
         const distributionCenters = document.querySelectorAll('#distribution_centers li');
         const cityFilter = document.getElementById('city_filter');
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal_title');
-        const modalContent = document.getElementById('modal_content');
-        const closeModalButton = document.getElementById('close_modal');
+        const middleSection = document.querySelector('.flex-grow'); // Middle section for displaying details
 
         // Filter distribution centers by city
         cityFilter.addEventListener('change', () => {
-            const selectedCity = cityFilter.value;
+            const selectedCityId = cityFilter.value;
+
             distributionCenters.forEach(center => {
-                if (selectedCity === '-1' || center.dataset.cityId === selectedCity) {
-                    center.style.display = 'block';
+                if (selectedCityId === '-1' || center.dataset.cityId === selectedCityId) {
+                    center.style.display = 'block'; // Show matching centers
                 } else {
-                    center.style.display = 'none';
+                    center.style.display = 'none'; // Hide non-matching centers
                 }
             });
         });
 
-        // Show modal for a selected distribution center
-        function showPackages(centerId, centerDescription) {
-            modalTitle.textContent = `Distribution Center: ${centerDescription}`;
-            modalContent.textContent = `Loading details for Distribution Center ID: ${centerId}...`;
+        // Show details for a selected distribution center
+        async function showPackages(centerId, centerDescription) {
+            try {
+                // Fetch packages and details for the selected distribution center
+                const response = await fetch(`/distribution-center/${centerId}/details`);
 
-            setTimeout(() => {
-                modalContent.textContent = `Details for Distribution Center ID: ${centerId}`;
-            }, 1000);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-            modal.classList.remove('hidden');
+                const data = await response.json();
+
+                console.log(data); // Debug the response
+
+                if (data.error) {
+                    middleSection.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+                    return;
+                }
+
+                // Clear the middle section
+                middleSection.innerHTML = '';
+
+                // Add distribution center details
+                const detailsHtml = `
+                    <div class="bg-white p-6 rounded shadow-lg w-full">
+                        <h2 class="text-2xl font-bold mb-4">${centerDescription}</h2>
+                        <p class="text-gray-700 mb-4">Details about the distribution center will appear here.</p>
+                        <h3 class="text-xl font-bold mb-2">Packages Ready for Delivery</h3>
+                        <ul class="space-y-2">
+                            ${data.packages.map(pkg => `
+                                <li class="p-2 bg-gray-100 rounded shadow">
+                                    <strong>Reference:</strong> ${pkg.ref}<br>
+                                    ${pkg.error ? `<span class="text-red-500">${pkg.error}</span>` : `
+                                    <strong>Destination:</strong> (${pkg.latitude}, ${pkg.longitude})`}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+
+                middleSection.innerHTML = detailsHtml;
+            } catch (error) {
+                console.error('Fetch error:', error); // Log the error
+                middleSection.innerHTML = `<p class="text-red-500">Failed to load distribution center details. Please try again later.</p>`;
+            }
         }
 
         // Close modal
+        const closeModalButton = document.getElementById('close_modal');
         closeModalButton.addEventListener('click', () => {
             modal.classList.add('hidden');
         });

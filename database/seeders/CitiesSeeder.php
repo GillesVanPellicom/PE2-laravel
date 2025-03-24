@@ -79,6 +79,62 @@ class CitiesSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Los Angeles',
+                'postcode' => '90001',
+                'country_id' => 187, // United States
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Munich',
+                'postcode' => '80331',
+                'country_id' => 64, // Germany
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Warsaw',
+                'postcode' => '00-001',
+                'country_id' => 140, // Poland
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Charleroi',
+                'postcode' => '6000',
+                'country_id' => 17, // Belgium
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Tilburg',
+                'postcode' => '5056',
+                'country_id' => '126',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Bastogne',
+                'postocde' => '6600',
+                'country_id' => 17,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Ghent',
+                'postocde' =>  '9000',
+                'country_id' => 17,
+                'created_at' => now(),
+                'updated_at' => now(), 
+            ],
+            [
+                'name' => 'Lille',
+                'postocde' => '59000',
+                'country_id' => 60,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
         ]);
     }
 }

@@ -90,6 +90,8 @@ Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"
 
 Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 
+Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
+
 # <= END Courier Mobile App
 
 // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
@@ -213,4 +215,6 @@ use App\Http\Controllers\RouteCreatorController;
 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
+
+Route::get('/distribution-center/{id}/details', [DispatcherController::class, 'getDistributionCenterDetails']);
 
