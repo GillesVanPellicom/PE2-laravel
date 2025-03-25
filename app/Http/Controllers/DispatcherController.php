@@ -39,36 +39,43 @@ class DispatcherController extends Controller
             return response()->json(['error' => 'Distribution center not found'], 404);
         }
 
-        // Fetch packages ready for delivery
-        $packages = Package::whereHas('movements', function ($query) use ($id) {
+        // Fetch packages ready to deliver to addresses
+        $readyToDeliverPackages = Package::whereHas('movements', function ($query) use ($id) {
             $query->where('current_node_id', $id)
-                  ->whereNull('departure_time')
+                  ->whereNull('departure_time') // Not yet departed
                   ->whereHas('destinationLocation', function ($subQuery) {
-                      $subQuery->where('location_type', NodeType::ADDRESS);
+                      $subQuery->where('location_type', NodeType::ADDRESS); // Final destination is an address
+                  });
+        })->get();
+
+        // Fetch packages in stock (not ready to deliver, but still in the distribution center)
+        $inStockPackages = Package::whereHas('movements', function ($query) use ($id) {
+            $query->where('current_node_id', $id)
+                  ->whereNull('departure_time') // Not yet departed
+                  ->whereHas('destinationLocation', function ($subQuery) {
+                      $subQuery->where('location_type', '!=', NodeType::ADDRESS); // Destination is not an address
                   });
         })->get();
 
         // Format the packages for the response
-        $formattedPackages = $packages->map(function ($package) {
-            try {
-                $nextMovement = $package->getNextMovement();
-                return [
-                    'ref' => $package->reference,
-                    'latitude' => $nextMovement->getLat(CoordType::DEGREE),
-                    'longitude' => $nextMovement->getLong(CoordType::DEGREE),
-                ];
-            } catch (\Exception $e) {
-                // Handle cases where movements are missing
-                return [
-                    'ref' => $package->reference,
-                    'error' => 'No movements found for this package.',
-                ];
-            }
+        $formattedReadyToDeliver = $readyToDeliverPackages->map(function ($package) {
+            return [
+                'ref' => $package->reference,
+                'destination' => $package->destinationLocation->description ?? 'Unknown',
+            ];
+        });
+
+        $formattedInStock = $inStockPackages->map(function ($package) {
+            return [
+                'ref' => $package->reference,
+                'nextDestination' => $package->destinationLocation->description ?? 'Unknown',
+            ];
         });
 
         return response()->json([
             'distributionCenter' => $distributionCenter,
-            'packages' => $formattedPackages,
+            'readyToDeliver' => $formattedReadyToDeliver,
+            'inStock' => $formattedInStock,
         ]);
     }
 }

@@ -85,38 +85,4 @@ class PackageMovement extends Model {
   {
     return $this->departure_time;
   }
-
-  public function getFromNodeDescription(): string
-  {
-    if ($this->fromLocation) {
-        $node = new Node(
-            $this->fromLocation->id,
-            NodeType::from($this->fromLocation->location_type),
-            $this->fromLocation->description,
-            $this->fromLocation->latDeg,
-            $this->fromLocation->lonDeg,
-            $this->fromLocation->isEntry,
-            $this->fromLocation->isExit
-        );
-        return $node->getDescription();
-    }
-    return 'Unknown';
-  }
-
-  public function getToNodeDescription(): string
-  {
-    if ($this->toLocation) {
-        $node = new Node(
-            $this->toLocation->id,
-            NodeType::from($this->toLocation->location_type),
-            $this->toLocation->description,
-            $this->toLocation->latDeg,
-            $this->toLocation->lonDeg,
-            $this->toLocation->isEntry,
-            $this->toLocation->isExit
-        );
-        return $node->getDescription();
-    }
-    return 'Unknown';
-  }
 }
