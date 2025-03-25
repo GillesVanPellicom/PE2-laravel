@@ -94,6 +94,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ]
         ]);
+<<<<<<< HEAD
         $courier = User::where('email', 'courier@example.com')->first();
         if ($courier) {
             $courier->assignRole("courier");
@@ -103,5 +104,7 @@ class UserSeeder extends Seeder
         if ($admin) {
             $admin->assignRole("admin");
         }
+=======
+>>>>>>> Development
     }
 }

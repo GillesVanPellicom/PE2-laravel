@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\DispatcherController;
 
 // ======================= Start Authentication ====================== //
 
@@ -56,6 +57,7 @@ Route::middleware("auth")->group(function () {
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
+use App\Http\Controllers\CourierRouteController;
 
 Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
 
@@ -85,6 +87,10 @@ Route::middleware("auth")->group(function () {
 
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
+
+Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
+
+Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
 
 # <= END Courier Mobile App
 
@@ -118,6 +124,8 @@ Route::get('/pending-vacations', [VacationController::class, 'getPendingVacation
 Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
 
 Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+
+Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
 
 
 
@@ -206,12 +214,11 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 
 // ======================= End Customer ====================== //
 
-
-// ======================= Start CourierRouteCreator ====================== //
-
 use App\Http\Controllers\RouteCreatorController;
+
 
 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
+Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
-// ======================= End CourierRouteCreator ====================== //
+Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
