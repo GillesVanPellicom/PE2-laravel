@@ -107,11 +107,6 @@ Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('p
 
 // ======================= Start Employee ====================== //
 
-
-Route::get('/calendar', function () {
-    return view('employees.calendar');
-});
-
 Route::get('/holiday-requests', function () {
     return view('employees.holiday_request');
 })->name('holiday-requests');

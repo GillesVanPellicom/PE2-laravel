@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-sidebar>
     <div class="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
         <!-- Notification Bell -->
         <div class="relative mb-4">
@@ -13,7 +14,7 @@
             <li class="{{ $notification->is_read ? 'read' : 'unread' }}">
                 <p>{{ $notification->messageTemplate->message }}</p>
                 <span>{{ $notification->created_at->diffForHumans() }}</span>
-
+                <h1>{{ $notification->messageTemplate->message }}, $notification</h1>
                 <!-- Mark as read button -->
                 @if (!$notification->is_read)
                     <form action="{{ url('/notifications/'.$notification->id.'/read') }}" method="POST" style="display:inline;">
@@ -244,4 +245,5 @@
             fetchNotifications();
         });
     </script>
+    </x-sidebar>
 </x-app-layout> 
