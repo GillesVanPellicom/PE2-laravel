@@ -81,7 +81,5 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ]
         ]);
-        $user = User::find(5);
-        $user->assignRole("courier");
     }
 }
