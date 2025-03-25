@@ -17,8 +17,8 @@ class EmployeeController extends Controller
             $query->whereHas('contracts', function ($subQuery) {
                 $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
             });
-        })->get();
-        return view('employees.index', compact('employees'));
+        })->with(['employee', 'employee.contracts', 'employee.team'])->get();
+        return view('employees.index', compact('employees'), ['teams' => Team::all()]);
     }
 
     public function managerCalendar()
@@ -42,12 +42,12 @@ class EmployeeController extends Controller
 
     public function store_employee(Request $request)
     {
-
         $request->validate([
             'street' => 'required',
             'house_number' => 'required|integer|min:0',
-            'bus_number' => 'nullable|alpha',
-            'city' => 'required|integer|min:1',
+            'Apartment_number' => 'nullable|alpha',
+            'city' => 'required|string',
+            'postcode' => 'required|integer',
 
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
@@ -62,7 +62,7 @@ class EmployeeController extends Controller
             'house_number.integer' => 'House number must be a number',
             'house_number.min' => 'House number must be larger than 0',
             'city.required' => 'City is required',
-            'city.min' => 'Please enter a city',
+            'city.string' => 'City must be a string',
 
             'lastname.required' => 'Lastname is required.',
             'lastname.max' => 'Lastname is too long.',
@@ -82,11 +82,23 @@ class EmployeeController extends Controller
             'team.min' => 'Please enter a team',
         ]);
 
+        $country = Country::where('country_name', $request->country)->first();
+        $city = City::where('name', $request->city)->where('country_id', $country->id)->first();
+
+        if (!$city) 
+        {
+            $city = City::create([
+                'name' => $request->city,
+                'country_id' => $country->id,
+                'postcode' => $request->postcode,
+            ]);
+        }
+
         $address = [
             'street' => $request->street,
             'house_number' => $request->house_number,
             'bus_number' => strtoupper($request->bus_number),
-            'cities_id' => $request->city,
+            'cities_id' => $city->id,
         ];
 
         $existingAddress = Address::where('street', $request->street)->where('house_number', $request->house_number)->where('cities_id', $request->city)->where(strtoupper('bus_number'), strtoupper($request->bus_number))->first();
@@ -178,11 +190,9 @@ class EmployeeController extends Controller
                 'start_date' => $request->start_date
             ];
             
-            if ($request->vacations_days) {
-                $employee = Employee::find($request->employee);
-                $employee->leave_balance = $request->vacation_days;
-                $employee->save();
-            }
+            $employee = Employee::find($request->employee);
+            $employee->leave_balance = $request->vacation_days;
+            $employee->save();
     
             EmployeeContract::create($contract);
             return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
@@ -190,5 +200,80 @@ class EmployeeController extends Controller
         else {
             return redirect()->route('employees.contracts')->with('error', 'Employee already has a contract');
         }
+    }
+
+    public function teams()
+    {
+        $teams = Team::all();
+        return view('employees.teams', compact('teams'));
+    }
+
+    public function create_team()
+    {
+        $employees = Employee::all();
+        return view('employees.create_team', compact('employees'));
+    }
+
+    public function store_team(Request $request)
+    {
+        $request->validate([
+            'department' => 'required|string|max:255|unique:teams,department',
+            'employee' => 'required|integer|min:1',
+        ],
+        [
+            'department.required' => 'Department is required.',
+            'department.string' => 'Department must be a string.',
+            'department.max' => 'Department name is too long.',
+            'department.unique' => 'Department already exists.',
+
+            'employee.required' => 'Manager is required.',
+            'employee.min' => 'Please select a manager',
+        ]);
+
+        $team = [
+            'department' => $request->department,
+            'manager_id' => $request->employee,
+        ];
+
+        Team::create($team);
+        return redirect()->route('employees.teams')->with('success', 'Team created successfully');
+    }
+
+    public function functions()
+    {
+        $functions = EmployeeFunction::all();
+        return view('employees.functions', compact('functions'));
+    }
+
+    public function create_function()
+    {
+        return view('employees.create_function');
+    }
+
+    public function store_function(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:functions,name',
+            'description' => 'required|string',
+            'salary_min' => 'required|numeric|min:0',
+            'salary_max' => 'required|numeric|min:0',
+        ],
+        [
+            'name.required' => 'Name is required.',
+            'name.string' => 'Name must be a string.',
+            'name.max' => 'Name is too long.',
+            'name.unique' => 'Name already exists.',
+            'description.required' => 'Description is required.',
+            'description.string' => 'Description must be a string.',
+            'salary_min.required' => 'Minimum salary is required.',
+            'salary_min.numeric' => 'Minimum salary must be a number.',
+            'salary_min.min' => 'Minimum salary must be larger than 0.',
+            'salary_max.required' => 'Maximum salary is required.',
+            'salary_max.numeric' => 'Maximum salary must be a number.',
+            'salary_max.min' => 'Maximum salary must be larger than 0.',
+        ]);
+
+        EmployeeFunction::create($request->all());
+        return redirect()->route('employees.functions')->with('success', 'Function created successfully');
     }
 }

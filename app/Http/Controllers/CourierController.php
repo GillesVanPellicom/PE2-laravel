@@ -47,9 +47,10 @@ class CourierController extends Controller
             $scannedPackages[] = $package->id; // Add the new package
             session()->put('scanned_packages', $scannedPackages); // Save the updated list
         }
-
+        $package->getMovements();
         $mode = $request->mode; // Get the mode from the request
-        $currentMove = PackageMovement::where('package_id', $package->id)->where("from_location_id", $package->current_location_id)->first(); // Find the corresponding package movement
+        $currentMove = PackageMovement::where('package_id', $package->id)->where("current_node_id", $package->current_location_id)->first(); // Find the corresponding package movement
+        $nextMove = PackageMovement::where('package_id', $package->id)->find($currentMove->next_movement);
         if ($mode == "INFO") { // If the user requested package info
             $ref = $package->reference;
             $sender = $package->user->first_name . " " . $package->user->last_name;
@@ -59,8 +60,8 @@ class CourierController extends Controller
             $dimension = $package->dimension;
             $from = LocationController::getAddressString($package->originLocation);
             $to = LocationController::getAddressString($package->destinationLocation);
-            $nextStop = $currentMove ? LocationController::getAddressString($currentMove->toLocation) : null;
-            return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to", "nextStop"))->render()]);
+            //$nextStop = $currentMove ? LocationController::getAddressString($currentMove->toLocation) : null;
+            return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to"))->render()]);
         }
 
         if ($package->current_location_id == $package->destination_location_id) { // If someone is trying to do an action on a delivered package

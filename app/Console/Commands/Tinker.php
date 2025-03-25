@@ -30,12 +30,16 @@ class Tinker extends Command {
    */
   public function handle(): void {
     /** @var Package $package */
-    $package = Package::find(1);
-    try {
-      $path = $package->getMovements();
-    } catch (Exception $e) {
-      ConsoleHelper::error($e->getMessage());
+    for ($i = 1; $i <= 101; $i++) {
+      $package = Package::find($i);
+      try {
+        $path = $package->getMovements();
+        for($j = 0; $j <= 16; $j++) {
+          $package->move();
+        }
+      } catch (Exception $e) {
+        ConsoleHelper::error($e->getMessage());
+      }
     }
-    dd($path);
-  }
+}
 }

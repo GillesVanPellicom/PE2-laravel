@@ -16,12 +16,14 @@ class Authenticate
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        return response('<h1 style="color:red;">You are using the "authenticate" middleware, we have switched to "auth".</h1>');
+        /* if (!Auth::check()) {
             if ($request->is('courier/*')) {
                 return redirect()->route('courier');
             }
             return redirect()->route('auth.login');
         }
         return $next($request);
+        */
     }
 }

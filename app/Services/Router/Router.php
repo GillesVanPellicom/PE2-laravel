@@ -18,7 +18,6 @@ namespace App\Services\Router {
   use App\Services\Router\Types\Exceptions\NoPathFoundException;
   use App\Services\Router\Types\Exceptions\RouterException;
   use App\Services\Router\Types\Exceptions\SelfLoopException;
-  use App\Services\Router\Types\LocationType;
   use App\Services\Router\Types\NodeType;
   use App\Services\Router\Types\RouterGraph;
   use App\Services\Router\Types\Node;
@@ -53,28 +52,29 @@ namespace App\Services\Router {
      * @throws NoPathFoundException
      */
     public function getPath(Location $origin, Location $destination): ?array {
-      $oN = $this->createImaginaryNode(
-        $origin->getAttribute('location_type') == LocationType::ADDRESS
+      $oN = new Node(
+        $origin->getAttribute('location_type') == NodeType::ADDRESS
           ? $origin->getAttribute('id')
           : $origin->getAttribute('infrastructure_id'),
         $origin->getAttribute('description'),
+        $origin->getAttribute('location_type'),
         $origin->getAttribute('latitude'),
         $origin->getAttribute('longitude'),
-        $origin->getAttribute('location_type') == LocationType::ADDRESS ?
-          NodeType::ADDRESS
-          : NodeType::PICKUP_POINT);
+      );
 
-
-      $dN = $this->createImaginaryNode(
-        $destination->getAttribute('location_type') == LocationType::ADDRESS
+      $dN = new Node(
+        $destination->getAttribute('location_type') == NodeType::ADDRESS
           ? $destination->getAttribute('id')
           : $destination->getAttribute('infrastructure_id'),
         $destination->getAttribute('description'),
+        $origin->getAttribute('location_type'),
         $destination->getAttribute('latitude'),
         $destination->getAttribute('longitude'),
-        $origin->getAttribute('location_type') == LocationType::ADDRESS
-          ? NodeType::ADDRESS
-          : NodeType::PICKUP_POINT);
+        );
+
+      $oN->setArrivedAt(now());
+      $oN->setCheckedInAt(now());
+
 
       $path = $this->aStar(
         $this->findClosestNode(
@@ -137,20 +137,7 @@ namespace App\Services\Router {
     }
 
 
-    /**
-     * Creates a new address node from an address string.
-     * Disconnected from the main graph, linking is done after routing using haversine.
-     *
-     * @param  string  $identifier
-     * @param  float  $latDeg
-     * @param  float  $lonDeg
-     * @return Node
-     * @throws InvalidCoordinateException
-     * @throws InvalidRouterArgumentException
-     */
-    private function createImaginaryNode(string $ID, string $desc, float $latDeg, float $lonDeg, NodeType $type): Node {
-      return new Node($ID, $desc, $type, $latDeg, $lonDeg);
-    }
+
 
 
     /**
