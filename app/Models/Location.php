@@ -26,6 +26,10 @@ class Location extends Model
     'longitude',
   ];
 
+  public function address() {
+    return $this->belongsTo(Address::class, 'addresses_id');
+  }
+
   public function parcels()
   {
     return $this->hasMany(Package::class, 'destination_location_id');
