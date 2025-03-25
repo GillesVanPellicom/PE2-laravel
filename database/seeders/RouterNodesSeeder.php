@@ -255,18 +255,18 @@ class RouterNodesSeeder extends Seeder {
       ],
 
       //TEST_NODE
-      [
-        'id' => '@DISCONNECTED_TEST_NODE',
-        'description' => 'Disconnected test node',
-        'location_type' => 'DISTRIBUTION_CENTER',
-        'latDeg' => 54.1536,
-        'lonDeg' => 16.9913,
-        'isEntry' => false,
-        'isExit' => true,
-        'city_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-      ],
+      // [
+      //   'id' => '@DISCONNECTED_TEST_NODE',
+      //   'description' => 'Disconnected test node',
+      //   'location_type' => 'DISTRIBUTION_CENTER',
+      //   'latDeg' => 54.1536,
+      //   'lonDeg' => 16.9913,
+      //   'isEntry' => false,
+      //   'isExit' => true,
+      //   'city_id' => 1,
+      //   'created_at' => now(),
+      //   'updated_at' => now(),
+      // ],
     ]);
   }
 }
