@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Contract;
 use App\Models\EmployeeContract;
+use App\Models\User;
 use App\Models\Job;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class UserRoleSeeder extends Seeder
             $user->assignRole($role);
         }
 
-        $admin = Employee::find(1);
-        $admin->user->assignRole('admin');
+        $admin = User::find(1);
+        $admin->assignRole('admin');
     }
 }

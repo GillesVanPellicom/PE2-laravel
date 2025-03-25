@@ -130,33 +130,33 @@ Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacati
 
 
 
-Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->middleware("permission:employees.checkall")->name('employees.index');
+Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->middleware("permission:HR.checkall")->name('employees.index');
 
-Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->middleware("permission:employees.create")->name('employees.Create');
+Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->middleware("permission:HR.create")->name('employees.Create');
 
-Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->middleware("permission:employees.create")->name('employees.store_employee');
+Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->middleware("permission:HR.create")->name('employees.store_employee');
 
-Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@contracts')->middleware("permission:employees.checkall")->name('employees.contracts');
+Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@contracts')->middleware("permission:HR.checkall")->name('employees.contracts');
 
-Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->middleware("permission:employees.create")->name('employee.contracts.updateEndDate');
+Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->middleware("permission:HR.create")->name('employee.contracts.updateEndDate');
 
-Route::get('/employees/create-contract', 'App\Http\Controllers\EmployeeController@create_employeecontract')->middleware("permission:employees.create")->name('employees.create_contract');
+Route::get('/employees/create-contract', 'App\Http\Controllers\EmployeeController@create_employeecontract')->middleware("permission:HR.create")->name('employees.create_contract');
 
-Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@store_contract')->middleware("permission:employees.create")->name('employees.store_contract');
+Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@store_contract')->middleware("permission:HR.create")->name('employees.store_contract');
 
-Route::get('/employees/teams', 'App\Http\Controllers\EmployeeController@teams')->middleware("permission:employees.checkall")->name('employees.teams');
+Route::get('/employees/teams', 'App\Http\Controllers\EmployeeController@teams')->middleware("permission:HR.checkall")->name('employees.teams');
 
-Route::get('/employees/create-team', 'App\Http\Controllers\EmployeeController@create_team')->middleware("permission:employees.create")->name('employees.create_team');
+Route::get('/employees/create-team', 'App\Http\Controllers\EmployeeController@create_team')->middleware("permission:HR.create")->name('employees.create_team');
 
-Route::post('/employees/teams', 'App\Http\Controllers\EmployeeController@store_team')->middleware("permission:employees.create")->name('employees.store_team');
+Route::post('/employees/teams', 'App\Http\Controllers\EmployeeController@store_team')->middleware("permission:HR.create")->name('employees.store_team');
 
-Route::get('/employees/functions', 'App\Http\Controllers\EmployeeController@functions')->middleware("permission:employees.checkall")->name('employees.functions');
+Route::get('/employees/functions', 'App\Http\Controllers\EmployeeController@functions')->middleware("permission:HR.checkall")->name('employees.functions');
 
-Route::get('/employees/create-function', 'App\Http\Controllers\EmployeeController@create_function')->middleware("permission:employees.create")->name('employees.create_function');
+Route::get('/employees/create-function', 'App\Http\Controllers\EmployeeController@create_function')->middleware("permission:HR.create")->name('employees.create_function');
 
-Route::post('/employees/functions', 'App\Http\Controllers\EmployeeController@store_function')->middleware("permission:employees.create")->name('employees.store_function');
+Route::post('/employees/functions', 'App\Http\Controllers\EmployeeController@store_function')->middleware("permission:HR.create")->name('employees.store_function');
 
-Route::get('/employees/roles', 'App\Http\Controllers\EmployeeController@upgrade')->middleware("permission:employees.create")->name('employees.upgrade');
+Route::get('/employees/roles', 'App\Http\Controllers\EmployeeController@upgrade')->middleware("permission:HR.create")->name('employees.upgrade');
 
 // ======================= End Employee ====================== //
 
