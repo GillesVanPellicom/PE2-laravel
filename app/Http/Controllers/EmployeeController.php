@@ -255,8 +255,8 @@ class EmployeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:functions,name',
             'description' => 'required|string',
-            'salary_min' => 'required|numeric|min:0',
-            'salary_max' => 'required|numeric|min:0',
+            'salary_min' => 'required|numeric|min:0|lt:salary_max|max:999999',
+            'salary_max' => 'required|numeric|min:0|gt:salary_min|max:999999',
         ],
         [
             'name.required' => 'Name is required.',
@@ -268,12 +268,23 @@ class EmployeeController extends Controller
             'salary_min.required' => 'Minimum salary is required.',
             'salary_min.numeric' => 'Minimum salary must be a number.',
             'salary_min.min' => 'Minimum salary must be larger than 0.',
+            'salary_min.lt' => 'Minimum salary must be lower than maximum salary.',
+            'salary_min.max' => 'Minimum salary is too high.',
             'salary_max.required' => 'Maximum salary is required.',
             'salary_max.numeric' => 'Maximum salary must be a number.',
             'salary_max.min' => 'Maximum salary must be larger than 0.',
+            'salary_max.gt' => 'Maximum salary must be higher than minimum salary.',
+            'salary_max.max' => 'Maximum salary is too high.',
         ]);
 
         EmployeeFunction::create($request->all());
         return redirect()->route('employees.functions')->with('success', 'Function created successfully');
+    }
+
+    public function upgrade()
+    {
+        $employee = User::where('email', "jane.doe@example.com")->first();
+        $employee->assignRole('employee');
+        return redirect()->route('employees.index')->with('success', 'Employee upgraded successfully');
     }
 }
