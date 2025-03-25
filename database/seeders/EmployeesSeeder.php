@@ -13,7 +13,7 @@ class EmployeesSeeder extends Seeder
         DB::table('employees')->insert([
             ['leave_balance' => 25,'user_id' => 1, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['leave_balance' => 25,'user_id' => 3, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
-            
+            ['leave_balance' => 25,'user_id' => 5, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
         ]);
     }
 }

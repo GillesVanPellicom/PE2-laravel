@@ -121,6 +121,8 @@ Route::post('/vacations/{id}/update-status', [VacationController::class, 'update
 
 Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
 
+Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
+
 
 
 
@@ -137,6 +139,18 @@ Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeControlle
 Route::get('/employees/create-contract', 'App\Http\Controllers\EmployeeController@create_employeecontract')->name('employees.create_contract');
 
 Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@store_contract')->name('employees.store_contract');
+
+Route::get('/employees/teams', 'App\Http\Controllers\EmployeeController@teams')->name('employees.teams');
+
+Route::get('/employees/create-team', 'App\Http\Controllers\EmployeeController@create_team')->name('employees.create_team');
+
+Route::post('/employees/teams', 'App\Http\Controllers\EmployeeController@store_team')->name('employees.store_team');
+
+Route::get('/employees/functions', 'App\Http\Controllers\EmployeeController@functions')->name('employees.functions');
+
+Route::get('/employees/create-function', 'App\Http\Controllers\EmployeeController@create_function')->name('employees.create_function');
+
+Route::post('/employees/functions', 'App\Http\Controllers\EmployeeController@store_function')->name('employees.store_function');
 
 // ======================= End Employee ====================== //
 

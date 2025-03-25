@@ -34,10 +34,10 @@ class Tinker extends Command {
     try {
       $path = $package->getMovements();
       $package->move();
-      dd($package->getCurrentMovement());
+//      dd($package->getCurrentMovement());
     } catch (Exception $e) {
       ConsoleHelper::error($e->getMessage());
     }
-    dd($path);
+//    dd($path);
   }
 }

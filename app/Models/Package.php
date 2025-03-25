@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Services\Router\Router;
@@ -75,15 +76,13 @@ class Package extends Model {
     return $this->belongsTo(Location::class, 'origin_location_id');
   }
 
-    public function currentLocation()
-    {
-        return $this->belongsTo(Location::class, 'current_location_id');
-    }
+  public function currentLocation() {
+    return $this->belongsTo(Location::class, 'current_location_id');
+  }
 
-    public function movements()
-    {
-        return $this->hasMany(PackageMovement::class, 'package_id');
-    }
+  public function movements() {
+    return $this->hasMany(PackageMovement::class, 'package_id');
+  }
 
 
   /**
@@ -122,25 +121,39 @@ class Package extends Model {
     // Get the next movement
     $nextMovement = $this->movements()->find($currentMovement->next_movement);
     if (!$nextMovement) {
-      throw new Exception('No next movement found.');
+      return null;
     }
 
-    // Find the next router node
+    // Find the next node (either RouterNode or Location)
     $routerNode = RouterNodes::find($nextMovement->current_node_id);
-    if (!$routerNode) {
-      throw new Exception('Next router node not found.');
+    if ($routerNode) {
+      // Convert RouterNodes to Node
+      $node = new Node(
+        $routerNode->id,
+        $routerNode->description,
+        $routerNode->location_type,
+        $routerNode->latDeg,
+        $routerNode->lonDeg,
+        $routerNode->isEntry,
+        $routerNode->isExit
+      );
+    } else {
+      $location = Location::find($nextMovement->current_node_id);
+      if ($location) {
+        // Convert Location to Node
+        $node = new Node(
+          $location->id,
+          $location->description,
+          $location->location_type,
+          $location->latitude,
+          $location->longitude,
+          false,
+          false
+        );
+      } else {
+        throw new Exception('No next movement found.');
+      }
     }
-
-    // Convert RouterNodes to Node
-    $node = new Node(
-      $routerNode->id,
-      $routerNode->description,
-      $routerNode->location_type,
-      $routerNode->latDeg,
-      $routerNode->lonDeg,
-      $routerNode->isEntry,
-      $routerNode->isExit
-    );
 
     return $this->initializeNode($node, $nextMovement);
   }
@@ -170,7 +183,7 @@ class Package extends Model {
    */
   public function move(): void {
     if (!$this->movements()->exists()) {
-      throw new Exception('No movements found for this package. Generate movements first using Package::getMovements().');
+      throw new Exception("No movements found for this package. Generate movements first using Package::getMovements().");
     }
 
     DB::transaction(function () {
@@ -179,37 +192,43 @@ class Package extends Model {
         throw new Exception('Current movement not found.');
       }
 
-      // If the final node is an ADDRESS, set all timestamps to now()
-      if ($this->getCurrentMovement()->getType() == NodeType::ADDRESS) {
+      // Set the appropriate scan time based on the current state
+      if (empty($this->getNextMovement()) && is_numeric($currentMovement->id)) {
+        // Set all timestamps to now if the last location is an ADDRESS
         $currentMovement->arrival_time = now();
         $currentMovement->check_in_time = now();
         $currentMovement->check_out_time = now();
         $currentMovement->departure_time = now();
       } else {
-        // Set the appropriate scan time based on the current state
+        // Normal non edge case behavior
         if (is_null($currentMovement->arrival_time)) {
+          // Set the arrival scan time
           $currentMovement->arrival_time = now();
         } elseif (is_null($currentMovement->check_in_time)) {
+          // Set the check-in scan time
           $currentMovement->check_in_time = now();
         } elseif (is_null($currentMovement->check_out_time)) {
+          // Set the check-out scan time
           $currentMovement->check_out_time = now();
         } elseif (is_null($currentMovement->departure_time)) {
+          // Set the departure scan time
           $currentMovement->departure_time = now();
 
           // Attempt to get the next location
           try {
             $nextLocation = $this->getNextMovement();
             if ($nextLocation) {
+              // Update the package's current location if next location exists
               $this->setCurrentMovement($nextLocation->getID());
             }
           } catch (Exception $e) {
             // If no next location is found, just set the departure time
           }
         } else {
+          // All timestamps are set, refuse to work
           throw new Exception('All timestamps are already set for the current movement.');
         }
       }
-
       $currentMovement->save();
     });
   }
@@ -335,7 +354,7 @@ class Package extends Model {
    * @return void
    */
   private function setCurrentMovement(string $location): void {
-    $this->current_location_id = $location;
+    $this->setAttribute('current_location_id', $location);
     $this->save();
   }
 
