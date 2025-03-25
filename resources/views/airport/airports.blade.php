@@ -15,14 +15,5 @@
     <br>
     <a href="{{ route('packages') }}">Packages</a>
     <br/>
-    <tbody>
-        @foreach($airports as $airport)
-        <tr>
-            <td>{{$airport->location_id}}</td>
-            <td>{{$airport->name}}</td>
-        </tr>
-        <br/>
-        @endforeach
-    </tbody>
 </body>
 </html>

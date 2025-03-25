@@ -6,15 +6,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Packages at {{ $airport->name }}</title>
 </head>
 <body>
     <a href="{{ route('airports') }}">airports</a>
-    <h2>Packages</h2>
+    <h2>Packages at {{ $airport->name }}</h2>
     <ul>
-        @foreach ($packages as $package)
+        @forelse ($packages as $package)
             <li>{{ $package->name }} - {{ $package->description }}</li>
-        @endforeach
+        @empty
+            <li>No packages currently at this airport.</li>
+        @endforelse
     </ul>
 </body>
 </html>
