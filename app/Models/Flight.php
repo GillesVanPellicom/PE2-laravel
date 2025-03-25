@@ -19,6 +19,8 @@ class Flight extends Model
         'arrival_time',
         'depart_location_id', // Fix the name
         'arrive_location_id',
+        'delayed_minutes',
+        'isActive',
         'status'
     ];
     public function departureAirport()
