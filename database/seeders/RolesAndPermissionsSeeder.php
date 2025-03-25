@@ -11,96 +11,105 @@ use App\Helpers\ConsoleHelper;
 use Spatie\Permission\PermissionRegistrar;
 
 
-class RolesAndPermissionsSeeder extends Seeder {
+class RolesAndPermissionsSeeder extends Seeder
+{
 
-  // ╔════════════════════════════════════════╗
-  // ║              Definitions               ║
-  // ╚════════════════════════════════════════╝
+    // ╔════════════════════════════════════════╗
+    // ║              Definitions               ║
+    // ╚════════════════════════════════════════╝
 
-  private array $permissions = [
-
-  ];
-
-
-  private array $roles = [
-
-  ];
-
-
-  private array $roleInheritance = [
-
-  ];
+    private array $permissions = [
+        'employee',
+        'scan',
+        "courier.route",
+        "scan.deliver",
+        "courier.packages",
+    ];
 
 
-  // DO NOT EDIT BELOW THIS POINT (r0997008, @Gilles)
-
-  /**
-   * Seed logic for the permission system.
-   */
-  public function run(): void {
-    ConsoleHelper::info('Initializing roles and permissions');
-    ConsoleHelper::info('Starting transaction');
-    try {
-      // Place all logic in a transaction to ensure atomicity
-      DB::transaction(function () {
-
-        // Remove all existing roles and permissions
-        ConsoleHelper::task('Removing potential existing roles and permissions', function () {
-          Role::query()->delete();
-          Permission::query()->delete();
-        });
+    private array $roles = [
+        "employee" => ["employee"],
+        "scan" => ["scan"],
+        "courier" => ["courier.route", "scan.deliver", "courier.packages"],
+    ];
 
 
-        // Reset permission cache
-        ConsoleHelper::task('Resetting cached roles and permissions', function () {
-          app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        });
+    private array $roleInheritance = [
+        "employee" => "scan",
+        "scan" => "courier"
+    ];
 
 
-        // Define permissions
-        ConsoleHelper::task('Defining permission nodes', function () {
-          foreach ($this->permissions as $permission) {
-            Permission::findOrCreate($permission);
-          }
-        });
+    // DO NOT EDIT BELOW THIS POINT (r0997008, @Gilles)
+
+    /**
+     * Seed logic for the permission system.
+     */
+    public function run(): void
+    {
+        ConsoleHelper::info('Initializing roles and permissions');
+        ConsoleHelper::info('Starting transaction');
+        try {
+            // Place all logic in a transaction to ensure atomicity
+            DB::transaction(function () {
+
+                // Remove all existing roles and permissions
+                ConsoleHelper::task('Removing potential existing roles and permissions', function () {
+                    Role::query()->delete();
+                    Permission::query()->delete();
+                });
 
 
-        // Update cache to know about the newly created permissions
-        ConsoleHelper::task('Updating cache with new permission nodes', function () {
-          app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        });
+                // Reset permission cache
+                ConsoleHelper::task('Resetting cached roles and permissions', function () {
+                    app()[PermissionRegistrar::class]->forgetCachedPermissions();
+                });
 
 
-        // Define roles and their permissions
-        ConsoleHelper::task('Defining roles and assigning permissions', function () {
-          foreach ($this->roles as $roleName => $rolePermissions) {
-            $role = Role::findOrCreate($roleName);
-            if (in_array('*', $rolePermissions)) {
-              $role->givePermissionTo(Permission::all());
-            } else {
-              $role->givePermissionTo($rolePermissions);
-            }
-          }
-        });
+                // Define permissions
+                ConsoleHelper::task('Defining permission nodes', function () {
+                    foreach ($this->permissions as $permission) {
+                        Permission::findOrCreate($permission);
+                    }
+                });
 
 
-        // Apply inheritance
-        ConsoleHelper::task('Applying role inheritance', function () {
-          foreach ($this->roleInheritance as $parentRole => $childRole) {
-            $childRoleInstance = Role::findByName($childRole);
-            $parentRoleInstance = Role::findByName($parentRole);
+                // Update cache to know about the newly created permissions
+                ConsoleHelper::task('Updating cache with new permission nodes', function () {
+                    app()[PermissionRegistrar::class]->forgetCachedPermissions();
+                });
 
-            $parentPermissions = $parentRoleInstance->permissions()->pluck('name')->toArray();
-            $childRoleInstance->givePermissionTo($parentPermissions);
-          }
-        });
 
-        ConsoleHelper::success('Roles and permissions initialized');
-      });
+                // Define roles and their permissions
+                ConsoleHelper::task('Defining roles and assigning permissions', function () {
+                    foreach ($this->roles as $roleName => $rolePermissions) {
+                        $role = Role::findOrCreate($roleName);
+                        if (in_array('*', $rolePermissions)) {
+                            $role->givePermissionTo(Permission::all());
+                        } else {
+                            $role->givePermissionTo($rolePermissions);
+                        }
+                    }
+                });
 
-    } catch (Exception $e) {
-      ConsoleHelper::printError($e);
-      ConsoleHelper::success('Roles and permissions rollback completed');
+
+                // Apply inheritance
+                ConsoleHelper::task('Applying role inheritance', function () {
+                    foreach ($this->roleInheritance as $parentRole => $childRole) {
+                        $childRoleInstance = Role::findByName($childRole);
+                        $parentRoleInstance = Role::findByName($parentRole);
+
+                        $parentPermissions = $parentRoleInstance->permissions()->pluck('name')->toArray();
+                        $childRoleInstance->givePermissionTo($parentPermissions);
+                    }
+                });
+
+                ConsoleHelper::success('Roles and permissions initialized');
+            });
+
+        } catch (Exception $e) {
+            ConsoleHelper::printError($e);
+            ConsoleHelper::success('Roles and permissions rollback completed');
+        }
     }
-  }
 }

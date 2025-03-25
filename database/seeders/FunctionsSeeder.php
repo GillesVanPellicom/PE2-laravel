@@ -13,12 +13,14 @@ class FunctionsSeeder extends Seeder
         DB::table('functions')->insert([
             [
                 'name' => 'Courier',
+                'role' => 'courier',
                 'description' => 'Responsible for delivering packages to customers.',
                 'salary_min' => 2000.00,
                 'salary_max' => 3000.00,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-            ],
+            ]]);
+        DB::table('functions')->insert([
             [
                 'name' => 'Pilot',
                 'description' => 'Operates the aircraft for transporting packages.',

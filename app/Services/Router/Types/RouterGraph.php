@@ -10,6 +10,7 @@ use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
 use App\Services\Router\Types\Exceptions\NodeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\SelfLoopException;
+use Carbon\Carbon;
 
 class RouterGraph {
   private array $nodes;
@@ -18,6 +19,41 @@ class RouterGraph {
   public function __construct() {
     $this->nodes = [];
     $this->edges = [];
+  }
+
+  /**
+   * @throws InvalidRouterArgumentException
+   * @throws InvalidCoordinateException
+   */
+  public static function newNode(
+    string $ID,
+    string $description,
+    NodeType $type,
+    float $latDeg,
+    float $lonDeg,
+    bool $isEntryNode = false,
+    bool $isExitNode = false,
+    ?Carbon $arrivedAt = null,
+    ?Carbon $departedAt = null,
+    ?Carbon $checkedInAt = null,
+    ?Carbon $checkedOutAt = null
+  ): Node {
+    $node = new Node(
+      $ID,
+      $description,
+      $type,
+      $latDeg,
+      $lonDeg,
+      $isEntryNode,
+      $isExitNode,
+    );
+
+    $node->setArrivedAt($arrivedAt ? new Carbon($arrivedAt) : null);
+    $node->setDepartedAt($departedAt ? new Carbon($departedAt) : null);
+    $node->setCheckedInAt($checkedInAt ? new Carbon($checkedInAt) : null);
+    $node->setCheckedOutAt($checkedOutAt ? new Carbon($checkedOutAt) : null);
+
+    return $node;
   }
 
   /**
