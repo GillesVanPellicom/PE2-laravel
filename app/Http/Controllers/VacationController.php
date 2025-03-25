@@ -32,6 +32,28 @@ class VacationController extends Controller
         return response()->json($vacations);
     }
 
+    public function getApprovedVacations()
+    {
+        $vacations = Vacation::where('approve_status', 'Approved')
+            ->with(['employee.user']) // Ensure employee and user relationship is loaded
+            ->get();
+    
+        $vacationData = $vacations->map(function ($vacation) {
+            return [
+                'id' => $vacation->vacation_id,
+                'name' => optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name,
+                'start_date' => $vacation->start_date,
+                'end_date' => $vacation->end_date,
+            ];
+        });
+    
+        // Debugging: Log data in Laravel (Check storage/logs/laravel.log)
+        \Log::info('Approved Vacations:', $vacationData->toArray());
+    
+        return response()->json($vacationData);
+    }
+    
+
     public function showAllVacations()
     {
         $vacations = Vacation::all();

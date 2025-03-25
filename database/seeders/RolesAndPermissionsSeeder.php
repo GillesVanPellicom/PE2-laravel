@@ -19,6 +19,7 @@ class RolesAndPermissionsSeeder extends Seeder
     // ╚════════════════════════════════════════╝
 
     private array $permissions = [
+        'employee',
         'scan',
         "courier.route",
         "scan.deliver",
@@ -27,12 +28,14 @@ class RolesAndPermissionsSeeder extends Seeder
 
 
     private array $roles = [
+        "employee" => ["employee"],
         "scan" => ["scan"],
         "courier" => ["courier.route", "scan.deliver", "courier.packages"],
     ];
 
 
     private array $roleInheritance = [
+        "employee" => "scan",
         "scan" => "courier"
     ];
 

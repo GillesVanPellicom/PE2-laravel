@@ -125,6 +125,8 @@ Route::post('/vacations/{id}/update-status', [VacationController::class, 'update
 
 Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
 
+Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
+
 
 
 
