@@ -29,6 +29,8 @@ return new class extends Migration
             ]); 
             $table->date('departure_date');
             $table->string('status');
+            $table->integer('delayed_minutes')->nullable();
+            $table->boolean('isActive');
             $table->timestamps();
         });
         

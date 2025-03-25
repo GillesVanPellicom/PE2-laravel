@@ -1,7 +1,6 @@
 <x-app-layout>
     @section("pageName", "Dispatcher")
     <div class="flex h-screen relative">
-        <!-- Left: Distribution Centers -->
         <div class="w-1/6 bg-white p-4 overflow-y-auto">
             <h2 class="text-xl font-bold mb-4">Distribution Centers</h2>
             <div class="mb-4">
@@ -24,19 +23,16 @@
             </ul>
         </div>
 
-        <!-- Middle: Space for Modals -->
         <div class="flex-grow flex items-center justify-center bg-gray-50">
             <p class="text-gray-500 italic">Space reserved for modals or additional content</p>
         </div>
 
-        <!-- Right: Employees -->
         <div class="absolute top-0 right-0 w-1/6 bg-white p-4 overflow-y-auto h-screen">
             <h2 class="text-xl font-bold mb-4">Employees</h2>
             <ul class="space-y-2">
                 @foreach($employees as $employee)
                     <li class="p-2 bg-gray-100 rounded shadow flex justify-between items-center">
                         <span>{{ $employee->first_name }} {{ $employee->last_name }}</span>
-                        <!-- Dots Menu -->
                         <div class="relative">
                             <button onclick="toggleMenu(this)" class="dots-menu-button">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 hover:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,7 +52,6 @@
         </div>
     </div>
 
-    <!-- View Employee Modal -->
     <div id="view_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
         <div class="bg-white p-6 rounded shadow-lg w-1/3">
             <h2 id="view_modal_title" class="text-xl font-bold mb-4">Employee Details</h2>
@@ -69,7 +64,6 @@
         </div>
     </div>
 
-    <!-- Dispatch Modal -->
     <div id="dispatch_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
         <div class="bg-white p-6 rounded shadow-lg w-1/3">
             <h2 id="dispatch_modal_title" class="text-xl font-bold mb-4">Dispatch Packages</h2>
@@ -88,58 +82,84 @@
     <script>
         const distributionCenters = document.querySelectorAll('#distribution_centers li');
         const cityFilter = document.getElementById('city_filter');
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal_title');
-        const modalContent = document.getElementById('modal_content');
-        const closeModalButton = document.getElementById('close_modal');
+        const middleSection = document.querySelector('.flex-grow');
 
-        // Filter distribution centers by city
         cityFilter.addEventListener('change', () => {
-            const selectedCity = cityFilter.value;
+            const selectedCityId = cityFilter.value;
+
             distributionCenters.forEach(center => {
-                if (selectedCity === '-1' || center.dataset.cityId === selectedCity) {
-                    center.style.display = 'block';
+                if (selectedCityId === '-1' || center.dataset.cityId === selectedCityId) {
+                    center.style.display = 'block'; 
                 } else {
-                    center.style.display = 'none';
+                    center.style.display = 'none'; 
                 }
             });
         });
 
-        // Show modal for a selected distribution center
-        function showPackages(centerId, centerDescription) {
-            modalTitle.textContent = `Distribution Center: ${centerDescription}`;
-            modalContent.textContent = `Loading details for Distribution Center ID: ${centerId}...`;
+        async function showPackages(centerId, centerDescription) {
+            try {
+                const response = await fetch(`/api/distribution-center/${centerId}`);
+                const data = await response.json();
 
-            setTimeout(() => {
-                modalContent.textContent = `Details for Distribution Center ID: ${centerId}`;
-            }, 1000);
+                if (response.status !== 200) {
+                    alert(data.error || 'Failed to fetch data');
+                    return;
+                }
 
-            modal.classList.remove('hidden');
+                const readyToDeliverHtml = data.readyToDeliver.map(pkg => `
+                    <li class="p-2 bg-green-100 rounded shadow">
+                        <strong>Reference:</strong> ${pkg.ref}<br>
+                        <strong>Destination:</strong> ${pkg.destination}
+                    </li>
+                `).join('');
+
+                const inStockHtml = data.inStock.map(pkg => `
+                    <li class="p-2 bg-yellow-100 rounded shadow">
+                        <strong>Reference:</strong> ${pkg.ref}<br>
+                        <strong>Next Destination:</strong> ${pkg.nextDestination}
+                    </li>
+                `).join('');
+
+                const hardcodedHtml = `
+                    <div class="bg-white p-6 rounded shadow-lg w-full h-full flex flex-col">
+                        <h2 class="text-2xl font-bold mb-4">${centerDescription}</h2>
+                        <p class="text-gray-700 mb-4">Overview of packages in this distribution center.</p>
+                        <h3 class="text-xl font-bold mb-2">Packages Ready to Deliver</h3>
+                        <ul class="space-y-2 flex-grow overflow-y-auto">
+                            ${readyToDeliverHtml || '<p class="text-gray-500">No packages ready to deliver.</p>'}
+                        </ul>
+                        <h3 class="text-xl font-bold mb-2 mt-4">Packages in Stock</h3>
+                        <ul class="space-y-2 flex-grow overflow-y-auto">
+                            ${inStockHtml || '<p class="text-gray-500">No packages in stock.</p>'}
+                        </ul>
+                    </div>
+                `;
+
+                middleSection.innerHTML = hardcodedHtml;
+                middleSection.classList.add('h-full');
+            } catch (error) {
+                console.error('Error fetching packages:', error);
+                alert('An error occurred while fetching packages.');
+            }
         }
 
-        // Close modal
-        closeModalButton.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
+        // const closeModalButton = document.getElementById('close_modal');
+        // closeModalButton.addEventListener('click', () => {
+        //     modal.classList.add('hidden');
+        // });
 
-        // Toggle dots menu
         function toggleMenu(button) {
-            // Close all other menus
             document.querySelectorAll('.dots-menu').forEach(menu => menu.classList.add('hidden'));
-            // Toggle the current menu
             const menu = button.nextElementSibling;
             menu.classList.toggle('hidden');
 
-            // Stop the click event from propagating to the document
             event.stopPropagation();
         }
 
-        // Close all menus when clicking outside
         document.addEventListener('click', () => {
             document.querySelectorAll('.dots-menu').forEach(menu => menu.classList.add('hidden'));
         });
 
-        // View Employee Modal
         function viewEmployee(employeeId, employeeName) {
             const modal = document.getElementById('view_modal');
             document.getElementById('view_modal_title').textContent = `Employee: ${employeeName}`;
@@ -147,7 +167,6 @@
             modal.classList.remove('hidden');
         }
 
-        // Dispatch Employee Modal
         function dispatchEmployee(employeeId, employeeName) {
             const modal = document.getElementById('dispatch_modal');
             document.getElementById('dispatch_modal_title').textContent = `Dispatch for: ${employeeName}`;
@@ -155,12 +174,10 @@
             modal.classList.remove('hidden');
         }
 
-        // Close Modal
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Example actions for the dots menu
         function viewEmployee(employeeId) {
             alert(`View details for Employee ID: ${employeeId}`);
         }

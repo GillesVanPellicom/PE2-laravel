@@ -3,16 +3,14 @@
 @section('content')
 <div class="container mx-auto p-4">
     <h2 class="text-2xl font-bold mb-4">Track & Trace - Pakket: {{ $package->reference }}</h2>
-    <h4 class="text-lg mb-6">Huidige Locatie: {{ $currentLocation ? $currentLocation->description : 'Onbekend' }}</h4>
+    <h4 class="text-lg mb-6">Current Location: {{ $currentLocation ? $currentLocation->getDescription() : 'Unknown' }}</h4>
 
     {{-- Timeline Bullets --}}
     <h3 class="text-xl font-semibold mb-4">Tijdlijn</h3>
     <div class="relative flex items-center justify-between mb-10">
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
 
@@ -49,18 +47,18 @@
 
                 <div class="flex justify-between">
                     <div>
-                        <h4 class="font-semibold text-lg">{{ $movement->fromLocation->description }} → {{ $movement->toLocation->description }}</h4>
+                        <h4 class="font-semibold text-lg">
+                            {{ $movement->getDescription() ?? 'Unknown' }}
+                        </h4>
                         
-                        {{-- Show check-in and optional check-out times --}}
+                        {{-- Show timestamps based on status --}}
                         @if ($movement->status == 'completed')
-                            <p>✅ Aangekomen op: <span class="font-medium">{{ $movement->check_in_time }}</span></p>
-                            @if ($movement->check_out_time)
-                                <p>🚚 Vertrokken op: <span class="font-medium">{{ $movement->check_out_time }}</span></p>
-                            @endif
+                            <p>✅ Aangekomen op: <span class="font-medium">{{ $movement->getArrivedAt() }}</span></p>
+                            <p>🚚 Vertrokken op: <span class="font-medium">{{ $movement->getDepartedAt() }}</span></p>
                         @elseif ($movement->status == 'current')
-                            <p>📍 Huidige locatie sinds: <span class="font-medium">{{ $movement->check_in_time }}</span></p>
+                            <p>📍 Huidige locatie sinds: <span class="font-medium">{{ $movement->getCheckedInAt() }}</span></p>
                         @elseif ($movement->status == 'in_transit')
-                            <p>🚚 Onderweg sinds: <span class="font-medium">{{ $movement->departure_time }}</span></p>
+                            <p>🚚 Onderweg sinds: <span class="font-medium">{{ $movement->getDepartedAt() }}</span></p>
                         @else
                             <p>⏳ Nog niet vertrokken</p>
                         @endif
@@ -99,7 +97,7 @@
             .openPopup();
     } else {
         console.log('No coordinates, showing message.');
-        mapDiv.innerHTML = '<p>Current location does not exists.</p>';
+        mapDiv.innerHTML = '<p>Current location does not exist.</p>';
     }
 </script>
 
