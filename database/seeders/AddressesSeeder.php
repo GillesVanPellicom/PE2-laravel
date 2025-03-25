@@ -4,8 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Models\Address;
+use App\Database\Factories\AddressFactory;
 
 class AddressesSeeder extends Seeder
 {
@@ -81,6 +82,7 @@ class AddressesSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
         ]);
+
+        Address::factory()->count(200)->create();
     }
 }
-?>
