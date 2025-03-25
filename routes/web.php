@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\NotificationController;
 
 // ======================= Start Authentication ====================== //
 
@@ -108,6 +109,13 @@ Route::post('/vacations/{id}/update-status', [VacationController::class, 'update
 Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
 
 Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
+
+Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
+
+Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
 
 
 

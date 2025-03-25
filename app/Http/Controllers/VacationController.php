@@ -7,6 +7,8 @@ use App\Models\Vacation;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Pail\ValueObjects\Origin\Console;
 use NunoMaduro\Collision\Adapters\Phpunit\State;
+use App\Models\Notification;
+use App\Models\MessageTemplate;
 
 class VacationController extends Controller
 {
@@ -61,15 +63,32 @@ class VacationController extends Controller
     }
 
     public function updateStatus(Request $request, $id)
-    {
-        \Log::info("Updating vacation", ['vacation_id' => $id, 'status' => $request->status]);
+{
+    \Log::info("Updating vacation", ['vacation_id' => $id, 'status' => $request->status]);
 
-        $vacation = Vacation::where('vacation_id', $id)->firstOrFail(); // Use vacation_id
-        $vacation->approve_status = $request->status;
-        $vacation->save();
+    $vacation = Vacation::where('vacation_id', $id)->firstOrFail();
+    $vacation->approve_status = $request->status;
+    $vacation->save();
 
-        return response()->json(['message' => "Vacation status updated to {$request->status}"]);
+    // Fetch the employee's user ID
+    $employeeUserId = optional($vacation->employee)->user_id;
+
+    if ($employeeUserId) {
+        // Get the appropriate message template
+        $templateKey = $request->status === 'approved' ? 'holiday_approved' : 'holiday_denied';
+        $template = MessageTemplate::where('key', $templateKey)->first();
+
+        if ($template) {
+            // Save the notification
+            Notification::create([
+                'user_id' => $employeeUserId,
+                'message_template_id' => $template->id,
+            ]); 
+        }
     }
+
+    return response()->json(['message' => "Vacation status updated to {$request->status}"]);
+}
 
 
     public function getManagerNotifications()
