@@ -14,7 +14,7 @@
             <li class="{{ $notification->is_read ? 'read' : 'unread' }}">
                 <p>{{ $notification->messageTemplate->message }}</p>
                 <span>{{ $notification->created_at->diffForHumans() }}</span>
-                <h1>{{ $notification->messageTemplate->message }}, $notification</h1>
+                <p>{{ $notification->user->first_name }} {{ $notification->user->last_name }}</p>
                 <!-- Mark as read button -->
                 @if (!$notification->is_read)
                     <form action="{{ url('/notifications/'.$notification->id.'/read') }}" method="POST" style="display:inline;">
@@ -35,7 +35,7 @@
         </div>
 
         <!-- Calendar -->
-        <div id="calendar" class="mt-4"></div>
+        <div id="calendar" class="mt-4" style="height: 600px;"></div>
 
         <!-- Buttons -->
         <div class="flex justify-between mt-6">
@@ -65,7 +65,7 @@
 
             // Add an event to the calendar
             function addEvent(date, type, period = "Full Day") {
-                let title = type === "holiday" ? Holiday (${period}) : 'Sick Day';
+                let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
                 calendar.addEvent({
                     id: date,
                     title: title,
@@ -229,16 +229,16 @@
             }
 
             function markAsRead(notificationId, notificationElement) {
-                fetch(/notifications/${notificationId}/read, {
+                fetch(`/notifications/${notificationId}/read`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     }
                 }).then(response => response.json())
-                  .then(() => {
-                      notificationElement.classList.add('bg-gray-300'); // Mark it as read visually
-                      fetchNotifications(); // Refresh notifications
-                  });
+                .then(() => {
+                    notificationElement.classList.add('bg-gray-300'); // Mark it as read visually
+                    fetchNotifications(); // Refresh notifications
+                });
             }
 
             // Fetch notifications on page load

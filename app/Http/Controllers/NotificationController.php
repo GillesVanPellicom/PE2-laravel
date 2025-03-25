@@ -9,7 +9,11 @@ class NotificationController extends Controller
     public function showCalendar()
     {
         // Fetch notifications for the employee (you can adjust this based on your requirements)
-        return view('employees.calendar', ['notifications' => Notification::all()]);
+        $notifications = Notification::where('user_id', auth()->id())
+            ->with('messageTemplate', 'user')
+            ->get();
+
+        return view('employees.calendar', compact('notifications'));
     } 
 }
 
