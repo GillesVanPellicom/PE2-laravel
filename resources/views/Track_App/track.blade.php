@@ -48,7 +48,7 @@
                 <div class="flex justify-between">
                     <div>
                         <h4 class="font-semibold text-lg">
-                            {{ $movement->fromLocation->desc ?? 'Unknown' }} → {{ $movement->toLocation->desc ?? 'Unknown' }}
+                            {{ $movement->getDescription() ?? 'Unknown' }}
                         </h4>
                         
                         {{-- Show timestamps based on status --}}

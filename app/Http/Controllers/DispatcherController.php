@@ -13,16 +13,12 @@ class DispatcherController extends Controller
 {
     public function index()
     {
-        // Retrieve users who are employees (user_id exists in employees table)
         $employees = User::whereHas('employee')->get();
 
-        // Fetch all distribution centers (RouterNodes with location_type as 'distribution_center')
         $distributionCenters = RouterNodes::where('location_type', 'distribution_center')->get();
 
-        // Fetch all cities
         $cities = City::all();
 
-        // Pass data to the view
         return view('employees.dispatcher', [
             'employees' => $employees,
             'distributionCenters' => $distributionCenters,
@@ -32,32 +28,32 @@ class DispatcherController extends Controller
 
     public function getDistributionCenterDetails($id)
     {
-        // Fetch the distribution center details
+        \Log::info("Fetching details for distribution center ID: $id");
+
         $distributionCenter = RouterNodes::find($id);
 
         if (!$distributionCenter) {
+            \Log::error("Distribution center not found for ID: $id");
             return response()->json(['error' => 'Distribution center not found'], 404);
         }
 
-        // Fetch packages ready to deliver to addresses
         $readyToDeliverPackages = Package::whereHas('movements', function ($query) use ($id) {
             $query->where('current_node_id', $id)
-                  ->whereNull('departure_time') // Not yet departed
+                  ->whereNull('departure_time') 
                   ->whereHas('destinationLocation', function ($subQuery) {
-                      $subQuery->where('location_type', NodeType::ADDRESS); // Final destination is an address
+                      $subQuery->where('location_type', NodeType::ADDRESS); 
                   });
         })->get();
 
-        // Fetch packages in stock (not ready to deliver, but still in the distribution center)
+        
         $inStockPackages = Package::whereHas('movements', function ($query) use ($id) {
             $query->where('current_node_id', $id)
-                  ->whereNull('departure_time') // Not yet departed
+                  ->whereNull('departure_time') 
                   ->whereHas('destinationLocation', function ($subQuery) {
-                      $subQuery->where('location_type', '!=', NodeType::ADDRESS); // Destination is not an address
+                      $subQuery->where('location_type', '!=', NodeType::ADDRESS); 
                   });
         })->get();
 
-        // Format the packages for the response
         $formattedReadyToDeliver = $readyToDeliverPackages->map(function ($package) {
             return [
                 'ref' => $package->reference,

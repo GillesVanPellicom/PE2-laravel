@@ -1,7 +1,6 @@
 <x-app-layout>
     @section("pageName", "Dispatcher")
     <div class="flex h-screen relative">
-        <!-- Left: Distribution Centers -->
         <div class="w-1/6 bg-white p-4 overflow-y-auto">
             <h2 class="text-xl font-bold mb-4">Distribution Centers</h2>
             <div class="mb-4">
@@ -99,7 +98,6 @@
 
         async function showPackages(centerId, centerDescription) {
             try {
-                // Fetch data from the backend
                 const response = await fetch(`/api/distribution-center/${centerId}`);
                 const data = await response.json();
 
@@ -108,7 +106,6 @@
                     return;
                 }
 
-                // Prepare the HTML for the categorized packages
                 const readyToDeliverHtml = data.readyToDeliver.map(pkg => `
                     <li class="p-2 bg-green-100 rounded shadow">
                         <strong>Reference:</strong> ${pkg.ref}<br>
@@ -123,7 +120,6 @@
                     </li>
                 `).join('');
 
-                // Update the middle section with the fetched data
                 const hardcodedHtml = `
                     <div class="bg-white p-6 rounded shadow-lg w-full h-full flex flex-col">
                         <h2 class="text-2xl font-bold mb-4">${centerDescription}</h2>
@@ -147,10 +143,10 @@
             }
         }
 
-        const closeModalButton = document.getElementById('close_modal');
-        closeModalButton.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
+        // const closeModalButton = document.getElementById('close_modal');
+        // closeModalButton.addEventListener('click', () => {
+        //     modal.classList.add('hidden');
+        // });
 
         function toggleMenu(button) {
             document.querySelectorAll('.dots-menu').forEach(menu => menu.classList.add('hidden'));

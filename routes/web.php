@@ -212,9 +212,9 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 
 use App\Http\Controllers\RouteCreatorController;
 
+
 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
-Route::get('/distribution-center/{id}/details', [DispatcherController::class, 'getDistributionCenterDetails']);
-
+Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
