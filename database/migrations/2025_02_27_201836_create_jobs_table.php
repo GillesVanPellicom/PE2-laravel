@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('functions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string("role")->nullable();
             $table->string('description');
             $table->decimal('salary_min', 8, 2);
             $table->decimal('salary_max', 8, 2);
