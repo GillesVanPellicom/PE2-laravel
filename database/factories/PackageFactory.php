@@ -7,7 +7,7 @@ use App\Models\Package;
 use App\Models\Location;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Package>
  */
 class PackageFactory extends Factory
 {
