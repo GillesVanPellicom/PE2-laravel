@@ -153,6 +153,9 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
+        if ($request->is('courier/*')) {
+            return redirect()->route('courier');
+        }
         return redirect('/login');
     }
 }
