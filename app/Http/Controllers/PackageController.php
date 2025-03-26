@@ -232,6 +232,8 @@ class PackageController extends Controller
             $package = Package::create($validatedData);
         }
 
+        $package->getMovements();
+
         if (!$package) {
             return back()->withErrors(['error' => 'Failed to create package']);
         }
