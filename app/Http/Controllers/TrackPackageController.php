@@ -17,9 +17,9 @@ class TrackPackageController extends Controller
 {
     public function track($reference)
     {
-        $package = Package::where('reference', $reference)
-            ->with('movements.toLocation', 'movements.fromLocation')
-            ->firstOrFail();
+        $package = Package::where('reference', $reference)->firstOrFail();
+            //->with('movements.toLocation', 'movements.fromLocation')
+            //->firstOrFail();
 
         $movements = $package->getMovements();
 
