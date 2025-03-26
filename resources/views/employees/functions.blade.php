@@ -58,6 +58,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-6 flex justify-center">
+            {{ $functions->links() }}
+        </div>
     </div>
 </x-sidebar>
 

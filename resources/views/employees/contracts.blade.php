@@ -65,6 +65,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-6 flex justify-center">
+        {{ $contracts->links() }}
+        </div>
 </div>
 </x-sidebar>
 </x-app-layout>
