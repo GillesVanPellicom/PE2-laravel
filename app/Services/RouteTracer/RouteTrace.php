@@ -10,7 +10,7 @@ class RouteTrace
         
       }
 
-    protected $maxDistance = 250; //MAX work distance in KM
+    protected $maxDistance = 150; //MAX work distance in KM
 
     public function generateRoute(array $packages)
     {
@@ -46,8 +46,8 @@ class RouteTrace
             $totalDistance += $distance;
 
             $currentLocation = $nextPackage;
+            
         }
-
         return $route;
     }
     private function findClosestPackage($currentLocation, $packages, $route)

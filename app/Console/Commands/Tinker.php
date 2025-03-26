@@ -35,7 +35,7 @@ class Tinker extends Command {
       try {
         $path = $package->getMovements();
         for($j = 0; $j <= 16; $j++) {
-          $package->move();
+          $package->fakeMove();
         }
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());

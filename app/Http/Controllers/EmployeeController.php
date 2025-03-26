@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role};
 use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class EmployeeController extends Controller
             $query->whereHas('contracts', function ($subQuery) {
                 $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
             });
-        })->with(['employee', 'employee.contracts', 'employee.team'])->get();
+        })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(3);
         return view('employees.index', compact('employees'), ['teams' => Team::all()]);
     }
 
@@ -138,10 +138,8 @@ class EmployeeController extends Controller
 
     public function contracts()
     {
-        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->get();
-        $contracts = EmployeeContract::all();
+        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
         return view('employees.contracts', compact('contracts'));
-
     }
 
     public function updateEndTime(Request $request, $id)
@@ -195,6 +193,12 @@ class EmployeeController extends Controller
             $employee->save();
     
             EmployeeContract::create($contract);
+
+            $role = EmployeeFunction::find($request->function)->role;
+            $user = User::find($employee->user_id);
+            $user->syncRoles([]);
+            $user->assignRole($role);
+
             return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
         }
         else {
@@ -204,7 +208,7 @@ class EmployeeController extends Controller
 
     public function teams()
     {
-        $teams = Team::all();
+        $teams = Team::paginate(3);
         return view('employees.teams', compact('teams'));
     }
 
@@ -241,13 +245,13 @@ class EmployeeController extends Controller
 
     public function functions()
     {
-        $functions = EmployeeFunction::all();
+        $functions = EmployeeFunction::paginate(3);
         return view('employees.functions', compact('functions'));
     }
 
     public function create_function()
     {
-        return view('employees.create_function');
+        return view('employees.create_function', ['roles' => Role::all()]);
     }
 
     public function store_function(Request $request)
@@ -257,6 +261,7 @@ class EmployeeController extends Controller
             'description' => 'required|string',
             'salary_min' => 'required|numeric|min:0|lt:salary_max|max:999999',
             'salary_max' => 'required|numeric|min:0|gt:salary_min|max:999999',
+            'role' => 'required|integer|min:1',
         ],
         [
             'name.required' => 'Name is required.',
@@ -275,16 +280,21 @@ class EmployeeController extends Controller
             'salary_max.min' => 'Maximum salary must be larger than 0.',
             'salary_max.gt' => 'Maximum salary must be higher than minimum salary.',
             'salary_max.max' => 'Maximum salary is too high.',
+            'role.required' => 'Role is required.',
+            'role.min' => 'Please select a role.',
         ]);
 
-        EmployeeFunction::create($request->all());
-        return redirect()->route('employees.functions')->with('success', 'Function created successfully');
-    }
+        $role = Role::find($request->role);
 
-    public function upgrade()
-    {
-        $employee = User::where('email', "jane.doe@example.com")->first();
-        $employee->assignRole('employee');
-        return redirect()->route('employees.index')->with('success', 'Employee upgraded successfully');
+        $function = [
+            "name" => $request->name,
+            "description" => $request->description,
+            "salary_min" => $request->salary_min,
+            "salary_max" => $request->salary_max,
+            "role" => $role->name
+        ];
+
+        EmployeeFunction::create($function);
+        return redirect()->route('employees.functions')->with('success', 'Function created successfully');
     }
 }
