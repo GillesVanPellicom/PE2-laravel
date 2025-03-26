@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
@@ -54,6 +55,33 @@ Route::middleware("auth")->group(function () {
 
 // ======================= End Authentication ====================== //
 
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Login
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+// Register
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
+
+// Update
+Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
+
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Customers
+Route::get('/customers', function () {
+    if (!Auth::check()) {
+        return redirect()->route('auth.login');
+    }
+    return view('customers');
+})->name('customers');
+Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
@@ -66,7 +94,7 @@ Route::post('/courier', function (\Illuminate\Http\Request $request) {
 })->name('courier.authenticate');
 
 Route::middleware("auth")->group(function () {
-    Route::get('/courier/route', [CourierController::class, "route"])
+    Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])
         ->middleware("permission:courier.route")->name('courier.route');
 
     Route::get('/courier/packages', [CourierController::class, "packages"])
@@ -81,6 +109,9 @@ Route::middleware("auth")->group(function () {
     Route::post("/courier/scanQr", [CourierController::class, "scanQr"])
         ->middleware("permission:scan")->name("courier.scanQr");
     
+    Route::post("/courier/deliver/{id}", [TrackPackageController::class, "deliverPackage"])
+        ->middleware("permission:scan.deliver")->name("courier.deliver");
+
     Route::get('/courier/logout', [AuthController::class, "logout"])
         ->middleware("permission:scan")->name("courier.logout");
 }); 
@@ -88,7 +119,7 @@ Route::middleware("auth")->group(function () {
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
-Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
+//Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 
 Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
 
@@ -101,6 +132,8 @@ Route::get('/distribution-center/{id}/packages', [CourierRouteController::class,
 // ======================= Start Distribution ====================== //
 
 Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
+
+Route::get('/packagelist', [PackageListController::class, 'index'])->name('package.list');
 
 // ======================= End Distribution ====================== //
 
@@ -130,31 +163,33 @@ Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacati
 
 
 
-Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->name('employees.index');
+Route::get('/employees', 'App\Http\Controllers\EmployeeController@index')->middleware("permission:HR.checkall")->name('employees.index');
 
-Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->name('employees.Create');
+Route::get('/employees/create', 'App\Http\Controllers\EmployeeController@create')->middleware("permission:HR.create")->name('employees.Create');
 
-Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->name('employees.store_employee');
+Route::post('/employees', 'App\Http\Controllers\EmployeeController@store_employee')->middleware("permission:HR.create")->name('employees.store_employee');
 
-Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@contracts')->name('employees.contracts');
+Route::get('/employees/contracts', 'App\Http\Controllers\EmployeeController@contracts')->middleware("permission:HR.checkall")->name('employees.contracts');
 
-Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->name('employee.contracts.updateEndDate');
+Route::post('/employees/contracts/{id}', 'App\Http\Controllers\EmployeeController@updateEndTime')->middleware("permission:HR.create")->name('employee.contracts.updateEndDate');
 
-Route::get('/employees/create-contract', 'App\Http\Controllers\EmployeeController@create_employeecontract')->name('employees.create_contract');
+Route::get('/employees/create-contract', 'App\Http\Controllers\EmployeeController@create_employeecontract')->middleware("permission:HR.create")->name('employees.create_contract');
 
-Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@store_contract')->name('employees.store_contract');
+Route::post('/employees/contracts', 'App\Http\Controllers\EmployeeController@store_contract')->middleware("permission:HR.create")->name('employees.store_contract');
 
-Route::get('/employees/teams', 'App\Http\Controllers\EmployeeController@teams')->name('employees.teams');
+Route::get('/employees/teams', 'App\Http\Controllers\EmployeeController@teams')->middleware("permission:HR.checkall")->name('employees.teams');
 
-Route::get('/employees/create-team', 'App\Http\Controllers\EmployeeController@create_team')->name('employees.create_team');
+Route::get('/employees/create-team', 'App\Http\Controllers\EmployeeController@create_team')->middleware("permission:HR.create")->name('employees.create_team');
 
-Route::post('/employees/teams', 'App\Http\Controllers\EmployeeController@store_team')->name('employees.store_team');
+Route::post('/employees/teams', 'App\Http\Controllers\EmployeeController@store_team')->middleware("permission:HR.create")->name('employees.store_team');
 
-Route::get('/employees/functions', 'App\Http\Controllers\EmployeeController@functions')->name('employees.functions');
+Route::get('/employees/functions', 'App\Http\Controllers\EmployeeController@functions')->middleware("permission:HR.checkall")->name('employees.functions');
 
-Route::get('/employees/create-function', 'App\Http\Controllers\EmployeeController@create_function')->name('employees.create_function');
+Route::get('/employees/create-function', 'App\Http\Controllers\EmployeeController@create_function')->middleware("permission:HR.create")->name('employees.create_function');
 
-Route::post('/employees/functions', 'App\Http\Controllers\EmployeeController@store_function')->name('employees.store_function');
+Route::post('/employees/functions', 'App\Http\Controllers\EmployeeController@store_function')->middleware("permission:HR.create")->name('employees.store_function');
+
+Route::get('/employees/roles', 'App\Http\Controllers\EmployeeController@upgrade')->middleware("permission:HR.create")->name('employees.upgrade');
 
 // ======================= End Employee ====================== //
 

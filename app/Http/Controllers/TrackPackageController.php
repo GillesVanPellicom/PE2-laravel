@@ -8,6 +8,8 @@ use App\Services\Router\Router;
 use App\Services\Router\Types\Node;
 use App\Services\Router\Types\NodeType;
 use App\Services\Router\Types\CoordType;
+use App\Services\Router\Types\MoveOperationType;
+
 
 // use Illuminate\Support\Facades\App;
 
@@ -38,5 +40,14 @@ class TrackPackageController extends Controller
         return view('Track_App.track', compact('package', 'movements', 'currentLocation'))
             ->with('currentLat', $currentLocation ? $currentLocation->getLat(CoordType::DEGREE) : null)
             ->with('currentLng', $currentLocation ? $currentLocation->getLong(CoordType::DEGREE) : null);
+    }
+
+    public function deliverPackage($reference)
+    {
+        $package = Package::where('reference', $reference)
+            ->firstOrFail();
+
+        [$status, $message] = $package->move(MoveOperationType::DELIVER);
+        return response()->json(["success" => $status, "message" => $message]);
     }
 }
