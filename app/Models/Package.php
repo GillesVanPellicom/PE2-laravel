@@ -264,7 +264,7 @@ class Package extends Model {
         $currentMovement->save();
 
         // If arriving at the final ADDRESS, set all timestamps
-        if ($timestamp === 'arrival_time' && is_null($currentMovement->next_movement) && $this->isAddressLocation()) {
+        if ($timestamp === 'arrival_time' && is_null($currentMovement->next_movement) && $this->location_type === NodeType::ADDRESS) {
           $currentMovement->check_in_time = now();
           $currentMovement->check_out_time = now();
           $currentMovement->departure_time = now();
@@ -478,17 +478,6 @@ class Package extends Model {
 
     // If all timestamps are set but there is a next movement, throw an exception
     throw new Exception('All timestamps are already set for the current movement.');
-  }
-
-
-  /**
-   * Check if the current location is an ADDRESS.
-   *
-   * @return bool True if the current location is an ADDRESS, false otherwise.
-   */
-  private function isAddressLocation(): bool {
-    $location = Location::find($this->current_location_id);
-    return $location && $location->location_type === NodeType::ADDRESS;
   }
 
 
