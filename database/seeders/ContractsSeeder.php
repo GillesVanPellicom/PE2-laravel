@@ -13,6 +13,7 @@ class ContractsSeeder extends Seeder
         DB::table('contracts')->insert([
             ['employee_id' => 1, 'job_id' => 6, 'start_date' => '2024-03-01', 'end_date' => null,  'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['employee_id' => 2, 'job_id' => 7, 'start_date' => '2024-03-02', 'end_date' => null,  'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+
         ]);
 
     }
