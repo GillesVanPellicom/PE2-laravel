@@ -66,7 +66,7 @@ Route::post('/courier', function (\Illuminate\Http\Request $request) {
 })->name('courier.authenticate');
 
 Route::middleware("auth")->group(function () {
-    Route::get('/courier/route', [CourierController::class, "route"])
+    Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])
         ->middleware("permission:courier.route")->name('courier.route');
 
     Route::get('/courier/packages', [CourierController::class, "packages"])
@@ -81,6 +81,9 @@ Route::middleware("auth")->group(function () {
     Route::post("/courier/scanQr", [CourierController::class, "scanQr"])
         ->middleware("permission:scan")->name("courier.scanQr");
     
+    Route::post("/courier/deliver/{id}", [TrackPackageController::class, "deliverPackage"])
+        ->middleware("permission:scan.deliver")->name("courier.deliver");
+
     Route::get('/courier/logout', [AuthController::class, "logout"])
         ->middleware("permission:scan")->name("courier.logout");
 }); 
@@ -88,7 +91,7 @@ Route::middleware("auth")->group(function () {
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
-Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
+//Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 
 Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
 
