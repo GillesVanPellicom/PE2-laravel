@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Request;
+use App\Http\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -11,7 +13,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            "authenticate" => Authenticate::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('courier/*')) {
+                return route('courier');
+            }
+            return route('auth.login');
+        });
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->is('courier')) {
+                return route('courier.scan');
+            }
+            return route('welcome');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

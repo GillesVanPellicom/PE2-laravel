@@ -1,105 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holiday Request System</title>
-
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 900px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        #holidayInfo {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #007bff;
-            color: white;
-            border-radius: 5px;
-        }
-
-        #calendar {
-            margin: 20px 0;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        button, .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-
-        #saveRequests {
-            background-color: #28a745;
-            color: white;
-        }
-
-        #saveRequests:hover {
-            background-color: #218838;
-        }
-
-        .btn {
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        #clearStorage {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        #clearStorage:hover {
-            background-color: #c82333;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="holidayInfo">
-            Remaining Holidays: <span id="remainingHolidays">5</span> | 
-            Sick Days Taken: <span id="sickDaysTaken">0</span>
+<x-app-layout>
+    <div class="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
+        <!-- Holiday Info -->
+        <div id="holidayInfo" class="bg-gray-100 p-4 rounded-md flex justify-between items-center">
+            <span class="font-semibold text-lg">Remaining Holidays: <span id="remainingHolidays" class="text-blue-600 font-bold">0</span></span> 
+            <span class="font-semibold text-lg">Sick Days Taken: <span id="sickDaysTaken" class="text-red-600 font-bold">0</span></span>
         </div>
-        <div id="calendar"></div>
-        <div class="button-container">
-            <button id="saveRequests">Save Requests</button>
-            <a href="/holiday-requests" class="btn">View Requests</a>
-            <button id="clearStorage">Clear Data</button>
+
+        <!-- Calendar -->
+        <div id="calendar" class="mt-4"></div>
+
+        <!-- Buttons -->
+        <div class="flex justify-between mt-6">
+            <button id="saveRequests" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Save Requests</button>
+            <a href="/manager-calendar" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">View Requests</a>
+            <button id="clearStorage" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">Clear Data</button>
         </div>
     </div>
 
@@ -111,8 +25,9 @@
             var calendarEl = document.getElementById('calendar');
             var selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
             var selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-            var remainingHolidays = 5; 
-            var sickDaysTaken = selectedSickDays.size; 
+            var remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+            var sickDaysTaken = selectedSickDays.size;
+            var loggedInUser = @json(auth()->user()->name);
 
             function updateCounters() {
                 document.getElementById('remainingHolidays').textContent = remainingHolidays;
@@ -193,6 +108,7 @@
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                locale: 'en-gb',
                 firstDay: 1,
                 dateClick: function(info) {
                     toggleEvent(info.dateStr);
@@ -205,16 +121,32 @@
             updateCounters();
 
             document.getElementById('saveRequests').addEventListener('click', function() {
-                let employeeName = prompt("Enter your name to save requests:");
-                if (!employeeName) {
-                    alert("Name is required.");
-                    
-                    return;
-                }
-                let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
-                requests.push({ name: employeeName, holidays: selectedHolidays, sickDays: Array.from(selectedSickDays) });
-                localStorage.setItem('holidayRequests', JSON.stringify(requests));
-                alert("Requests saved successfully!");
+                let requestData = JSON.stringify({
+                    holidays: selectedHolidays
+                });
+
+                fetch('/save-vacation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: requestData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert("✅ Holiday requests saved successfully!");
+                        remainingHolidays = data.remainingHolidays;
+                        updateCounters();
+                    } else {
+                        alert("⚠️ Something went wrong!");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("❌ Failed to save requests. Please try again.");
+                });
             });
 
             document.getElementById('clearStorage').addEventListener('click', function() {
@@ -224,5 +156,4 @@
             });
         });
     </script>
-</body>
-</html>
+</x-app-layout>

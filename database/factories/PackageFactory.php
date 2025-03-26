@@ -3,9 +3,11 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Package;
+use App\Models\Location;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Package>
  */
 class PackageFactory extends Factory
 {
@@ -20,8 +22,7 @@ class PackageFactory extends Factory
             "reference" => "REF".$this->faker->unique()->randomNumber(8),
             "user_id" => 1,
             "origin_location_id" => 1,
-            "current_location_id" => 1,
-            "destination_location_id" => 1,
+            "destination_location_id" => Location::factory(),
             "addresses_id" => 1,
             "status" => $this->faker->randomElement(["Pending", "Delivered", "Cancelled"]),
             "weight_id" => 1,

@@ -16,6 +16,7 @@
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "pnlinh/laravel-google-distance": "^1.0",
+        "pusher/pusher-php-server": "*",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-permission": "^6.14"
     },

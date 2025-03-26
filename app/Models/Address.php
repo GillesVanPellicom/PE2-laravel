@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Address extends Model
 {
-    protected $fillable = ['street', 'house_number', 'cities_id', 'bus_number'];
+    use HasFactory;
+    protected $fillable = ['street', 'house_number', 'cities_id', 'country_id'];
 
     public function parcels(): HasMany
     {
@@ -33,5 +35,7 @@ class Address extends Model
     {
         return $this->hasMany(Employee::class, 'address_id');
     }
-
+    public function packages () {
+        return $this->hasMany(Package::class, 'addresses_id');
+    }
 }

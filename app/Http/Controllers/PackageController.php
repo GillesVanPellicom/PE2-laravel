@@ -22,9 +22,29 @@ class PackageController extends Controller
 
     public function index()
     {
-        $packages = Package::paginate(10);
+        if (request()->has('search')) {
+            $packages = Package::where('reference', 'like', '%' . request('search','') . '%')
+                ->orWhere('name', 'like', '%' . request('search','') . '%')
+                ->orWhere('receiverEmail', 'like', '%' . request('search','') . '%')
+                ->orWhere('receiver_phone_number', 'like', '%' . request('search','') . '%')
+                ->paginate(10)->withQueryString();
+        } else {
+            $packages = Package::paginate(10)->withQueryString();
+        }
         return view('pickup.dashboard', compact('packages'));
     }
+    public function show ($id) {
+        $id= $id !== ' ' ? $id  :request()->get('id');
+        $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
+        return view('pickup.packageInfo',compact('package'));
+    }
+    public function setStatusPackage ($id) {
+        $package = Package::findOrFail($id);
+        $statusToSet = request()->get('status')?? '';
+        $package->update(['status' => $statusToSet]);
+        return redirect()->route('pickup.dashboard')->with('success', 'Package updated successfully!');
+    }
+
     public function updateStatus(Request $request)
     {
         $package = Package::where('id', $request->packageId)->first();
@@ -39,12 +59,76 @@ class PackageController extends Controller
         return response()->json(['success' => false, 'message' => 'Package not found']);
     }
 
+    public function mypackages()
+    {
+        $packages = Package::with([
+            'user',
+            'deliveryMethod',
+            'destinationLocation.address.city.country',
+            'address.city.country'
+        ])
+        ->where('user_id', Auth::user()->id)
+        ->get();
+
+        foreach ($packages as $package) {
+            if ($package->deliveryMethod->requires_location) {
+                if (!$package->destinationLocation || !$package->destinationLocation->address) {
+                    abort(404, 'Destination location address not found for this package');
+                }
+            } else {
+                if (!$package->address) {
+                    abort(404, 'Address not found for this package');
+                }
+            }
+        }
+
+        return view('Packages.my-packages', compact('packages'));
+    }
+
+    public function packagedetails($packageID)
+    {
+        $package = Package::with([
+            'user',
+            'deliveryMethod',
+            'destinationLocation.address.city.country',
+            'address.city.country'
+        ])
+        ->where('user_id', Auth::user()->id)
+        ->where('id', $packageID)
+        ->first();
+
+        $qrCode = base64_encode(QrCode::format('png')
+        ->size(150)
+        ->margin(0)
+        ->generate($packageID));
+
+        if (!$package) {
+            abort(404, 'Package not found');
+        }
+
+        if (Auth::user()->id !== $package->user_id) {
+            abort(403, 'You are not authorized to access this package label');
+        }
+
+        if ($package->deliveryMethod->requires_location) {
+            if (!$package->destinationLocation || !$package->destinationLocation->address) {
+                abort(404, 'Destination location address not found for this package');
+            }
+        } else {
+            if (!$package->address) {
+                abort(404, 'Address not found for this package');
+            }
+        }
+
+        return view('Packages.package-details', compact('package'), compact('qrCode'));
+    }
+
     public function create()
     {
         $weightClasses = WeightClass::where('is_active', true)->get();
         $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
         $locations = Location::all();
-        
+
         return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations'));
     }
 
@@ -58,7 +142,7 @@ class PackageController extends Controller
         $validationRules = [
             'origin_location_id' => 'required|exists:locations,id',
             'destination_location_id' => 'exists:locations,id',
-            'address_id' => 'exists:addresses,id',           
+            'address_id' => 'exists:addresses,id',
             'name' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'receiverEmail' => 'required|email|max:255',
@@ -82,7 +166,7 @@ class PackageController extends Controller
         $validatedData = $request->validate($validationRules);
 
         // Verify that the prices match the actual prices from the database
-        if ($validatedData['weight_price'] != $weightClass->price || 
+        if ($validatedData['weight_price'] != $weightClass->price ||
             $validatedData['delivery_price'] != $deliveryMethod->price) {
             return back()->withErrors(['price' => 'Invalid price calculation']);
         }
@@ -137,7 +221,7 @@ private function generateUniqueTrackingNumber()
 {
     $maxAttempts = 100;
     $attempt = 0;
-    
+
     do {
         if ($attempt >= $maxAttempts) {
             throw new \Exception('Unable to generate unique tracking number after ' . $maxAttempts . ' attempts');
@@ -145,24 +229,24 @@ private function generateUniqueTrackingNumber()
 
         $year = date('Y');
         $month = date('m');
-        
+
         $random = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
-        
+
         $trackingNumber = sprintf(
             'PK%s%s%s',
             $year,
             $month,
             $random
         );
-        
+
         $exists = Package::where('reference', $trackingNumber)->exists();
-        
+
         $attempt++;
     } while ($exists);
 
     return $trackingNumber;
 }
-    
+
     public function generateQRcode($packageID){
         $qrCode = QrCode::size(300)->generate($packageID);
         return response($qrCode)->header('Content-Type', 'image/svg+xml');
@@ -170,7 +254,7 @@ private function generateUniqueTrackingNumber()
 
     /**
  * Generate a package label PDF
- * 
+ *
  * @param int $packageID
  * @return \Illuminate\Http\Response
  * @throws \Illuminate\Auth\Access\AuthorizationException
