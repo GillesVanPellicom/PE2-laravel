@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Address;
+use App\Models\DeliveryMethod;
+use App\Models\Location;
+use App\Models\User;
+use App\Models\WeightClass;
 use App\Services\Router\Router;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
@@ -14,14 +19,9 @@ use App\Services\Router\Types\NodeType;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\WeightClass;
-use App\Models\DeliveryMethod;
-use App\Models\Location;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
-use App\Models\Address;
-use App\Models\User;
 
 class Package extends Model {
   use HasFactory;
@@ -54,34 +54,82 @@ class Package extends Model {
 
   ### Relationships
 
+
+  /**
+   * Get the user that owns the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function user() {
     return $this->belongsTo(User::class, 'user_id');
   }
 
+
+  /**
+   * Get the weight class of the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function weightClass() {
     return $this->belongsTo(WeightClass::class, 'weight_id');
   }
 
+
+  /**
+   * Get the delivery method of the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function deliveryMethod() {
     return $this->belongsTo(DeliveryMethod::class, 'delivery_method_id');
   }
 
+
+  /**
+   * Get the destination location of the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function destinationLocation() {
     return $this->belongsTo(Location::class, 'destination_location_id');
   }
 
+
+  /**
+   * Get the address associated with the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function address() {
     return $this->belongsTo(Address::class, 'addresses_id');
   }
 
+
+  /**
+   * Get the origin location of the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function originLocation() {
     return $this->belongsTo(Location::class, 'origin_location_id');
   }
 
+
+  /**
+   * Get the current location of the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   */
   public function currentLocation() {
     return $this->belongsTo(Location::class, 'current_location_id');
   }
 
+
+  /**
+   * Get the movements of the package.
+   *
+   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   */
   public function movements() {
     return $this->hasMany(PackageMovement::class, 'package_id');
   }
@@ -92,39 +140,51 @@ class Package extends Model {
   /**
    * Get the next location for the package.
    *
+   * This method retrieves the next location node for the package based on its current movement.
+   * It throws an exception if the current location or next movement is not found.
+   *
    * @return Node|null The next location node or null if not found.
    * @throws Exception If movements are uninitialized or current movement not found.
    */
   public function getNextMovement(): ?Node {
+    // Load all movements once (in this case to minimize I/O overhead/caching)
     $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
     if ($movements->isEmpty()) {
-      throw new Exception("No movements found for this package. Generate movements first using Package::getMovements().");
+      $this->generateMovements();
     }
 
+    // Get the current location node
     $currentNode = $this->getCurrentMovement();
     if (!$currentNode) {
       throw new Exception('Current location not found.');
     }
 
+    // Find the current movement based on the current node's ID
     $currentMovement = $movements->firstWhere('current_node_id', $currentNode->getID());
     if (!$currentMovement) {
       throw new Exception('Current movement not found.');
     }
 
+    // If there is no next movement, return null
     if (is_null($currentMovement->next_movement)) {
       return null;
     }
 
+    // Find the next movement based on the next_movement ID
     $nextMovement = $movements->firstWhere('id', $currentMovement->next_movement);
     if (!$nextMovement) {
       return null;
     }
 
+    // Get the node for the next movement's current_node_id
     $node = $this->getNodeFromId($nextMovement->current_node_id);
     if (!$node) {
       throw new Exception('No next movement found.');
     }
 
+    // Initialize and return the node with movement timestamps
     return $this->initializeNode($node, $nextMovement);
   }
 
@@ -132,52 +192,73 @@ class Package extends Model {
   /**
    * Move the package forward one step.
    *
-   * @param  MoveOperationType  $operation
+   * This method updates the package's movement by setting the appropriate scan times (arrival, check-in, check-out, departure).
+   * If the final node is not an ADDRESS, you can keep running move() to set the final timestamps as you would, without moving.
+   * If the final node is an ADDRESS, it automatically fills all timestamps in that movement with now() upon arrival.
+   *
+   * @param  MoveOperationType  $operation  The type of operation (IN, OUT, DELIVER).
    * @return array [success, message]
    * @throws Exception If no movements exist.
    */
   public function move(MoveOperationType $operation): array {
+    // Load all movements once for efficiency
     $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
     if ($movements->isEmpty()) {
-      throw new Exception("No movements found for this package. Generate movements first using Package::getMovements().");
+      $this->generateMovements();
     }
 
+    // Find the current movement based on the current location ID
     $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
     if (!$currentMovement) {
       return [false, "This package does not have a valid package movement."];
     }
 
+    // If delivery operation
     if ($operation === MoveOperationType::DELIVER) {
+      // Handle delivery
       return $this->deliverPackage($currentMovement);
     }
 
+    // If not delivery operation, handle IN and OUT operations
     return $this->performMovementOperation($currentMovement, $operation);
   }
 
 
   /**
-   * Simulate a move without operation type.
+   * Simulate a move. For seeding purposes
+   *
+   * This method sets the next unset timestamp in the sequence (arrival, check-in, check-out, departure).
+   * If the package is at an ADDRESS and it's the final movement, all timestamps are set to now().
    *
    * @throws Exception If no movements exist or current movement not found.
    */
-  public function fakeMove() {
+  public function fakeMove(): void {
+    // Load all movements once for efficiency
     $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
     if ($movements->isEmpty()) {
-      throw new Exception("No movements found for this package. Generate movements first using Package::getMovements().");
+      $this->generateMovements();
     }
 
+    // Find the current movement based on the current location ID
     $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
     if (!$currentMovement) {
       throw new Exception("No current movement found.");
     }
 
+    // List of timestamps in sequence
     $timestamps = ['arrival_time', 'check_in_time', 'check_out_time', 'departure_time'];
 
+    // Iterate through timestamps and set the first unset one
     foreach ($timestamps as $timestamp) {
       if (is_null($currentMovement->$timestamp)) {
         $currentMovement->$timestamp = now();
         $currentMovement->save();
 
+        // If arriving at the final ADDRESS, set all timestamps
         if ($timestamp === 'arrival_time' && is_null($currentMovement->next_movement) && $this->isAddressLocation()) {
           $currentMovement->check_in_time = now();
           $currentMovement->check_out_time = now();
@@ -185,6 +266,7 @@ class Package extends Model {
           $currentMovement->save();
         }
 
+        // If departing and there is a next movement, update current location
         if ($timestamp === 'departure_time' && !is_null($currentMovement->next_movement)) {
           $nextMovement = $movements->firstWhere('id', $currentMovement->next_movement);
           if ($nextMovement) {
@@ -197,82 +279,125 @@ class Package extends Model {
       }
     }
 
+    // If all timestamps are set and there is a next movement, throw an exception
     if (!is_null($currentMovement->next_movement)) {
       throw new Exception('Package did not move to next movement.');
     }
   }
 
+
   /**
    * Get the current location of the package as a Node.
+   *
+   * This method retrieves the current location of the package and converts it to a Node object.
+   * It returns null if the current location is not found.
    *
    * @return Node|null The current location node or null if not found.
    * @throws Exception If movements are uninitialized.
    */
   public function getCurrentMovement(): ?Node {
+
+    // If no movements exist, generate them
     if (!$this->movements()->exists()) {
-      throw new Exception("No movements found for this package. Generate movements first using Package::getMovements().");
+      // If no movements exist, generate them
     }
 
+    // Get the node for the current location ID
     $node = $this->getNodeFromId($this->current_location_id);
     if (!$node) {
       return null;
     }
 
+    // Find the movement for the current node
     $movement = $this->movements()->where('current_node_id', $this->current_location_id)->first();
     if (!$movement) {
       return null;
     }
 
+    // Initialize and return the node with movement timestamps
     return $this->initializeNode($node, $movement);
   }
+
 
   /**
    * Get the movements of the package as an array of Node objects.
    *
+   * This method retrieves the chronological movements of the package as an array of Node objects.
+   * It throws various exceptions if there are issues with the coordinates, arguments, or pathfinding.
+   *
    * @return Node[]|null Array of Node objects representing chronological package movements.
-   * @throws InvalidCoordinateException
-   * @throws InvalidRouterArgumentException
-   * @throws NoPathFoundException
-   * @throws NodeNotFoundException
-   * @throws RouterException
+   * @throws InvalidCoordinateException If any input coordinates are blatantly wrong.
+   * @throws InvalidRouterArgumentException General bad argument exception.
+   * @throws NoPathFoundException No possible path found. There may not exist a route.
+   * @throws NodeNotFoundException Given node ID might not exist.
+   * @throws RouterException General router error.
    */
   public function getMovements(): ?array {
+
+    // Check if movements exist; if not, generate them
     if (!$this->movements()->exists()) {
       $this->generateMovements();
     }
     return $this->getMovementsFromDb();
   }
 
+
   /**
    * Generate movements for the package.
    *
-   * @throws InvalidCoordinateException
-   * @throws InvalidRouterArgumentException
-   * @throws NoPathFoundException
-   * @throws NodeNotFoundException
-   * @throws RouterException
+   * This method is called internally if movements do not exist yet.
+   * Could be called manually but there shouldn't be a need.
+   * Does not re-generate movements.
+   *
+   * @throws InvalidCoordinateException If any input coordinates are blatantly wrong.
+   * @throws InvalidRouterArgumentException General bad argument exception.
+   * @throws NoPathFoundException No possible path found. There may not exist a route.
+   * @throws NodeNotFoundException Given node ID might not exist.
+   * @throws RouterException General router error.
    */
   public function generateMovements(): void {
+    // Do not regenerate if movements already exist
     if ($this->movements()->exists()) {
       return;
     }
 
+    // Resolve the Router service
+    /** @var Router $router */
     $router = App::make(Router::class);
+
+    // Get the path from origin to destination
     $path = $router->getPath(
       $this->getAttribute('originLocation'),
       $this->getAttribute('destinationLocation')
     );
+
+    // Commit the path as movements
     $this->commitMovements($path);
+
+    // Set the current location to the first node in the path
     $this->setCurrentMovement($path[0]->getID());
   }
 
   ### Private Helper Methods
 
+
+  /**
+   * Handle the delivery of the package.
+   *
+   * This method is called when the move() operation is DELIVER.
+   * It checks if the package is at the final destination and is an NodeType::ADDRESS.
+   * If so, it sets all timestamps to now() if not already set.
+   *
+   * @param  PackageMovement  $currentMovement  The current movement of the package.
+   * @return array [success, message]
+   */
   private function deliverPackage(PackageMovement $currentMovement): array {
+    // Check if this is the final movement
     if (!is_null($currentMovement->next_movement)) {
       return [false, "This package has not yet reached its final destination."];
     }
 
+    // Get the current location
     $location = Location::find($this->current_location_id);
     if (!$location || $location->location_type !== NodeType::ADDRESS) {
       return [
@@ -280,6 +405,7 @@ class Package extends Model {
       ];
     }
 
+    // If arrival time is not set, set all timestamps to now
     if (is_null($currentMovement->arrival_time)) {
       $now = now();
       $currentMovement->arrival_time = $now;
@@ -290,10 +416,24 @@ class Package extends Model {
       return [true, "Delivery Successful"];
     }
 
+    // If arrival time is already set, the package has already been delivered
     return [false, "This package has already been delivered"];
   }
 
+
+  /**
+   * Perform a movement operation (IN or OUT).
+   *
+   * This method handles the scanning of the package for IN and OUT operations.
+   * It sets the appropriate timestamp based on the operation and updates the current location if necessary.
+   *
+   * @param  PackageMovement  $currentMovement  The current movement of the package.
+   * @param  MoveOperationType  $operation  The operation to perform (IN or OUT).
+   * @return array [success, message]
+   * @throws Exception If all timestamps are already set.
+   */
   private function performMovementOperation(PackageMovement $currentMovement, MoveOperationType $operation): array {
+    // Map of timestamps to their corresponding operation types
     $timestamps = [
       'arrival_time' => MoveOperationType::OUT,
       'check_in_time' => MoveOperationType::IN,
@@ -301,12 +441,14 @@ class Package extends Model {
       'departure_time' => MoveOperationType::IN,
     ];
 
+    // Iterate through timestamps and set the first unset one if the operation matches
     foreach ($timestamps as $timestamp => $expectedOperation) {
       if (is_null($currentMovement->$timestamp)) {
         if ($operation === $expectedOperation) {
           $currentMovement->$timestamp = now();
           $currentMovement->save();
 
+          // If departing and there is a next movement, update the current location
           if ($timestamp === 'departure_time' && !is_null($currentMovement->next_movement)) {
             $nextMovement = $this->movements()->find($currentMovement->next_movement);
             if ($nextMovement) {
@@ -317,41 +459,65 @@ class Package extends Model {
 
           return [true, "Package successfully scanned ".$operation->value];
         }
+        // If the operation does not match, return an error
         return [
           false, "This package was not previously scanned ".($operation === MoveOperationType::OUT ? "in" : "out")."."
         ];
       }
     }
 
+    // If all timestamps are set and there is no next movement, the package is at its final destination
     if (is_null($currentMovement->next_movement)) {
       return [false, "Package has reached its final destination."];
     }
 
+    // If all timestamps are set but there is a next movement, throw an exception
     throw new Exception('All timestamps are already set for the current movement.');
   }
 
+
+  /**
+   * Check if the current location is an ADDRESS.
+   *
+   * @return bool True if the current location is an ADDRESS, false otherwise.
+   */
   private function isAddressLocation(): bool {
     $location = Location::find($this->current_location_id);
     return $location && $location->location_type === NodeType::ADDRESS;
   }
 
+
+  /**
+   * Set the current movement of the package.
+   *
+   * @param  string  $location  The ID of the location to set as current.
+   */
   private function setCurrentMovement(string $location): void {
     $this->current_location_id = $location;
     $this->save();
   }
 
+
+  /**
+   * Commit the movements to the database.
+   *
+   * This method creates PackageMovement records for each node in the path.
+   *
+   * @param  Node[]  $path  The array of Node objects representing the path.
+   */
   private function commitMovements(array $path): void {
     DB::transaction(function () use ($path) {
       $previousMovement = null;
       $previousNode = null;
 
       foreach ($path as $i => $node) {
+        // Prepare movement data
         $movementData = [
           'package_id' => $this->id,
           'handled_by_courier_id' => null,
           'vehicle_id' => null,
           'departure_time' => null,
-          'arrival_time' => $i === 0 ? now() : null,
+          'arrival_time' => $i === 0 ? now() : null, // Set arrival and check-in for the first movement
           'check_in_time' => $i === 0 ? now() : null,
           'check_out_time' => null,
           'current_node_id' => $node->getID(),
@@ -359,9 +525,12 @@ class Package extends Model {
           'router_edge_id' => null,
         ];
 
+        // Create the movement
         $movement = $this->movements()->create($movementData);
 
+        // Link to the previous movement if exists
         if ($previousMovement) {
+          // Find the router edge between previous and current node
           $routerEdge = RouterEdges::where(function ($query) use ($previousNode, $node) {
             $query->where('origin_node', $previousNode->getID())
               ->where('destination_node', $node->getID())
@@ -372,39 +541,53 @@ class Package extends Model {
               });
           })->first();
 
+          // Update the previous movement with the next movement ID and router edge ID
           $previousMovement->update([
             'next_movement' => $movement->id,
             'router_edge_id' => $routerEdge ? $routerEdge->id : null,
           ]);
         }
 
+        // Set previous movement and node for the next iteration
         $previousMovement = $movement;
         $previousNode = $node;
       }
     });
   }
 
+
   /**
-   * @throws InvalidRouterArgumentException
-   * @throws InvalidCoordinateException
+   * Get the movements from the database as an array of Node objects.
+   *
+   * @return Node[]|null Array of Node objects representing chronological package movements.
    */
   private function getMovementsFromDb(): ?array {
+    // Load all movements ordered by ID
     $movements = $this->movements()->orderBy('id')->get();
     $nodes = [];
+
+    // Convert each movement to a Node object
     foreach ($movements as $movement) {
       $node = $this->getNodeFromId($movement->current_node_id);
       if ($node) {
         $nodes[] = $this->initializeNode($node, $movement);
       }
     }
+
     return $nodes;
   }
 
+
   /**
-   * @throws InvalidRouterArgumentException
-   * @throws InvalidCoordinateException
+   * Get a Node object from a given ID.
+   *
+   * This method checks both RouterNodes and Location models to find the node.
+   *
+   * @param  string  $id  The ID of the node.
+   * @return Node|null The Node object or null if not found.
    */
   private function getNodeFromId($id): ?Node {
+    // Check if the ID belongs to a RouterNode
     $routerNode = RouterNodes::find($id);
     if ($routerNode) {
       return new Node(
@@ -418,6 +601,7 @@ class Package extends Model {
       );
     }
 
+    // Check if the ID belongs to a Location
     $location = Location::find($id);
     if ($location) {
       return new Node(
@@ -431,9 +615,18 @@ class Package extends Model {
       );
     }
 
+    // Return null if neither is found
     return null;
   }
 
+
+  /**
+   * Initialize a Node object with movement timestamps.
+   *
+   * @param  Node  $node  The Node object to initialize.
+   * @param  PackageMovement  $movement  The movement containing timestamps.
+   * @return Node The initialized Node object.
+   */
   private function initializeNode(Node $node, PackageMovement $movement): Node {
     $node->setArrivedAt($movement->arrival_time ? new Carbon($movement->arrival_time) : null);
     $node->setCheckedInAt($movement->check_in_time ? new Carbon($movement->check_in_time) : null);
