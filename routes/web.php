@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
@@ -53,6 +54,33 @@ Route::middleware("auth")->group(function () {
 });
 
 // ======================= End Authentication ====================== //
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Login
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+// Register
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
+
+// Update
+Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
+
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Customers
+Route::get('/customers', function () {
+    if (!Auth::check()) {
+        return redirect()->route('auth.login');
+    }
+    return view('customers');
+})->name('customers');
+Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 
 // ======================= Start Courier ====================== //
 
@@ -104,6 +132,8 @@ Route::get('/distribution-center/{id}/packages', [CourierRouteController::class,
 // ======================= Start Distribution ====================== //
 
 Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
+
+Route::get('/packagelist', [PackageListController::class, 'index'])->name('package.list');
 
 // ======================= End Distribution ====================== //
 

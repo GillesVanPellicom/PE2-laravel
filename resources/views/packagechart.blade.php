@@ -7,9 +7,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <form method="GET" action="{{ route('package.chart') }}" style="text-align: center; margin-bottom: 20px;">
+        <label for="year">Selecteer een jaar:</label>
+        <select name="year" id="year" onchange="this.form.submit()">
+            @foreach ($availableYears as $year)
+                <option value="{{ $year }}" {{ $year == $selectedYear ? 'selected' : '' }}>{{ $year }}</option>
+            @endforeach
+        </select>
+
+        <label for="group_by">Groeperen op:</label>
+        <select name="group_by" id="group_by" onchange="this.form.submit()">
+            <option value="day" {{ $groupBy == 'day' ? 'selected' : '' }}>Per Dag</option>
+            <option value="week" {{ $groupBy == 'week' ? 'selected' : '' }}>Per Week</option>
+            <option value="month" {{ $groupBy == 'month' ? 'selected' : '' }}>Per Maand</option>
+        </select>
+    </form>
+    
     <h1>Aantal Inkomende Pakketten per Dag</h1>
 
-    <!-- Canvas element waar de grafiek wordt getekend -->
     <div style="width: 50%; margin: auto;">
         <canvas id="packageChart"></canvas>
     </div>
@@ -42,7 +57,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Datum'
+                            text: 'Periode'
                         }
                     },
                     y: {
@@ -78,7 +93,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Datum'
+                            text: 'Periode'
                         }
                     },
                     y: {
@@ -94,6 +109,7 @@
                 }
             }
         });
+        
     </script>
 </body>
 </html>
