@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\RouterNodes;
+use App\Services\Router\Types\Node;
 use App\Services\RouteTracer\RouteTrace;
 use App\Services\Router\Types\NodeType;
 use Illuminate\Http\Request;
 use App\Services\Router\Types\CoordType;
+use App\Models\Location;
 
 class CourierRouteController extends Controller
 {
@@ -16,6 +18,19 @@ class CourierRouteController extends Controller
         $packages = Package::all();
         $filteredPackages = [];
         foreach ($packages as $package) {
+            $currentMovement = $package->movements()->where("current_node_id", $package->current_location_id)->first(); // Find the corresponding package movement
+            $movement = is_null($currentMovement->next_movement) ? $currentMovement : $currentMovement->nextHop;
+
+            if (is_numeric($movement->current_node_id) && $movement->node->location_type == NodeType::ADDRESS && is_null($movement->arrival_time)) {
+                $node = Node::fromLocation($movement->node);
+                $filteredPackages[] = [
+                    'latitude' => $node->getLat(CoordType::DEGREE),
+                    'longitude' => $node->getLong(CoordType::DEGREE),
+                    'ref' => $package->reference,
+                    'end' => $movement->id == $currentMovement->id
+                ];
+            }
+            /*
             $lastMovement = $package->getCurrentMovement();
             $nextMovement = $package->getNextMovement();
 
@@ -25,14 +40,15 @@ class CourierRouteController extends Controller
                 if ($secondToLastMovement) {
                     $routerNode = RouterNodes::find($secondToLastMovement->current_node_id);
 
-                        $filteredPackages[] = [
-                            'latitude' => $nextMovement->getLat(CoordType::DEGREE),
-                            'longitude' => $nextMovement->getLong(CoordType::DEGREE),
-                            'ref' => $package->reference,
-                        ];
-                    
+                    $filteredPackages[] = [
+                        'latitude' => $nextMovement->getLat(CoordType::DEGREE),
+                        'longitude' => $nextMovement->getLong(CoordType::DEGREE),
+                        'ref' => $package->reference,
+                    ];
+
                 }
             }
+                */
         }
 
         $routeTracer = new RouteTrace();

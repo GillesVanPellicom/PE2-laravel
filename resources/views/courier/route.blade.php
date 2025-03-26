@@ -21,10 +21,15 @@
                         <p class="text-lg font-semibold text-green-700">Next to Deliver: {{ $firstPackage['ref'] ?? 'N/A' }}</p>
                         <p class="text-sm text-gray-600">Coordinates: {{ $firstPackage['latitude'] }}, {{ $firstPackage['longitude'] }}</p>
                     </div>
-
+                    @if ($firstPackage["end"])
                     <button class="text-green-700 hover:text-green-900 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
                     ✓ Deliver
                     </button>
+                    @else
+                    <p class="text-red-700 focus:outline-none" data-ref="{{ $firstPackage['ref'] }}">
+                        Package not scanned in
+                    </p>
+                    @endif
                 </div>
             @endif
 
