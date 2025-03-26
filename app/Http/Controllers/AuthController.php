@@ -21,6 +21,10 @@ class AuthController extends Controller
 
     public function register()
     {
+        if (Auth::check()) {
+            return redirect()->route('welcome');
+        }
+    
         $countries = Country::all();
         return view('auth.register', compact('countries'));
     }
@@ -41,7 +45,7 @@ class AuthController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'phone_number' => 'required|unique:users,phone_number,' . $user->id . '|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'country' => 'required|string|max:100',
             'postal_code' => 'required|integer',
             'city' => 'required|string|max:100',
@@ -139,10 +143,13 @@ class AuthController extends Controller
         $userData['password'] = Hash::make($request->password);
         $userData['address_id'] = $address->id;
 
-        User::create($userData);
+        $user = User::create($userData);
+
+         // event(new Registered($user));
+         // Email verification has been disabled for now
 
         // Redirect to the login page
-        return redirect('/login');
+        return redirect('login');
     }
 
     public function logout(Request $request)

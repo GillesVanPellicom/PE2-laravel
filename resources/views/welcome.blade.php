@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Document</title>
+    <title>Homepage</title>
 </head>
 
 <body>
@@ -16,6 +16,7 @@
                 @csrf
                 <button type="submit" class=" text-white py-2 px-4 rounded-md">Sign Out</button>
             </form>
+            <a href="{{ route('customers') }}">Customers</a>
         @endauth
         @guest
             <a href="{{ route('auth.login') }}">Login</a>

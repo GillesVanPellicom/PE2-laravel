@@ -4,14 +4,17 @@
 use App\Http\Middleware\Authenticate;
 use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
 use Pnlinh\GoogleDistance\Facades\GoogleDistance;
 
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\contractController;
 use App\Http\Controllers\flightscontroller;
 use App\Http\Controllers\PackageController;
@@ -54,6 +57,50 @@ Route::middleware("auth")->group(function () {
 
 // ======================= End Authentication ====================== //
 
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Login
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
+
+// Register
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
+
+// Update
+Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
+
+// Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Email Verification Routes
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+// Customers
+Route::get('/customers', function () {
+    if (!Auth::check()) {
+        return redirect()->route('auth.login');
+    }
+    return view('customers');
+})->name('customers');
+Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
@@ -66,7 +113,7 @@ Route::post('/courier', function (\Illuminate\Http\Request $request) {
 })->name('courier.authenticate');
 
 Route::middleware("auth")->group(function () {
-    Route::get('/courier/route', [CourierController::class, "route"])
+    Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])
         ->middleware("permission:courier.route")->name('courier.route');
 
     Route::get('/courier/packages', [CourierController::class, "packages"])
@@ -81,6 +128,9 @@ Route::middleware("auth")->group(function () {
     Route::post("/courier/scanQr", [CourierController::class, "scanQr"])
         ->middleware("permission:scan")->name("courier.scanQr");
     
+    Route::post("/courier/deliver/{id}", [TrackPackageController::class, "deliverPackage"])
+        ->middleware("permission:scan.deliver")->name("courier.deliver");
+
     Route::get('/courier/logout', [AuthController::class, "logout"])
         ->middleware("permission:scan")->name("courier.logout");
 }); 
@@ -88,7 +138,7 @@ Route::middleware("auth")->group(function () {
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
-Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
+//Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 
 Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
 
@@ -101,6 +151,8 @@ Route::get('/distribution-center/{id}/packages', [CourierRouteController::class,
 // ======================= Start Distribution ====================== //
 
 Route::get('/packagechart', [ChartController::class, 'getPackageData'])->name('package.chart');
+
+Route::get('/packagelist', [PackageListController::class, 'index'])->name('package.list');
 
 // ======================= End Distribution ====================== //
 

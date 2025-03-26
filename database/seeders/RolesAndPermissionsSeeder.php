@@ -53,16 +53,15 @@ class RolesAndPermissionsSeeder extends Seeder
 
     private array $roleInheritance = [
         /* START BASE */
-        "employee" => "scan",
-        "employee" => "HR",
+        "employee" => ["scan", "HR"],
         /* END BASE */
 
         /* START Courier */
-        "scan" => "courier",
+        "scan" => ["courier"],
         /* END Courier */
 
         /* START Employees */
-        "HR" => "HRManager",
+        "HR" => ["HRManager"],
         /* END Employees */
 
 
@@ -124,12 +123,13 @@ class RolesAndPermissionsSeeder extends Seeder
 
                 // Apply inheritance
                 ConsoleHelper::task('Applying role inheritance', function () {
-                    foreach ($this->roleInheritance as $parentRole => $childRole) {
-                        $childRoleInstance = Role::findByName($childRole);
+                    foreach ($this->roleInheritance as $parentRole => $childRoles) {
                         $parentRoleInstance = Role::findByName($parentRole);
-
-                        $parentPermissions = $parentRoleInstance->permissions()->pluck('name')->toArray();
-                        $childRoleInstance->givePermissionTo($parentPermissions);
+                        foreach ($childRoles as $childRole) {
+                            $childRoleInstance = Role::findByName($childRole);
+                            $parentPermissions = $parentRoleInstance->permissions()->pluck('name')->toArray();
+                            $childRoleInstance->givePermissionTo($parentPermissions);
+                        }
                     }
                 });
 
