@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('dimension');
             $table->string('weight_price')->default(0);
             $table->float('weight')->nullable();
+            $table->boolean('paid')->default(false);
             $table->string('delivery_price')->default(0);
             $table->string('name');
             $table->string('lastName');
