@@ -31,9 +31,9 @@ class Tinker extends Command {
    */
   public function handle(): void {
     /** @var Package $package */
-    $package = Package::find(1);
+    $package = Package::find(2);
     $path = $package->getMovements();
-    dd($package->fakeMove());
+    $package->fakeMove();
 
   }
 }

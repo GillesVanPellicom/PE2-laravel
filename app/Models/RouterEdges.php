@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method where(string|\Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
+ */
 class RouterEdges extends Model {
   protected $table = 'router_edges';
 

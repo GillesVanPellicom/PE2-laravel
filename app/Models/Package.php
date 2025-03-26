@@ -19,10 +19,15 @@ use App\Services\Router\Types\NodeType;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|Package find(mixed $id)
+ */
 class Package extends Model {
   use HasFactory;
 
@@ -58,9 +63,9 @@ class Package extends Model {
   /**
    * Get the user that owns the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function user() {
+  public function user(): BelongsTo {
     return $this->belongsTo(User::class, 'user_id');
   }
 
@@ -68,9 +73,9 @@ class Package extends Model {
   /**
    * Get the weight class of the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function weightClass() {
+  public function weightClass(): BelongsTo {
     return $this->belongsTo(WeightClass::class, 'weight_id');
   }
 
@@ -78,9 +83,9 @@ class Package extends Model {
   /**
    * Get the delivery method of the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function deliveryMethod() {
+  public function deliveryMethod(): BelongsTo {
     return $this->belongsTo(DeliveryMethod::class, 'delivery_method_id');
   }
 
@@ -88,9 +93,9 @@ class Package extends Model {
   /**
    * Get the destination location of the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function destinationLocation() {
+  public function destinationLocation(): BelongsTo {
     return $this->belongsTo(Location::class, 'destination_location_id');
   }
 
@@ -98,9 +103,9 @@ class Package extends Model {
   /**
    * Get the address associated with the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function address() {
+  public function address(): BelongsTo {
     return $this->belongsTo(Address::class, 'addresses_id');
   }
 
@@ -108,9 +113,9 @@ class Package extends Model {
   /**
    * Get the origin location of the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function originLocation() {
+  public function originLocation(): BelongsTo {
     return $this->belongsTo(Location::class, 'origin_location_id');
   }
 
@@ -118,9 +123,9 @@ class Package extends Model {
   /**
    * Get the current location of the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+   * @return BelongsTo
    */
-  public function currentLocation() {
+  public function currentLocation(): BelongsTo {
     return $this->belongsTo(Location::class, 'current_location_id');
   }
 
@@ -128,9 +133,9 @@ class Package extends Model {
   /**
    * Get the movements of the package.
    *
-   * @return \Illuminate\Database\Eloquent\Relations\HasMany
+   * @return HasMany
    */
-  public function movements() {
+  public function movements(): HasMany {
     return $this->hasMany(PackageMovement::class, 'package_id');
   }
 
@@ -221,7 +226,7 @@ class Package extends Model {
       return $this->deliverPackage($currentMovement);
     }
 
-    // If not delivery operation, handle IN and OUT operations
+    // If not delivery operation, handle IN or OUT operations
     return $this->performMovementOperation($currentMovement, $operation);
   }
 
@@ -299,7 +304,7 @@ class Package extends Model {
 
     // If no movements exist, generate them
     if (!$this->movements()->exists()) {
-      // If no movements exist, generate them
+      $this->generateMovements();
     }
 
     // Get the node for the current location ID
@@ -517,7 +522,7 @@ class Package extends Model {
           'handled_by_courier_id' => null,
           'vehicle_id' => null,
           'departure_time' => null,
-          'arrival_time' => $i === 0 ? now() : null, // Set arrival and check-in for the first movement
+          'arrival_time' => $i === 0 ? now() : null,
           'check_in_time' => $i === 0 ? now() : null,
           'check_out_time' => null,
           'current_node_id' => $node->getID(),
@@ -560,6 +565,8 @@ class Package extends Model {
    * Get the movements from the database as an array of Node objects.
    *
    * @return Node[]|null Array of Node objects representing chronological package movements.
+   * @throws InvalidRouterArgumentException If the node ID is empty
+   * @throws InvalidCoordinateException If the node ID is empty
    */
   private function getMovementsFromDb(): ?array {
     // Load all movements ordered by ID
@@ -585,37 +592,27 @@ class Package extends Model {
    *
    * @param  string  $id  The ID of the node.
    * @return Node|null The Node object or null if not found.
+   * @throws InvalidRouterArgumentException If the node ID is empty
+   * @throws InvalidCoordinateException If the node ID is empty
    */
-  private function getNodeFromId($id): ?Node {
-    // Check if the ID belongs to a RouterNode
-    $routerNode = RouterNodes::find($id);
-    if ($routerNode) {
+  private function getNodeFromId(string $id): ?Node {
+    // Try to find the node in either RouterNodes or Location
+    $nodeData = RouterNodes::find($id) ?? Location::find($id);
+
+    // If a node is found, create a Node object
+    if ($nodeData) {
       return new Node(
-        $routerNode->id,
-        $routerNode->description,
-        $routerNode->location_type,
-        $routerNode->latDeg,
-        $routerNode->lonDeg,
-        $routerNode->isEntry,
-        $routerNode->isExit
+        $nodeData->id,
+        $nodeData->description,
+        $nodeData->location_type,
+        $nodeData->latDeg ?? $nodeData->latitude,
+        $nodeData->lonDeg ?? $nodeData->longitude,
+        isset($nodeData->isEntry) ? $nodeData->isEntry : false,
+        isset($nodeData->isExit) ? $nodeData->isExit : false
       );
     }
 
-    // Check if the ID belongs to a Location
-    $location = Location::find($id);
-    if ($location) {
-      return new Node(
-        $location->id,
-        $location->description,
-        $location->location_type,
-        $location->latitude,
-        $location->longitude,
-        false,
-        false
-      );
-    }
-
-    // Return null if neither is found
+    // Return null if no node is found
     return null;
   }
 
