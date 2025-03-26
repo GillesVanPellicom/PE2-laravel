@@ -212,6 +212,48 @@ class CitiesSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Copenhagen',
+                'postcode' => '2770',
+                'country_id' => 46, // Denemarken
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Billund',
+                'postcode' => '7190',
+                'country_id' => 46, // Denemarken
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Aalborg',
+                'postcode' => '9400',
+                'country_id' => 46, // Denemarken
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Oslo',
+                'postcode' => '2061',
+                'country_id' => 131, // Noorwegen
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Stockholm',
+                'postcode' => '168 76',
+                'country_id' => 169, // Zweden
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Helsinki',
+                'postcode' => '01530',
+                'country_id' => 59, // Finland
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ]);
     }
 }
