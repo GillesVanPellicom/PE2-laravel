@@ -56,6 +56,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-6 flex justify-center">
+            {{ $employees->links() }}
+        </div>
     </div>
 </x-sidebar>
 </x-app-layout>

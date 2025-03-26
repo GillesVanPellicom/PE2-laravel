@@ -17,7 +17,7 @@ class EmployeeController extends Controller
             $query->whereHas('contracts', function ($subQuery) {
                 $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
             });
-        })->with(['employee', 'employee.contracts', 'employee.team'])->get();
+        })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(3);
         return view('employees.index', compact('employees'), ['teams' => Team::all()]);
     }
 
@@ -138,10 +138,8 @@ class EmployeeController extends Controller
 
     public function contracts()
     {
-        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->get();
-        $contracts = EmployeeContract::all();
+        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
         return view('employees.contracts', compact('contracts'));
-
     }
 
     public function updateEndTime(Request $request, $id)
@@ -210,7 +208,7 @@ class EmployeeController extends Controller
 
     public function teams()
     {
-        $teams = Team::all();
+        $teams = Team::paginate(3);
         return view('employees.teams', compact('teams'));
     }
 
@@ -247,7 +245,7 @@ class EmployeeController extends Controller
 
     public function functions()
     {
-        $functions = EmployeeFunction::all();
+        $functions = EmployeeFunction::paginate(3);
         return view('employees.functions', compact('functions'));
     }
 
