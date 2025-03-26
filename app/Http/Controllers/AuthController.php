@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
-use App\Models\User;
+use App\Models\{User, Employee, EmployeeContract};
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Country;
@@ -91,16 +91,40 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'password' => 'required',
         ]);
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route($route);
-        }
-
+    
+        $user = User::where('email', $credentials['email'])->first();
+        
+            if ($employee = Employee::where('user_id', $user->id)->first()) {
+                
+                $active_contract = EmployeeContract::where('employee_id', $employee->id)
+                    ->where(function ($query) {
+                        $query->where('end_date', '>', Carbon::now())
+                            ->orWhereNull('end_date');
+                    })
+                    ->first();
+    
+                if (!$active_contract) {
+                    return back()->withErrors([
+                        'email' => 'Your contract has ended.',
+                    ]);
+                } else {
+                    if (Auth::attempt($credentials)) {
+                        $request->session()->regenerate();
+                        return redirect()->route($route);
+                    }
+                }
+            } else {
+                if (Auth::attempt($credentials)) {
+                    $request->session()->regenerate();
+                    return redirect()->route($route);
+                }
+            }
+    
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ]);
     }
+    
 
     public function store(Request $request)
     {
