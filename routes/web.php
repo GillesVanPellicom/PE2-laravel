@@ -186,17 +186,6 @@ Route::get('/notifications', [NotificationController::class, 'fetchNotifications
 Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
 
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
-Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
-
-Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-
-Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
-
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-
-
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
     Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
     Route::get('/contracts', [EmployeeController::class, 'contracts'])->name('employees.contracts');
