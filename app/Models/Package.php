@@ -413,7 +413,7 @@ class Package extends Model
 
     /** @var Router $router */
     $router = App::make(Router::class);
-
+    $router->setDebug(true);
     $path = $router->getPath(
       $this->getAttribute('originLocation'),
       $this->getAttribute('destinationLocation')
