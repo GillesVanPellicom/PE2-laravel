@@ -145,10 +145,11 @@ class AuthController extends Controller
 
         $user = User::create($userData);
 
-        event(new Registered($user));
+         // event(new Registered($user));
+         // Email verification has been disabled for now
 
-        // Redirect to the email verification page
-        return redirect('verification.notice');
+        // Redirect to the login page
+        return redirect('login');
     }
 
     public function logout(Request $request)
