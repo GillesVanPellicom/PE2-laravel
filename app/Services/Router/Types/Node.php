@@ -2,6 +2,8 @@
 
 namespace App\Services\Router\Types;
 
+use App\Models\Location;
+use App\Models\RouterNodes;
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
@@ -10,20 +12,22 @@ use Carbon\Carbon;
 
 class Node {
 
-  // Local globals
+  // Router variables
   private string $ID;
   private NodeType $type;
-
   private string $desc;
-
   private float $latDeg;
   private float $longDeg;
   private float $latRad;
   private float $longRad;
-  private ?Carbon $arrivedAt = null;
-  private ?Carbon $departedAt = null;
   private bool $entryNode = false;
   private bool $exitNode = false;
+
+  // Metadata
+  private ?Carbon $arrivedAt = null;
+  private ?Carbon $departedAt = null;
+  private ?Carbon $checkedInAt = null;
+  private ?Carbon $checkedOutAt = null;
 
   /**
    * @param  string  $ID  ID of the Node
@@ -45,15 +49,19 @@ class Node {
     bool $isEntryNode = false,
     bool $isExitNode = false
   ) {
+
     if (empty($ID)) {
       throw new InvalidRouterArgumentException("Node ID cannot be empty.");
     }
+
     if (empty($description)) {
       throw new InvalidRouterArgumentException("Description cannot be empty.");
     }
+
     if ($latDeg < -90.0 || $latDeg > 90.0) {
       throw new InvalidCoordinateException("Node::__construct", "latitude", $latDeg);
     }
+
     if ($longDeg < -180.0 || $longDeg > 180.0) {
       throw new InvalidCoordinateException("Node::__construct", "latitude", $longDeg);
     }
@@ -67,6 +75,14 @@ class Node {
     $this->longRad = deg2rad($longDeg);
     $this->entryNode = $isEntryNode;
     $this->exitNode = $isExitNode;
+  }
+
+  public static function fromLocation(Location $loc){
+    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude);
+  }
+
+  public static function fromRouterNode(RouterNodes $node){
+    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg, $node->isEntry, $node->isExit);
   }
 
   /**
@@ -83,19 +99,6 @@ class Node {
     return $this->desc;
   }
 
-  /**
-   * @return Carbon|null Arrival time at the Node, null if not yet arrived
-   */
-  public function getArrivedAt(): ?Carbon {
-    return $this->arrivedAt;
-  }
-
-  /**
-   * @return Carbon|null Departure time from the Node, null if not yet departed
-   */
-  public function getDepartedAt(): ?Carbon {
-    return $this->departedAt;
-  }
 
   /**
    * @param  CoordType  $type  Format of coordinates. Either DEGREE or RADIAN
@@ -161,14 +164,56 @@ class Node {
     return $this->type;
   }
 
+
   /**
-   * @param  NodeType  $type  Type of the Node
-   * @return void
+   * @return Carbon|null Arrival time at the Node, null if not yet arrived
    */
-  public function setType(NodeType $type): void {
-    $this->type = $type;
+  public function getArrivedAt(): ?Carbon {
+    return $this->arrivedAt;
   }
 
+  /**
+   * @return Carbon|null Departure time from the Node, null if not yet departed
+   */
+  public function getDepartedAt(): ?Carbon {
+    return $this->departedAt;
+  }
+
+
+  /**
+   * @return Carbon|null Arrival time at the Node, null if not yet arrived
+   */
+  public function getCheckedInAt(): ?Carbon {
+    return $this->checkedInAt;
+  }
+
+  /**
+   * @return Carbon|null Departure time from the Node, null if not yet departed
+   */
+  public function getCheckedOutAt(): ?Carbon {
+    return $this->checkedOutAt;
+  }
+
+  // Setter for arrivedAt
+  public function setArrivedAt(?Carbon $arrivedAt): void {
+    $this->arrivedAt = $arrivedAt;
+  }
+
+// Setter for checkedInAt
+  public function setCheckedInAt(?Carbon $checkedInAt): void {
+    $this->checkedInAt = $checkedInAt;
+  }
+
+// Setter for checkedOutAt
+  public function setCheckedOutAt(?Carbon $checkedOutAt): void {
+    $this->checkedOutAt = $checkedOutAt;
+  }
+
+// Setter for departedAt
+  public function setDepartedAt(?Carbon $departedAt): void {
+    $this->departedAt = $departedAt;
+  }
+  
   /**
    * Prints the node details to the console
    *

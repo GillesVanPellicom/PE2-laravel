@@ -2,8 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\ConsoleHelper;
+use App\Models\Package;
 use App\Services\Router\Router;
 use App\Services\Router\Types\Node;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
 
@@ -20,25 +23,23 @@ class Tinker extends Command {
    *
    * @var string
    */
-  protected $description = 'My tinker command';
+  protected $description = 'Gilles\' tinker workspace';
 
   /**
    * Execute the console command.
    */
   public function handle(): void {
-    /** @var Router $router */
-    $router = App::make(Router::class);
-    $router->setDebug(false);
-
-//    $path = $router->generate(
-//      '7019 Forbes Ave, Lake Balboa, CA 91406, USA',
-//      'Kommerzienrat-Meindl-Straße 1, 84405 Dorfen, Germany');
-    $path = $router->generate(
-      '7019 Forbes Ave, Lake Balboa, CA 91406, USA',
-      '@PIP_0001');
-
-    Router::printPath($path);
-
-//    echo $path[0]->getDescription();
-  }
+    /** @var Package $package */
+    for ($i = 1; $i <= 101; $i++) {
+      $package = Package::find($i);
+      try {
+        $path = $package->getMovements();
+        for($j = 0; $j <= 16; $j++) {
+          $package->fakeMove();
+        }
+      } catch (Exception $e) {
+        ConsoleHelper::error($e->getMessage());
+      }
+    }
+}
 }
