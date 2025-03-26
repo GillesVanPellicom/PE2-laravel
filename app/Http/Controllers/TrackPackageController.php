@@ -47,6 +47,7 @@ class TrackPackageController extends Controller
         $package = Package::where('reference', $reference)
             ->firstOrFail();
 
-            $package->move(MoveOperationType::DELIVER);
+        [$status, $message] = $package->move(MoveOperationType::DELIVER);
+        return response()->json(["success" => $status, "message" => $message]);
     }
 }

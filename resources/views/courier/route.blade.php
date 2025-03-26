@@ -72,6 +72,7 @@
 
     <script>
         const route = @json($route);
+        const deliverRoute = "{{ route('courier.deliver', ['id' => ':id']) }}";
 
         document.addEventListener('DOMContentLoaded', function () {
             if (route.length === 0) return;
@@ -117,9 +118,11 @@
             document.querySelector('.deliver-btn')?.addEventListener('click', function () {
                 const packageRef = this.getAttribute('data-ref');
 
-                fetch(`/deliver/${packageRef}`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }})
+                const url = deliverRoute.replace(':id', packageRef);
+                fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }})
                     .then(response => response.json())
                     .then(data => {
+                        console.log(data.message);
                         if (data.success) {
                             location.reload(); 
                         }
