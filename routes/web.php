@@ -129,6 +129,10 @@ Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'
 
 Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
+
+Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
 
 
 

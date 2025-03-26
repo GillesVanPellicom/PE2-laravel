@@ -15,7 +15,7 @@ class VacationController extends Controller
     public function getPendingVacations()
     {
         $vacations = Vacation::where('approve_status', 'pending')
-            ->with(['employee.user']) // Ensure employee model has a `user()` relationship
+            ->with(['employee.user']) // Ensure employee model has a user() relationship
             ->get();
 
         $vacations->transform(function ($vacation) {
@@ -54,7 +54,15 @@ class VacationController extends Controller
     
         return response()->json($vacationData);
     }
-    
+
+    public function getVacations()
+{
+    $vacations = Vacation::where('employee_id', Auth::id())
+        ->select('start_date', 'end_date', 'vacation_type', 'approve_status')
+        ->get();
+
+    return response()->json($vacations);
+}
 
     public function showAllVacations()
     {
