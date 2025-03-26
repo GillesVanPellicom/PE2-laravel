@@ -39,8 +39,9 @@
                 <div class="mb-6">
                     <div class="relative">
                         <input type="text"
-                               placeholder="Search packages by tracking number or recipient..."
-                               class="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            id="packageSearch"
+                            placeholder="Search packages by tracking number or recipient..."
+                            class="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
@@ -68,6 +69,7 @@
                                         <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
                                             {{ ucfirst(str_replace('_', ' ', $package->status)) }}
                                         </span>
+                                        <span class="hidden">{{ $package->reference }}</span>
                                     </div>
                                 </div>
                                 <div class="space-y-3 flex-grow">
@@ -140,6 +142,7 @@
                                     <div class="flex flex-col items-end space-y-2">
                                         <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
                                             {{ ucfirst(str_replace('_', ' ', $package->status)) }}
+                                            <span class="hidden">{{ $package->reference }}</span>
                                         </span>
                                         <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
                                             Paid
@@ -214,6 +217,42 @@
                 activeTab.classList.remove('border-transparent', 'text-gray-500');
                 activeTab.classList.add('border-blue-500', 'text-blue-600');
             }
+
+            function searchPackages(searchTerm) {
+        const activeTab = document.querySelector('.tab-btn:not(.border-transparent)').classList.contains('receiving-tab') ? 'receiving' : 'sending';
+        const packageCards = document.querySelectorAll(`#${activeTab}-packages .grid > div:not(.col-span-3)`);
+        let hasVisiblePackages = false;
+
+        const existingMessage = document.querySelector(`#${activeTab}-packages .col-span-3`);
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        packageCards.forEach(card => {
+            const searchableContent = card.textContent.toLowerCase();
+            const matches = searchableContent.includes(searchTerm.toLowerCase());
+            
+            card.style.display = matches ? '' : 'none';
+            if (matches) hasVisiblePackages = true;
+        });
+
+        if (!hasVisiblePackages && searchTerm.length > 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'col-span-3 text-center py-8';
+            noResults.innerHTML = '<p class="text-gray-500 text-lg">No packages found</p>';
+            document.querySelector(`#${activeTab}-packages .grid`).appendChild(noResults);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('packageSearch');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                searchPackages(e.target.value);
+            });
+        }
+    });
         </script>
     
 </x-app-layout>
