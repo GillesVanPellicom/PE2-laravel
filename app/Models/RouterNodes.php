@@ -17,6 +17,7 @@ class RouterNodes extends Model {
 
   protected $fillable = [
     'id',
+    'city_id',
     'description',
     'location_type',
     'latDeg',
@@ -31,5 +32,10 @@ class RouterNodes extends Model {
 
   public function destinationEdges() {
     return $this->hasMany(RouterEdges::class, 'destination_node');
+  }
+
+  public function getDescription(): string
+  {
+      return $this->description ?? 'No description available';
   }
 }

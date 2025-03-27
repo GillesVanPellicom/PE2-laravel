@@ -19,21 +19,52 @@ class RolesAndPermissionsSeeder extends Seeder
     // ╚════════════════════════════════════════╝
 
     private array $permissions = [
+        'employee',
         'scan',
         "courier.route",
         "scan.deliver",
+
+        /* START Employees */
         "courier.packages",
+        "HR.checkall",
+        "HR.create",
+        "HR.assign",
+        /* END Employees */
     ];
 
 
     private array $roles = [
+        /* ADMIN */
+        "admin" => ["*"],
+        /* ADMIN */
+
+        /* START Courier */
+        "employee" => ["employee"],
         "scan" => ["scan"],
         "courier" => ["courier.route", "scan.deliver", "courier.packages"],
+        /* END Courier */
+
+        /* START Employees */
+        "HRManager" => ["HR.create", "HR.assign"],
+        "HR" => ["HR.checkall"],
+        /* END Employees */
     ];
 
 
     private array $roleInheritance = [
-        "scan" => "courier"
+        /* START BASE */
+        "employee" => ["scan", "HR"],
+        /* END BASE */
+
+        /* START Courier */
+        "scan" => ["courier"],
+        /* END Courier */
+
+        /* START Employees */
+        "HR" => ["HRManager"],
+        /* END Employees */
+
+
     ];
 
 
@@ -92,12 +123,13 @@ class RolesAndPermissionsSeeder extends Seeder
 
                 // Apply inheritance
                 ConsoleHelper::task('Applying role inheritance', function () {
-                    foreach ($this->roleInheritance as $parentRole => $childRole) {
-                        $childRoleInstance = Role::findByName($childRole);
+                    foreach ($this->roleInheritance as $parentRole => $childRoles) {
                         $parentRoleInstance = Role::findByName($parentRole);
-
-                        $parentPermissions = $parentRoleInstance->permissions()->pluck('name')->toArray();
-                        $childRoleInstance->givePermissionTo($parentPermissions);
+                        foreach ($childRoles as $childRole) {
+                            $childRoleInstance = Role::findByName($childRole);
+                            $parentPermissions = $parentRoleInstance->permissions()->pluck('name')->toArray();
+                            $childRoleInstance->givePermissionTo($parentPermissions);
+                        }
                     }
                 });
 
