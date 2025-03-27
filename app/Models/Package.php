@@ -129,6 +129,10 @@ class Package extends Model {
     return $this->belongsTo(Location::class, 'current_location_id');
   }
 
+  public function currentNode() {
+    return Node::fromId($this->current_location_id);
+  }
+
 
   /**
    * Get the movements of the package.
@@ -189,7 +193,7 @@ class Package extends Model {
     }
 
     // Get the node for the next movement's current_node_id
-    $node = $this->getNodeFromId($nextMovement->current_node_id);
+    $node = Node::fromId($nextMovement->current_node_id);
     if (!$node) {
       throw new Exception('No next movement found.');
     }
@@ -313,7 +317,7 @@ class Package extends Model {
     }
 
     // Get the node for the current location ID
-    $node = $this->getNodeFromId($this->current_location_id);
+    $node = Node::fromId($this->current_location_id);
     if (!$node) {
       return null;
     }
@@ -575,7 +579,7 @@ class Package extends Model {
 
     // Convert each movement to a Node object
     foreach ($movements as $movement) {
-      $node = $this->getNodeFromId($movement->current_node_id);
+      $node = Node::fromId($movement->current_node_id);
       if ($node) {
         $nodes[] = $this->initializeNode($node, $movement);
       }
@@ -583,48 +587,6 @@ class Package extends Model {
 
     return $nodes;
   }
-
-
-  /**
-   * Get a Node object from a given ID.
-   *
-   * This method checks both RouterNodes and Location models to find the node.
-   *
-   * @param  string  $id  The ID of the node.
-   * @return Node|null The Node object or null if not found.
-   * @throws InvalidRouterArgumentException If the node ID is empty
-   * @throws InvalidCoordinateException If the node ID is empty
-   */
-  private function getNodeFromId(string $id): ?Node {
-    // Try to find the node in either RouterNodes or Location
-    $nodeData = RouterNodes::find($id) ?? Location::find($id);
-
-    $a = null;
-
-    if ($nodeData instanceOf RouterNodes) {
-      $a = $nodeData->address_id;
-    } else {
-      $a = $nodeData->addresses_id;
-    }
-
-    // If a node is found, create a Node object
-    if ($nodeData) {
-      return new Node(
-        $nodeData->id,
-        $nodeData->description,
-        $nodeData->location_type,
-        $nodeData->latDeg ?? $nodeData->latitude,
-        $nodeData->lonDeg ?? $nodeData->longitude,
-        $a,
-        isset($nodeData->isEntry) ? $nodeData->isEntry : false,
-        isset($nodeData->isExit) ? $nodeData->isExit : false
-      );
-    }
-
-    // Return null if no node is found
-    return null;
-  }
-
 
   /**
    * Initialize a Node object with movement timestamps.
