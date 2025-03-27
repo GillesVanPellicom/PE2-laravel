@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\flight;
+use App\Models\Flight;
 use Carbon\Carbon;
 
 class Flightscontroller extends Controller
@@ -50,5 +50,11 @@ class Flightscontroller extends Controller
         flight::create($data);
 
         return redirect(route('airport.flights'));
+    }
+
+    public function flightPackages()
+    {
+        $flights = Flight::with(['departureAirport', 'arrivalAirport', 'arrivalLocation.packages', 'departureLocation.packages'])->get();
+        return view('airport.flightpackages', compact('flights'));
     }
 }
