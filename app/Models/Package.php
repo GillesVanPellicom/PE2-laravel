@@ -94,6 +94,11 @@ class Package extends Model
   {
     return $this->hasMany(PackageMovement::class, 'package_id');
   }
+  
+  public function flight()
+  {
+      return $this->belongsTo(Flight::class, 'flight_id');
+  }
 
 
   /**

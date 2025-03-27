@@ -32,4 +32,14 @@ class Flight extends Model
     {
         return $this->hasOne(Airport::class, 'location_id', 'arrive_location_id');
     }
+
+    public function departureLocation()
+    {
+        return $this->belongsTo(Location::class, 'depart_location_id', 'id');
+    }
+
+    public function arrivalLocation()
+    {
+        return $this->belongsTo(Location::class, 'arrive_location_id', 'id');
+    }
 }
