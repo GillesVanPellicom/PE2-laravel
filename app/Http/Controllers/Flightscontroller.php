@@ -54,11 +54,7 @@ class Flightscontroller extends Controller
 
     public function flightPackages()
     {
-        $flights = Flight::with([
-            'departureLocation.packages',
-            'arrivalLocation.packages'
-        ])->get();
-    
+        $flights = Flight::with(['departureAirport', 'arrivalAirport', 'arrivalLocation.packages', 'departureLocation.packages'])->get();
         return view('airport.flightpackages', compact('flights'));
     }
 }

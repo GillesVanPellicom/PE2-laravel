@@ -23,6 +23,7 @@ class Flight extends Model
         'isActive',
         'status'
     ];
+
     public function departureAirport()
     {
         return $this->hasOne(Airport::class, 'location_id', 'depart_location_id');
