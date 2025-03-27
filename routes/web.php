@@ -220,9 +220,12 @@ Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('f
 
 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
+Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+
 Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
 
 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
+Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
 
 // ======================= End Airport ====================== //
 
