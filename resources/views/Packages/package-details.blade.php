@@ -37,6 +37,7 @@
                                 </div>
 
                                 <!-- Package Label Section -->
+                                @if(Auth::user()->id === $package->user_id)
                                 <div class="bg-white rounded-lg border border-gray-200 p-6">
                                     <div class="flex flex-col h-full">
                                         <div class="flex-grow">
@@ -58,6 +59,7 @@
                                         </div>
                                     </div>
                                 </div>
+                            @endif
                             </div>
                         </div>
                     </div>
@@ -248,11 +250,16 @@
                                         </div>
                                         <div class="ml-4">
                                             <p class="text-sm font-medium text-gray-500">Expected Delivery</p>
-                                            <p class="text-gray-800 font-semibold">March 21, 2025</p>
+                                            <p class="text-gray-800 font-semibold">
+                                                {{ Carbon\Carbon::parse($package->delivery_estimate['estimated_date'])->format('F j, Y') }}
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="ml-14">
-                                        <p class="text-sm text-gray-500">Between 14:00 - 16:00</p>
+                                        <p class="text-sm text-gray-500">
+                                            Between {{ Carbon\Carbon::parse($package->delivery_estimate['delivery_window']['start'])->format('H:i') }} - 
+                                            {{ Carbon\Carbon::parse($package->delivery_estimate['delivery_window']['end'])->format('H:i') }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -262,7 +269,7 @@
                                 <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-md filter blur opacity-75 group-hover:opacity-100 transition-opacity duration-200"></div>
                                 <div class="relative bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-4 px-8 rounded-md flex items-center justify-center space-x-3 hover:from-purple-600 hover:to-indigo-600 transition-all duration-200">
                                     <i class="fas fa-map-marked-alt text-xl"></i>
-                                    <span class="font-semibold text-lg">Track & Trace Package</span>
+                                    <a href="{{ route('track.package', $package->reference) }}" class="font-semibold text-lg">Track & Trace Package</a>
                                     <i class="fas fa-arrow-right"></i>
                                 </div>
                             </button>

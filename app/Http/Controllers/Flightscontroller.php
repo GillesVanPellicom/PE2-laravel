@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\flight;
+use App\Models\Flight;
 use Carbon\Carbon;
 
 class Flightscontroller extends Controller
@@ -13,33 +13,22 @@ class Flightscontroller extends Controller
         $today = Carbon::now()->format('l'); 
 
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])
-            ->where('departure_day_of_week', $today)
+            ->where('departure_day_of_week', "Friday")
             ->get();
 
         foreach ($flights as $flight) {
-            $random = mt_rand(1, 100); 
-
-            if ($random <= 80) {
-                $flight->status = 'On Time';
-            } elseif ($random <= 95) {
-                $randomDelay = mt_rand(1, 120);
-
-                $flight->departure_time = Carbon::parse($flight->departure_time)->addMinutes($randomDelay)->format('H:i');
-                $flight->status = 'Delayed';
-                $flight->delay_minutes = $randomDelay;
-            } else {
-                $flight->status = 'Canceled';
-                $flight->departure_time = null;
-                $flight->arrival_time = null;
-                continue;
-            }
-    
             $departureTime = Carbon::parse($flight->departure_time);
+            if($flight->status == 'Delayed'){
+                $departureTime->addMinutes($flight->delayed_minutes);
+            }
             $flightDuration = $flight->time_flight_minutes;
 
             $arrivalTime = $departureTime->addMinutes($flightDuration);
 
             $flight->arrival_time = $arrivalTime;
+            if($flight->status == 'Canceled'){
+                $flight->arrival_time = "/";
+            }
         }
 
         return view('airport.flights', ['flights' => $flights]);
@@ -74,29 +63,32 @@ class Flightscontroller extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $flight = Flight::findOrFail($id);
-
         $data = $request->validate([
-            'status' => 'required|in:Scheduled,Delayed,Cancelled',
-            'delay_minutes' => 'nullable|integer|min:1'
+            'status' => 'required|in:On time,Delayed,Canceled',
+            'delayed_minutes' => 'nullable|integer|min:1'
         ]);
 
-        $flight->status = $data['status'];
+        $flight = Flight::findOrFail($id);
 
-        if ($data['status'] === 'Delayed' && isset($data['delay_minutes'])) {
-            $flight->delay_minutes = $data['delay_minutes'];
-            $flight->departure_time = Carbon::parse($flight->departure_time)->addMinutes($data['delay_minutes']);
+        if ($data['status'] === 'Delayed') {
+            $flight->status = 'Delayed';
+            $flight->delayed_minutes = (int) ($data['delayed_minutes'] ?? 0);
+        } elseif ($data['status'] === 'Canceled') {
+            $flight->status = 'Canceled';
+            $flight->delayed_minutes = null;
         } else {
-            $flight->delay_minutes = null;
-        }
-
-        if ($data['status'] === 'Cancelled') {
-            $flight->departure_time = null;
-            $flight->arrival_time = null;
+            $flight->status = 'On time';
+            $flight->delayed_minutes = null;
         }
 
         $flight->save();
 
         return redirect()->back()->with('success', 'Flight status updated successfully.');
+    }
+
+    public function flightPackages()
+    {
+        $flights = Flight::with(['departureAirport', 'arrivalAirport', 'arrivalLocation.packages', 'departureLocation.packages'])->get();
+        return view('airport.flightpackages', compact('flights'));
     }
 }

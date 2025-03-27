@@ -9,22 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('message_templates', function (Blueprint $table) {
             $table->id();
-            $table->float('leave_balance')->default(0);
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('team_id')->constrained('teams');
+            $table->string('key')->unique(); // Unique key like 'holiday_approved'
+            $table->text('message'); // The actual message text
             $table->timestamps();
         });
     }
+    
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('message_templates');
     }
 };

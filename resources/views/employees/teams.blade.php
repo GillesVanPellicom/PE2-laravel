@@ -52,6 +52,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-6 flex justify-center">
+            {{ $teams->links() }}
+        </div>
     </div>
 </x-sidebar>
 </x-app-layout>

@@ -9,6 +9,8 @@
                     <th>Flight Number</th>
                     <th>Airline</th>
                     <th>Actions</th>
+                    <th>From</th>
+                    <th>To</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,12 +26,12 @@
                                 <select name="status" id="status_{{ $flight->id }}" onchange="toggleDelayInput(this.value, {{ $flight->id }})">
                                     <option value="On time" {{ $flight->status == 'On time' ? 'selected' : '' }}>On time</option>
                                     <option value="Delayed" {{ $flight->status == 'Delayed' ? 'selected' : '' }}>Delayed</option>
-                                    <option value="Cancelled" {{ $flight->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    <option value="Canceled" {{ $flight->status == 'Canceled' ? 'selected' : '' }}>Canceled</option>
                                 </select>
 
                                 <div id="delayInput_{{ $flight->id }}" style="display: {{ $flight->status == 'Delayed' ? 'block' : 'none' }};">
                                     <label for="delay_minutes_{{ $flight->id }}">Delay (minutes):</label>
-                                    <input type="number" name="delay_minutes" id="delay_minutes_{{ $flight->id }}" value="{{ $flight->delay_minutes }}">
+                                    <input type="number" name="delayed_minutes" id="delayed_minutes_{{ $flight->id }}" value="{{ $flight->delayed_minutes }}" inputmode="numeric" pattern="\d*">
                                 </div>
 
                                 <button type="submit">Update Status</button>
@@ -44,7 +46,7 @@
     <script>
         function toggleDelayInput(status, id) {
             const delayInput = document.getElementById(`delayInput_${id}`);
-            const delayMinutes = document.getElementById(`delay_minutes_${id}`);
+            const delayMinutes = document.getElementById(`delayed_minutes_${id}`);
             if (status === 'Delayed') {
                 delayInput.style.display = 'block';
                 delayMinutes.required = true;
