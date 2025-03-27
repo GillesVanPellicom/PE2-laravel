@@ -2,6 +2,7 @@
 
 namespace App\Services\Router\Types;
 
+use App\Models\Address;
 use App\Models\Location;
 use App\Models\RouterNodes;
 use App\Services\Router\GeoMath;
@@ -28,6 +29,7 @@ class Node {
   private ?Carbon $departedAt = null;
   private ?Carbon $checkedInAt = null;
   private ?Carbon $checkedOutAt = null;
+  private Address $address;
 
   /**
    * @param  string  $ID  ID of the Node
@@ -46,8 +48,9 @@ class Node {
     NodeType $type,
     float $latDeg,
     float $longDeg,
+    int $address_id,
     bool $isEntryNode = false,
-    bool $isExitNode = false
+    bool $isExitNode = false,
   ) {
 
     if (empty($ID)) {
@@ -66,6 +69,11 @@ class Node {
       throw new InvalidCoordinateException("Node::__construct", "latitude", $longDeg);
     }
 
+    $a = Address::find($address_id);
+    if (!$a) {
+      throw new InvalidRouterArgumentException("Address (ID: {$address_id}) not found.");
+    }
+
     $this->ID = $ID;
     $this->desc = $description;
     $this->type = $type;
@@ -73,10 +81,15 @@ class Node {
     $this->longDeg = $longDeg;
     $this->latRad = deg2rad($latDeg);
     $this->longRad = deg2rad($longDeg);
+    $this->address = $a;
     $this->entryNode = $isEntryNode;
     $this->exitNode = $isExitNode;
   }
 
+  /**
+   * @throws InvalidRouterArgumentException
+   * @throws InvalidCoordinateException
+   */
   public static function fromLocation(Location $loc){
     return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude);
   }
@@ -104,7 +117,7 @@ class Node {
    * @param  CoordType  $type  Format of coordinates. Either DEGREE or RADIAN
    * @return float Latitude of the Node
    */
-  public function getLat(CoordType $type): float {
+  public function getLat(CoordType $type = CoordType::DEGREE): float {
     if ($type === CoordType::DEGREE) {
       return $this->latDeg;
     } else {
@@ -116,7 +129,7 @@ class Node {
    * @param  CoordType  $type  Format of coordinates. Either DEGREE or RADIAN
    * @return float Latitude of the Node
    */
-  public function getLong(CoordType $type): float {
+  public function getLong(CoordType $type = CoordType::DEGREE): float {
     if ($type === CoordType::DEGREE) {
       return $this->longDeg;
     } else {
@@ -212,6 +225,10 @@ class Node {
 // Setter for departedAt
   public function setDepartedAt(?Carbon $departedAt): void {
     $this->departedAt = $departedAt;
+  }
+
+  public function getAddress(): Address {
+    return $this->address;
   }
   
   /**

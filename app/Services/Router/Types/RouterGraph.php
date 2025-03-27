@@ -2,6 +2,7 @@
 
 namespace App\Services\Router\Types;
 
+use App\Models\Address;
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
@@ -31,6 +32,7 @@ class RouterGraph {
     NodeType $type,
     float $latDeg,
     float $lonDeg,
+    int $addressId,
     bool $isEntryNode = false,
     bool $isExitNode = false,
     ?Carbon $arrivedAt = null,
@@ -46,6 +48,7 @@ class RouterGraph {
       $lonDeg,
       $isEntryNode,
       $isExitNode,
+      $addressId
     );
 
     $node->setArrivedAt($arrivedAt ? new Carbon($arrivedAt) : null);
@@ -103,7 +106,8 @@ class RouterGraph {
     }
 
     // Create a new node
-    $node = new Node($ID, $description, $nodeType, $latDeg, $longDeg, $isEntryNode, $isExitNode);
+    // Address id is set to 1 sicne the router doesn't need the metadata
+    $node = new Node($ID, $description, $nodeType, $latDeg, $longDeg, 1, $isEntryNode, $isExitNode);
 
     // Add the node to the graph if it doesn't already exist
     $nodeID = $node->getID();

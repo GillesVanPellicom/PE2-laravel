@@ -61,6 +61,7 @@ namespace App\Services\Router {
         $origin->getAttribute('location_type'),
         $origin->getAttribute('latitude'),
         $origin->getAttribute('longitude'),
+        $origin->getAttribute('addresses_id')
       );
 
       $dN = new Node(
@@ -68,9 +69,10 @@ namespace App\Services\Router {
           ? $destination->getAttribute('id')
           : $destination->getAttribute('infrastructure_id'),
         $destination->getAttribute('description'),
-        $origin->getAttribute('location_type'),
+        $destination->getAttribute('location_type'),
         $destination->getAttribute('latitude'),
         $destination->getAttribute('longitude'),
+        $destination->getAttribute('addresses_id'),
       );
 
       $oN->setArrivedAt(now());

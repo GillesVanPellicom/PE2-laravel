@@ -599,6 +599,14 @@ class Package extends Model {
     // Try to find the node in either RouterNodes or Location
     $nodeData = RouterNodes::find($id) ?? Location::find($id);
 
+    $a = null;
+
+    if ($nodeData instanceOf RouterNodes) {
+      $a = $nodeData->address_id;
+    } else {
+      $a = $nodeData->addresses_id;
+    }
+
     // If a node is found, create a Node object
     if ($nodeData) {
       return new Node(
@@ -607,6 +615,7 @@ class Package extends Model {
         $nodeData->location_type,
         $nodeData->latDeg ?? $nodeData->latitude,
         $nodeData->lonDeg ?? $nodeData->longitude,
+        $a,
         isset($nodeData->isEntry) ? $nodeData->isEntry : false,
         isset($nodeData->isExit) ? $nodeData->isExit : false
       );

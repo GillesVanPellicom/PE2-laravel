@@ -34,7 +34,7 @@ class Tinker extends Command {
     /** @var Package $package */
     $package = Package::find(2);
     $path = $package->getMovements();
-    dd($package->move(MoveOperationType::DELIVER));
+    dd($path);
 
   }
 }

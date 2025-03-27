@@ -21,7 +21,8 @@ yarn-error.log
 node_modules/
 .DS_Store
 vendor/*
-vendor/composer/
+vendor/composer
+vendor/composer/installed.php
 !vendor/bin/
 !vendor/laravel/
 !vendor/symfony/
