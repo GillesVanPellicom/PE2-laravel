@@ -1,259 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Manager Calendar</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+<x-app-layout>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-</head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <div class="flex gap-6">
+    <!-- Sidebar (Smaller) -->
+    <div class="w-1/5 bg-white p-6 shadow-lg rounded-lg space-y-6">
+        <h2 class="text-xl font-semibold text-gray-800">Available Employees</h2>
+        <div id="employeeList" class="p-4 bg-gray-100 rounded-md shadow-sm"></div>
 
-    <style>
-        /* General Page Styling */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    background-color: #f4f4f4;
-}
+        <h2 class="text-xl font-semibold text-gray-800">Sick Employees</h2>
+        <div id="sickEmployeeList" class="p-4 bg-red-100 rounded-md shadow-sm"></div>
 
-/* Sidebar Styling */
-.sidebar {
-    width: 250px;
-    background-color: #2c3e50;
-    color: white;
-    padding: 20px;
-    height: 100vh;
-    overflow-y: auto;
-}
+        <h2 class="text-xl font-semibold text-gray-800">Holiday Requests</h2>
+        <div id="holidayEmployeeList" class="p-4 bg-yellow-100 rounded-md shadow-sm"></div>
 
-.sidebar h2 {
-    font-size: 18px;
-    border-bottom: 2px solid #34495e;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
-}
-
-.employee, .sick-employee, .training-session {
-    background: #34495e;
-    padding: 8px;
-    margin: 5px 0;
-    border-radius: 5px;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.employee:hover {
-    background: #1abc9c;
-}
-
-/* Main Content */
-.calendar-container {
-    flex: 1;
-    padding: 20px;
-    background: white;
-}
-
-h1 {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-/* Calendar Styling */
-#calendar {
-    max-width: 900px;
-    margin: 20px auto;
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Button Styling */
-button {
-    background: #1abc9c;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    margin-top: 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: 0.3s;
-}
-
-button:hover {
-    background: #16a085;
-}
-
-/* Notification Bell */
-.notification-container {
-    position: relative;
-    display: inline-block;
-}
-
-.notification-bell {
-    font-size: 24px;
-    cursor: pointer;
-    position: relative;
-}
-
-.notification-badge {
-    background: red;
-    color: white;
-    font-size: 12px;
-    padding: 5px 8px;
-    border-radius: 50%;
-    position: absolute;
-    top: 0;
-    right: -10px;
-    display: inline-block;
-}
-
-/* Notification Dropdown */
-.notification-dropdown {
-    display: none;
-    position: absolute;
-    right: 0;
-    background: white;
-    width: 250px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    padding: 10px;
-    z-index: 100;
-}
-
-.notification-dropdown p {
-    font-size: 14px;
-    margin: 5px 0;
-}
-
-/* Approve/Reject Buttons */
-.btn.approve {
-    background: #27ae60;
-}
-
-.btn.reject {
-    background: #e74c3c;
-}
-
-.btn.approve:hover {
-    background: #219150;
-}
-
-.btn.reject:hover {
-    background: #c0392b;
-}
-
-/* Clear Storage Button */
-.clear-btn {
-    background: #e67e22;
-    margin-top: 20px;
-}
-
-.clear-btn:hover {
-    background: #d35400;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    body {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        height: auto;
-        text-align: center;
-    }
-
-    .calendar-container {
-        padding: 10px;
-    }
-
-    #calendar {
-        width: 100%;
-    }
-}
-
-</style>
-<body>
-
-    <div class="sidebar">
-        <h2>Employee Status</h2>
-        <div id="employeeList"></div>
-        <h2>Sick Employees</h2>
-        <div id="sickEmployeeList"></div>
-        <h2>Training Sessions</h2>
-        <div id="trainingList"></div>
-        <button onclick="addTrainingSession()">Add Training</button>
+        <h2 class="text-xl font-semibold text-gray-800">Training Sessions</h2>
+        <div id="trainingList" class="p-4 bg-blue-100 rounded-md shadow-sm"></div>
         
+        <button onclick="addTrainingSession()" class="w-full bg-blue-500 text-white py-2 rounded-md shadow-md hover:bg-blue-600 transition duration-200 ease-in-out">Add Training</button>
     </div>
 
-    
-
-    <div class="calendar-container">
-        <h1>Manager Calendar</h1>
-        
-        <!-- Notifications for Holiday Requests -->
-        <div class="notification-container">
-            <span class="notification-bell" onclick="toggleNotifications()">🔔</span>
-            <span class="notification-badge" id="notificationBadge">0</span>
-            <div class="notification-dropdown" id="notificationDropdown"></div>
+    <!-- Calendar Section (Centered) -->
+    <div class="w-3/5 bg-white p-8 shadow-lg rounded-lg space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Manager Calendar</h1>
+            
+            <!-- Notifications (Moved 20px to the Right) -->
+            <div class="relative ml-auto">
+                <span class="text-2xl cursor-pointer text-gray-800" onclick="toggleNotifications()">🔔</span>
+                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2" id="notificationBadge">0</span>
+                <div class="absolute left-10 mt-2 w-64 bg-white shadow-lg p-4 rounded-md hidden" id="notificationDropdown"></div>
+            </div>
         </div>
 
-        <button onclick="clearStorage()">Clear All Data</button>
-        <div id="calendar"></div>
+        <button onclick="clearStorage()" class="w-full bg-red-500 text-white py-2 rounded-md shadow-md hover:bg-red-600 transition duration-200 ease-in-out">Clear All Data</button>
+
+        <div id="calendar" class="mt-4"></div>
     </div>
-    <a href="calendar" class="btn">View Calendar</a>
+</div>
+
+<div class="mt-6 text-center">
+    <a href="employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
+</div>
+
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         let employees = @json($employees);
         let sickEmployees = JSON.parse(localStorage.getItem('sickEmployees')) || [];
         let trainingSessions = JSON.parse(localStorage.getItem('trainingSessions')) || [];
+        let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
 
         let employeeList = document.getElementById("employeeList");
+
+        // Display Employees
         employees.forEach(emp => {
             let div = document.createElement("div");
             div.className = "employee";
-            
-            // Correctly reference first_name and last_name inside user
             div.innerText = `${emp.user.first_name} ${emp.user.last_name}`;
-            
             div.onclick = function() { markSick(emp.user.first_name); };
             employeeList.appendChild(div);
         });
 
         updateSickEmployees();
         updateTrainingSessions();
+        initializeCalendar(approvedHolidays, trainingSessions);
+        fetchHolidayRequests();
+    });
 
-        let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
+    function initializeCalendar(holidays, trainings) {
         let events = [];
 
-        approvedHolidays.forEach(holiday => {
+        holidays.forEach(holiday => {
             Object.entries(holiday.holidays).forEach(([date, period]) => {
-                let startTime, endTime;
-
-                if (period === "AM") {
-                    startTime = `${date}T08:00:00`;
-                    endTime = `${date}T12:00:00`;
-                } else if (period === "PM") {
-                    startTime = `${date}T13:00:00`;
-                    endTime = `${date}T17:00:00`;
-                } else {
-                    startTime = date;
-                    endTime = date;
-                }
-
                 events.push({
-                    title: `${holiday.name}'s Holiday (${period})`,
-                    start: startTime,
-                    end: endTime,
-                    allDay: period === "Full Day",
+                    title: `${holiday.name}'s Holiday (${holiday.day_type})`, // Include day_type in the title
+                    start: date,
+                    allDay: true,
                     backgroundColor: '#ff7f7f',
                     borderColor: '#ff4f4f',
                     textColor: 'white'
@@ -261,7 +85,7 @@ button:hover {
             });
         });
 
-        trainingSessions.forEach(session => {
+        trainings.forEach(session => {
             events.push({
                 title: `Training: ${session.topic}`,
                 start: session.date,
@@ -283,12 +107,14 @@ button:hover {
                 right: 'timeGridWeek,timeGridDay'
             },
             editable: false,
-            droppable: false
+            droppable: false,
+            dateClick: function(info) {
+                updateSidebar(info.dateStr);
+            }
         });
 
         calendar.render();
-        fetchHolidayRequests();
-    });
+    }
 
     function markSick(employeeName) {
         let sickEmployees = JSON.parse(localStorage.getItem('sickEmployees')) || [];
@@ -298,14 +124,105 @@ button:hover {
             updateSickEmployees();
         }
     }
-    
 
+    function updateAvailableEmployees(holidays) {
+    let employeeList = document.getElementById("employeeList");
+    employeeList.innerHTML = ""; // Clear list
+
+    let employees = @json($employees); // Original list of all employees
+
+    // ✅ Get employees who are on holiday
+    let holidayEmployeeNames = holidays.map(h => h.name);
+
+    employees.forEach(emp => {
+        let fullName = `${emp.user.first_name} ${emp.user.last_name}`;
+        
+        // ✅ Only add employee if NOT on holiday
+        if (!holidayEmployeeNames.includes(fullName)) {
+            let div = document.createElement("div");
+            div.className = "employee";
+            div.innerText = fullName;
+            div.onclick = function () { markSick(fullName); };
+            employeeList.appendChild(div);
+        }
+    });
+}
+
+
+    function updateSidebar(date) {
+    console.log("Clicked date:", date); // Debugging log
+
+    let formattedDate = formatDateForComparison(date); // Format the date as "YYYY-MM-DD"
+
+    // Fetch Approved Holidays from Backend
+    fetch('/approved-vacations')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched approved holidays:", data); // Debugging log
+
+            // Find employees who have vacations on the selected date
+            let holidayEmployees = data.filter(holiday => 
+                formattedDate >= holiday.start_date && formattedDate <= holiday.end_date
+            );
+
+            console.log("Employees on holiday:", holidayEmployees); // Debugging log
+
+            // Display employees on holiday in the sidebar
+            displayHolidays(formattedDate, holidayEmployees);
+
+            // Update available employees list
+            updateAvailableEmployees(holidayEmployees);
+        })
+        .catch(error => console.error("Error fetching approved vacations:", error));
+}
+
+
+// Function to Display Holidays in the Sidebar
+function displayHolidays(formattedDate, holidayEmployees) {
+    let holidayEmployeeList = document.getElementById("holidayEmployeeList");
+    
+    // Clear the list first to prevent duplicates
+    holidayEmployeeList.innerHTML = "";  
+
+    if (holidayEmployees.length > 0) {
+        let header = document.createElement("h3");
+        header.innerText = `Employees on Holiday (${formattedDate})`;
+        holidayEmployeeList.appendChild(header);
+
+        holidayEmployees.forEach(holiday => {
+            let div = document.createElement("div");
+            div.className = "holiday-employee";
+            div.innerText = `${holiday.name} (${holiday.day_type || 'N/A'})`; // Include day_type in the display
+            holidayEmployeeList.appendChild(div);
+        });
+    } else {
+        let noHoliday = document.createElement("p");
+        noHoliday.innerText = "No employees on holiday this day.";
+        holidayEmployeeList.appendChild(noHoliday);
+    }
+}
+
+
+// Format date for backend comparison ("YYYY-MM-DD")
+function formatDateForComparison(date) {
+    return new Date(date).toISOString().split('T')[0]; 
+}
+
+
+
+
+// Helper function to format date cleanly
+function formatDate(dateString) {
+    let date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
 
 
     function updateSickEmployees() {
         let sickEmployeeList = document.getElementById("sickEmployeeList");
         sickEmployeeList.innerHTML = "";
         let sickEmployees = JSON.parse(localStorage.getItem('sickEmployees')) || [];
+
         sickEmployees.forEach(emp => {
             let div = document.createElement("div");
             div.className = "sick-employee";
@@ -322,7 +239,6 @@ button:hover {
             trainingSessions.push({ topic, date });
             localStorage.setItem('trainingSessions', JSON.stringify(trainingSessions));
             updateTrainingSessions();
-            location.reload();
         }
     }
 
@@ -330,10 +246,11 @@ button:hover {
         let trainingList = document.getElementById("trainingList");
         trainingList.innerHTML = "";
         let trainingSessions = JSON.parse(localStorage.getItem('trainingSessions')) || [];
+
         trainingSessions.forEach(session => {
             let div = document.createElement("div");
             div.className = "training-session";
-            div.innerText = `${session.topic} on ${session.date}`;
+            div.innerText = `${session.topic} on ${formatDate(session.date)}`;
             trainingList.appendChild(div);
         });
     }
@@ -344,80 +261,81 @@ button:hover {
         location.reload();
     }
 
-    function approveVacation(vacationId) 
-    {
+    function approveVacation(vacationId) {
         sendVacationUpdate(vacationId, "approved");
-        
     }
 
-    function denyVacation(vacationId) {
-        sendVacationUpdate(vacationId, "denied");
+    function denyVacation(vacationId, dayType) {
+        sendVacationUpdate(vacationId, "rejected", dayType);
     }
 
-function sendVacationUpdate(vacationId, status) {
-    console.log("Request ID:", vacationId);
-    console.log("state: ", status);
-    console.log($('meta[name="csrf-token"]').attr('content'));
+    function sendVacationUpdate(vacationId, status, dayType = null) {
         $.ajax({
-        url: "/vacations/" + vacationId + "/update-status",
-        type: "POST",
-        data: {
-            status: status
-        },
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            console.log("Vacation updated:", response);
-        },
-        error: function(xhr, status, error) {
-            console.error("Failed to update vacation", xhr.responseText);
-        }
-});
+            url: `/vacations/${vacationId}/update-status`,
+            type: "POST",
+            data: { status: status, day_type: dayType },
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function(response) {
+                console.log("Vacation updated:", response);
+            },
+            error: function(xhr) {
+                console.error("Failed to update vacation", xhr.responseText);
+            }
+        });
+    }
 
-}
+    async function fetchApprovedVacations(date) {
+        try {
+            let response = await fetch('/approved-vacations');
+            let vacations = await response.json();
+
+            // Filter only the vacations that match the selected date
+            let filteredVacations = vacations.filter(vacation => {
+                return date >= vacation.start_date && date <= vacation.end_date;
+            });
+
+            return filteredVacations;
+        } catch (error) {
+            console.error("Error fetching approved vacations:", error);
+            return [];
+        }
+    }
 
 
     function fetchHolidayRequests() {
-    $.ajax({
-        url: "/pending-vacations",
-        type: "GET",
-        dataType: "json",
-        success: function (requests) {
-            let notificationDropdown = document.getElementById("notificationDropdown");
-            notificationDropdown.innerHTML = "";
+        $.ajax({
+            url: "/pending-vacations",
+            type: "GET",
+            dataType: "json",
+            success: function (requests) {
+                let notificationDropdown = document.getElementById("notificationDropdown");
+                notificationDropdown.innerHTML = "";
 
-            if (requests.length === 0) {
-                notificationDropdown.innerHTML = "<p>No pending holiday requests.</p>";
-                document.getElementById("notificationBadge").innerText = "0";
-                return;
+                document.getElementById("notificationBadge").innerText = requests.length;
+
+                requests.forEach(request => {
+                    let requestItem = document.createElement("div");
+                    requestItem.className = "notification-item";
+                    let formattedDate = formatDate(request.start_date);
+
+                    // Include day_type in the notification
+                    requestItem.innerHTML = `
+                        <p><strong>${request.employee_name}</strong> requested a holiday on ${formattedDate} (${request.day_type})</p>
+                        <button class="btn approve" onclick="approveVacation(${request.id})">Approve</button>
+                        <button class="btn reject" onclick="denyVacation(${request.id}, '${request.day_type}')">Reject</button>
+                    `;
+                    notificationDropdown.appendChild(requestItem);
+                });
+            },
+            error: function (xhr) {
+                console.error("Error fetching holiday requests:", xhr.responseText);
             }
+        });
+    }
 
-            document.getElementById("notificationBadge").innerText = requests.length;
-
-            requests.forEach(request => {
-                let requestItem = document.createElement("div");
-                requestItem.className = "notification-item";
-
-                let formattedDate = new Date(request.start_date).toISOString().split("T")[0];
-
-                // Debugging log (Move console log outside innerHTML)
-                console.log("Request ID:", request.id);
-
-                requestItem.innerHTML = `
-                    <p><strong>${request.employee_name}</strong> requested a holiday on ${formattedDate}</p>
-                    <button class="btn approve" onclick="approveVacation(${request.id})">Approve</button>
-                    <button class="btn reject" onclick="denyVacation(${request.id})">Reject</button>
-                `;
-                notificationDropdown.appendChild(requestItem);
-            });
-        },
-        error: function () {
-            document.getElementById("notificationDropdown").innerHTML = "<p>Failed to load requests.</p>";
-        }
-    });
-}
-
+    function formatDate(date) {
+        return new Date(date).toISOString().split("T")[0];
+    }
 
     function toggleNotifications() {
         let dropdown = document.getElementById("notificationDropdown");
@@ -425,6 +343,4 @@ function sendVacationUpdate(vacationId, status) {
     }
 </script>
 
-
-</body>
-</html>
+</x-app-layout>

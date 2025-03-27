@@ -36,7 +36,7 @@
         </div>
 
         <button type="submit"
-            class="w-full bg-red-700 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Sign
+            class="w-full bg-red-700 text-white py-2 px-4 rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2">Sign
             in</button>
     </form>
 </div>

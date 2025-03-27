@@ -2,6 +2,7 @@
 
 namespace App\Services\Router\Types;
 
+use App\Models\Address;
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
@@ -10,6 +11,7 @@ use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
 use App\Services\Router\Types\Exceptions\NodeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\SelfLoopException;
+use Carbon\Carbon;
 
 class RouterGraph {
   private array $nodes;
@@ -18,6 +20,43 @@ class RouterGraph {
   public function __construct() {
     $this->nodes = [];
     $this->edges = [];
+  }
+
+  /**
+   * @throws InvalidRouterArgumentException
+   * @throws InvalidCoordinateException
+   */
+  public static function newNode(
+    string $ID,
+    string $description,
+    NodeType $type,
+    float $latDeg,
+    float $lonDeg,
+    int $addressId,
+    bool $isEntryNode = false,
+    bool $isExitNode = false,
+    ?Carbon $arrivedAt = null,
+    ?Carbon $departedAt = null,
+    ?Carbon $checkedInAt = null,
+    ?Carbon $checkedOutAt = null
+  ): Node {
+    $node = new Node(
+      $ID,
+      $description,
+      $type,
+      $latDeg,
+      $lonDeg,
+      $isEntryNode,
+      $isExitNode,
+      $addressId
+    );
+
+    $node->setArrivedAt($arrivedAt ? new Carbon($arrivedAt) : null);
+    $node->setDepartedAt($departedAt ? new Carbon($departedAt) : null);
+    $node->setCheckedInAt($checkedInAt ? new Carbon($checkedInAt) : null);
+    $node->setCheckedOutAt($checkedOutAt ? new Carbon($checkedOutAt) : null);
+
+    return $node;
   }
 
   /**
@@ -67,7 +106,8 @@ class RouterGraph {
     }
 
     // Create a new node
-    $node = new Node($ID, $description, $nodeType, $latDeg, $longDeg, $isEntryNode, $isExitNode);
+    // Address id is set to 1 sicne the router doesn't need the metadata
+    $node = new Node($ID, $description, $nodeType, $latDeg, $longDeg, 1, $isEntryNode, $isExitNode);
 
     // Add the node to the graph if it doesn't already exist
     $nodeID = $node->getID();

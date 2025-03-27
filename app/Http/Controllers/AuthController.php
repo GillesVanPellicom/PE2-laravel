@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
-use App\Models\User;
+use App\Models\{User, Employee, EmployeeContract};
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Country;
@@ -21,6 +21,10 @@ class AuthController extends Controller
 
     public function register()
     {
+        if (Auth::check()) {
+            return redirect()->route('welcome');
+        }
+    
         $countries = Country::all();
         return view('auth.register', compact('countries'));
     }
@@ -41,7 +45,7 @@ class AuthController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'phone_number' => 'required|unique:users,phone_number,' . $user->id . '|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'country' => 'required|string|max:100',
             'postal_code' => 'required|integer',
             'city' => 'required|string|max:100',
@@ -87,16 +91,40 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'password' => 'required',
         ]);
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route($route);
-        }
-
+    
+        $user = User::where('email', $credentials['email'])->first();
+        
+            if ($employee = Employee::where('user_id', $user->id)->first()) {
+                
+                $active_contract = EmployeeContract::where('employee_id', $employee->id)
+                    ->where(function ($query) {
+                        $query->where('end_date', '>', Carbon::now())
+                            ->orWhereNull('end_date');
+                    })
+                    ->first();
+    
+                if (!$active_contract) {
+                    return back()->withErrors([
+                        'email' => 'Your contract has ended.',
+                    ]);
+                } else {
+                    if (Auth::attempt($credentials)) {
+                        $request->session()->regenerate();
+                        return redirect()->route($route);
+                    }
+                }
+            } else {
+                if (Auth::attempt($credentials)) {
+                    $request->session()->regenerate();
+                    return redirect()->route($route);
+                }
+            }
+    
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ]);
     }
+    
 
     public function store(Request $request)
     {
@@ -139,10 +167,13 @@ class AuthController extends Controller
         $userData['password'] = Hash::make($request->password);
         $userData['address_id'] = $address->id;
 
-        User::create($userData);
+        $user = User::create($userData);
+
+         // event(new Registered($user));
+         // Email verification has been disabled for now
 
         // Redirect to the login page
-        return redirect('/login');
+        return redirect('login');
     }
 
     public function logout(Request $request)
@@ -153,6 +184,9 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
+        if ($request->is('courier/*')) {
+            return redirect()->route('courier');
+        }
         return redirect('/login');
     }
 }

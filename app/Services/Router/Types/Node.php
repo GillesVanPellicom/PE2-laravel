@@ -2,6 +2,9 @@
 
 namespace App\Services\Router\Types;
 
+use App\Models\Address;
+use App\Models\Location;
+use App\Models\RouterNodes;
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
@@ -10,20 +13,23 @@ use Carbon\Carbon;
 
 class Node {
 
-  // Local globals
+  // Router variables
   private string $ID;
   private NodeType $type;
-
   private string $desc;
-
   private float $latDeg;
   private float $longDeg;
   private float $latRad;
   private float $longRad;
-  private ?Carbon $arrivedAt = null;
-  private ?Carbon $departedAt = null;
   private bool $entryNode = false;
   private bool $exitNode = false;
+
+  // Metadata
+  private ?Carbon $arrivedAt = null;
+  private ?Carbon $departedAt = null;
+  private ?Carbon $checkedInAt = null;
+  private ?Carbon $checkedOutAt = null;
+  private Address $address;
 
   /**
    * @param  string  $ID  ID of the Node
@@ -42,8 +48,9 @@ class Node {
     NodeType $type,
     float $latDeg,
     float $longDeg,
+    int $address_id,
     bool $isEntryNode = false,
-    bool $isExitNode = false
+    bool $isExitNode = false,
   ) {
 
     if (empty($ID)) {
@@ -62,6 +69,11 @@ class Node {
       throw new InvalidCoordinateException("Node::__construct", "latitude", $longDeg);
     }
 
+    $a = Address::find($address_id);
+    if (!$a) {
+      throw new InvalidRouterArgumentException("Address (ID: {$address_id}) not found.");
+    }
+
     $this->ID = $ID;
     $this->desc = $description;
     $this->type = $type;
@@ -69,8 +81,21 @@ class Node {
     $this->longDeg = $longDeg;
     $this->latRad = deg2rad($latDeg);
     $this->longRad = deg2rad($longDeg);
+    $this->address = $a;
     $this->entryNode = $isEntryNode;
     $this->exitNode = $isExitNode;
+  }
+
+  /**
+   * @throws InvalidRouterArgumentException
+   * @throws InvalidCoordinateException
+   */
+  public static function fromLocation(Location $loc){
+    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude);
+  }
+
+  public static function fromRouterNode(RouterNodes $node){
+    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg, $node->isEntry, $node->isExit);
   }
 
   /**
@@ -87,25 +112,12 @@ class Node {
     return $this->desc;
   }
 
-  /**
-   * @return Carbon|null Arrival time at the Node, null if not yet arrived
-   */
-  public function getArrivedAt(): ?Carbon {
-    return $this->arrivedAt;
-  }
-
-  /**
-   * @return Carbon|null Departure time from the Node, null if not yet departed
-   */
-  public function getDepartedAt(): ?Carbon {
-    return $this->departedAt;
-  }
 
   /**
    * @param  CoordType  $type  Format of coordinates. Either DEGREE or RADIAN
    * @return float Latitude of the Node
    */
-  public function getLat(CoordType $type): float {
+  public function getLat(CoordType $type = CoordType::DEGREE): float {
     if ($type === CoordType::DEGREE) {
       return $this->latDeg;
     } else {
@@ -117,7 +129,7 @@ class Node {
    * @param  CoordType  $type  Format of coordinates. Either DEGREE or RADIAN
    * @return float Latitude of the Node
    */
-  public function getLong(CoordType $type): float {
+  public function getLong(CoordType $type = CoordType::DEGREE): float {
     if ($type === CoordType::DEGREE) {
       return $this->longDeg;
     } else {
@@ -165,14 +177,60 @@ class Node {
     return $this->type;
   }
 
+
   /**
-   * @param  NodeType  $type  Type of the Node
-   * @return void
+   * @return Carbon|null Arrival time at the Node, null if not yet arrived
    */
-  public function setType(NodeType $type): void {
-    $this->type = $type;
+  public function getArrivedAt(): ?Carbon {
+    return $this->arrivedAt;
   }
 
+  /**
+   * @return Carbon|null Departure time from the Node, null if not yet departed
+   */
+  public function getDepartedAt(): ?Carbon {
+    return $this->departedAt;
+  }
+
+
+  /**
+   * @return Carbon|null Arrival time at the Node, null if not yet arrived
+   */
+  public function getCheckedInAt(): ?Carbon {
+    return $this->checkedInAt;
+  }
+
+  /**
+   * @return Carbon|null Departure time from the Node, null if not yet departed
+   */
+  public function getCheckedOutAt(): ?Carbon {
+    return $this->checkedOutAt;
+  }
+
+  // Setter for arrivedAt
+  public function setArrivedAt(?Carbon $arrivedAt): void {
+    $this->arrivedAt = $arrivedAt;
+  }
+
+// Setter for checkedInAt
+  public function setCheckedInAt(?Carbon $checkedInAt): void {
+    $this->checkedInAt = $checkedInAt;
+  }
+
+// Setter for checkedOutAt
+  public function setCheckedOutAt(?Carbon $checkedOutAt): void {
+    $this->checkedOutAt = $checkedOutAt;
+  }
+
+// Setter for departedAt
+  public function setDepartedAt(?Carbon $departedAt): void {
+    $this->departedAt = $departedAt;
+  }
+
+  public function getAddress(): Address {
+    return $this->address;
+  }
+  
   /**
    * Prints the node details to the console
    *

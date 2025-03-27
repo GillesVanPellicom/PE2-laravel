@@ -3,8 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Helpers\ConsoleHelper;
+use App\Models\Location;
 use App\Models\Package;
 use App\Services\Router\Router;
+use App\Services\Router\Types\MoveOperationType;
 use App\Services\Router\Types\Node;
 use Exception;
 use Illuminate\Console\Command;
@@ -30,12 +32,9 @@ class Tinker extends Command {
    */
   public function handle(): void {
     /** @var Package $package */
-    $package = Package::find(1);
-    try {
-      $path = $package->getMovements();
-    } catch (Exception $e) {
-      ConsoleHelper::error($e->getMessage());
-    }
+    $package = Package::find(2);
+    $path = $package->getMovements();
     dd($path);
+
   }
 }

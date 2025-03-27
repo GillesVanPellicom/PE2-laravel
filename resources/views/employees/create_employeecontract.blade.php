@@ -1,19 +1,10 @@
 <x-app-layout>
-    <div class="container mx-auto py-10">
+
+<x-sidebar>
+
+<div class="container mx-auto py-10">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4">New Employee</h1>
-            <a href="{{ route('employees.index') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Home
-            </a>
-            <a href="{{ route('employees.Create') }}"
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Create Employee
-            </a>
-            <a href="{{ route('employees.contracts') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Show Contracts
-            </a>
+            <h1 class="text-4xl font-bold mb-4">Create Employee Contract</h1>
         </div>
         <div class="max-w-3xl mx-auto p-6 bg-white rounded shadow-lg mt-8">
         
@@ -27,7 +18,10 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select an employee</option>
                         @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">{{ $employee->user->first_name }} {{ $employee->user->last_name }}</option>
+                            <option value="{{ $employee->id }}" 
+                                @if(old('employee') == $employee->id) selected @endif>
+                                {{ $employee->user->first_name }} {{ $employee->user->last_name }}
+                            </option>
                         @endforeach
                     </select>
                     @error('employee')
@@ -50,7 +44,9 @@
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select a function</option>
                         @foreach($functions as $function)
-                            <option value="{{ $function->id }}">{{ $function->name }}</option>
+                            <option value="{{ $function->id }}"
+                            @if(old('function') == $function->id) selected @endif>    
+                            {{ $function->name }}</option>
                         @endforeach
                     </select>
                     @error('function')
@@ -69,11 +65,11 @@
 
                 <div>
                     <button type="submit"
-                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow">
+                        class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
                         Create Contract
                     </button>
                 </div>
             </form>
         </div>
-    </div>
+</x-sidebar>
 </x-app-layout>

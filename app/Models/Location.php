@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
-use App\Services\Router\Types\LocationType;
+use App\Services\Router\Types\NodeType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|Location find(mixed $id)
+ */
 class Location extends Model
 {
   use HasFactory;
 
   protected $casts = [
-    'location_type' => LocationType::class,
+    'location_type' => NodeType::class,
   ];
 
   protected $fillable = [
@@ -25,6 +28,10 @@ class Location extends Model
     'latitude',
     'longitude',
   ];
+
+  public function address() {
+    return $this->belongsTo(Address::class, 'addresses_id');
+  }
 
   public function parcels()
   {

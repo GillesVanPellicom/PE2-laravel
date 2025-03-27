@@ -8,12 +8,14 @@ return new class extends Migration {
   public function up(): void {
     Schema::create('router_nodes', function (Blueprint $table) {
       $table->string('id')->primary();
+      $table->foreignId('city_id')->nullable()->constrained('cities');
       $table->string('description');
       $table->enum('location_type', ['PICKUP_POINT', 'DISTRIBUTION_CENTER', 'AIRPORT']);
       $table->decimal('latDeg', 12, 8)->nullable();
       $table->decimal('lonDeg', 12, 8)->nullable();
       $table->boolean('isEntry')->default(false);
       $table->boolean('isExit')->default(false);
+      $table->foreignId('address_id')->constrained('addresses');
       $table->timestamps();
 
       // Computed columns

@@ -1,20 +1,11 @@
 <x-app-layout>
     @section("pageName","Employees")
+
+<x-sidebar>
+
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold mb-4">Employees</h1>
-            <a href="{{ route('employees.Create') }}"
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Create Employee
-            </a>
-            <a href="{{ route('employees.contracts') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Show Contracts
-            </a>
-            <a href="{{ route('employees.create_contract') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Create Contract
-            </a>
         </div>
 
         @if (session('success'))
@@ -37,6 +28,7 @@
                         <th class="border border-gray-300 px-4 py-2">City</th>
                         <th class="border border-gray-300 px-4 py-2">Country</th>
                         <th class="border border-gray-300 px-4 py-2">Leave Balance</th>
+                        <th class="border border-gray-300 px-4 py-2">Team</th>
                         <th class="border border-gray-300 px-4 py-2">Created At</th>
                         <th class="border border-gray-300 px-4 py-2">Updated At</th>
                     </tr>
@@ -56,6 +48,7 @@
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->address->city->name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->address->city->country->country_name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->leave_balance }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->team->department }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->created_at }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->updated_at }}</td>
                         </tr>
@@ -63,5 +56,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-6 flex justify-center">
+            {{ $employees->links() }}
+        </div>
     </div>
+</x-sidebar>
 </x-app-layout>
