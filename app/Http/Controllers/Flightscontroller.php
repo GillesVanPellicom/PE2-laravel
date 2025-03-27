@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\flight;
+use App\Models\Flight;
 use Carbon\Carbon;
 
 class Flightscontroller extends Controller

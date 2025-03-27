@@ -13,8 +13,8 @@ use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\contractController;
-use App\Http\Controllers\flightscontroller;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\Flightscontroller;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
@@ -207,21 +207,21 @@ Route::get('/packages', function () {
     return view('airport.packages');
 })->name('packages');
 
-Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');
+Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
 
-Route::get('/contractcreate', [contractController::class, 'contractcreate'])->name('contractcreate');
+Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');
 
-Route::post('/contract', [contractController::class, 'store'])->name('contract.store');
+Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
 
 Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
 
-Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('flightcreate');
+Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('flightcreate');
 
-Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
+Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
 
-Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
 
 Route::get('/airlines', [FlightsController::class, 'flights'])->name('airlines');
 
