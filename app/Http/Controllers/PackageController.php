@@ -394,7 +394,7 @@ class PackageController extends Controller
             return back()->withErrors(['error' => 'Failed to create package']);
         }
     
-        return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
+        return redirect()->route('packagepayment')->with('success', 'Package created successfully');
     }
 
     /**
