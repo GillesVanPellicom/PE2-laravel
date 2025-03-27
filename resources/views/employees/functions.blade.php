@@ -24,6 +24,7 @@
                     <tr>
                         <th class="border border-gray-300 px-4 py-2">ID</th>
                         <th class="border border-gray-300 px-4 py-2">Function</th>
+                        <th class="border border-gray-300 px-4 py-2">Role</th>
                         <th class="border border-gray-300 px-4 py-2">Description</th>
                         <th class="border border-gray-300 px-4 py-2">Salary Min</th>
                         <th class="border border-gray-300 px-4 py-2">Salary Max</th>
@@ -39,6 +40,9 @@
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ $function->name }}
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                {{ $function->role }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ $function->description }}
