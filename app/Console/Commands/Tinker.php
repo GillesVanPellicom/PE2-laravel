@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Helpers\ConsoleHelper;
+use App\Models\Location;
 use App\Models\Package;
 use App\Services\Router\Router;
 use App\Services\Router\Types\MoveOperationType;
