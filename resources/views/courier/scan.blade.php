@@ -5,12 +5,12 @@
     </x-slot:title>
 
     <div class="flex flex-col justify-center items-center w-full">
-        <div id="qr-reader" style="width: min(500px, 90%)" class="border-8 border-solid border-red-700 rounded-md"></div>
+        <div id="qr-reader" style="width: min(500px, 90%)" class="border-8 border-solid border-gray-800 rounded-md"></div>
         <p id="current_action" class="text-lg mt-1 font-semibold">
 
         </p>
         <button onclick="openModal()"
-            class="mt-1 flex flex-col items-center justify-center bg-red-700 hover:bg-red-800 text-white p-4 rounded-xl focus:outline-none">
+            class="mt-1 flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none">
             Choose A Different Action
         </button>
 
@@ -32,22 +32,22 @@
             <h2 class="text-xl font-semibold text-center mb-6">Choose your action</h2>
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="chooseAction('IN')"
-                    class="flex flex-col items-center justify-center bg-red-700 hover:bg-red-800 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none aspect-square">
                     <i class="fa-regular fa-circle-down text-2xl"></i>
                     <span class="mt-2 text-md">Scan In</span>
                 </button>
                 <button onclick="chooseAction('OUT')"
-                    class="flex flex-col items-center justify-center bg-red-700 hover:bg-red-800 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none aspect-square">
                     <i class="fa-regular fa-circle-up text-2xl"></i>
                     <span class="mt-2 text-md">Scan Out</span>
                 </button>
                 <button onclick="chooseAction('INFO')"
-                    class="flex flex-col items-center justify-center bg-red-700 hover:bg-red-800 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none aspect-square">
                     <i class="fa-solid fa-info text-2xl"></i>
                     <span class="mt-2 text-md">Info</span>
                 </button>
                 <button onclick="chooseAction('DELIVER')"
-                    class="flex flex-col items-center justify-center bg-red-700 hover:bg-red-800 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none aspect-square">
                     <i class="fa-solid fa-house-flag text-2xl"></i>
                     <span class="mt-2 text-md">Deliver</span>
                 </button>
