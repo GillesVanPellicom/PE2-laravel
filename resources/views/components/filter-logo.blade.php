@@ -8,7 +8,7 @@
 
     @media (prefers-color-scheme: dark) {
         .refresh-icon {
-            fill: white;
+            fill: black;
         }
     }
 
