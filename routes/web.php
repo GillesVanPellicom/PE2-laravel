@@ -15,10 +15,10 @@ use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\contractController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Flightscontroller;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\airportController;
+use App\Http\Controllers\AirportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
@@ -208,25 +208,24 @@ Route::patch('/pickup/package/{id}', [PackageController::class, 'setStatusPackag
 
 // ======================= Start Airport ====================== //
 
-Route::get('/packages', function () {
-    return view('packages');
-})->name('packages');
+Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
 
-Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');
+Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');
 
-Route::get('/contractcreate', [contractController::class, 'contractcreate'])->name('contractcreate');
-
-Route::post('/contract', [contractController::class, 'store'])->name('contract.store');
+Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
 
 Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
 
-Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('flightcreate');
+Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('flightcreate');
 
-Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
+Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
-Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+
+Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
 
 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
+Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
 
 // ======================= End Airport ====================== //
 

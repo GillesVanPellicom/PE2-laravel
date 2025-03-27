@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\contract;
+use App\Models\Contract;
 
 
 class ContractController extends Controller
 {
     public function contractindex(){
-        $contracts = contract::all();
+        $contracts = Contract::all();
         
         return view('airport.contract', ['contracts' => $contracts]);
     }
