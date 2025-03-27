@@ -9,8 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Address extends Model
 {
     use HasFactory;
-    protected $fillable = ['street', 'house_number', 'cities_id', 'country_id'];
-
+protected $fillable = ['street', 'house_number', 'bus_number', 'cities_id'];
     public function parcels(): HasMany
     {
         return $this->hasMany(Package::class, 'addresses_id');
