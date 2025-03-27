@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('vacation_type');
             $table->date('start_date');
             $table->date('end_date');
+            $table->enum('day_type', ['Whole Day', 'First Half', 'Second Half'])->default('Whole Day');
             $table->enum('approve_status', ['Pending', 'Approved', 'Rejected']);
             $table->timestamps();
         });

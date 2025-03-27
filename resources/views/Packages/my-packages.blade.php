@@ -192,9 +192,15 @@
                                     </div>
                                 </div>
                                 <div class="mt-4">
+                                    @if ($package->paid)
                                     <a href="{{ route('packages.packagedetails', $package->id) }}" class="block w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-center py-2 rounded-md transition-colors duration-200">
                                         View Details
                                     </a>
+                                    @else
+                                    <a href="{{ route('packagepayment', $package->id) }}" class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-md transition-colors duration-200">
+                                        <i class="fas fa-credit-card mr-2"></i>Pay Now
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
