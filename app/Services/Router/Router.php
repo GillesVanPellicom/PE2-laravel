@@ -30,7 +30,7 @@ namespace App\Services\Router {
   class Router {
 
     private RouterGraph $graph;
-    private bool $debug = true;
+    private bool $debug = false;
 
 
     public function __construct() {

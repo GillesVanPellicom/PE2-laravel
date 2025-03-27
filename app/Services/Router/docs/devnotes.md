@@ -1,3 +1,11 @@
+## todo
+- make router comply with start/end dates of edges
+- Router::refresh()
+- Router::addEdge()
+- Router::removeEdge()
+- Protectorate
+- Helper suite
+
 ## Formulas
 ### Haversine
 
