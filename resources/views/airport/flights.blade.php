@@ -29,15 +29,15 @@
                 <tr>
                     <td>{{$flight->id}}</td>
                     <td>{{$flight->departure_time}}</td>
-                    <td>{{$flight->departureAirport->name}}</td>
+                    <td>{{$flight->departureAirport->name ?? 'Unknown Departure Airport'}}</td>
                     <td>{{$flight->time_flight_minutes}}</td>
                     <td>{{$flight->arrival_time}}</td>
-                    <td>{{$flight->arrivalAirport->name}}</td>
+                    <td>{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
                     <td>
                         @if($flight->status == 'On Time')
                             {{$flight->status}}
                         @elseif($flight->status == 'Delayed')
-                            {{$flight->status}} (Delayed by {{$flight->delay_minutes ?? 'N/A'}} minutes)
+                            {{$flight->status}} (Delayed by {{$flight->delayed_minutes}} minutes)
                         @elseif($flight->status == 'Canceled')
                             {{$flight->status}}
                         @endif
@@ -66,10 +66,11 @@
                 <tr>
                     <td>{{$flight->id}}</td>
                     <td>{{$flight->departure_time}}</td>
-                    <td>{{$flight->departureAirport->name}}</td>
+                    <td>{{$flight->departureAirport->name ?? 'Unknown Departure Airport'}}</td>
                     <td>{{$flight->time_flight_minutes}}</td>
                     <td>{{$flight->arrival_time}}</td>
-                    <td>{{$flight->arrivalAirport->name}}</td>
+                    <td>{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
+                    <td>{{$flight->arrive_location_id}}</td>
                     <td>
                         @if($flight->status == 'On Time')
                             {{$flight->status}}

@@ -9,6 +9,8 @@
                     <th>Flight Number</th>
                     <th>Airline</th>
                     <th>Actions</th>
+                    <th>From</th>
+                    <th>To</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,7 +31,7 @@
 
                                 <div id="delayInput_{{ $flight->id }}" style="display: {{ $flight->status == 'Delayed' ? 'block' : 'none' }};">
                                     <label for="delay_minutes_{{ $flight->id }}">Delay (minutes):</label>
-                                    <input type="number" name="delay_minutes" id="delay_minutes_{{ $flight->id }}" value="{{ $flight->delay_minutes }}">
+                                    <input type="number" name="delayed_minutes" id="delayed_minutes_{{ $flight->id }}" value="{{ $flight->delayed_minutes }}" inputmode="numeric" pattern="\d*">
                                 </div>
 
                                 <button type="submit">Update Status</button>
@@ -44,7 +46,7 @@
     <script>
         function toggleDelayInput(status, id) {
             const delayInput = document.getElementById(`delayInput_${id}`);
-            const delayMinutes = document.getElementById(`delay_minutes_${id}`);
+            const delayMinutes = document.getElementById(`delayed_minutes_${id}`);
             if (status === 'Delayed') {
                 delayInput.style.display = 'block';
                 delayMinutes.required = true;

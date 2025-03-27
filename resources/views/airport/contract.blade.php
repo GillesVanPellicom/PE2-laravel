@@ -16,7 +16,9 @@
                 <th>airline</th>
                 <th>flight</th>
                 <th>wheight available (kg)</th>
-                <th>price (€)
+                <th>price (€)</th>
+                <th>start date</th>
+                <th>end date</th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +28,8 @@
                 <td>{{$contract->flight_id}}</td>
                 <td>{{$contract->max_capacity}}</td>
                 <td>{{$contract->price}}</td>
+                <td>{{$contract->start_date}}</td>
+                <td>{{$contract->end_date}}</td>
             </tr>
             @endforeach
         </tbody>
