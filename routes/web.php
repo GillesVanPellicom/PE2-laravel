@@ -15,10 +15,10 @@ use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\contractController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Flightscontroller;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\airportController;
+use App\Http\Controllers\AirportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
@@ -50,6 +50,9 @@ Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
 
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get("/logout", fn() => 
+    redirect("login")
+);
 
 // Customers
 Route::middleware("auth")->group(function () {
@@ -92,15 +95,6 @@ Route::post('/email/verification-notification', function (Request $request) {
     
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// Customers
-Route::get('/customers', function () {
-    if (!Auth::check()) {
-        return redirect()->route('auth.login');
-    }
-    return view('customers');
-})->name('customers');
-Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 
 // ======================= Start Courier ====================== //
 
@@ -166,6 +160,8 @@ Route::middleware(['permission:employee'])->group(function () {
     Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
+    Route::get('/get-vacations', [VacationController::class, 'getVacations'])->name('get-vacations');
+    Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus'])->name('vacations.updateStatus');
 });
 
 Route::middleware(['permission:HR.create'])->group(function(){
@@ -212,25 +208,24 @@ Route::patch('/pickup/package/{id}', [PackageController::class, 'setStatusPackag
 
 // ======================= Start Airport ====================== //
 
-Route::get('/packages', function () {
-    return view('packages');
-})->name('packages');
+Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
 
-Route::get('/contract', [contractController::class, 'contractindex'])->name('contract');
+Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');
 
-Route::get('/contractcreate', [contractController::class, 'contractcreate'])->name('contractcreate');
-
-Route::post('/contract', [contractController::class, 'store'])->name('contract.store');
+Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
 
 Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
 
-Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('flightcreate');
+Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('flightcreate');
 
-Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
+Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
-Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+
+Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
 
 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
+Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
 
 // ======================= End Airport ====================== //
 
@@ -266,3 +261,6 @@ Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
+
+
+

@@ -52,6 +52,58 @@ class LocationsSeeder extends Seeder {
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'description' => 'Einhoven Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 51.4469, 
+                'longitude' => 5.4034,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'Madrid Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 40.4644,  
+                'longitude' => -3.5882,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'Rome Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 41.8606,   
+                'longitude' => 12.4543,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'Heraklion Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 35.31960,    
+                'longitude' => 25.1378,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
 
             
         ]);

@@ -144,9 +144,15 @@
                                             {{ ucfirst(str_replace('_', ' ', $package->status)) }}
                                             <span class="hidden">{{ $package->reference }}</span>
                                         </span>
+                                        @if($package->paid == true)
                                         <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
                                             Paid
                                         </span>
+                                        @else
+                                        <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-medium">
+                                            Unpaid
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="space-y-3 flex-grow">
@@ -186,9 +192,15 @@
                                     </div>
                                 </div>
                                 <div class="mt-4">
+                                    @if ($package->paid)
                                     <a href="{{ route('packages.packagedetails', $package->id) }}" class="block w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-center py-2 rounded-md transition-colors duration-200">
                                         View Details
                                     </a>
+                                    @else
+                                    <a href="{{ route('packagepayment', $package->id) }}" class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-md transition-colors duration-200">
+                                        <i class="fas fa-credit-card mr-2"></i>Pay Now
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
