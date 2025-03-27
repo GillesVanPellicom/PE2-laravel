@@ -50,6 +50,9 @@ Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
 
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get("/logout", fn() => 
+    redirect("login")
+);
 
 // Customers
 Route::middleware("auth")->group(function () {
@@ -92,15 +95,6 @@ Route::post('/email/verification-notification', function (Request $request) {
     
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// Customers
-Route::get('/customers', function () {
-    if (!Auth::check()) {
-        return redirect()->route('auth.login');
-    }
-    return view('customers');
-})->name('customers');
-Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 
 // ======================= Start Courier ====================== //
 
