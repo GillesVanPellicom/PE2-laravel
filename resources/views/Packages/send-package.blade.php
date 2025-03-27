@@ -47,14 +47,6 @@
                 <form action="{{ route('package.store') }}" method="POST" class="px-8 py-6">
                     @csrf
                     <div class="space-y-6">
-                        <!-- Customer Information -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <input type="text" name="origin_location_id" placeholder="Origin Location ID" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
 
                         <!-- Receiver Information -->
                         <div class="bg-gray-50 rounded-lg p-6">
@@ -127,7 +119,11 @@
                                     <optgroup label="{{ $method->name }}" data-code="{{ $method->code }}" style="display: none;">
                                         @foreach($locations->where('location_type', $method->code) as $location)
                                             <option value="{{ $location->id }}">
-                                                {{ $location->name }} - {{ $location->address }}
+                                                {{ $location->description }} - {{ $location->address->street }} {{ $location->address->house_number }}
+                                                @if ($location->address->bus_number)
+                                                    - {{ $location->address->bus_number }}
+                                                @endif
+                                                , {{ $location->address->city->postcode }} {{ $location->address->city->name }}, {{ $location->address->city->country->name }}
                                                 ({{ $location->opening_hours }})
                                             </option>
                                         @endforeach
@@ -139,15 +135,22 @@
                         <!-- Address Section -->
                         <div id="addressSection" style="display: none;" class="bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Delivery Address</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="street" placeholder="Street" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="house_number" placeholder="House Number" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="cities_id" placeholder="City ID" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="country_id" placeholder="Country ID" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <!-- Changed from grid to full width -->
+                            <div class="w-full">
+                                <div class="relative"> 
+                                    <input 
+                                        id="addressInput" 
+                                        type="text" 
+                                        name="addressInput" 
+                                        placeholder="Enter your address" 
+                                        autocomplete="off"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                    <!-- Suggestions dropdown -->
+                                    <div id="suggestions" 
+                                        class="absolute w-full top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 hidden max-h-60 overflow-y-auto">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -214,10 +217,6 @@
             
             // Reset form values
             locationSelect.value = '';
-            document.querySelector('input[name="street"]').value = '';
-            document.querySelector('input[name="house_number"]').value = '';
-            document.querySelector('input[name="cities_id"]').value = '';
-            document.querySelector('input[name="country_id"]').value = '';
 
             // Hide both sections first
             locationSection.style.display = 'none';
@@ -290,5 +289,67 @@
             }
             updatePrices();
         });
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+    const addressInput = document.getElementById('addressInput');
+    const suggestionsDiv = document.getElementById('suggestions');
+    let debounceTimer;
+
+    addressInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        
+        // Clear suggestions if input is empty
+        if (!this.value.trim()) {
+            suggestionsDiv.innerHTML = '';
+            suggestionsDiv.classList.add('hidden');
+            return;
+        }
+
+        // Debounce the API call
+        debounceTimer = setTimeout(() => {
+            const text = encodeURIComponent(this.value);
+            const apiKey = '{{ env('GEOAPIFY_API_KEY') }}';
+            
+            fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${text}&format=json&apiKey=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear previous suggestions
+                    suggestionsDiv.innerHTML = '';
+                    
+                    if (data.results && data.results.length > 0) {
+                        suggestionsDiv.classList.remove('hidden');
+                        
+                        data.results.forEach(result => {
+                            const div = document.createElement('div');
+                            div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                            div.textContent = result.formatted;
+                            
+                            div.addEventListener('click', () => {
+                                addressInput.value = result.formatted;
+                                suggestionsDiv.classList.add('hidden');
+                                // You can store the full address details if needed
+                                console.log('Selected address details:', result);
+                            });
+                            
+                            suggestionsDiv.appendChild(div);
+                        });
+                    } else {
+                        suggestionsDiv.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching address suggestions:', error);
+                });
+        }, 300); // 300ms delay
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.classList.add('hidden');
+        }
+    });
+});
     </script>
 </x-app-layout>
