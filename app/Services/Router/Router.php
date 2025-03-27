@@ -5,6 +5,8 @@ namespace App\Services\Router {
 
   use App\Helpers\ConsoleHelper;
   use App\Models\Location;
+  use App\Models\RouterEdges;
+  use App\Models\RouterNodes;
   use App\Services\Router\Types\CoordType;
   use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
   use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
@@ -34,7 +36,6 @@ namespace App\Services\Router {
     public function __construct() {
       try {
         $this->graph = new RouterGraph();
-        echo("Deserializing database...\n");
         $this->deserializeDb();
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
@@ -70,7 +71,7 @@ namespace App\Services\Router {
         $origin->getAttribute('location_type'),
         $destination->getAttribute('latitude'),
         $destination->getAttribute('longitude'),
-        );
+      );
 
       $oN->setArrivedAt(now());
       $oN->setCheckedInAt(now());
@@ -137,9 +138,6 @@ namespace App\Services\Router {
     }
 
 
-
-
-
     /**
      * Finds the closest Node to a given point.
      *
@@ -204,9 +202,9 @@ namespace App\Services\Router {
      */
     private function deserializeDb(): void {
       // Fetch all nodes from the database
-      $nodes = \App\Models\RouterNodes::all();
+      $nodesModels = RouterNodes::all();
       // Iterate over each node and add it to the graph
-      foreach ($nodes as $node) {
+      foreach ($nodesModels as $node) {
 
         $this->graph->addNode(
           $node->id,
@@ -220,13 +218,14 @@ namespace App\Services\Router {
       }
 
       // Fetch all edges from the database
-      $edges = \App\Models\RouterEdges::all();
+      $edges = RouterEdges::all();
 
       // Iterate over each edge and add it to the graph
       foreach ($edges as $edge) {
         $this->graph->addEdge($edge->origin_node, $edge->destination_node);
       }
     }
+
 
     /**
      * Finds the shortest path between two nodes.
@@ -267,10 +266,8 @@ namespace App\Services\Router {
 
       $epsilon = 1e-10; // Tolerance to avoid (very hard to debug) FP rounding errors.
 
-      if ($this->debug) {
-        echo "\033[1;34m=== Starting A* Search ===\033[0m\n";
-        echo "From: $startNodeID | To: $endNodeID\n\n";
-      }
+      $this->debug && print "\033[1;34m=== Starting A* Search ===\033[0m\nFrom: $startNodeID | To: $endNodeID\n\n";
+
 
       // Main loop of the A* algorithm
       while (!$openSet->isEmpty()) {
@@ -281,24 +278,20 @@ namespace App\Services\Router {
         $insertion_fScore = -$extracted['priority'];
         $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
-        if ($this->debug) {
-          echo "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n";
-          echo "  Open Set Size: ".$openSet->count()."\n";
-          echo "  fScore: ".sprintf("%.6f", $insertion_fScore)." | gScore (queue): ".sprintf("%.6f",
-              $insertion_gScore)."\n";
-        }
+        $this->debug && print "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n  Open Set Size: ".$openSet->count()."\nfScore: ".sprintf("%.6f",
+            $insertion_fScore)." | gScore (queue): ".sprintf("%.6f", $insertion_gScore)."\n";
+
 
         // Check if the current node's gScore is valid
         if ($gScore[$currentID] - $insertion_gScore <= $epsilon) {
-          if ($this->debug) {
-            echo "  \033[32mAction: Processing\033[0m | Current gScore: ".sprintf("%.6f", $gScore[$currentID])."\n";
-          }
+          $this->debug && print "  \033[32mAction: Processing\033[0m | Current gScore: ".sprintf("%.6f",
+              $gScore[$currentID])."\n";
+
         } else {
-          if ($this->debug) {
-            echo "  \033[31mAction: Skipped\033[0m | Current gScore: ".sprintf("%.6f",
-                $gScore[$currentID])." > Queue gScore: ".sprintf("%.6f", $insertion_gScore)."\n";
-            echo "\033[1;36m-----------------\033[0m\n\n";
-          }
+          $this->debug && print "  \033[31mAction: Skipped\033[0m | Current gScore: ".sprintf("%.6f",
+              $gScore[$currentID])." > Queue gScore: ".sprintf("%.6f",
+              $insertion_gScore)."\n\033[1;36m-----------------\033[0m\n\n";
+
           continue;
         }
 
@@ -313,9 +306,8 @@ namespace App\Services\Router {
 
         // Iterate over each neighbor of the current node
         foreach ($this->graph->getNeighbors($currentID) as $neighborID => $weight) {
-          if ($this->debug) {
-            echo "  \033[38;2;255;140;0m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f", $weight)."\n";
-          }
+          $this->debug && print "  \033[38;2;255;140;0m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f",
+              $weight)."\n";
 
           $tentativeGScore = $gScore[$currentID] + $weight;
 
@@ -330,10 +322,9 @@ namespace App\Services\Router {
 
             if ($this->debug) {
               echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
-                  $tentativeGScore)." | New fScore: ".sprintf("%.6f", $fScore[$neighborID])."\n";
-              echo "    \033[1;35mHeuristic Info:\033[0m\n";
-              echo "      Current: $currentID | Neighbor: $neighborID\n";
-              echo "      Σ Path Weight: ".sprintf("%.6f", $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
+                  $tentativeGScore)." | New fScore: ".sprintf("%.6f",
+                  $fScore[$neighborID])."\n    \033[1;35mHeuristic Info:\033[0m\n      Current: $currentID | Neighbor: $neighborID\n      Σ Path Weight: ".sprintf("%.6f",
+                  $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
                   $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
 
               // Check heuristic admissibility
@@ -342,15 +333,14 @@ namespace App\Services\Router {
               echo "      Heuristic Admissible: $admissibilitySymbol\n\n";
             }
           } else {
-            if ($this->debug) {
-              echo "    \033[37mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
-                  $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
-            }
+            $this->debug && print  "    \033[37mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
+                $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
           }
         }
       }
       throw new NoPathFoundException($startNodeID, $endNodeID);
     }
+
 
     /**
      * Helper function for A*.

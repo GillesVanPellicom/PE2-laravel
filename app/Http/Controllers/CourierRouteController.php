@@ -18,6 +18,9 @@ class CourierRouteController extends Controller
         $packages = Package::all();
         $filteredPackages = [];
         foreach ($packages as $package) {
+            if (!$package->movements()->exists())
+                continue;
+
             $currentMovement = $package->movements()->where("current_node_id", $package->current_location_id)->first(); // Find the corresponding package movement
             $movement = is_null($currentMovement->next_movement) ? $currentMovement : $currentMovement->nextHop;
 
