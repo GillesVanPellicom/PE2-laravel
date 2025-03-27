@@ -16,7 +16,7 @@ use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\contractController;
-use App\Http\Controllers\flightscontroller;
+use App\Http\Controllers\Flightscontroller;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
@@ -159,32 +159,24 @@ Route::get('/packagelist', [PackageListController::class, 'index'])->name('packa
 
 // ======================= Start Employee ====================== //
 
-Route::get('/holiday-requests', function () {
-    return view('employees.holiday_request');
-})->name('holiday-requests');
+Route::middleware(['permission:employee'])->group(function () {
+    Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
+    Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
+});
 
-Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager.calendar');
+Route::middleware(['permission:HR.create'])->group(function(){
+    Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager.calendar');
 
-Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
+    Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
 
-Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
+    Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
 
-Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
-
-Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
-
-Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
-
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
-Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
-
-Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-
-Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
-
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
-
+    Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+});
 
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
     Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
@@ -237,6 +229,8 @@ Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('f
 Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
 
 Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+
+Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
 
 // ======================= End Airport ====================== //
 

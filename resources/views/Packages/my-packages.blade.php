@@ -144,9 +144,15 @@
                                             {{ ucfirst(str_replace('_', ' ', $package->status)) }}
                                             <span class="hidden">{{ $package->reference }}</span>
                                         </span>
+                                        @if($package->paid == true)
                                         <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
                                             Paid
                                         </span>
+                                        @else
+                                        <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-medium">
+                                            Unpaid
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="space-y-3 flex-grow">

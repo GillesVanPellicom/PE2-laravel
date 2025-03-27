@@ -269,7 +269,7 @@
                                 <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-md filter blur opacity-75 group-hover:opacity-100 transition-opacity duration-200"></div>
                                 <div class="relative bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-4 px-8 rounded-md flex items-center justify-center space-x-3 hover:from-purple-600 hover:to-indigo-600 transition-all duration-200">
                                     <i class="fas fa-map-marked-alt text-xl"></i>
-                                    <span class="font-semibold text-lg">Track & Trace Package</span>
+                                    <a href="{{ route('track.package', $package->reference) }}" class="font-semibold text-lg">Track & Trace Package</a>
                                     <i class="fas fa-arrow-right"></i>
                                 </div>
                             </button>
