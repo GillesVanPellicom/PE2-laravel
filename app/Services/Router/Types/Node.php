@@ -87,15 +87,45 @@ class Node {
   }
 
   /**
+   * Creates a Node from a Location
+   * 
    * @throws InvalidRouterArgumentException
    * @throws InvalidCoordinateException
    */
   public static function fromLocation(Location $loc){
-    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude);
+    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude, $loc->addresses_id);
   }
 
+  /**
+   * Creates a Node from a RouterNode
+   * 
+   * @throws InvalidRouterArgumentException
+   * @throws InvalidCoordinateException
+   */
   public static function fromRouterNode(RouterNodes $node){
-    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg, $node->isEntry, $node->isExit);
+    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg, $node->address_id, $node->isEntry, $node->isExit);
+  }
+
+    /**
+   * Get a Node object from a given ID.
+   *
+   * This method checks both RouterNodes and Location models to find the node.
+   *
+   * @param  string  $id  The ID of the node.
+   * @return Node|null The Node object or null if not found.
+   * @throws InvalidRouterArgumentException If the node ID is empty
+   * @throws InvalidCoordinateException If the node ID is empty
+   */
+  public static function fromId(string $id){
+    $nodeData = RouterNodes::find($id) ?? Location::find($id);
+
+    if (!$nodeData) return null;
+
+    if ($nodeData instanceOf RouterNodes) {
+      return Node::fromRouterNode($nodeData);
+    } else {
+      return Node::fromLocation($nodeData);
+    }
   }
 
   /**
