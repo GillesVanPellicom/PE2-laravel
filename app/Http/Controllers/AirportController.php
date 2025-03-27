@@ -1,12 +1,12 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\airport;
+use App\Models\Airport;
 
 
 class AirportController extends Controller
 {
     public function airportindex(){
-        $airports = airport::all();
+        $airports = Airport::all();
         return view('airport.airports',['airports'=>$airports]);
     }
 }

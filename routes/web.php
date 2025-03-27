@@ -15,11 +15,10 @@ use App\Http\Controllers\PackageListController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Flightscontroller;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\airportController;
+use App\Http\Controllers\AirportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
@@ -225,7 +224,9 @@ Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('f
 
 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
-Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
+
+Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
 
 // ======================= End Airport ====================== //
 
