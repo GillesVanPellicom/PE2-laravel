@@ -6,6 +6,9 @@ use App\Services\Router\Types\NodeType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|Location find(mixed $id)
+ */
 class Location extends Model
 {
   use HasFactory;

@@ -25,16 +25,20 @@
                     <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
                         {{ __('Employees') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('flightpackages')" :active="request()->routeIs('flightpackages.index')">
+                        {{ __('Flight Packages') }}
+                    </x-nav-link>
                 </div>
             </div>
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ml-6">
+            
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  bg-white  hover:text-gray-700  focus:outline-none transition ease-in-out duration-150">
-                            <div></div>
+                            <div>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>
 
                             <div class="ml-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -46,9 +50,9 @@
                             </div>
                         </button>
                     </x-slot>
-
+                    
                     <x-slot name="content">
-                        <x-dropdown-link href="">
+                        <x-dropdown-link href="{{ route('customers') }}">
                             {{ __('Profile') }}
                         </x-dropdown-link>
 

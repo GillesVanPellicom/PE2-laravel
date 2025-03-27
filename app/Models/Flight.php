@@ -23,6 +23,7 @@ class Flight extends Model
         'isActive',
         'status'
     ];
+
     public function departureAirport()
     {
         return $this->belongsTo(Airport::class, 'depart_location_id', 'location_id');
@@ -31,5 +32,15 @@ class Flight extends Model
     public function arrivalAirport()
     {
         return $this->belongsTo(Airport::class, 'arrive_location_id', 'location_id');
+    }
+
+    public function departureLocation()
+    {
+        return $this->belongsTo(Location::class, 'depart_location_id', 'id');
+    }
+
+    public function arrivalLocation()
+    {
+        return $this->belongsTo(Location::class, 'arrive_location_id', 'id');
     }
 }

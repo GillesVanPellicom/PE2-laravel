@@ -82,4 +82,10 @@ class Flightscontroller extends Controller
 
         return redirect()->back()->with('success', 'Flight status updated successfully.');
     }
+
+    public function flightPackages()
+    {
+        $flights = Flight::with(['departureAirport', 'arrivalAirport', 'arrivalLocation.packages', 'departureLocation.packages'])->get();
+        return view('airport.flightpackages', compact('flights'));
+    }
 }

@@ -26,4 +26,10 @@ class Employee extends Model
     {
         return $this->belongsTo(Team::class, 'team_id');
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
+    }
+
 }

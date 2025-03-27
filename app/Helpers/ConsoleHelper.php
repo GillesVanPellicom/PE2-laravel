@@ -60,6 +60,10 @@ class ConsoleHelper {
     ConsoleHelper::error($errMsg);
   }
 
+  public static function print(string $msg): void {
+    self::getFactory()->line($msg);
+  }
+
   // Input methods
 
   public static function secret(string $msg): string {

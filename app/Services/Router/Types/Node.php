@@ -2,6 +2,8 @@
 
 namespace App\Services\Router\Types;
 
+use App\Models\Location;
+use App\Models\RouterNodes;
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
@@ -75,6 +77,13 @@ class Node {
     $this->exitNode = $isExitNode;
   }
 
+  public static function fromLocation(Location $loc){
+    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude);
+  }
+
+  public static function fromRouterNode(RouterNodes $node){
+    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg, $node->isEntry, $node->isExit);
+  }
 
   /**
    * @return string ID of the Node
@@ -204,8 +213,7 @@ class Node {
   public function setDepartedAt(?Carbon $departedAt): void {
     $this->departedAt = $departedAt;
   }
-
-
+  
   /**
    * Prints the node details to the console
    *
