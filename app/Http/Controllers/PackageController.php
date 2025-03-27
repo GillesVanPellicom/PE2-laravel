@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\WeightClass;
@@ -34,29 +35,34 @@ class PackageController extends Controller
         return view('pickup.dashboard', compact('packages'));
     }
     public function show ($id) {
-        $id= $id !== ' ' ? $id  :request()->get('id');
-        $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
-        return view('pickup.packageInfo',compact('package'));
+        try {
+            $id = $id !== ' ' ? $id : request()->get('id');
+            $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
+            return view('pickup.packageInfo', compact('package'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            //return response()->view('errors.pickup.404', ['message' => 'The entered package not found'], 404);
+            return redirect()->route('pickup.dashboard')->with('package-not-found', 'The package "'.$id.'" does not exist');
+        } catch (\Exception $e) {
+            return redirect()->route('pickup.dashboard')->with('error' , 'An unexpected error occurred, retry again or contact your administrator');
+        }
     }
     public function setStatusPackage ($id) {
         $package = Package::findOrFail($id);
         $statusToSet = request()->get('status')?? '';
         $package->update(['status' => $statusToSet]);
-        return redirect()->route('pickup.dashboard')->with('success', 'Package updated successfully!');
+        return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: '.$package->reference.' was successfully updated to '.$statusToSet);
     }
-
-    public function updateStatus(Request $request)
-    {
-        $package = Package::where('id', $request->packageId)->first();
-
-        if ($package) {
-            $package->status = $request->status;
-            $package->save();
-
-            return response()->json(['success' => true, 'message' => 'Status updated successfully']);
-        }
-
-        return response()->json(['success' => false, 'message' => 'Package not found']);
+    public function showPackagesToReturn () {
+        $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
+            ->where('status', '!=', 'Returned')
+            ->where('status', '!=', 'Cancelled')
+            ->where('updated_at', '<', Carbon::now()->subDays(7))
+            ->paginate(10);
+        return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
+    }
+    public function showReceivingPackages () {
+        $packages = Package::where('status', '!=', 'delivered')->paginate(10);
+        return view('pickup.receiving-packages', compact('packages'));
     }
 
     public function mypackages()
