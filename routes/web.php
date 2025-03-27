@@ -16,7 +16,7 @@ use App\Http\Controllers\CourierController;
 use App\Http\Controllers\TrackPackageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\contractController;
-use App\Http\Controllers\flightscontroller;
+use App\Http\Controllers\Flightscontroller;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
@@ -229,6 +229,8 @@ Route::get('/flightcreate', [flightscontroller::class, 'flightcreate'])->name('f
 Route::post('/flights', [flightscontroller::class, 'store'])->name('flight.store');
 
 Route::get('/airport', [airportController::class, 'airportindex'])->name('airports');
+
+Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
 
 // ======================= End Airport ====================== //
 
