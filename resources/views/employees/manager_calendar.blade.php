@@ -39,7 +39,7 @@
     </div>
 
     <div class="mt-6">
-        <a href="calendar" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">View Calendar</a>
+        <a href="employees/calendar" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">View Calendar</a>
     </div>
 
 

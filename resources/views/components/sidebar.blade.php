@@ -44,6 +44,16 @@
                 Add Function
             </a>
         </li>
+        <li>
+            <a href="/employees/calendar" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
+                Employee calendar
+            </a>
+        </li>
+        <li>
+            <a href="/manager-calendar" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
+                Manager Calendar
+            </a>
+        </li>
     </ul>
 </div>
 <div class="flex-1 p-6">

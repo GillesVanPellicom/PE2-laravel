@@ -17,5 +17,10 @@ class Vacation extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+
+    public function vacation()
+    {
+        return $this->belongsTo(Vacation::class); // Make sure you use the correct relationship
+    }
 }
 

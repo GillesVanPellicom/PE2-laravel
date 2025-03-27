@@ -21,6 +21,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\airportController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DispatcherController;
 
 // ======================= Start Authentication ====================== //
@@ -158,26 +159,24 @@ Route::get('/packagelist', [PackageListController::class, 'index'])->name('packa
 
 // ======================= Start Employee ====================== //
 
-
-Route::get('/calendar', function () {
-    return view('employees.calendar');
+Route::middleware(['permission:employee'])->group(function () {
+    Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
+    Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
 });
 
-Route::get('/holiday-requests', function () {
-    return view('employees.holiday_request');
-})->name('holiday-requests');
+Route::middleware(['permission:HR.create'])->group(function(){
+    Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager.calendar');
 
-Route::get('/manager-calendar', [EmployeeController::class, 'managerCalendar'])->name('manager.calendar');
+    Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
 
-Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
+    Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
 
-Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
-
-Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
-
-Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
-
-Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
+    Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+});
 
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
     Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
