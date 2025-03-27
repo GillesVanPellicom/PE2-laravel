@@ -3,9 +3,9 @@
         Route
     </x-slot:title>
     <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold mb-4">Courier Route</h1>
+        <h1 class="text-2xl font-bold mb-2">Your Route</h1>
 
-        <a href="{{ route('courier.route') }}">View Courier Route</a>
+        <!-- <a href="{{ route('courier.route') }}">View Courier Route</a> -->
 
         @if (empty($route))
             <p class="text-gray-500">No packages to deliver.</p>
@@ -20,20 +20,26 @@
                     <div class="ml-4 flex-1">
                         <p class="text-lg font-semibold text-green-700">Next to Deliver: {{ $firstPackage['ref'] ?? 'N/A' }}</p>
                         <p class="text-sm text-gray-600">Coordinates: {{ $firstPackage['latitude'] }}, {{ $firstPackage['longitude'] }}</p>
+
+                        @if ($firstPackage["end"])
+                            <div class="flex space-x-4 mt-4">
+                                <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
+                                    ✓ Deliver
+                                </button>
+
+                                <button class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none" onclick="openModal('{{ $firstPackage['ref'] }}')">
+                                    Send Back
+                                </button>
+                            </div>
+                        @else
+                            <p class="text-red-700 mt-4 focus:outline-none" data-ref="{{ $firstPackage['ref'] }}">
+                                Package not scanned in
+                            </p>
+                        @endif
                     </div>
-                    @if ($firstPackage["end"])
-                    <button class="text-green-700 hover:text-green-900 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
-                    ✓ Deliver
-                    </button>
-                    @else
-                    <p class="text-red-700 focus:outline-none" data-ref="{{ $firstPackage['ref'] }}">
-                        Package not scanned in
-                    </p>
-                    @endif
                 </div>
             @endif
 
-            <!-- Route Map -->
             <div class="mt-8">
                 <h2 class="text-xl font-bold mb-4">Route Map</h2>
                 <div id="map" class="w-full h-96 bg-gray-200"></div>
@@ -70,6 +76,24 @@
                 <p id="total-distance" class="text-lg text-gray-700">Total Distance: Calculating...</p>
             </div>
         @endif
+    </div>
+
+    <div id="sendBackModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4">Send Back Options</h2>
+            <p class="text-gray-600 mb-6">Choose where to send the package back:</p>
+            <div class="flex space-x-4">
+                <button class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none send-back-btn" data-action="pickup-point">
+                    Pickup Point
+                </button>
+                <button class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 focus:outline-none send-back-btn" data-action="distribution-center">
+                    Distribution Center
+                </button>
+            </div>
+            <button class="mt-6 px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none" onclick="closeModal()">
+                Cancel
+            </button>
+        </div>
     </div>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -133,6 +157,28 @@
                         }
                     })
                     .catch(error => console.error('Delivery error:', error));
+            });
+        });
+
+        function openModal(packageRef) {
+            const modal = document.getElementById('sendBackModal');
+            modal.classList.remove('hidden');
+            modal.dataset.packageRef = packageRef; // Store the package reference in the modal
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('sendBackModal');
+            modal.classList.add('hidden');
+        }
+
+        document.querySelectorAll('.send-back-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const action = this.dataset.action;
+                const packageRef = document.getElementById('sendBackModal').dataset.packageRef;
+
+                console.log(`Send back action: ${action}, Package Ref: ${packageRef}`);
+                // Add your functionality here (e.g., send an AJAX request)
+                closeModal();
             });
         });
     </script>
