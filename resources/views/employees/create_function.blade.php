@@ -58,6 +58,22 @@
                 </div>
 
                 <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700">Role:</label>
+                    <select name="role" id="role"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="-1">Select a role</option>
+                        @foreach ($roles as $role)
+                            <option value="{{ $role->id }}" @if (old('role') == $role->id) selected @endif>
+                                {{ $role->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('role')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <button type="submit"
                         class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
                         Create Function

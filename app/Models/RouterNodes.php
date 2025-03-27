@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\Router\Types\NodeType;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|RouterNodes find(mixed $id)
+ */
 class RouterNodes extends Model {
   protected $table = 'router_nodes';
   protected $primaryKey = 'id';
