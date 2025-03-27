@@ -26,7 +26,7 @@
                                 <select name="status" id="status_{{ $flight->id }}" onchange="toggleDelayInput(this.value, {{ $flight->id }})">
                                     <option value="On time" {{ $flight->status == 'On time' ? 'selected' : '' }}>On time</option>
                                     <option value="Delayed" {{ $flight->status == 'Delayed' ? 'selected' : '' }}>Delayed</option>
-                                    <option value="Cancelled" {{ $flight->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    <option value="Canceled" {{ $flight->status == 'Canceled' ? 'selected' : '' }}>Canceled</option>
                                 </select>
 
                                 <div id="delayInput_{{ $flight->id }}" style="display: {{ $flight->status == 'Delayed' ? 'block' : 'none' }};">

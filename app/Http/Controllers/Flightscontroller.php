@@ -26,6 +26,9 @@ class Flightscontroller extends Controller
             $arrivalTime = $departureTime->addMinutes($flightDuration);
 
             $flight->arrival_time = $arrivalTime;
+            if($flight->status == 'Canceled'){
+                $flight->arrival_time = "/";
+            }
         }
 
         return view('airport.flights', ['flights' => $flights]);
@@ -61,7 +64,7 @@ class Flightscontroller extends Controller
     public function updateStatus(Request $request, $id)
     {
         $data = $request->validate([
-            'status' => 'required|in:On time,Delayed,Cancelled',
+            'status' => 'required|in:On time,Delayed,Canceled',
             'delayed_minutes' => 'nullable|integer|min:1'
         ]);
 
@@ -70,8 +73,8 @@ class Flightscontroller extends Controller
         if ($data['status'] === 'Delayed') {
             $flight->status = 'Delayed';
             $flight->delayed_minutes = (int) ($data['delayed_minutes'] ?? 0);
-        } elseif ($data['status'] === 'Cancelled') {
-            $flight->status = 'Cancelled';
+        } elseif ($data['status'] === 'Canceled') {
+            $flight->status = 'Canceled';
             $flight->delayed_minutes = null;
         } else {
             $flight->status = 'On time';

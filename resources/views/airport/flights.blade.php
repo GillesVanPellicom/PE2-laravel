@@ -79,7 +79,7 @@
                             @if($flight->status == 'On Time')
                                 {{$flight->status}}
                             @elseif($flight->status == 'Delayed')
-                                {{$flight->status}} (Delayed by {{$flight->delay_minutes ?? 'N/A'}} minutes)
+                                {{$flight->status}} (Delayed by {{$flight->delayed_minutes}} minutes)
                             @elseif($flight->status == 'Canceled')
                                 {{$flight->status}} (Flight has been canceled)
                             @endif
