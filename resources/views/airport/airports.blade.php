@@ -1,19 +1,13 @@
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Airport</h1>
-    <a href="{{ route('contract') }}">Contracts</a>
-    <br>
-    <a href="{{ route('flights') }}">Flights</a>
-    <br>
-    <a href="{{ route('flightpackages') }}">Flight Packages</a>
-    <br/>
-</body>
-</html>
+<x-app-layout>
+    <x-sidebar-airport>
+        <div class="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
+            <h1>Airport</h1>
+            <a href="{{ route('contract') }}">Contracts</a>
+            <br>
+            <a href="{{ route('flights') }}">Flights</a>
+            <br>
+            <a href="{{ route('flightpackages') }}">Flight Packages</a>
+            <br/>
+        </div>
+    </x-sidebar-airport>
+</x-app-layout>

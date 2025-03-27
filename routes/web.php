@@ -208,10 +208,6 @@ Route::patch('/pickup/package/{id}', [PackageController::class, 'setStatusPackag
 
 // ======================= Start Airport ====================== //
 
-Route::get('/packages', function () {
-    return view('airport.packages');
-})->name('packages');
-
 Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
 
 Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');

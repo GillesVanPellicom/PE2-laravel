@@ -1,4 +1,5 @@
 <x-app-layout>
+<x-sidebar-airport>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <!DOCTYPE html>
@@ -11,7 +12,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-6">
-    <a href="{{ route('airports') }}" class="text-blue-500 underline">Airports</a>
     <h1 class="text-2xl font-bold mb-4">Contracts</h1>
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
@@ -39,7 +39,7 @@
             </tbody>
         </table>
     </div>
-    <a href="{{ route('contractcreate') }}" class="text-blue-500 underline mt-4 inline-block">Add Contract</a>
 </body>
 </html>
+</x-sidebar-airport>
 </x-app-layout>
