@@ -28,7 +28,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * @method static \Illuminate\Database\Eloquent\Builder|Package find(mixed $id)
  */
-class Package extends Model {
+class Package extends Model
+{
   use HasFactory;
 
   protected $primaryKey = 'id';
@@ -65,7 +66,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function user(): BelongsTo {
+  public function user(): BelongsTo
+  {
     return $this->belongsTo(User::class, 'user_id');
   }
 
@@ -75,7 +77,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function weightClass(): BelongsTo {
+  public function weightClass(): BelongsTo
+  {
     return $this->belongsTo(WeightClass::class, 'weight_id');
   }
 
@@ -85,7 +88,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function deliveryMethod(): BelongsTo {
+  public function deliveryMethod(): BelongsTo
+  {
     return $this->belongsTo(DeliveryMethod::class, 'delivery_method_id');
   }
 
@@ -95,7 +99,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function destinationLocation(): BelongsTo {
+  public function destinationLocation(): BelongsTo
+  {
     return $this->belongsTo(Location::class, 'destination_location_id');
   }
 
@@ -105,7 +110,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function address(): BelongsTo {
+  public function address(): BelongsTo
+  {
     return $this->belongsTo(Address::class, 'addresses_id');
   }
 
@@ -115,7 +121,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function originLocation(): BelongsTo {
+  public function originLocation(): BelongsTo
+  {
     return $this->belongsTo(Location::class, 'origin_location_id');
   }
 
@@ -125,7 +132,8 @@ class Package extends Model {
    *
    * @return BelongsTo
    */
-  public function currentLocation(): BelongsTo {
+  public function currentLocation(): BelongsTo
+  {
     return $this->belongsTo(Location::class, 'current_location_id');
   }
 
@@ -135,7 +143,8 @@ class Package extends Model {
    *
    * @return HasMany
    */
-  public function movements(): HasMany {
+  public function movements(): HasMany
+  {
     return $this->hasMany(PackageMovement::class, 'package_id');
   }
 
@@ -151,7 +160,8 @@ class Package extends Model {
    * @return Node|null The next location node or null if not found.
    * @throws Exception If movements are uninitialized or current movement not found.
    */
-  public function getNextMovement(): ?Node {
+  public function getNextMovement(): ?Node
+  {
     // Load all movements once (in this case to minimize I/O overhead/caching)
     $movements = $this->movements()->orderBy('id')->get();
 
@@ -205,7 +215,8 @@ class Package extends Model {
    * @return array [success, message]
    * @throws Exception If no movements exist.
    */
-  public function move(MoveOperationType $operation): array {
+  public function move(MoveOperationType $operation): array
+  {
     // Load all movements once for efficiency
     $movements = $this->movements()->orderBy('id')->get();
 
@@ -239,7 +250,8 @@ class Package extends Model {
    *
    * @throws Exception If no movements exist or current movement not found.
    */
-  public function fakeMove(): void {
+  public function fakeMove(): void
+  {
     // Load all movements once for efficiency
     $movements = $this->movements()->orderBy('id')->get();
 
@@ -264,7 +276,7 @@ class Package extends Model {
         $currentMovement->save();
 
         // If arriving at the final ADDRESS, set all timestamps
-        if ($timestamp === 'arrival_time' && is_null($currentMovement->next_movement) && $this->location_type === NodeType::ADDRESS) {
+        if ($timestamp === 'arrival_time' && is_null($currentMovement->next_movement) && $this->currentLocation->location_type === NodeType::ADDRESS) {
           $currentMovement->check_in_time = now();
           $currentMovement->check_out_time = now();
           $currentMovement->departure_time = now();
@@ -300,7 +312,8 @@ class Package extends Model {
    * @return Node|null The current location node or null if not found.
    * @throws Exception If movements are uninitialized.
    */
-  public function getCurrentMovement(): ?Node {
+  public function getCurrentMovement(): ?Node
+  {
 
     // If no movements exist, generate them
     if (!$this->movements()->exists()) {
@@ -337,7 +350,8 @@ class Package extends Model {
    * @throws NodeNotFoundException Given node ID might not exist.
    * @throws RouterException General router error.
    */
-  public function getMovements(): ?array {
+  public function getMovements(): ?array
+  {
 
     // Check if movements exist; if not, generate them
     if (!$this->movements()->exists()) {
@@ -360,7 +374,8 @@ class Package extends Model {
    * @throws NodeNotFoundException Given node ID might not exist.
    * @throws RouterException General router error.
    */
-  public function generateMovements(): void {
+  public function generateMovements(): void
+  {
     // Do not regenerate if movements already exist
     if ($this->movements()->exists()) {
       return;
@@ -396,7 +411,8 @@ class Package extends Model {
    * @param  PackageMovement  $currentMovement  The current movement of the package.
    * @return array [success, message]
    */
-  private function deliverPackage(PackageMovement $currentMovement): array {
+  private function deliverPackage(PackageMovement $currentMovement): array
+  {
     // Check if this is the final movement
     if (!is_null($currentMovement->next_movement)) {
       return [false, "This package has not yet reached its final destination."];
@@ -406,7 +422,8 @@ class Package extends Model {
     $location = Location::find($this->current_location_id);
     if (!$location || $location->location_type !== NodeType::ADDRESS) {
       return [
-        false, "This package is not fit for delivery => ".($location ? $location->location_type->value : 'Unknown')
+        false,
+        "This package is not fit for delivery => " . ($location ? $location->location_type->value : 'Unknown')
       ];
     }
 
@@ -437,7 +454,8 @@ class Package extends Model {
    * @return array [success, message]
    * @throws Exception If all timestamps are already set.
    */
-  private function performMovementOperation(PackageMovement $currentMovement, MoveOperationType $operation): array {
+  private function performMovementOperation(PackageMovement $currentMovement, MoveOperationType $operation): array
+  {
     // Map of timestamps to their corresponding operation types
     $timestamps = [
       'arrival_time' => MoveOperationType::OUT,
@@ -449,7 +467,11 @@ class Package extends Model {
     // Iterate through timestamps and set the first unset one if the operation matches
     foreach ($timestamps as $timestamp => $expectedOperation) {
       if (is_null($currentMovement->$timestamp)) {
+        if ($timestamp === "arrival_time" && is_null($currentMovement->next_movement) && is_numeric($this->current_location_id) && $this->currentLocation->location_type == NodeType::ADDRESS) {
+          return [false, "This package has to be delivered."];
+        }
         if ($operation === $expectedOperation) {
+
           $currentMovement->$timestamp = now();
           $currentMovement->save();
 
@@ -462,11 +484,12 @@ class Package extends Model {
             }
           }
 
-          return [true, "Package successfully scanned ".$operation->value];
+          return [true, "Package successfully scanned " . $operation->value];
         }
         // If the operation does not match, return an error
         return [
-          false, "This package was not previously scanned ".($operation === MoveOperationType::OUT ? "in" : "out")."."
+          false,
+          "This package was not previously scanned " . ($operation === MoveOperationType::OUT ? "in" : "out") . "."
         ];
       }
     }
@@ -486,7 +509,8 @@ class Package extends Model {
    *
    * @param  string  $location  The ID of the location to set as current.
    */
-  private function setCurrentMovement(string $location): void {
+  private function setCurrentMovement(string $location): void
+  {
     $this->current_location_id = $location;
     $this->save();
   }
@@ -499,7 +523,8 @@ class Package extends Model {
    *
    * @param  Node[]  $path  The array of Node objects representing the path.
    */
-  private function commitMovements(array $path): void {
+  private function commitMovements(array $path): void
+  {
     DB::transaction(function () use ($path) {
       $previousMovement = null;
       $previousNode = null;
@@ -557,7 +582,8 @@ class Package extends Model {
    * @throws InvalidRouterArgumentException If the node ID is empty
    * @throws InvalidCoordinateException If the node ID is empty
    */
-  private function getMovementsFromDb(): ?array {
+  private function getMovementsFromDb(): ?array
+  {
     // Load all movements ordered by ID
     $movements = $this->movements()->orderBy('id')->get();
     $nodes = [];
@@ -584,7 +610,8 @@ class Package extends Model {
    * @throws InvalidRouterArgumentException If the node ID is empty
    * @throws InvalidCoordinateException If the node ID is empty
    */
-  private function getNodeFromId(string $id): ?Node {
+  private function getNodeFromId(string $id): ?Node
+  {
     // Try to find the node in either RouterNodes or Location
     $nodeData = RouterNodes::find($id) ?? Location::find($id);
 
@@ -613,7 +640,8 @@ class Package extends Model {
    * @param  PackageMovement  $movement  The movement containing timestamps.
    * @return Node The initialized Node object.
    */
-  private function initializeNode(Node $node, PackageMovement $movement): Node {
+  private function initializeNode(Node $node, PackageMovement $movement): Node
+  {
     $node->setArrivedAt($movement->arrival_time ? new Carbon($movement->arrival_time) : null);
     $node->setCheckedInAt($movement->check_in_time ? new Carbon($movement->check_in_time) : null);
     $node->setCheckedOutAt($movement->check_out_time ? new Carbon($movement->check_out_time) : null);
