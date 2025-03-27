@@ -166,6 +166,8 @@ Route::middleware(['permission:employee'])->group(function () {
     Route::get('/employees/calendar', [NotificationController::class, 'showCalendar'])->name('employees.calendar');
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
+    Route::get('/get-vacations', [VacationController::class, 'getVacations'])->name('get-vacations');
+    Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus'])->name('vacations.updateStatus');
 });
 
 Route::middleware(['permission:HR.create'])->group(function(){
@@ -266,3 +268,6 @@ Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
+
+
+

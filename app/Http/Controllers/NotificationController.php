@@ -10,8 +10,9 @@ class NotificationController extends Controller
     // Method to fetch notifications for the AJAX request
     public function fetchNotifications()
     {
-        // Fetch notifications for the logged-in user
+        // Fetch only unread notifications for the logged-in user
         $notifications = Notification::where('user_id', auth()->id())
+            ->where('is_read', 0) // Filter by unread notifications
             ->with('messageTemplate', 'user')
             ->get();
 
