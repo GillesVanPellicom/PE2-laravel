@@ -47,13 +47,14 @@ class CourierController extends Controller
                 array_shift($scannedPackages); // Remove the oldest package
             }
             $scannedPackages[] = $package->id; // Add the new package
+
             session()->put('scanned_packages', $scannedPackages); // Save the updated list
         }
         try {
-        $package->generateMovements();
-        } catch (Exception $e){
+            $package->generateMovements();
+        } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Critical Error!", "message" => "Failed to generate a route for this package."])->render()], 500);
-        };
+        }
 
         $mode = $request->mode; // Get the mode from the request
         if (!in_array($mode, ["INFO", "DELIVER", "IN", "OUT"])) {
@@ -77,7 +78,7 @@ class CourierController extends Controller
 
         try {
             [$status, $message] = $package->move(MoveOperationType::from($mode));
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
 
         }
