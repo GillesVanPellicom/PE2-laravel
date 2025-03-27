@@ -74,11 +74,11 @@ class CourierController extends Controller
             //$nextStop = $currentMove ? LocationController::getAddressString($currentMove->toLocation) : null;
             return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to"))->render()]);
         }
-        $package->move(MoveOperationType::DELIVER);
+
         try {
             [$status, $message] = $package->move(MoveOperationType::from($mode));
         } catch(Exception $e) {
-            return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $message])->render()], 500);
+            return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
 
         }
         if ($status)
