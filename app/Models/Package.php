@@ -121,7 +121,8 @@ class Package extends Model {
 
 
   /**
-   * Get the current location of the package.
+   * Get the current Location of the package.
+   * (Only works if the current location is not a RouterNode but a Location.)
    *
    * @return BelongsTo
    */
@@ -129,6 +130,11 @@ class Package extends Model {
     return $this->belongsTo(Location::class, 'current_location_id');
   }
 
+  /**
+   * Get the current Node
+   * 
+   * @return Node|null
+   */
   public function currentNode() {
     return Node::fromId($this->current_location_id);
   }
