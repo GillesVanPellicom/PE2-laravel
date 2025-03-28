@@ -132,10 +132,12 @@ class Package extends Model {
 
   /**
    * Get the current Node.
-   * 
+   *
    * @return Node|null
+   * @throws InvalidRouterArgumentException If the node ID is empty
+   * @throws InvalidCoordinateException If the node ID is empty
    */
-  public function currentNode() {
+  public function currentNode(): ?Node {
     return Node::fromId($this->current_location_id);
   }
 
@@ -148,10 +150,15 @@ class Package extends Model {
   public function movements(): HasMany {
     return $this->hasMany(PackageMovement::class, 'package_id');
   }
-  
-  public function flight()
-  {
-      return $this->belongsTo(Flight::class, 'flight_id');
+
+
+  /**
+   * Get the flight associated with the package.
+   *
+   * @return BelongsTo
+   */
+  public function flight(): BelongsTo {
+    return $this->belongsTo(Flight::class, 'flight_id');
   }
 
   ### Public Methods
