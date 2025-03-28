@@ -46,7 +46,7 @@ namespace App\Services\Router {
 
     /**
      * @returns Node[]|null Array of node objects representing the path in movements
-     * @throws RouterException
+     * @throws RouterException<
      * @throws InvalidRouterArgumentException
      * @throws InvalidCoordinateException
      * @throws NodeNotFoundException
