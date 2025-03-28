@@ -484,6 +484,7 @@ class Package extends Model {
           if ($timestamp === 'departure_time' && !is_null($currentMovement->next_movement)) {
             $nextMovement = $this->movements()->find($currentMovement->next_movement);
             if ($nextMovement) {
+              dd ($nextMovement);
               $this->current_location_id = $nextMovement->current_node_id;
               $this->save();
             }
