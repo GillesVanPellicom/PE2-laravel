@@ -232,3 +232,14 @@ Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistri
 
 
 
+// ======================= End CourierRouteCreator ====================== //
+
+
+
+// ======================= Package Payment Start  ====================== //
+
+Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
+    ->middleware('auth')
+    ->name('packagepayment');
+
+// ======================= Package Payment End  ====================== //
