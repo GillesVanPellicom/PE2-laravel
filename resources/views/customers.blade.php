@@ -1,6 +1,6 @@
 <x-app-layout>
     <main class="flex items-center justify-center min-h-screen">
-        <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
+        <div class="mt-4 mb-4 bg-white p-8 rounded shadow-md w-full max-w-2xl">
             <h1 class="text-2xl font-bold mb-6">Customers</h1>
             <div class="mb-4">
                 <p class="text-sm font-medium text-gray-700">Your role: <span class="font-normal">{{ Auth::user()->role }}</span></p>
