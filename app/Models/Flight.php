@@ -8,7 +8,7 @@ class Flight extends Model
 {
     protected $table = 'flights';
 
-    protected $primaryKey = 'flight_id'; // Explicitly set the primary key
+    protected $primaryKey = 'id'; // Explicitly set the primary key
 
     public $incrementing = true; // Since it's an auto-incrementing ID
     protected $keyType = 'int'; // Ensure it's an integer
@@ -19,15 +19,28 @@ class Flight extends Model
         'arrival_time',
         'depart_location_id', // Fix the name
         'arrive_location_id',
+        'delayed_minutes',
+        'isActive',
         'status'
     ];
+
     public function departureAirport()
     {
-        return $this->hasOne(Airport::class, 'location_id', 'depart_location_id');
+        return $this->belongsTo(Airport::class, 'depart_location_id', 'location_id');
     }
 
     public function arrivalAirport()
     {
-        return $this->hasOne(Airport::class, 'location_id', 'arrive_location_id');
+        return $this->belongsTo(Airport::class, 'arrive_location_id', 'location_id');
+    }
+
+    public function departureLocation()
+    {
+        return $this->belongsTo(Location::class, 'depart_location_id', 'id');
+    }
+
+    public function arrivalLocation()
+    {
+        return $this->belongsTo(Location::class, 'arrive_location_id', 'id');
     }
 }

@@ -1,22 +1,20 @@
 <x-app-layout>
     @section("pageName","Contracts")
 
+<x-sidebar>
+
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold mb-4">Contracts</h1>
-            <a href="{{ route('employees.index') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow mr-2">
-                Show Employees
-            </a>
-            <a href="{{ route('employees.Create') }}" 
-               class="text-lg text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
-                Create Employee
-            </a>
         </div>
 
         @if (session('success'))
             <div class="bg-green-100 text-green-800 p-4 mb-6 rounded shadow">
                 {{ session('success') }}
+            </div>
+        @elseif (session('error'))
+            <div class="bg-red-100 text-red-800 p-4 mb-6 rounded shadow">
+                {{ session('error') }}
             </div>
         @endif
 
@@ -26,6 +24,7 @@
                     <tr>
                         <th class="border border-gray-300 px-4 py-2">ID</th>
                         <th class="border border-gray-300 px-4 py-2">Employee</th>
+                        <th class="border border-gray-300 px-4 py-2">Function</th>
                         <th class="border border-gray-300 px-4 py-2">Start Date</th>
                         <th class="border border-gray-300 px-4 py-2">End Date</th>
                         <th class="border border-gray-300 px-4 py-2">Contract Status</th>
@@ -37,6 +36,7 @@
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $contract->function->name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->start_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->end_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -47,21 +47,29 @@
                                 @endif
                             </td>
                             <td class="border border-gray-300 px-4 py-2 flex justify-center">
-                                <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST">
-                                    @csrf
-                                    @method('POST')
-                                    <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded shadow">
-                                        Set End Date to:
+                                @if(is_null($contract->end_date) || $contract->end_date > now())
+                                    <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST" class="flex items-center space-x-2">
+                                        @csrf
+                                        @method('POST')
+                                        <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded shadow text-xs">
+                                            Set End Date to:
+                                        </button>
+                                        <input name="end_date" type="date" value="{{ date('Y-m-d') }}" class="text-xs">
+                                    </form>
+                                @else
+                                    <button type="submit" disabled class="text-white bg-gray-400 hover:bg-gray-500 px-4 py-2 rounded-md shadow-md text-xs cursor-not-allowed opacity-50">
+                                        End date already set
                                     </button>
-                                    <input name="end_date" type="date" value="{{ date('Y-m-d') }}">
-                                </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-    </div>
-
-
+        <div class="mt-6 flex justify-center">
+        {{ $contracts->links() }}
+        </div>
+</div>
+</x-sidebar>
 </x-app-layout>

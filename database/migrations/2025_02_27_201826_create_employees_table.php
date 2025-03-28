@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->integer('leave_balance')->default(0);
+            $table->float('leave_balance')->default(0);
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('team_id')->constrained('teams');
             $table->timestamps();

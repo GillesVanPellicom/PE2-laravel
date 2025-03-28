@@ -18,6 +18,7 @@
         "@fullcalendar/core": "^6.1.15",
         "@fullcalendar/daygrid": "^6.1.15",
         "@fullcalendar/interaction": "^6.1.15",
+        "instascan": "^1.0.0",
         "laravel-mix": "^6.0.49"
     }
 }

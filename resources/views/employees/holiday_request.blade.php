@@ -3,118 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holiday Requests</title>
+    <title>All Vacation Requests</title>
     <style>
-        .btn {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            cursor: pointer;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .btn:hover {
-            background-color: #0056b3;
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
         }
     </style>
 </head>
 <body>
-    <h1>Holiday Requests</h1>
+
+    <h1>All Vacation Requests</h1>
+
     <table>
         <thead>
             <tr>
-                <th>Employee</th>
-                <th>Requested Holidays</th>
-                <th>Actions</th>
+                <th>ID</th>
+                <th>Employee ID</th>
+                <th>Vacation Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Day Type</th> <!-- Add Day Type column -->
+                <th>Status</th>
             </tr>
         </thead>
-        <tbody id="requestTableBody">
-            <!-- Requests will be added here dynamically -->
+        <tbody>
+            @foreach ($vacations as $vacation)
+                <tr>
+                    <td>{{ $vacation->vacation_id }}</td>
+                    <td>{{ $vacation->employee_id }}</td>
+                    <td>{{ $vacation->vacation_type }}</td>
+                    <td>{{ $vacation->start_date }}</td>
+                    <td>{{ $vacation->end_date }}</td>
+                    <td>{{ $vacation->day_type }}</td> <!-- Display Day Type -->
+                    <td>{{ $vacation->approve_status }}</td>
+                </tr>
+            @endforeach
         </tbody>
     </table>
-    <a href="manager-calendar" class="btn">View Manager Calendar</a>
-    <button onclick="clearStorage()">Clear All Data</button>
 
-    <script>
-        function clearStorage() {
-            localStorage.clear(); // Clears all localStorage data
-            alert("All data has been cleared.");
-            location.reload(); // Reload the page to reset the state
-        }
+    @if ($vacations->isEmpty())
+        <p>No vacation requests found.</p>
+    @endif
 
-        document.addEventListener('DOMContentLoaded', function() {
-            let requests = JSON.parse(localStorage.getItem('holidayRequests')) || [];
-            let tableBody = document.getElementById('requestTableBody');
-
-            console.log('Holiday Requests:', requests);
-
-            if (requests.length === 0) {
-                tableBody.innerHTML = "<tr><td colspan='3'>No holiday requests yet.</td></tr>";
-            } else {
-                requests.forEach((request, index) => {
-                    if (request && request.name && request.holidays) {
-                        let row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${request.name}</td>
-                            <td>${request.holidays.join(', ')}</td>
-                            <td>
-                                <button class="btn approve" onclick="approveRequest(${index})">Approve</button>
-                                <button class="btn reject" onclick="rejectRequest(${index})">Reject</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    } else {
-                        console.error('Invalid holiday request:', request);
-                    }
-                });
-            }
-
-            // Approve request function
-            window.approveRequest = function(index) {
-                let approvedRequest = requests[index];
-                approvedRequest.status = 'Approved';
-
-                let approvedHolidays = JSON.parse(localStorage.getItem('approvedHolidays')) || [];
-                approvedHolidays.push({
-                    name: approvedRequest.name,
-                    holidays: approvedRequest.holidays
-                });
-
-                localStorage.setItem('holidayRequests', JSON.stringify(requests));
-                localStorage.setItem('approvedHolidays', JSON.stringify(approvedHolidays));
-
-                alert('Holiday request approved.');
-                updateTable(); // Update the table without reloading the page
-            }
-
-            // Reject request function
-            window.rejectRequest = function(index) {
-                requests[index].status = 'Rejected';
-                localStorage.setItem('holidayRequests', JSON.stringify(requests));
-                alert('Holiday request rejected.');
-                updateTable(); // Update the table without reloading the page
-            }
-
-            // Function to update the table dynamically
-            function updateTable() {
-                let tableBody = document.getElementById('requestTableBody');
-                tableBody.innerHTML = ''; // Clear the current table body
-
-                requests.forEach((request, index) => {
-                    let row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${request.name}</td>
-                        <td>${request.holidays.join(', ')}</td>
-                        <td>
-                            <button class="btn approve" onclick="approveRequest(${index})">Approve</button>
-                            <button class="btn reject" onclick="rejectRequest(${index})">Reject</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            }
-        });
-    </script>
 </body>
 </html>
+

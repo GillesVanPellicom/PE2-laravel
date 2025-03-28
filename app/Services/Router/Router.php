@@ -4,6 +4,9 @@
 namespace App\Services\Router {
 
   use App\Helpers\ConsoleHelper;
+  use App\Models\Location;
+  use App\Models\RouterEdges;
+  use App\Models\RouterNodes;
   use App\Services\Router\Types\CoordType;
   use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
   use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
@@ -33,92 +36,68 @@ namespace App\Services\Router {
     public function __construct() {
       try {
         $this->graph = new RouterGraph();
-        $this->deserialize(base_path('app/Services/Router/tmp.graphml'));
+        $this->deserializeDb();
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);
       }
     }
 
-    /**
-     * Generates a path between two points
-     *
-     * @param  string  $origin  Origin address or node ID
-     * @param  string  $destination  Destination address or node ID
-     * @return array|null Array of node objects representing the path in hops
-     */
-    public function generate(string $origin, string $destination): ?array {
-      try {
-        return $this->generateInternal($origin, $destination);
-      } catch (Exception $e) {
-        ConsoleHelper::error($e->getMessage());
-        exit(1);
-      }
-    }
 
     /**
-     * Generates a path between two points. Internal version with exception handling.
-     *
-     * @param  string  $origin  Origin address or node ID
-     * @param  string  $destination  Destination address or node ID
-     * @return array|null Array of node objects representing the path in hops
-     *
+     * @returns Node[]|null Array of node objects representing the path in movements
      * @throws RouterException
      * @throws InvalidRouterArgumentException
+     * @throws InvalidCoordinateException
      * @throws NodeNotFoundException
      * @throws NoPathFoundException
-     * @throws SelfLoopException
      */
-    private function generateInternal(string $origin, string $destination): ?array {
-      if (empty($origin)) {
-        throw new NodeNotFoundException('null');
-      }
-      if (empty($destination)) {
-        throw new NodeNotFoundException('null');
-      }
+    public function getPath(Location $origin, Location $destination): ?array {
+      $oN = new Node(
+        $origin->getAttribute('location_type') == NodeType::ADDRESS
+          ? $origin->getAttribute('id')
+          : $origin->getAttribute('infrastructure_id'),
+        $origin->getAttribute('description'),
+        $origin->getAttribute('location_type'),
+        $origin->getAttribute('latitude'),
+        $origin->getAttribute('longitude'),
+        $origin->getAttribute('addresses_id')
+      );
 
-      // Check if both origin and destination are the same nodes
-      if ($origin === $destination) {
-        throw new SelfLoopException($origin);
-      }
-      // Print debug header if debug mode is enabled
-      $this->debug && print "\033[1;34mROUTER DEBUG BEGIN >>>\n\n=== Imaginary Node(s) ===\033[0m\n\n";
+      $dN = new Node(
+        $destination->getAttribute('location_type') == NodeType::ADDRESS
+          ? $destination->getAttribute('id')
+          : $destination->getAttribute('infrastructure_id'),
+        $destination->getAttribute('description'),
+        $destination->getAttribute('location_type'),
+        $destination->getAttribute('latitude'),
+        $destination->getAttribute('longitude'),
+        $destination->getAttribute('addresses_id'),
+      );
 
-      // Process start and end nodes
-      [$startNode, $origin] = $this->processNode($origin, true);
-      [$endNode, $destination] = $this->processNode($destination, false);
+      $oN->setArrivedAt(now());
+      $oN->setCheckedInAt(now());
 
-      // Print newline separator in debug mode
-      $this->debug && print "\n";
 
-      // Build and print the path
-      return $this->buildPath($origin, $destination, $startNode, $endNode);
+      $path = $this->aStar(
+        $this->findClosestNode(
+          $oN->getLat(CoordType::RADIAN),
+          $oN->getLong(CoordType::RADIAN),
+          true,
+          false),
+
+        $this->findClosestNode(
+          $dN->getLat(CoordType::RADIAN),
+          $dN->getLong(CoordType::RADIAN),
+          false,
+          true
+        ));
+
+      array_unshift($path, $oN);
+      $path[] = $dN;
+      return $path;
     }
 
-    /**
-     * Processes a node argument and returns the node object and ID
-     *
-     * @param  string  $arg  Node argument (ID or address)
-     * @param  bool  $isStart  Whether this is the starting node
-     * @return array [?object Node object or null, string Processed ID]
-     * @throws RouterException
-     */
-    private function processNode(string $arg, bool $isStart): array {
-      $isID = $arg[0] === '@';
-      $node = null;
-
-      if (!$isID) {
-        // Create node from address and find closest existing node
-        $node = $this->createAddressNode($arg);
-        $latRad = $node->getLat(CoordType::RADIAN);
-        $longRad = $node->getLong(CoordType::RADIAN);
-        $arg = $this->findClosestNode($latRad, $longRad, $isStart, !$isStart);
-
-        // Print node details if in debug mode
-        $this->debug && $node->printAddressNode();
-      }
-      return [$node, $arg];
-    }
 
     /**
      * Builds the complete path including imaginary nodes if needed
@@ -143,6 +122,7 @@ namespace App\Services\Router {
       return $path;
     }
 
+
     /**
      * Prints the path in both ID and description formats
      *
@@ -159,22 +139,6 @@ namespace App\Services\Router {
       print "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ", $descs)."\n";
     }
 
-    /**
-     * Creates a new address node from an address string.
-     * Disconnected from the main graph, linking is done after routing using haversine.
-     *
-     * @param  string  $address  Address as string
-     * @return Node
-     * @throws InvalidRouterArgumentException
-     * @throws InvalidCoordinateException
-     * @throws FailedCoordinatesFetchException
-     */
-    private function createAddressNode(string $address): Node {
-      $coords = GeoMath::getCoordinates($address);
-
-      // Create a new node
-      return new Node('$$_address_node_$$', $address, NodeType::ADDRESS, $coords['latDeg'], $coords['longDeg']);
-    }
 
     /**
      * Finds the closest Node to a given point.
@@ -217,6 +181,7 @@ namespace App\Services\Router {
       return $closestNode->getID();
     }
 
+
     /**
      * Enable or disable debug mode.
      *
@@ -227,64 +192,42 @@ namespace App\Services\Router {
       $this->debug = $enable;
     }
 
+
     /**
-     * Deserialize GraphML into RouterGraph object.
-     *
-     * @param  string  $graphmlFilePath  Path to the GraphML file
-     * @return void
-     * @throws NodeNotFoundException
-     * @throws InvalidGraphMLException
-     * @throws FileNotFoundException
-     * @throws InvalidNodeIDException
      * @throws NodeAlreadyExistsException
+     * @throws InvalidRouterArgumentException
+     * @throws InvalidNodeIDException
      * @throws InvalidCoordinateException
      * @throws SelfLoopException
+     * @throws NodeNotFoundException
      * @throws EdgeAlreadyExistsException
-     * @throws InvalidRouterArgumentException
      */
-    private function deserialize(string $graphmlFilePath): void {
-      // Check if the file exists
-      if (!file_exists($graphmlFilePath)) {
-        throw new FileNotFoundException($graphmlFilePath);
-      }
+    private function deserializeDb(): void {
+      // Fetch all nodes from the database
+      $nodesModels = RouterNodes::all();
+      // Iterate over each node and add it to the graph
+      foreach ($nodesModels as $node) {
 
-      // Load the GraphML file
-      $graphml = simplexml_load_file($graphmlFilePath);
-      if ($graphml === false) {
-        throw new InvalidGraphMLException($graphmlFilePath);
-      }
-
-      // Iterate over each node in the GraphML file
-      foreach ($graphml->graph->node as $node) {
-        $ID = (string) $node['id'];
-        $attributes = [];
-        // Collect node attributes
-        foreach ($node->data as $data) {
-          $key = (string) $data['key'];
-          $value = (string) $data;
-          $attributes[$key] = $value;
-        }
-        $type = NodeType::from($attributes['type']);
-        // Add the node to the graph (RouterGraph exceptions will bubble up)
         $this->graph->addNode(
-          $ID,
-          $attributes['desc'],
-          (float) $attributes['latDeg'],
-          (float) $attributes['longDeg'],
-          $type,
-          $attributes['isEntryNode'] === 'true',
-          $attributes['isExitNode'] === 'true'
+          $node->id,
+          $node->description,
+          (float) $node->latDeg,
+          (float) $node->lonDeg,
+          $node->location_type,
+          $node->isEntry,
+          $node->isExit
         );
       }
 
-      // Iterate over each edge in the GraphML file
-      foreach ($graphml->graph->edge as $edge) {
-        $source = (string) $edge['nodeID_1'];
-        $target = (string) $edge['nodeID_2'];
-        // Add the edge to the graph (RouterGraph exceptions will bubble up)
-        $this->graph->addEdge($source, $target);
+      // Fetch all edges from the database
+      $edges = RouterEdges::all();
+
+      // Iterate over each edge and add it to the graph
+      foreach ($edges as $edge) {
+        $this->graph->addEdge($edge->origin_node, $edge->destination_node);
       }
     }
+
 
     /**
      * Finds the shortest path between two nodes.
@@ -325,10 +268,8 @@ namespace App\Services\Router {
 
       $epsilon = 1e-10; // Tolerance to avoid (very hard to debug) FP rounding errors.
 
-      if ($this->debug) {
-        echo "\033[1;34m=== Starting A* Search ===\033[0m\n";
-        echo "From: $startNodeID | To: $endNodeID\n\n";
-      }
+      $this->debug && print "\033[1;34m=== Starting A* Search ===\033[0m\nFrom: $startNodeID | To: $endNodeID\n\n";
+
 
       // Main loop of the A* algorithm
       while (!$openSet->isEmpty()) {
@@ -339,24 +280,20 @@ namespace App\Services\Router {
         $insertion_fScore = -$extracted['priority'];
         $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
-        if ($this->debug) {
-          echo "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n";
-          echo "  Open Set Size: ".$openSet->count()."\n";
-          echo "  fScore: ".sprintf("%.6f", $insertion_fScore)." | gScore (queue): ".sprintf("%.6f",
-              $insertion_gScore)."\n";
-        }
+        $this->debug && print "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n  Open Set Size: ".$openSet->count()."\nfScore: ".sprintf("%.6f",
+            $insertion_fScore)." | gScore (queue): ".sprintf("%.6f", $insertion_gScore)."\n";
+
 
         // Check if the current node's gScore is valid
         if ($gScore[$currentID] - $insertion_gScore <= $epsilon) {
-          if ($this->debug) {
-            echo "  \033[32mAction: Processing\033[0m | Current gScore: ".sprintf("%.6f", $gScore[$currentID])."\n";
-          }
+          $this->debug && print "  \033[32mAction: Processing\033[0m | Current gScore: ".sprintf("%.6f",
+              $gScore[$currentID])."\n";
+
         } else {
-          if ($this->debug) {
-            echo "  \033[31mAction: Skipped\033[0m | Current gScore: ".sprintf("%.6f",
-                $gScore[$currentID])." > Queue gScore: ".sprintf("%.6f", $insertion_gScore)."\n";
-            echo "\033[1;36m-----------------\033[0m\n\n";
-          }
+          $this->debug && print "  \033[31mAction: Skipped\033[0m | Current gScore: ".sprintf("%.6f",
+              $gScore[$currentID])." > Queue gScore: ".sprintf("%.6f",
+              $insertion_gScore)."\n\033[1;36m-----------------\033[0m\n\n";
+
           continue;
         }
 
@@ -371,9 +308,8 @@ namespace App\Services\Router {
 
         // Iterate over each neighbor of the current node
         foreach ($this->graph->getNeighbors($currentID) as $neighborID => $weight) {
-          if ($this->debug) {
-            echo "  \033[38;2;255;140;0m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f", $weight)."\n";
-          }
+          $this->debug && print "  \033[38;2;255;140;0m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f",
+              $weight)."\n";
 
           $tentativeGScore = $gScore[$currentID] + $weight;
 
@@ -388,10 +324,9 @@ namespace App\Services\Router {
 
             if ($this->debug) {
               echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
-                  $tentativeGScore)." | New fScore: ".sprintf("%.6f", $fScore[$neighborID])."\n";
-              echo "    \033[1;35mHeuristic Info:\033[0m\n";
-              echo "      Current: $currentID | Neighbor: $neighborID\n";
-              echo "      Σ Path Weight: ".sprintf("%.6f", $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
+                  $tentativeGScore)." | New fScore: ".sprintf("%.6f",
+                  $fScore[$neighborID])."\n    \033[1;35mHeuristic Info:\033[0m\n      Current: $currentID | Neighbor: $neighborID\n      Σ Path Weight: ".sprintf("%.6f",
+                  $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
                   $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
 
               // Check heuristic admissibility
@@ -400,15 +335,14 @@ namespace App\Services\Router {
               echo "      Heuristic Admissible: $admissibilitySymbol\n\n";
             }
           } else {
-            if ($this->debug) {
-              echo "    \033[37mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
-                  $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
-            }
+            $this->debug && print  "    \033[37mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
+                $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
           }
         }
       }
       throw new NoPathFoundException($startNodeID, $endNodeID);
     }
+
 
     /**
      * Helper function for A*.
