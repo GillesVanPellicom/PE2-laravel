@@ -131,7 +131,7 @@ class Package extends Model {
   }
 
   /**
-   * Get the current Node
+   * Get the current Node.
    * 
    * @return Node|null
    */
@@ -602,10 +602,6 @@ class Package extends Model {
    * @return Node The initialized Node object.
    */
   private function initializeNode(Node $node, PackageMovement $movement): Node {
-    $node->setArrivedAt($movement->arrival_time ? new Carbon($movement->arrival_time) : null);
-    $node->setCheckedInAt($movement->check_in_time ? new Carbon($movement->check_in_time) : null);
-    $node->setCheckedOutAt($movement->check_out_time ? new Carbon($movement->check_out_time) : null);
-    $node->setDepartedAt($movement->departure_time ? new Carbon($movement->departure_time) : null);
-    return $node;
+    return $node->initializeTimes($movement);
   }
 }
