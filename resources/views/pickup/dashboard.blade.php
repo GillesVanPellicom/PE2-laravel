@@ -70,15 +70,15 @@
             </div>
         </div>
     </div!-->
-    <div class=" flex flex-col mt-2 justify-center items-center m-auto overflow-x-auto py-5 max-w-2xl sm:rounded-lg sm:px-1 lg:px-8">
-        <div class="mt-10  w-full flex flex-row gap-4 justify-start items-start">
-            <x-nav-link class=" bg-white  rounded  py-1 px-2" :href="route('pickup.dashboard.packages-to-return')" :active="request()->routeIs('pickup.dashboard') ">Packages to return</x-nav-link>
-            <x-nav-link class=" bg-white border-gray-100 rounded  py-1 px-2" :href="route('pickup.dashboard.receiving-packages')" :active="request()->routeIs('pickup.dashboard') ">Receiving Packages</x-nav-link>
-        </div>
 
-    </div>
     <div class=" flex flex-col justify-center items-center align-middle m-auto  overflow-x-auto max-w-7xl sm:rounded-lg mx-auto sm:px-6 lg:px-8">
+        <div class=" flex flex-col mt-2 justify-center items-center m-auto overflow-x-auto py-5 max-w-2xl sm:rounded-lg sm:px-1 lg:px-8">
+            <div class="mt-10  w-full flex flex-row gap-4 justify-start items-start">
+                <x-nav-link class=" bg-white  rounded  py-1 px-2" :href="route('pickup.dashboard.packages-to-return')" :active="request()->routeIs('pickup.dashboard') ">Packages to return</x-nav-link>
+                <x-nav-link class=" bg-white border-gray-100 rounded  py-1 px-2" :href="route('pickup.dashboard.receiving-packages')" :active="request()->routeIs('pickup.dashboard') ">Receiving Packages</x-nav-link>
+            </div>
 
+        </div>
         <div class="ring-gray-200 ring-2 bg-white border overflow-hidden rounded-md shadow-slate-100 shadow-lg p-8 flex w-fit flex-col gap-6 justify-center items-center ">
             <div class=" flex-wrap flex w-fit flex-col gap-x-2 gap-y-4 justify-center items-center">
                 @session('success')
