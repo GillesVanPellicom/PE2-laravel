@@ -50,7 +50,7 @@ Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
 
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-Route::get("/logout", fn() => 
+Route::get("/logout", fn() =>
     redirect("login")
 );
 
@@ -60,41 +60,6 @@ Route::middleware("auth")->group(function () {
 });
 
 // ======================= End Authentication ====================== //
-
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
-
-// Login
-Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
-Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
-
-// Register
-Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
-Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
-
-// Update
-Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
-
-// Logout
-Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-
-// Email Verification Routes
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
-
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-
-    return redirect('/home');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    
-    return back()->with('message', 'Verification link sent!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // ======================= Start Courier ====================== //
 
@@ -122,13 +87,13 @@ Route::middleware("auth")->group(function () {
 
     Route::post("/courier/scanQr", [CourierController::class, "scanQr"])
         ->middleware("permission:scan")->name("courier.scanQr");
-    
+
     Route::post("/courier/deliver/{id}", [TrackPackageController::class, "deliverPackage"])
         ->middleware("permission:scan.deliver")->name("courier.deliver");
 
     Route::get('/courier/logout', [AuthController::class, "logout"])
         ->middleware("permission:scan")->name("courier.logout");
-}); 
+});
 
 # Test Route
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
@@ -200,9 +165,12 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
 
 // ======================= Start Pick Up Point ====================== //
 
-Route::get('/pickup', [PackageController::class, 'index'])->name('pickup.dashboard');
-Route::get('/pickup/package/{id}', [PackageController::class, 'show'])->name('pickup.package.id');
-Route::patch('/pickup/package/{id}', [PackageController::class, 'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
+Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
+Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
+Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
+Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+
 
 // ======================= End Pick Up Point ====================== //
 
