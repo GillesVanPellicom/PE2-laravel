@@ -121,7 +121,8 @@ class Package extends Model {
 
 
   /**
-   * Get the current location of the package.
+   * Get the current Location of the package.
+   * (Only works if the current location is not a RouterNode but a Location.)
    *
    * @return BelongsTo
    */
@@ -129,6 +130,11 @@ class Package extends Model {
     return $this->belongsTo(Location::class, 'current_location_id');
   }
 
+  /**
+   * Get the current Node.
+   * 
+   * @return Node|null
+   */
   public function currentNode() {
     return Node::fromId($this->current_location_id);
   }
@@ -596,10 +602,8 @@ class Package extends Model {
    * @return Node The initialized Node object.
    */
   private function initializeNode(Node $node, PackageMovement $movement): Node {
-    $node->setArrivedAt($movement->arrival_time ? new Carbon($movement->arrival_time) : null);
-    $node->setCheckedInAt($movement->check_in_time ? new Carbon($movement->check_in_time) : null);
-    $node->setCheckedOutAt($movement->check_out_time ? new Carbon($movement->check_out_time) : null);
-    $node->setDepartedAt($movement->departure_time ? new Carbon($movement->departure_time) : null);
-    return $node;
+    // It's usually better when changing the fields of a class that you do it in that class.
+    // It would be best to instantly call the method (like done below) on the node instead of calling this (basically wrapper) function.
+    return $node->initializeTimes($movement);
   }
 }

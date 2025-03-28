@@ -9,6 +9,7 @@ use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use RuntimeException;
+use App\Models\PackageMovement;
 use Carbon\Carbon;
 
 class Node {
@@ -259,6 +260,20 @@ class Node {
 
   public function getAddress(): Address {
     return $this->address;
+  }
+
+    /**
+   * Initialize a Node object with movement timestamps.
+   *
+   * @param  PackageMovement  $movement  The movement containing timestamps.
+   * @return Node The initialized Node object.
+   */
+  public function initializeTimes(PackageMovement $movement): Node {
+    $this->setArrivedAt($movement->arrival_time ? new Carbon($movement->arrival_time) : null);
+    $this->setCheckedInAt($movement->check_in_time ? new Carbon($movement->check_in_time) : null);
+    $this->setCheckedOutAt($movement->check_out_time ? new Carbon($movement->check_out_time) : null);
+    $this->setDepartedAt($movement->departure_time ? new Carbon($movement->departure_time) : null);
+    return $this;
   }
   
   /**
