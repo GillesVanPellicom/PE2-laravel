@@ -26,8 +26,6 @@ use App\Http\Controllers\DispatcherController;
 
 // ======================= Start Authentication ====================== //
 
-
-
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -56,26 +54,6 @@ Route::middleware("auth")->group(function () {
     Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
 });
 
-// ======================= End Authentication ====================== //
-
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
-
-// Login
-Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
-Route::post('/login', [AuthController::class, 'authenticate'])->name('auth.authenticate');
-
-// Register
-Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
-Route::post('/register', [AuthController::class, 'store'])->name('auth.store');
-
-// Update
-Route::post('/update', [AuthController::class, 'update'])->name('auth.update');
-
-// Logout
-Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-
 // Email Verification Routes
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
@@ -93,14 +71,7 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-// Customers
-Route::get('/customers', function () {
-    if (!Auth::check()) {
-        return redirect()->route('auth.login');
-    }
-    return view('customers');
-})->name('customers');
-Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+// ======================= End Authentication ====================== //
 
 // ======================= Start Courier ====================== //
 
