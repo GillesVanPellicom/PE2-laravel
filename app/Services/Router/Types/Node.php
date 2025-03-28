@@ -9,6 +9,7 @@ use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use RuntimeException;
+use App\Models\PackageMovement;
 use Carbon\Carbon;
 
 class Node {
@@ -88,25 +89,27 @@ class Node {
 
   /**
    * Creates a Node from a Location
-   * 
+   *
    * @throws InvalidRouterArgumentException
    * @throws InvalidCoordinateException
    */
-  public static function fromLocation(Location $loc){
-    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude, $loc->longitude, $loc->addresses_id);
+  public static function fromLocation(Location $loc) {
+    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude,
+      $loc->longitude, $loc->addresses_id);
   }
 
   /**
    * Creates a Node from a RouterNode
-   * 
+   *
    * @throws InvalidRouterArgumentException
    * @throws InvalidCoordinateException
    */
-  public static function fromRouterNode(RouterNodes $node){
-    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg, $node->address_id, $node->isEntry, $node->isExit);
+  public static function fromRouterNode(RouterNodes $node) {
+    return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg,
+      $node->address_id, $node->isEntry, $node->isExit);
   }
 
-    /**
+  /**
    * Get a Node object from a given ID.
    *
    * This method checks both RouterNodes and Location models to find the node.
@@ -116,12 +119,14 @@ class Node {
    * @throws InvalidRouterArgumentException If the node ID is empty
    * @throws InvalidCoordinateException If the node ID is empty
    */
-  public static function fromId(string $id){
+  public static function fromId(string $id): ?Node {
     $nodeData = RouterNodes::find($id) ?? Location::find($id);
 
-    if (!$nodeData) return null;
+    if (!$nodeData) {
+      return null;
+    }
 
-    if ($nodeData instanceOf RouterNodes) {
+    if ($nodeData instanceof RouterNodes) {
       return Node::fromRouterNode($nodeData);
     } else {
       return Node::fromLocation($nodeData);
@@ -260,7 +265,21 @@ class Node {
   public function getAddress(): Address {
     return $this->address;
   }
-  
+
+  /**
+   * Initialize a Node object with movement timestamps.
+   *
+   * @param  PackageMovement  $movement  The movement containing timestamps.
+   * @return Node The initialized Node object.
+   */
+  public function initializeTimes(PackageMovement $movement): Node {
+    $this->setArrivedAt($movement->arrival_time ? new Carbon($movement->arrival_time) : null);
+    $this->setCheckedInAt($movement->check_in_time ? new Carbon($movement->check_in_time) : null);
+    $this->setCheckedOutAt($movement->check_out_time ? new Carbon($movement->check_out_time) : null);
+    $this->setDepartedAt($movement->departure_time ? new Carbon($movement->departure_time) : null);
+    return $this;
+  }
+
   /**
    * Prints the node details to the console
    *
