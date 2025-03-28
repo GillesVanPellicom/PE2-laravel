@@ -19,7 +19,10 @@
 
                     <div class="ml-4 flex-1">
                         <p class="text-lg font-semibold text-green-700">Next to Deliver: {{ $firstPackage['ref'] ?? 'N/A' }}</p>
-                        <p class="text-sm text-gray-600">Coordinates: {{ $firstPackage['latitude'] }}, {{ $firstPackage['longitude'] }}</p>
+                        <!-- <p class="text-sm text-gray-600">Coordinates: {{ $firstPackage['latitude'] }}, {{ $firstPackage['longitude'] }}</p> -->
+                        <p class="text-sm text-gray-600">
+                            Address: {{ $firstPackage['address']['street'] ?? 'N/A' }} {{ $firstPackage['address']['house_number'] ?? '' }}
+                        </p>
 
                         @if ($firstPackage["end"])
                             <div class="flex space-x-4 mt-4">
@@ -56,7 +59,9 @@
 
                             <div class="ml-4 flex-1">
                                 <p class="text-lg font-semibold">Package Ref: {{ $location['ref'] ?? 'N/A' }}</p>
-                                <p class="text-sm text-gray-500">Coordinates: {{ $location['latitude'] }}, {{ $location['longitude'] }}</p>
+                                <p class="text-sm text-gray-500">
+                                    Address: {{ $location['address']['street'] ?? 'N/A' }} {{ $location['address']['house_number'] ?? '' }}
+                                </p>
                             </div>
 
                             <div>
