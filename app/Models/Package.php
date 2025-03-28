@@ -602,8 +602,8 @@ class Package extends Model {
    * @return Node The initialized Node object.
    */
   private function initializeNode(Node $node, PackageMovement $movement): Node {
-    // Its usually better when changing the fields of a class that you do it in that class.
-    // It would be best to instantly call the method (like done below) on the node instead of calling this (basically wrapper) function
+    // It's usually better when changing the fields of a class that you do it in that class.
+    // It would be best to instantly call the method (like done below) on the node instead of calling this (basically wrapper) function.
     return $node->initializeTimes($movement);
   }
 }
