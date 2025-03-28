@@ -10,7 +10,7 @@
                         </div>
                     </div>
 
-                    <form class="mt-8 space-y-6" method="POST" action="">
+                    <form id="submit-form" action="{{ route('packages.packagedetails', $package->id) }}" method="GET" class="mt-8 space-y-6">
                         @csrf
                         <div class="bg-white">
                             <!-- Amount Display -->
@@ -185,7 +185,7 @@
         });
 
         // Front-end validation on form submission
-        document.querySelector('form').addEventListener('submit', function(event) {
+        document.getElementById('submit-form').addEventListener('submit', function(event) {
             let valid = true;
             let messages = [];
             const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
@@ -222,7 +222,7 @@
                 return true;
             }
 
-            // Helper to validate CVV (3 digits)
+            // Helper to validate CVV 
             function validateCVV(cvv) {
                 return /^\d{3}$/.test(cvv);
             }
@@ -276,10 +276,5 @@
         });
     </script>
 </x-app-layout>
-
-
-
-
-
 
 

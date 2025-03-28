@@ -399,7 +399,7 @@ class PackageController extends Controller
             return back()->withErrors(['error' => 'Failed to create package']);
         }
 
-        return redirect()->route('packages.send-package')->with('success', 'Package created successfully');
+        return redirect()->route('packagepayment',$package->id)->with('success', 'Package created successfully');
     }
 
     /**
@@ -582,7 +582,7 @@ public function generatePackageLabel($packageID)
             'distance_km' => round($distance, 2)
         ];
     }
-}
+
 
 public function packagePayment($packageID) {
     $package = Package::with([
@@ -593,7 +593,7 @@ public function packagePayment($packageID) {
     ->first();
     return view('packagepayment',compact('package')); 
 }
-
 }
+
 
 
