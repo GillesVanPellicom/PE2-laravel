@@ -45,79 +45,58 @@ namespace App\Services\Router {
 
 
     /**
-     * @returns Node[]|null Array of node objects representing the path in movements
-     * @throws RouterException<
-     * @throws InvalidRouterArgumentException
+     * @param  Location|string  $origin
+     * @param  Location|string  $destination
+     * @return array|null
      * @throws InvalidCoordinateException
-     * @throws NodeNotFoundException
+     * @throws InvalidRouterArgumentException
      * @throws NoPathFoundException
+     * @throws NodeNotFoundException
+     * @throws RouterException
      */
-    public function getPath(Location $origin, Location $destination): ?array {
-      $oN = new Node(
-        $origin->getAttribute('location_type') == NodeType::ADDRESS
-          ? $origin->getAttribute('id')
-          : $origin->getAttribute('infrastructure_id'),
-        $origin->getAttribute('description'),
-        $origin->getAttribute('location_type'),
-        $origin->getAttribute('latitude'),
-        $origin->getAttribute('longitude'),
-        $origin->getAttribute('addresses_id')
-      );
+    public function getPath(Location|string $origin, Location|string $destination): ?array {
+      // Check type of origin and destination
+      $oIsLoc = $origin instanceof Location;
+      $dIsLoc = $destination instanceof Location;
 
-      $dN = new Node(
-        $destination->getAttribute('location_type') == NodeType::ADDRESS
-          ? $destination->getAttribute('id')
-          : $destination->getAttribute('infrastructure_id'),
-        $destination->getAttribute('description'),
-        $destination->getAttribute('location_type'),
-        $destination->getAttribute('latitude'),
-        $destination->getAttribute('longitude'),
-        $destination->getAttribute('addresses_id'),
-      );
+      // Simple check for Node ID validity, actual screening is done in the graph
+      if ((!$oIsLoc && $origin[0] !== '@') || (!$dIsLoc && $destination[0] !== '@')) {
+        throw new InvalidRouterArgumentException("ID ({$origin}) is not a valid Node ID.");
+      }
 
-      $oN->setArrivedAt(now());
-      $oN->setCheckedInAt(now());
-
-
-      $path = $this->aStar(
-        $this->findClosestNode(
+      // Convert origin to Node if it is a Location
+      if ($oIsLoc) {
+        $oN = Router::locationToNode($origin);
+        $origin = $this->findClosestNode(
           $oN->getLat(CoordType::RADIAN),
           $oN->getLong(CoordType::RADIAN),
           true,
-          false),
+          false
+        );
+      }
 
-        $this->findClosestNode(
+      // Convert destination to Node if it is a Location
+      if ($dIsLoc) {
+        $dN = Router::locationToNode($destination);
+        $destination = $this->findClosestNode(
           $dN->getLat(CoordType::RADIAN),
           $dN->getLong(CoordType::RADIAN),
           false,
           true
-        ));
+        );
+      }
 
-      array_unshift($path, $oN);
-      $path[] = $dN;
-      return $path;
-    }
+      // Generate path
+      $path = $this->aStar($origin, $destination);
 
+      // Adjust path for Locations
+      if ($oIsLoc) {
+        array_unshift($path, $oN);
+      }
 
-    /**
-     * Builds the complete path including imaginary nodes if needed
-     *
-     * @param  string  $startId  Starting node ID
-     * @param  string  $endId  Ending node ID
-     * @param ?object  $startNode  Starting imaginary node if created
-     * @param ?object  $endNode  Ending imaginary node if created
-     * @return array Array of node objects representing the path
-     * @throws NoPathFoundException
-     * @throws InvalidRouterArgumentException
-     * @throws NodeNotFoundException
-     */
-    private function buildPath(string $startId, string $endId, ?object $startNode, ?object $endNode): array {
-      // Get core path using A* algorithm
-      $path = $this->aStar($startId, $endId);
-
-      // Add imaginary nodes if they exist
-      $startNode && array_unshift($path, $startNode);
-      $endNode && $path[] = $endNode;
+      if ($dIsLoc) {
+        $path[] = $dN;
+      }
 
       return $path;
     }
@@ -363,6 +342,26 @@ namespace App\Services\Router {
       }
       return $totalPath;
     }
+
+    /**
+     * @param  Location  $location
+     * @return Node
+     * @throws InvalidCoordinateException
+     * @throws InvalidRouterArgumentException
+     */
+    static private function locationToNode(Location $location): Node {
+      return new Node(
+        $location->getAttribute('location_type') == NodeType::ADDRESS
+          ? $location->getAttribute('id')
+          : $location->getAttribute('infrastructure_id'),
+        $location->getAttribute('description'),
+        $location->getAttribute('location_type'),
+        $location->getAttribute('latitude'),
+        $location->getAttribute('longitude'),
+        $location->getAttribute('addresses_id')
+      );
+    }
   }
+
 
 }
