@@ -165,12 +165,62 @@ class Package extends Model {
 
 
   /**
+   * @return void
+   * @throws InvalidCoordinateException
+   * @throws InvalidRouterArgumentException
+   * @throws NoPathFoundException
+   * @throws NodeNotFoundException
+   * @throws RouterException
+   * @throws Exception
+   */
+  public function return(): void {
+    $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
+    if ($movements->isEmpty()) {
+      $this->generateMovements();
+    }
+
+    // Get the current location node
+    $currentNode = $this->getCurrentMovement();
+    if (!$currentNode) {
+      throw new Exception('Current location not found.');
+    }
+
+    // Resolve the Router service
+    /** @var Router $router */
+    $router = App::make(Router::class);
+
+    $currentLocation = $this->getCurrentMovement()->getID();
+    if (is_numeric($currentLocation)) {
+      $currentLocation = Location::find($currentLocation);
+    }
+
+    // Get the path from origin to destination
+    $path = $router->getPath(
+      $currentLocation,
+      $this->getAttribute('originLocation')
+    );
+
+    // Commit the path as movements
+    $this->commitMovements($path);
+  }
+
+
+  /**
+   * Reroute the package to a new destination.
+   *
+   * This method updates the package's movements to a new destination.
+   * It generates movements if none exist and commits the new path as movements.
+   *
+   * @param  Location|string  $destination  The new destination for the package.
+   * @return void
+   * @throws Exception If movements are uninitialized or current movement not found.
    * @throws RouterException
    * @throws InvalidRouterArgumentException
    * @throws NodeNotFoundException
    * @throws InvalidCoordinateException
    * @throws NoPathFoundException
-   * @throws Exception
    */
   public function reroute(Location|string $destination): void {
 
@@ -186,7 +236,6 @@ class Package extends Model {
     if (!$currentNode) {
       throw new Exception('Current location not found.');
     }
-
 
     // Resolve the Router service
     /** @var Router $router */

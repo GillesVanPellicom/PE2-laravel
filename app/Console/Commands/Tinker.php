@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Helpers\ConsoleHelper;
+use App\Models\Location;
 use App\Models\Package;
 use App\Services\Router\Router;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
@@ -30,8 +31,11 @@ class Tinker extends Command {
    * @throws NoPathFoundException
    */
   public function handle(): void {
-      $package = Package::find(1);
-      $path = $package->getMovements();
-      dd($path[count($path)-2]);
+    $package = Package::find(1);
+
+    $package->return();
+
+    $path = $package->getMovements();
+      dd($path);
   }
 }
