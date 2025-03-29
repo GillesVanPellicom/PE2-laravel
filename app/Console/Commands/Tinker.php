@@ -29,27 +29,28 @@ class Tinker extends Command {
   /**
    * Execute the console command.
    */
-  public function handle(): void {
-    /** @var Package $package */
-    $package = Package::find(2);
-    $path = $package->getMovements();
-    dd($package->move(MoveOperationType::DELIVER));
+  // public function handle(): void {
+  //   /** @var Package $package */
+  //   $package = Package::find(2);
+  //   $path = $package->getMovements();
+  //   dd($package->move(MoveOperationType::DELIVER));
 
 
 
-  //   public function handle(): void {
+    public function handle(): void {
       
-  //        for ($i = 1; $i <= 101; $i++) {
-  //          $package = Package::find($i);
-  //          try {
-  //            $path = $package->getMovements();
-  //            for($j = 0; $j <= 16; $j++) {
-  //              $package->fakeMove();
-  //            }
-  //          } catch (Exception $e) {
-  //            ConsoleHelper::error($e->getMessage());
-  //          }
-  //        }
+         for ($i = 1; $i <= 101; $i++) {
+           $package = Package::find($i);
+           try {
+             $path = $package->getMovements();
+             for($j = 0; $j <= 16; $j++) {
+               $package->fakeMove();
+             }
+           } catch (Exception $e) {
+             ConsoleHelper::error($e->getMessage());
+           }
+         }
 
-  // }
+  
+}
 }
