@@ -5,6 +5,7 @@ namespace App\Services\Router\Types;
 use App\Models\Address;
 use App\Services\Router\GeoMath;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
+use App\Services\Router\Types\Exceptions\EdgeNotFoundException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
@@ -118,6 +119,38 @@ class RouterGraph {
     }
     return null;
   }
+
+
+  /**
+   * Removes an edge between two nodes.
+   *
+   * @param  string  $startNodeID  The ID of the start node.
+   * @param  string  $endNodeID  The ID of the end node.
+   * @return void
+   * @throws NodeNotFoundException If either node does not exist.
+   * @throws EdgeNotFoundException If the edge does not exist.
+   */
+  public function removeEdge(string $startNodeID, string $endNodeID): void {
+    // Check if the start node exists
+    if (!isset($this->nodes[$startNodeID])) {
+      throw new NodeNotFoundException($startNodeID);
+    }
+
+    // Check if the end node exists
+    if (!isset($this->nodes[$endNodeID])) {
+      throw new NodeNotFoundException($endNodeID);
+    }
+
+    // Check if the edge exists
+    if (!isset($this->edges[$startNodeID][$endNodeID]) && !isset($this->edges[$endNodeID][$startNodeID])) {
+      throw new EdgeNotFoundException($startNodeID, $endNodeID);
+    }
+
+    // Remove the edge from the graph
+    unset($this->edges[$startNodeID][$endNodeID]);
+    unset($this->edges[$endNodeID][$startNodeID]);
+  }
+
 
   /**
    * Adds an unidirectional edge between two nodes

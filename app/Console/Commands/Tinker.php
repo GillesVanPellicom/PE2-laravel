@@ -32,7 +32,8 @@ class Tinker extends Command {
    */
   public function handle(): void {
     $router = App::make(Router::class);
-    $router->addRoute("@DC_ANTWERP", "@DC_WARSAW", 8);
+//    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
+    $router->removeRoute("@AIR_EBBR", "@AIR_LGAV", 8);
 
 //    $package = Package::find(1);
 //

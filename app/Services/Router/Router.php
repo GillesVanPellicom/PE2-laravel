@@ -11,6 +11,7 @@ namespace App\Services\Router {
   use App\Models\RouterNodes;
   use App\Services\Router\Types\CoordType;
   use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
+  use App\Services\Router\Types\Exceptions\EdgeNotFoundException;
   use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
   use App\Services\Router\Types\Exceptions\FileNotFoundException;
   use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
@@ -48,6 +49,61 @@ namespace App\Services\Router {
 
 
     /**
+     * Removes a route between two nodes safely.
+     * Will automatically try and reroute all packages scheduled for the removed route.
+     * Will not remove the route if this causes stranded packages, unless force is enabled.
+     *
+     * @param  string  $origin  The origin node ID.
+     * @param  string  $destination  The destination node ID.
+     * @param  bool  $force  Force removal even if this causes stranded packages. Default: false.
+     * @return void
+     * @throws InvalidRouterArgumentException
+     * @throws NodeNotFoundException
+     * @throws RouterException
+     */
+    public function removeRoute(string $origin, string $destination, bool $force = false): void {
+      // Validate the origin and destination IDs
+      if (empty($origin) || empty($destination)) {
+        throw new InvalidRouterArgumentException("Origin or destination ID cannot be empty.");
+      }
+
+      // Make operation atomic
+      try {
+        DB::transaction(function () use ($origin, $destination, $force) {
+          // Find the edge in the database
+          $edge = RouterEdges::where(function ($query) use ($origin, $destination) {
+            $query->where('origin_node', $origin)
+              ->where('destination_node', $destination)
+              ->orWhere(function ($query) use ($origin, $destination) {
+                $query->where('origin_node', $destination)
+                  ->where('destination_node', $origin)
+                  ->where('isUniDirectional', false);
+              });
+          })->first();
+
+          // If the edge does not exist, throw an exception
+          if (!$edge) {
+            throw new EdgeNotFoundException($origin, $destination);
+          }
+
+          // Remove the edge from the graph
+          $this->graph->removeEdge($origin, $destination);
+
+          // Refresh packages that were using this edge, if this strands packages:
+          if (!$this->refresh($edge->id) && !$force) {
+            throw new RouterException("Failed complete the route removal. Use force=true to remove the edge anyway.");
+          }
+
+          // Remove the edge from the database
+          $edge->delete();
+        });
+      } catch (Exception $e) {
+        throw new RouterException("Transaction failed: ".$e->getMessage());
+      }
+    }
+
+
+    /**
      * @param  string  $origin  origin node ID
      * @param  string  $destination  destination node ID
      * @param  int  $validityDays  route validity in days (default: 3650 days, 10 years)
@@ -64,6 +120,7 @@ namespace App\Services\Router {
         throw new InvalidRouterArgumentException("Origin or destination ID cannot be empty.");
       }
 
+      // Make operation atomic
       try {
         DB::transaction(function () use ($origin, $destination, $validityDays) {
           // Check if the edge already exists
@@ -77,6 +134,7 @@ namespace App\Services\Router {
               });
           })->first();
 
+          // If it exists, throw an exception
           if ($existingEdge) {
             throw new EdgeAlreadyExistsException($origin, $destination);
           }
@@ -210,7 +268,7 @@ namespace App\Services\Router {
       }
 
       if ($closestNode === null) {
-        throw new RouterException("Cannot connect imaginary node to graph. No suitable node found matching entry/exit criteria to connect to address node variant.. ");
+        throw new RouterException("Cannot connect imaginary node to graph. No suitable node found matching entry/exit criteria to connect to address node variant. ");
       }
 
       return $closestNode->getID();
@@ -423,9 +481,9 @@ namespace App\Services\Router {
      * Requires the RouterEdge to still be in the database, but be removed in the graph.
      *
      * @param  int  $edgeId  The ID of the RouterEdge to check.
-     * @return void
+     * @return bool true if refresh completed without stranding packages, else false.
      */
-    private function refresh(int $edgeId): void {
+    private function refresh(int $edgeId): bool {
       $failedPackages = [];
 
       // Get all package movements that use this edge
@@ -445,8 +503,8 @@ namespace App\Services\Router {
           }
         }
       }
-
       // TODO: handle packages which failed to be rerouted
+      return empty($failedPackages);
     }
   }
 }
