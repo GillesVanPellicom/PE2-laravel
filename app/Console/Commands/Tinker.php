@@ -36,6 +36,6 @@ class Tinker extends Command {
     $package->return();
 
     $path = $package->getMovements();
-      dd($path);
+//      dd($path);
   }
 }

@@ -12,6 +12,7 @@ use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\NoPathFoundException;
+use App\Services\Router\Types\Exceptions\RerouteToSelfException;
 use App\Services\Router\Types\Exceptions\RouterException;
 use App\Services\Router\Types\MoveOperationType;
 use App\Services\Router\Types\Node;
@@ -173,38 +174,9 @@ class Package extends Model {
    * @throws RouterException
    * @throws Exception
    */
-  public function return(): void {
-    $movements = $this->movements()->orderBy('id')->get();
-
-    // If no movements exist, generate them
-    if ($movements->isEmpty()) {
-      $this->generateMovements();
-    }
-
-    // Get the current location node
-    $currentNode = $this->getCurrentMovement();
-    if (!$currentNode) {
-      throw new Exception('Current location not found.');
-    }
-
-    // Resolve the Router service
-    /** @var Router $router */
-    $router = App::make(Router::class);
-
-    $currentLocation = $this->getCurrentMovement()->getID();
-    if (is_numeric($currentLocation)) {
-      $currentLocation = Location::find($currentLocation);
-    }
-
-    // Get the path from origin to destination
-    $path = $router->getPath(
-      $currentLocation,
-      $this->getAttribute('originLocation')
-    );
-
-    // Commit the path as movements
-    $this->commitMovements($path);
-  }
+public function return(): void {
+    $this->reroute($this->getAttribute('originLocation'));
+}
 
 
   /**
@@ -223,6 +195,13 @@ class Package extends Model {
    * @throws NoPathFoundException
    */
   public function reroute(Location|string $destination): void {
+    if ($destination == $this->current_location_id) {
+      throw new RerouteToSelfException($destination);
+    }
+
+    if ( $destination instanceof Location && $destination->id == $this->current_location_id) {
+      throw new RerouteToSelfException($destination);
+    }
 
     $movements = $this->movements()->orderBy('id')->get();
 
@@ -620,60 +599,60 @@ class Package extends Model {
    *
    * @param  Node[]  $path  The array of Node objects representing the path.
    */
-private function commitMovements(array $path): void {
+  private function commitMovements(array $path): void {
     DB::transaction(function () use ($path) {
-        // Check if the package already has movements and remove them
-        if ($this->movements()->exists()) {
-            $this->movements()->delete();
+      // Check if the package already has movements and remove them
+      if ($this->movements()->exists()) {
+        $this->movements()->delete();
+      }
+
+      $previousMovement = null;
+      $previousNode = null;
+
+      foreach ($path as $i => $node) {
+        // Prepare movement data
+        $movementData = [
+          'package_id' => $this->id,
+          'handled_by_courier_id' => null,
+          'vehicle_id' => null,
+          'departure_time' => null,
+          'arrival_time' => $i === 0 ? now() : null,
+          'check_in_time' => $i === 0 ? now() : null,
+          'check_out_time' => null,
+          'current_node_id' => $node->getID(),
+          'next_movement' => null,
+          'router_edge_id' => null,
+        ];
+
+        // Create the movement
+        $movement = $this->movements()->create($movementData);
+
+        // Link to the previous movement if exists
+        if ($previousMovement) {
+          // Find the router edge between previous and current node
+          $routerEdge = RouterEdges::where(function ($query) use ($previousNode, $node) {
+            $query->where('origin_node', $previousNode->getID())
+              ->where('destination_node', $node->getID())
+              ->orWhere(function ($query) use ($previousNode, $node) {
+                $query->where('origin_node', $node->getID())
+                  ->where('destination_node', $previousNode->getID())
+                  ->where('isUniDirectional', 0);
+              });
+          })->first();
+
+          // Update the previous movement with the next movement ID and router edge ID
+          $previousMovement->update([
+            'next_movement' => $movement->id,
+            'router_edge_id' => $routerEdge ? $routerEdge->id : null,
+          ]);
         }
 
-        $previousMovement = null;
-        $previousNode = null;
-
-        foreach ($path as $i => $node) {
-            // Prepare movement data
-            $movementData = [
-                'package_id' => $this->id,
-                'handled_by_courier_id' => null,
-                'vehicle_id' => null,
-                'departure_time' => null,
-                'arrival_time' => $i === 0 ? now() : null,
-                'check_in_time' => $i === 0 ? now() : null,
-                'check_out_time' => null,
-                'current_node_id' => $node->getID(),
-                'next_movement' => null,
-                'router_edge_id' => null,
-            ];
-
-            // Create the movement
-            $movement = $this->movements()->create($movementData);
-
-            // Link to the previous movement if exists
-            if ($previousMovement) {
-                // Find the router edge between previous and current node
-                $routerEdge = RouterEdges::where(function ($query) use ($previousNode, $node) {
-                    $query->where('origin_node', $previousNode->getID())
-                          ->where('destination_node', $node->getID())
-                          ->orWhere(function ($query) use ($previousNode, $node) {
-                              $query->where('origin_node', $node->getID())
-                                    ->where('destination_node', $previousNode->getID())
-                                    ->where('isUniDirectional', 0);
-                          });
-                })->first();
-
-                // Update the previous movement with the next movement ID and router edge ID
-                $previousMovement->update([
-                    'next_movement' => $movement->id,
-                    'router_edge_id' => $routerEdge ? $routerEdge->id : null,
-                ]);
-            }
-
-            // Set previous movement and node for the next iteration
-            $previousMovement = $movement;
-            $previousNode = $node;
-        }
+        // Set previous movement and node for the next iteration
+        $previousMovement = $movement;
+        $previousNode = $node;
+      }
     });
-}
+  }
 
 
   /**
