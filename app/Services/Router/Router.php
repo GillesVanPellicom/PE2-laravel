@@ -96,6 +96,7 @@ namespace App\Services\Router {
 
           // Remove the edge from the database
           $edge->delete();
+
         });
       } catch (Exception $e) {
         throw new RouterException("Transaction failed: ".$e->getMessage());
@@ -175,7 +176,7 @@ namespace App\Services\Router {
 
       // Simple check for Node ID validity, actual screening is done in the graph
       if ((!$oIsLoc && $origin[0] !== '@') || (!$dIsLoc && $destination[0] !== '@')) {
-        throw new InvalidRouterArgumentException("ID ({$origin}) is not a valid Node ID.");
+        throw new InvalidRouterArgumentException("ID ($origin) is not a valid Node ID.");
       }
 
       // Convert origin to Node if it is a Location
@@ -457,6 +458,7 @@ namespace App\Services\Router {
       return $totalPath;
     }
 
+
     /**
      * @param  Location  $location
      * @return Node
@@ -475,6 +477,7 @@ namespace App\Services\Router {
         $location->getAttribute('addresses_id')
       );
     }
+
 
     /**
      * Refreshes packages that have movements using the specified edge.
