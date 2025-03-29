@@ -31,11 +31,14 @@ class Tinker extends Command {
    * @throws NoPathFoundException
    */
   public function handle(): void {
-    $package = Package::find(1);
+    $router = App::make(Router::class);
+    $router->addRoute("@DC_ANTWERP", "@DC_WARSAW", 8);
 
-    $package->return();
-
-    $path = $package->getMovements();
+//    $package = Package::find(1);
+//
+//    $package->return();
+//
+//    $path = $package->getMovements();
 //      dd($path);
   }
 }

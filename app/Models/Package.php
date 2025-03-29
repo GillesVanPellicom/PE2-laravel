@@ -174,9 +174,9 @@ class Package extends Model {
    * @throws RouterException
    * @throws Exception
    */
-public function return(): void {
+  public function return(): void {
     $this->reroute($this->getAttribute('originLocation'));
-}
+  }
 
 
   /**
@@ -195,11 +195,10 @@ public function return(): void {
    * @throws NoPathFoundException
    */
   public function reroute(Location|string $destination): void {
-    if ($destination == $this->current_location_id) {
-      throw new RerouteToSelfException($destination);
-    }
 
-    if ( $destination instanceof Location && $destination->id == $this->current_location_id) {
+    // Check for self-rerouting
+    if (($destination == $this->current_location_id) ||
+      ($destination instanceof Location && $destination->id == $this->current_location_id)) {
       throw new RerouteToSelfException($destination);
     }
 
@@ -213,7 +212,7 @@ public function return(): void {
     // Get the current location node
     $currentNode = $this->getCurrentMovement();
     if (!$currentNode) {
-      throw new Exception('Current location not found.');
+      throw new RouterException('Current location not found.');
     }
 
     // Resolve the Router service
@@ -257,13 +256,13 @@ public function return(): void {
     // Get the current location node
     $currentNode = $this->getCurrentMovement();
     if (!$currentNode) {
-      throw new Exception('Current location not found.');
+      throw new RouterException('Current location not found.');
     }
 
     // Find the current movement based on the current node's ID
     $currentMovement = $movements->firstWhere('current_node_id', $currentNode->getID());
     if (!$currentMovement) {
-      throw new Exception('Current movement not found.');
+      throw new RouterException('Current movement not found.');
     }
 
     // If there is no next movement, return null
@@ -280,7 +279,7 @@ public function return(): void {
     // Get the node for the next movement's current_node_id
     $node = Node::fromId($nextMovement->current_node_id);
     if (!$node) {
-      throw new Exception('No next movement found.');
+      throw new RouterException('No next movement found.');
     }
 
     // Initialize and return the node with movement timestamps
@@ -345,7 +344,7 @@ public function return(): void {
     // Find the current movement based on the current location ID
     $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
     if (!$currentMovement) {
-      throw new Exception("No current movement found.");
+      throw new RouterException("No current movement found.");
     }
 
     // List of timestamps in sequence
@@ -380,7 +379,7 @@ public function return(): void {
 
     // If all timestamps are set and there is a next movement, throw an exception
     if (!is_null($currentMovement->next_movement)) {
-      throw new Exception('Package did not move to next movement.');
+      throw new RouterException('Package did not move to next movement.');
     }
   }
 
@@ -577,7 +576,7 @@ public function return(): void {
     }
 
     // If all timestamps are set but there is a next movement, throw an exception
-    throw new Exception('All timestamps are already set for the current movement.');
+    throw new RouterException('All timestamps are already set for the current movement.');
   }
 
 

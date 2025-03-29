@@ -5,6 +5,8 @@ namespace App\Services\Router {
 
   use App\Helpers\ConsoleHelper;
   use App\Models\Location;
+  use App\Models\Package;
+  use App\Models\PackageMovement;
   use App\Models\RouterEdges;
   use App\Models\RouterNodes;
   use App\Services\Router\Types\CoordType;
@@ -24,6 +26,7 @@ namespace App\Services\Router {
   use App\Services\Router\Types\RouterGraph;
   use App\Services\Router\Types\Node;
   use Exception;
+  use Illuminate\Support\Facades\DB;
   use SplPriorityQueue;
 
 
@@ -40,6 +43,59 @@ namespace App\Services\Router {
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);
+      }
+    }
+
+
+    /**
+     * @param  string  $origin  origin node ID
+     * @param  string  $destination  destination node ID
+     * @param  int  $validityDays  route validity in days (default: 3650 days, 10 years)
+     * @return void
+     * @throws InvalidRouterArgumentException
+     * @throws SelfLoopException
+     * @throws NodeNotFoundException
+     * @throws Exception
+     */
+    public function addRoute(string $origin, string $destination, int $validityDays = 3650): void {
+
+      // Validate the origin and destination IDs
+      if (empty($origin) || empty($destination)) {
+        throw new InvalidRouterArgumentException("Origin or destination ID cannot be empty.");
+      }
+
+      try {
+        DB::transaction(function () use ($origin, $destination, $validityDays) {
+          // Check if the edge already exists
+          $existingEdge = RouterEdges::where(function ($query) use ($origin, $destination) {
+            $query->where('origin_node', $origin)
+              ->where('destination_node', $destination)
+              ->orWhere(function ($query) use ($origin, $destination) {
+                $query->where('origin_node', $destination)
+                  ->where('destination_node', $origin)
+                  ->where('isUniDirectional', false);
+              });
+          })->first();
+
+          if ($existingEdge) {
+            throw new EdgeAlreadyExistsException($origin, $destination);
+          }
+
+          // Add the edge to the database
+          RouterEdges::create([
+            'origin_node' => $origin,
+            'destination_node' => $destination,
+            'weight' => 1.0,
+            'isUniDirectional' => false,
+            'validFrom' => now(),
+            'validTo' => now()->addDays($validityDays),
+          ]);
+
+          // Add the edge to the graph
+          $this->graph->addEdge($origin, $destination);
+        });
+      } catch (Exception $e) {
+        throw new RouterException("Transaction failed: ".$e->getMessage());
       }
     }
 
@@ -361,7 +417,36 @@ namespace App\Services\Router {
         $location->getAttribute('addresses_id')
       );
     }
+
+    /**
+     * Refreshes packages that have movements using the specified edge.
+     * Requires the RouterEdge to still be in the database, but be removed in the graph.
+     *
+     * @param  int  $edgeId  The ID of the RouterEdge to check.
+     * @return void
+     */
+    private function refresh(int $edgeId): void {
+      $failedPackages = [];
+
+      // Get all package movements that use this edge
+      $movements = PackageMovement::where('router_edge_id', $edgeId)->get();
+
+      foreach ($movements as $movement) {
+        // Get the associated package
+        $package = Package::find($movement->package_id);
+
+        if ($package) {
+          try {
+            // Attempt to reroute the package to its destination
+            $package->reroute($package->destinationLocation);
+          } catch (Exception $e) {
+            // Add the package to the failed packages array if rerouting fails
+            $failedPackages[] = $package;
+          }
+        }
+      }
+
+      // TODO: handle packages which failed to be rerouted
+    }
   }
-
-
 }
