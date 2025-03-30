@@ -34,7 +34,7 @@ namespace App\Services\Router {
 
   class Router {
 
-    private bool $debug = false;
+    private bool $debug = true;
 
     // DATASTRUCTURES
 
@@ -191,6 +191,26 @@ namespace App\Services\Router {
         throw new InvalidRouterArgumentException("ID ($origin) is not a valid Node ID.");
       }
 
+      if ($this->debug) {
+        $this->graph->printGraph();
+
+
+        $this->debug && print "\033[1;34m=== k-d trees ===\033[0m\n\n\n";
+
+        echo "\033[32mk-d tree [1/4] (all nodes):\033[0m\n";
+        $this->kdTreeAll->visualize();
+
+        echo "\033[32mk-d tree [2/4] (exclusively entry nodes):\033[0m\n";
+        $this->kdTreeEntry->visualize();
+
+        echo "\033[32mk-d tree [3/4] (exclusively exit nodes):\033[0m\n";
+        $this->kdTreeExit->visualize();
+
+        echo "\033[32mk-d tree [4/4] (exclusively entry/exit nodes):\033[0m\n";
+        $this->kdTreeEntryExit->visualize();
+
+      }
+
       // Convert origin to Node if it is a Location
       if ($oIsLoc) {
         $oN = Router::locationToNode($origin);
@@ -256,26 +276,66 @@ namespace App\Services\Router {
      * @return string|null Closest node ID
      * @throws RouterException
      */
+    /**
+     * Finds the closest Node to a given point efficiently.
+     *
+     * @param  float  $latRad  Latitude in radians
+     * @param  float  $longRad  Longitude in radians
+     * @param  bool  $mustBeEntry  Whether closest the node must be an entry node
+     * @param  bool  $mustBeExit  Whether closest the node must be an exit node
+     * @return string|null Closest node ID
+     * @throws RouterException
+     */
     public function findClosestNode(float $latRad, float $longRad, bool $mustBeEntry, bool $mustBeExit): ?string {
       $latDeg = rad2deg($latRad);
       $longDeg = rad2deg($longRad);
 
+      // Debug output: Start of the function
+      if ($this->debug) {
+        echo "\033[1;34m=== Starting Closest Node Search ===\033[0m\n".
+          "Input Coordinates: [\033[1;35m".sprintf("%.4f", $latDeg).", ".sprintf("%.4f",
+            $longDeg)."\033[0m] (degrees)\n".
+          "Criteria: \n  mustBeEntry: \033[1;".($mustBeEntry ? "32" : "31")."m".($mustBeEntry ? "true" : "false")."\033[0m".
+          "\n  mustBeExit: \033[1;".($mustBeExit ? "32" : "31")."m".($mustBeExit ? "true" : "false")."\033[0m\n";
+      }
+
       // Determine which kdTree to use based on entry/exit criteria
       if ($mustBeEntry && $mustBeExit) {
         $kdTree = $this->kdTreeEntryExit;
+        $treeType = "EntryExit";
       } elseif ($mustBeEntry) {
         $kdTree = $this->kdTreeEntry;
+        $treeType = "Entry";
       } elseif ($mustBeExit) {
         $kdTree = $this->kdTreeExit;
+        $treeType = "Exit";
       } else {
         $kdTree = $this->kdTreeAll;
+        $treeType = "All";
+      }
+
+      // Debug output: Selected KD-tree
+      if ($this->debug) {
+        echo "Selected KD-Tree: \033[1;33m".$treeType."\033[0m\nQuerying...\n";
       }
 
       // Find the closest node using the kdTree
       $closestNode = $kdTree->findNearest($latDeg, $longDeg);
 
       if ($closestNode === null) {
+        // Debug output: No node found
+        if ($this->debug) {
+          echo "\033[1;31mNo suitable node found matching criteria.\033[0m\n";
+        }
         throw new RouterException("Cannot connect imaginary node to graph. No suitable node found matching entry/exit criteria.");
+      }
+
+      // Debug output: Result
+      if ($this->debug) {
+        $nodeId = $closestNode->getID();
+        $nodeLat = $closestNode->getLat(CoordType::DEGREE);
+        $nodeLong = $closestNode->getLong(CoordType::DEGREE);
+        echo "Closest Node Found: \033[1;33m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat).", ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n";
       }
 
       return $closestNode->getID();
@@ -339,10 +399,6 @@ namespace App\Services\Router {
      * @throws InvalidRouterArgumentException
      */
     private function aStar(string $startNodeID, string $endNodeID): array {
-
-      if ($this->debug) {
-        $this->graph->printGraph();
-      }
 
       $openSet = new SplPriorityQueue();
       $openSet->setExtractFlags(SplPriorityQueue::EXTR_BOTH);

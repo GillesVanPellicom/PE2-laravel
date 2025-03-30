@@ -1,71 +1,75 @@
 services:
-    laravel.test:
-        build:
-            context: ./vendor/laravel/sail/runtimes/8.4
-            dockerfile: Dockerfile
-            args:
-                WWWGROUP: '${WWWGROUP}'
-        image: sail-8.4/app
-        extra_hosts:
-            - 'host.docker.internal:host-gateway'
-        ports:
-            - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
-        environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
-            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
-            IGNITION_LOCAL_SITES_PATH: '${PWD}'
-        volumes:
-            - '.:/var/www/html'
-            - ./certificates/mailserver.crt:/usr/local/share/ca-certificates/mailserver.crt:ro
-        networks:
-            - sail
-        depends_on:
-            - mysql
-            - mailserver
+  laravel.test:
+    build:
+      context: ./vendor/laravel/sail/runtimes/8.4
+      dockerfile: Dockerfile
+      args:
+        WWWGROUP: '${WWWGROUP}'
+    image: sail-8.4/app
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${APP_PORT:-80}:80'
+      - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+    environment:
+      WWWUSER: '${WWWUSER}'
+      LARAVEL_SAIL: 1
+      XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+      XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+      IGNITION_LOCAL_SITES_PATH: '${PWD}'
+    volumes:
+      - '.:/var/www/html'
+      - ./certificates/mailserver.crt:/tmp/mailserver.crt:ro
+      - ./scripts/docker/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/entrypoint.sh"]
+    networks:
+      - sail
+    depends_on:
+      - mysql
+      - mailserver
 
-    mysql:
-        image: 'mysql/mysql-server:8.0'
-        ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
-        environment:
-            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ROOT_HOST: '%'
-            MYSQL_DATABASE: '${DB_DATABASE}'
-            MYSQL_USER: '${DB_USERNAME}'
-            MYSQL_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
-        volumes:
-            - 'sail-mysql:/var/lib/mysql'
-            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
-        networks:
-            - sail
+  mysql:
+    image: 'mysql/mysql-server:8.0'
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - 'sail-mysql:/var/lib/mysql'
+      - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+    networks:
+      - sail
 
-    mailserver:
-        image: boky/postfix
-        ports:
-            - "587:587"
-        environment:
-            - POSTFIX_myhostname=pe2-project.com
-            - ALLOWED_SENDER_DOMAINS=pe2-project.com
-            - POSTFIX_smtpd_use_tls=yes
-            - POSTFIX_smtpd_tls_cert_file=/etc/postfix/ssl/smtpd.crt
-            - POSTFIX_smtpd_tls_key_file=/etc/postfix/ssl/smtpd.key
-            - POSTFIX_smtp_tls_security_level=may
-            - POSTFIX_mynetworks=0.0.0.0/0
-            - POSTFIX_inet_interfaces=all
-        volumes:
-            - ./certificates/mailserver.crt:/etc/postfix/ssl/smtpd.crt:ro
-            - ./certificates/mailserver.key:/etc/postfix/ssl/smtpd.key:ro
-        networks:
-            - sail
+  mailserver:
+    image: boky/postfix
+    ports:
+      - "587:587"
+      - "25:25"
+    environment:
+      - POSTFIX_myhostname=pe2-project.com
+      - ALLOWED_SENDER_DOMAINS=pe2-project.com
+      - POSTFIX_smtpd_use_tls=yes
+      - POSTFIX_smtpd_tls_cert_file=/etc/postfix/ssl/smtpd.crt
+      - POSTFIX_smtpd_tls_key_file=/etc/postfix/ssl/smtpd.key
+      - POSTFIX_smtp_tls_security_level=may
+      - POSTFIX_mynetworks=0.0.0.0/0
+      - POSTFIX_inet_interfaces=all
+      - POSTFIX_inet_protocols=ipv4
+    volumes:
+      - ./certificates/mailserver.crt:/etc/postfix/ssl/smtpd.crt:ro
+      - ./certificates/mailserver.key:/etc/postfix/ssl/smtpd.key:ro
+    networks:
+      - sail
 
 networks:
-    sail:
-        driver: bridge
+  sail:
+    driver: bridge
 
 volumes:
-    sail-mysql:
-        driver: local
+  sail-mysql:
+    driver: local
