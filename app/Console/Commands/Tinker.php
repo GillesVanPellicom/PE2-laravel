@@ -16,6 +16,13 @@ use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
 
+/**
+ * Class KdTree
+ *
+ * Represents a k-D tree. Used for nearest neighbor search in a k-D space.
+ *
+ * @package App\Services\Router\Types
+ */
 class Tinker extends Command {
 
   protected $signature = 'gilles:tinker';
@@ -31,15 +38,14 @@ class Tinker extends Command {
    * @throws NoPathFoundException
    */
   public function handle(): void {
+    /** @var Router $router */
     $router = App::make(Router::class);
-    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
+//    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
 //    $router->removeRoute("@AIR_EFHK", "@AIR_LGAV", 8);
 
-//    $package = Package::find(1);
-//
-//    $package->return();
-//
-//    $path = $package->getMovements();
-//      dd($path);
+    $package = Package::find(1);
+
+    $path = $package->getMovements();
+    dd($path);
   }
 }
