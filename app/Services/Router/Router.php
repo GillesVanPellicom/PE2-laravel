@@ -195,7 +195,7 @@ namespace App\Services\Router {
         $this->graph->printGraph();
 
 
-        $this->debug && print "\033[1;34m=== k-d trees ===\033[0m\n\n\n";
+        $this->debug && print "\033[1;34m=== k-d trees ===\033[0m\n";
 
         echo "\033[32mk-d tree [1/4] (all nodes irrespective of criteria):\033[0m\n";
         $this->kdTreeAll->visualize();

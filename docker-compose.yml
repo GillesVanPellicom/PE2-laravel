@@ -19,15 +19,10 @@ services:
       IGNITION_LOCAL_SITES_PATH: '${PWD}'
     volumes:
       - '.:/var/www/html'
-      - ./certificates/mailserver.crt:/tmp/mailserver.crt:ro
-      - ./scripts/docker/entrypoint.sh:/entrypoint.sh:ro
-    entrypoint: ["/entrypoint.sh"]
     networks:
       - sail
     depends_on:
       - mysql
-      - mailserver
-
   mysql:
     image: 'mysql/mysql-server:8.0'
     ports:
@@ -42,27 +37,6 @@ services:
     volumes:
       - 'sail-mysql:/var/lib/mysql'
       - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
-    networks:
-      - sail
-
-  mailserver:
-    image: boky/postfix
-    ports:
-      - "587:587"
-      - "25:25"
-    environment:
-      - POSTFIX_myhostname=pe2-project.com
-      - ALLOWED_SENDER_DOMAINS=pe2-project.com
-      - POSTFIX_smtpd_use_tls=yes
-      - POSTFIX_smtpd_tls_cert_file=/etc/postfix/ssl/smtpd.crt
-      - POSTFIX_smtpd_tls_key_file=/etc/postfix/ssl/smtpd.key
-      - POSTFIX_smtp_tls_security_level=may
-      - POSTFIX_mynetworks=0.0.0.0/0
-      - POSTFIX_inet_interfaces=all
-      - POSTFIX_inet_protocols=ipv4
-    volumes:
-      - ./certificates/mailserver.crt:/etc/postfix/ssl/smtpd.crt:ro
-      - ./certificates/mailserver.key:/etc/postfix/ssl/smtpd.key:ro
     networks:
       - sail
 

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -24,18 +25,8 @@ class testMail extends Command {
    * Execute the console command.
    */
   public function handle(): void {
-    try {
-
-      // DO NOT FORGET TO CHANGE THE EMAIL ADDRESS
-      $addr = "gilles.van.pellicom1@gmail.com";
-
-      Mail::send('emails.test', [], function ($message) use ($addr) {
-        $message->to($addr)
-          ->subject('Test Email');
-      });
-      $this->info('Test email sent successfully to '.$addr);
-    } catch (\Exception $e) {
-      $this->error('Failed to send email: '.$e->getMessage());
-    }
+    /** @var User $user */
+    $user = User::find(1);
+    $user->sendMail('Laramail', 'emails.test');
   }
 }

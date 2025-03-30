@@ -39,12 +39,14 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'host' => env('MAIL_HOST', 'mailserver'),
-            'port' => env('MAIL_PORT', 25),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'local_domain' => env('MAIL_EHLO_DOMAIN', 'pe2-project.com'),
+            'host' => env('MAIL_HOST', 'smtp.gmail.com'), // Changed from 'mailserver' to 'smtp.gmail.com'
+            'port' => env('MAIL_PORT', 587),              // Changed from 25 to 587 (Gmail's SMTP port)
+            'username' => env('MAIL_USERNAME', 'pe2.project.2025@gmail.com'), // Default to your Gmail address
+            'password' => env('MAIL_PASSWORD'),           // No default; must be set in .env
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'), // Ensure TLS for Gmail
+            'local_domain' => env('MAIL_EHLO_DOMAIN', 'pe2-project.com'), // Matches your domain
+            'timeout' => 30,                             // Optional: Add timeout to prevent hangs
+            'auth_mode' => null,                         // Let Laravel/SwiftMailer handle auth mode
         ],
 
         'ses' => [
@@ -60,7 +62,7 @@ return [
         ],
 
         'resend' => [
-            'trustansport' => 'resend',
+            'transport' => 'resend',
         ],
 
         'sendmail' => [
@@ -107,8 +109,27 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'noreply@pe2-project.com'),
-        'name' => env('MAIL_FROM_NAME', 'PE2 Project Notifications'),
+        'address' => env('MAIL_FROM_ADDRESS', 'pe2.project.2025@gmail.com'), // Changed to match your Gmail
+        'name' => env('MAIL_FROM_NAME', 'PE2 Project Notifications'),         // Matches your desired name
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Settings
+    |--------------------------------------------------------------------------
+    |
+    | If you are using Markdown based email rendering, you may configure your
+    | theme and component paths here, allowing you to customize the design
+    | of the emails. Or, you may simply stick with the Laravel defaults!
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'default',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
     ],
 
 ];
