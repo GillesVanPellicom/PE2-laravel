@@ -274,6 +274,6 @@ class RouterGraph {
       }
     }
 
-    echo "\n\033[1;34m====================\033[0m\n\n";
+    echo "\n\n";
   }
 }

@@ -121,24 +121,12 @@ class KdTree {
     return [$best, $bestDist];
   }
 
+
   public function visualize(): void {
-    if ($this->root === null) {
-      echo "The KD-tree is empty.\n";
-      return;
-    }
+
     $this->printTree($this->root, 0, "", true);
   }
 
-/**
- * Prints the KD-tree structure with color formatting for debugging.
- *
- * @param ?KdNode $node The current node in the KD-tree
- * @param int $depth The current depth in the tree
- * @param string $prefix The prefix string for tree visualization
- * @param bool $isTail Whether this is the last child of its parent
- * @param bool $isLeft Whether this node is a left child
- * @return void
- */
 /**
  * Prints the KD-tree structure with color formatting for debugging.
  *
@@ -159,7 +147,7 @@ private function printTree(?KdNode $node, int $depth, string $prefix, bool $isTa
     $axis = $node->axis; // 0 for latitude, 1 for longitude
     $axisLabel = $axis == 0 ? "Lateral axis" : "Longitudinal axis";
     $splitValue = $axis == 0 ? $lat : $long;
-    $nodeInfo = sprintf("\033[1;33m%s\033[0m (%s: \033[1;32m%.4f\033[0m) [\033[1;35m%.4f, %.4f\033[0m]",
+    $nodeInfo = sprintf("\033[1;33m%s\033[0m (%s: \033[1;32m%.4f\033[0m) [\033[1;35m%.4f\033[0m,\033[1;35m %.4f\033[0m]",
         $node->node->getID(), $axisLabel, $splitValue, $lat, $long);
 
     // Print the current node

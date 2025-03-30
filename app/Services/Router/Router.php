@@ -197,16 +197,16 @@ namespace App\Services\Router {
 
         $this->debug && print "\033[1;34m=== k-d trees ===\033[0m\n\n\n";
 
-        echo "\033[32mk-d tree [1/4] (all nodes):\033[0m\n";
+        echo "\033[32mk-d tree [1/4] (all nodes irrespective of criteria.):\033[0m\n";
         $this->kdTreeAll->visualize();
 
-        echo "\033[32mk-d tree [2/4] (exclusively entry nodes):\033[0m\n";
+        echo "\033[32mk-d tree [2/4] (exclusively entry nodes.):\033[0m\n";
         $this->kdTreeEntry->visualize();
 
-        echo "\033[32mk-d tree [3/4] (exclusively exit nodes):\033[0m\n";
+        echo "\033[32mk-d tree [3/4] (exclusively exit nodes.):\033[0m\n";
         $this->kdTreeExit->visualize();
 
-        echo "\033[32mk-d tree [4/4] (exclusively entry/exit nodes):\033[0m\n";
+        echo "\033[32mk-d tree [4/4] (Entry and exit nodes. Not one or the other.):\033[0m\n";
         $this->kdTreeEntryExit->visualize();
 
       }
@@ -293,10 +293,11 @@ namespace App\Services\Router {
       // Debug output: Start of the function
       if ($this->debug) {
         echo "\033[1;34m=== Starting Closest Node Search ===\033[0m\n".
-          "Input Coordinates: [\033[1;35m".sprintf("%.4f", $latDeg).", ".sprintf("%.4f",
+          "Input Coordinates: [\033[1;35m".sprintf("%.4f", $latDeg)."\033[0m,\033[1;35m ".sprintf("%.4f",
             $longDeg)."\033[0m] (degrees)\n".
-          "Criteria: \n  mustBeEntry: \033[1;".($mustBeEntry ? "32" : "31")."m".($mustBeEntry ? "true" : "false")."\033[0m".
-          "\n  mustBeExit: \033[1;".($mustBeExit ? "32" : "31")."m".($mustBeExit ? "true" : "false")."\033[0m\n";
+          "Criteria: \n".
+          "  mustBeEntry : \033[1;".($mustBeEntry ? "32" : "31")."m".($mustBeEntry ? "true" : "false")."\033[0m\n".
+          "  mustBeExit  : \033[1;".($mustBeExit ? "32" : "31")."m".($mustBeExit ? "true" : "false")."\033[0m\n";
       }
 
       // Determine which kdTree to use based on entry/exit criteria
@@ -335,7 +336,7 @@ namespace App\Services\Router {
         $nodeId = $closestNode->getID();
         $nodeLat = $closestNode->getLat(CoordType::DEGREE);
         $nodeLong = $closestNode->getLong(CoordType::DEGREE);
-        echo "Closest Node Found: \033[1;33m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat).", ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n";
+        echo "Closest conforming Node found: \033[1;33m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n";
       }
 
       return $closestNode->getID();
@@ -424,7 +425,7 @@ namespace App\Services\Router {
 
       $epsilon = 1e-10; // Tolerance to avoid (very hard to debug) FP rounding errors.
 
-      $this->debug && print "\033[1;34m=== Starting A* Search ===\033[0m\nFrom: $startNodeID | To: $endNodeID\n\n";
+      $this->debug && print "\033[1;34m=== Starting A* Search ===\033[0m\nFrom: $startNodeID | To: $endNodeID\n";
 
 
       // Main loop of the A* algorithm
@@ -436,19 +437,18 @@ namespace App\Services\Router {
         $insertion_fScore = -$extracted['priority'];
         $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
-        $this->debug && print "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n  Open Set Size: ".$openSet->count()."\nfScore: ".sprintf("%.6f",
+        $this->debug && print "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n  Open Set Size: ".$openSet->count()."\n  fScore: ".sprintf("%.6f",
             $insertion_fScore)." | gScore (queue): ".sprintf("%.6f", $insertion_gScore)."\n";
 
 
         // Check if the current node's gScore is valid
         if ($gScore[$currentID] - $insertion_gScore <= $epsilon) {
-          $this->debug && print "  \033[32mAction: Processing\033[0m | Current gScore: ".sprintf("%.6f",
-              $gScore[$currentID])."\n";
+          $this->debug && print "  \033[32mAction: Processing\033[0m\n";
 
         } else {
           $this->debug && print "  \033[31mAction: Skipped\033[0m | Current gScore: ".sprintf("%.6f",
               $gScore[$currentID])." > Queue gScore: ".sprintf("%.6f",
-              $insertion_gScore)."\n\033[1;36m-----------------\033[0m\n\n";
+              $insertion_gScore)."\n\n";
 
           continue;
         }
@@ -464,8 +464,7 @@ namespace App\Services\Router {
 
         // Iterate over each neighbor of the current node
         foreach ($this->graph->getNeighbors($currentID) as $neighborID => $weight) {
-          $this->debug && print "  \033[38;2;255;140;0m- Neighbor: $neighborID\033[0m | Edge Weight: ".sprintf("%.6f",
-              $weight)."\n";
+          $this->debug && print "  \033[38;2;255;140;0m- $neighborID\033[0m (".sprintf("%.6f", $weight)." km)\n";
 
           $tentativeGScore = $gScore[$currentID] + $weight;
 
@@ -481,7 +480,7 @@ namespace App\Services\Router {
             if ($this->debug) {
               echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
                   $tentativeGScore)." | New fScore: ".sprintf("%.6f",
-                  $fScore[$neighborID])."\n    \033[1;35mHeuristic Info:\033[0m\n      Current: $currentID | Neighbor: $neighborID\n      Σ Path Weight: ".sprintf("%.6f",
+                  $fScore[$neighborID])."\n    \033[1;35mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
                   $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
                   $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
 
