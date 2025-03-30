@@ -23,6 +23,7 @@ namespace App\Services\Router {
   use App\Services\Router\Types\Exceptions\NoPathFoundException;
   use App\Services\Router\Types\Exceptions\RouterException;
   use App\Services\Router\Types\Exceptions\SelfLoopException;
+  use App\Services\Router\Types\KdTree;
   use App\Services\Router\Types\NodeType;
   use App\Services\Router\Types\RouterGraph;
   use App\Services\Router\Types\Node;
@@ -33,14 +34,25 @@ namespace App\Services\Router {
 
   class Router {
 
-    private RouterGraph $graph;
     private bool $debug = false;
+
+    // DATASTRUCTURES
+
+    // Weighted graph
+    private RouterGraph $graph;
+
+    // KdTrees for different node types
+    private KdTree $kdTreeAll;
+    private KdTree $kdTreeEntry;
+    private KdTree $kdTreeExit;
+    private KdTree $kdTreeEntryExit;
 
 
     public function __construct() {
       try {
         $this->graph = new RouterGraph();
         $this->deserializeDb();
+        $this->buildKdTrees();
       } catch (Exception $e) {
         ConsoleHelper::error($e->getMessage());
         exit(1);
@@ -235,7 +247,7 @@ namespace App\Services\Router {
 
 
     /**
-     * Finds the closest Node to a given point.
+     * Finds the closest Node to a given point efficiently.
      *
      * @param  float  $latRad  Latitude in radians
      * @param  float  $longRad  Longitude in radians
@@ -244,32 +256,26 @@ namespace App\Services\Router {
      * @return string|null Closest node ID
      * @throws RouterException
      */
-    private function findClosestNode(float $latRad, float $longRad, bool $mustBeEntry, bool $mustBeExit): ?string {
-      $closestNode = null;
-      $minDistance = PHP_INT_MAX;
+    public function findClosestNode(float $latRad, float $longRad, bool $mustBeEntry, bool $mustBeExit): ?string {
+      $latDeg = rad2deg($latRad);
+      $longDeg = rad2deg($longRad);
 
-      /** @var Node $node */
-      foreach ($this->graph->getNodes() as $node) {
-        if ($mustBeExit && !$node->isExitNode()) {
-          continue;
-        }
-        if ($mustBeEntry && !$node->isEntryNode()) {
-          continue;
-        }
-
-        $distance = GeoMath::sphericalCosinesDistance(
-          $latRad,
-          $longRad,
-          $node->getLat(CoordType::RADIAN),
-          $node->getLong(CoordType::RADIAN));
-        if ($distance < $minDistance) {
-          $minDistance = $distance;
-          $closestNode = $node;
-        }
+      // Determine which kdTree to use based on entry/exit criteria
+      if ($mustBeEntry && $mustBeExit) {
+        $kdTree = $this->kdTreeEntryExit;
+      } elseif ($mustBeEntry) {
+        $kdTree = $this->kdTreeEntry;
+      } elseif ($mustBeExit) {
+        $kdTree = $this->kdTreeExit;
+      } else {
+        $kdTree = $this->kdTreeAll;
       }
 
+      // Find the closest node using the kdTree
+      $closestNode = $kdTree->findNearest($latDeg, $longDeg);
+
       if ($closestNode === null) {
-        throw new RouterException("Cannot connect imaginary node to graph. No suitable node found matching entry/exit criteria to connect to address node variant. ");
+        throw new RouterException("Cannot connect imaginary node to graph. No suitable node found matching entry/exit criteria.");
       }
 
       return $closestNode->getID();
@@ -507,7 +513,29 @@ namespace App\Services\Router {
         }
       }
       // TODO: handle packages which failed to be rerouted
-      return empty($failedPackages);
+      return empty($failedPackages); // Return success or fail
+    }
+
+
+    /**
+     * Builds k-d trees for all types of nodes in the graph.
+     *
+     * @return void
+     */
+    private function buildKdTrees(): void {
+      // Get all nodes
+      $allNodes = $this->graph->getNodes();
+
+      // Filter nodes based on their types
+      $entryNodes = array_filter($allNodes, fn($node) => $node->isEntryNode());
+      $exitNodes = array_filter($allNodes, fn($node) => $node->isExitNode());
+      $entryExitNodes = array_filter($allNodes, fn($node) => $node->isEntryNode() && $node->isExitNode());
+
+      // Build k-d trees for all nodes, entry nodes, exit nodes, and entry-exit nodes
+      $this->kdTreeAll = new KdTree($allNodes);
+      $this->kdTreeEntry = new KdTree($entryNodes);
+      $this->kdTreeExit = new KdTree($exitNodes);
+      $this->kdTreeEntryExit = new KdTree($entryExitNodes);
     }
   }
 }
