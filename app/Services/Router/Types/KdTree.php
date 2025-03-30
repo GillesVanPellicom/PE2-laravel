@@ -125,6 +125,7 @@ class KdTree {
   public function visualize(): void {
 
     $this->printTree($this->root, 0, "", true);
+    echo "\n";
   }
 
 /**

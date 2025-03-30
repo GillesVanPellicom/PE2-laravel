@@ -286,16 +286,47 @@ class Node {
    * @return void
    * @throws RuntimeException If required attributes (desc, latDeg, longDeg, isEntryNode, isExitNode) are missing
    */
-  public function printNode(): void {
-    echo "\033[32mNode: ".$this->getID()."\033[0m\n";
-    echo "  Desc.      :  ".$this->getDescription()."\n";
-    echo "  Latitude   :  ".sprintf("%.4f", $this->getLat(CoordType::DEGREE))."\n";
-    echo "  Longitude  :  ".sprintf("%.4f", $this->getLong(CoordType::DEGREE))."\n";
-    echo "  Type       :  ".$this->getType()->value."\n";
-    echo "  Entry Node :  ".($this->isEntryNode() ? 'true' : 'false')."\n";
-    echo "  Exit Node  :  ".($this->isExitNode() ? 'true' : 'false')."\n";
-    echo "\033[33m--------------------\033[0m\n";
-  }
+public function printNode(): void {
+    mb_internal_encoding('UTF-8');
+    mb_http_output('UTF-8');
+    ini_set('default_charset', 'utf-8');
+
+    // Ensure description is clean UTF-8
+    $desc = $this->getDescription();
+    $desc = mb_convert_encoding($desc, 'UTF-8', mb_detect_encoding($desc, ['UTF-8', 'ISO-8859-1', 'Windows-1252']));
+    $desc = preg_replace('/[^\x{0000}-\x{FFFF}]/u', '', $desc);
+
+    $id = mb_substr($this->getID(), 0, 20, 'UTF-8');
+    if (mb_strlen($this->getID(), 'UTF-8') < 20) {
+        $id = str_pad($id, 20, ' ', STR_PAD_RIGHT);
+    }
+
+    $descLen = mb_strlen($desc, 'UTF-8');
+    if ($descLen > 38) {
+        $desc = mb_substr($desc, 0, 35, 'UTF-8') . '...';
+    } else {
+        $paddingNeeded = 38 - $descLen;
+        $desc = $desc . str_repeat(' ', $paddingNeeded);
+    }
+
+    $type = mb_substr($this->getType()->value, 0, 20, 'UTF-8');
+    if (mb_strlen($this->getType()->value, 'UTF-8') > 20) {
+        $type = mb_substr($type, 0, 17, 'UTF-8') . '...';
+    } else {
+        $type = str_pad($type, 20, ' ', STR_PAD_RIGHT);
+    }
+
+    printf(
+        "║ \033[32m%-29s\033[0m ║ %-38s ║ %10.4f ║ %11.4f ║ %-20s ║ %-5s ║ %-4s ║\n",
+        $id,
+        $desc,
+        $this->getLat(CoordType::DEGREE),
+        $this->getLong(CoordType::DEGREE),
+        $type,
+        $this->isEntryNode() ? 'Yes' : 'No',
+        $this->isExitNode() ? 'Yes' : 'No'
+    );
+}
 
   /**
    * Prints the address node details to the console

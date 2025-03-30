@@ -197,16 +197,16 @@ namespace App\Services\Router {
 
         $this->debug && print "\033[1;34m=== k-d trees ===\033[0m\n\n\n";
 
-        echo "\033[32mk-d tree [1/4] (all nodes irrespective of criteria.):\033[0m\n";
+        echo "\033[32mk-d tree [1/4] (all nodes irrespective of criteria):\033[0m\n";
         $this->kdTreeAll->visualize();
 
-        echo "\033[32mk-d tree [2/4] (exclusively entry nodes.):\033[0m\n";
+        echo "\033[32mk-d tree [2/4] (exclusively entry nodes):\033[0m\n";
         $this->kdTreeEntry->visualize();
 
-        echo "\033[32mk-d tree [3/4] (exclusively exit nodes.):\033[0m\n";
+        echo "\033[32mk-d tree [3/4] (exclusively exit nodes):\033[0m\n";
         $this->kdTreeExit->visualize();
 
-        echo "\033[32mk-d tree [4/4] (Entry and exit nodes. Not one or the other.):\033[0m\n";
+        echo "\033[32mk-d tree [4/4] (Entry and exit nodes, not one or the other):\033[0m\n";
         $this->kdTreeEntryExit->visualize();
 
       }

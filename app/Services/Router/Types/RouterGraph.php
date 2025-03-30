@@ -254,16 +254,19 @@ class RouterGraph {
    * @return void
    */
   public function printGraph(): void {
+    echo "\033[1;34m=== Nodes ===\033[0m\n";
+    echo "╔═══════════════════════════════╦════════════════════════════════════════╦════════════╦═════════════╦══════════════════════╦═══════╦══════╗\n";
+    echo "║ ID                            ║ Description                            ║ Latitude   ║ Longitude   ║ Type                 ║ Entry ║ Exit ║\n";
+    echo "╠═══════════════════════════════╬════════════════════════════════════════╬════════════╬═════════════╬══════════════════════╬═══════╬══════╣\n";
 
-    // Nodes Section
-    echo "\033[1;34m=== Nodes ===\033[0m\n\n";
     foreach ($this->nodes as $node) {
       $node->printNode();
     }
 
-    // Edges Section
-    print "\033[1;34m=== Edges ===\033[0m\n\n";
-    $printedEdges = []; // Track printed edges to avoid duplicates
+    echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n";
+
+    echo "\033[1;34m=== Edges ===\033[0m\n\n";
+    $printedEdges = [];
     foreach ($this->edges as $startNodeID => $neighbors) {
       foreach ($neighbors as $endNodeID => $weight) {
         $edgeKey = min($startNodeID, $endNodeID).'-'.max($startNodeID, $endNodeID);
@@ -273,7 +276,6 @@ class RouterGraph {
         }
       }
     }
-
-    echo "\n\n";
+    echo "\n";
   }
 }
