@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role, Location};
 use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
@@ -153,7 +153,11 @@ class EmployeeController extends Controller
 
     public function create_employeecontract()
     {
-        return view('employees.create_employeecontract', ['employees' => Employee::all()], ['functions' => EmployeeFunction::all()]);
+        $locations = Location::whereNot('location_type', 'ADDRESS')->get();
+        $employees = Employee::all();
+        $functions = EmployeeFunction::all();
+    
+        return view('employees.create_employeecontract', compact('locations', 'employees', 'functions'));
     }
 
     public function store_contract(Request $request)
@@ -163,16 +167,19 @@ class EmployeeController extends Controller
             'function' => 'required|integer|min:1',
             'start_date' => 'required|date',
             'vacation_days' => 'required|integer|min:0',
+            'location' => 'required|integer|min:1',
         ],
         [
             'employee.required' => 'Employee is required.',
-            'employee.integer' => 'Employee must be a number.',
+            'employee.min' => 'Please select an employee.',
             'function.required' => 'Job is required.',
-            'function.integer' => 'Job must be a number.',
+            'function.min' => 'Please select a job.',
             'start_date.required' => 'Start date is required.',
             'start_date.date' => 'Start date must be a date.',
             'vacation_days.required' => 'It would be nice if the employee could have some vacation days.',
             'vacation_days.min' => 'Cannot give a negative amount of vacation days.',
+            'location.required' => 'Location is required.',
+            'location.min' => 'Please select a location.',
         ]);
     
         $active_contract = EmployeeContract::where('employee_id', $request->employee)->where(function ($query) 
@@ -185,7 +192,8 @@ class EmployeeController extends Controller
             $contract = [
                 'employee_id' => $request->employee,
                 'job_id' => $request->function,
-                'start_date' => $request->start_date
+                'start_date' => $request->start_date,
+                'location_id' => $request->location,
             ];
             
             $employee = Employee::find($request->employee);
