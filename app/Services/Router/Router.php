@@ -34,7 +34,7 @@ namespace App\Services\Router {
 
   class Router {
 
-    private bool $debug = true;
+    private bool $debug = false;
 
     // DATASTRUCTURES
 
