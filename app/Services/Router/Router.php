@@ -34,7 +34,7 @@ namespace App\Services\Router {
 
   class Router {
 
-    private bool $debug = false;
+    private bool $debug = true;
 
     // DATASTRUCTURES
 
@@ -437,7 +437,7 @@ namespace App\Services\Router {
         $insertion_fScore = -$extracted['priority'];
         $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
-        $this->debug && print "\n\033[32mProcessing Node: $currentID ({$current->getDescription()})\033[0m\n  Open Set Size: ".$openSet->count()."\n  fScore: ".sprintf("%.6f",
+        $this->debug && print "\n\033[32mProcessing Node:\n  \033[38;2;255;140;0m$currentID\033[0m ({$current->getDescription()})\n  Open Set Size: ".$openSet->count()."\n  fScore: ".sprintf("%.6f",
             $insertion_fScore)." | gScore (queue): ".sprintf("%.6f", $insertion_gScore)."\n";
 
 

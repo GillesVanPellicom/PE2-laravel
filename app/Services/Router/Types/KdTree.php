@@ -148,7 +148,7 @@ class KdTree {
     $axis = $node->axis; // 0 for latitude, 1 for longitude
     $axisLabel = $axis == 0 ? "Lateral axis" : "Longitudinal axis";
     $splitValue = $axis == 0 ? $lat : $long;
-    $nodeInfo = sprintf("\033[38;2;255;140;0m%s\033[0m (%s: \033[1;32m%.4f\033[0m) [\033[1;35m%.4f\033[0m,\033[1;35m %.4f\033[0m]",
+    $nodeInfo = sprintf("\033[38;2;255;140;0m%s\033[0m (%s: \033[33m%.4f\033[0m) [\033[1;35m%.4f\033[0m,\033[1;35m %.4f\033[0m]",
       $node->node->getID(), $axisLabel, $splitValue, $lat, $long);
 
     // Print the current node
