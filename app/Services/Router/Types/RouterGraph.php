@@ -256,7 +256,7 @@ public function printGraph(): void {
     $node->printNode();
   }
 
-  echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n\n\n";
+  echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n\n\n\n";
 
   echo "\033[1;34m=== Edges ===\033[0m\n";
 
@@ -330,6 +330,6 @@ public function printGraph(): void {
   }
 
   // Print table footer
-  echo $bottomBorder."  ".$bottomBorder."\n\n";
+  echo $bottomBorder."  ".$bottomBorder."\n\n\n\n";
 }
 }

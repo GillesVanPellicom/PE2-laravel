@@ -128,6 +128,7 @@ class KdTree {
     echo "\n";
   }
 
+
   /**
    * Prints the KD-tree structure with color formatting for debugging.
    *

@@ -336,7 +336,7 @@ namespace App\Services\Router {
         $nodeId = $closestNode->getID();
         $nodeLat = $closestNode->getLat(CoordType::DEGREE);
         $nodeLong = $closestNode->getLong(CoordType::DEGREE);
-        echo "Closest conforming Node found:\n  \033[38;2;255;140;0m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n";
+        echo "Closest conforming Node found:\n  \033[38;2;255;140;0m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n\n";
       }
 
       return $closestNode->getID();
