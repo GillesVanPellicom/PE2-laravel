@@ -245,96 +245,91 @@ class RouterGraph {
    *
    * @return array
    */
-  public function printGraph(): void {
-    echo "\033[1;34m=== Nodes ===\033[0m\n";
-    echo "╔═══════════════════════════════╦════════════════════════════════════════╦════════════╦═════════════╦══════════════════════╦═══════╦══════╗\n";
-    echo "║ ID                            ║ Description                            ║ Latitude   ║ Longitude   ║ Type                 ║ Entry ║ Exit ║\n";
-    echo "╠═══════════════════════════════╬════════════════════════════════════════╬════════════╬═════════════╬══════════════════════╬═══════╬══════╣\n";
 
-    foreach ($this->nodes as $node) {
-      $node->printNode();
-    }
+public function printGraph(): void {
+  echo "\033[1;34m=== Nodes ===\033[0m\n";
+  echo "╔═══════════════════════════════╦════════════════════════════════════════╦════════════╦═════════════╦══════════════════════╦═══════╦══════╗\n";
+  echo "║ \033[1mID\033[0m                            ║ \033[1mDescription\033[0m                            ║ \033[1mLatitude\033[0m   ║ \033[1mLongitude\033[0m   ║ \033[1mType\033[0m                 ║ \033[1mEntry\033[0m ║ \033[1mExit\033[0m ║\n";
+  echo "╠═══════════════════════════════╬════════════════════════════════════════╬════════════╬═════════════╬══════════════════════╬═══════╬══════╣\n";
 
-    echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n\n\n";
+  foreach ($this->nodes as $node) {
+    $node->printNode();
+  }
 
-    echo "\033[1;34m=== Edges ===\033[0m\n";
+  echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n\n\n";
 
-    // Collect all unique edges
-    $edges = [];
-    $printedEdges = [];
-    foreach ($this->edges as $startNodeID => $neighbors) {
-      foreach ($neighbors as $endNodeID => $weight) {
-        $edgeKey = min($startNodeID, $endNodeID).'-'.max($startNodeID, $endNodeID);
-        if (!isset($printedEdges[$edgeKey])) {
-          $edges[] = [$startNodeID, $endNodeID, $weight];
-          $printedEdges[$edgeKey] = true;
-        }
+  echo "\033[1;34m=== Edges ===\033[0m\n";
+
+  // Collect all unique edges
+  $edges = [];
+  $printedEdges = [];
+  foreach ($this->edges as $startNodeID => $neighbors) {
+    foreach ($neighbors as $endNodeID => $weight) {
+      $edgeKey = min($startNodeID, $endNodeID).'-'.max($startNodeID, $endNodeID);
+      if (!isset($printedEdges[$edgeKey])) {
+        $edges[] = [$startNodeID, $endNodeID, $weight];
+        $printedEdges[$edgeKey] = true;
       }
     }
-
-    // Sort edges for consistency (optional)
-    usort($edges, function ($a, $b) {
-      return strcmp($a[0].$a[1], $b[0].$b[1]);
-    });
-
-    // Helper function to remove ANSI escape codes
-    $removeAnsiCodes = function ($str) {
-      return preg_replace('/\033\[[^m]*m/', '', $str);
-    };
-
-    // Helper function to get display length (excluding ANSI codes)
-    $getDisplayLength = function ($str) use ($removeAnsiCodes) {
-      return strlen($removeAnsiCodes($str));
-    };
-
-    // Helper function to pad string to display width
-    $padToDisplayWidth = function ($str, $targetWidth) use ($getDisplayLength) {
-      $currentLength = $getDisplayLength($str);
-      $padding = max(0, $targetWidth - $currentLength);
-      return $str.str_repeat(' ', $padding);
-    };
-
-    // Calculate maximum display length for all edges with new format
-    $maxDisplayLength = 0;
-    foreach ($edges as $edge) {
-      // New format with 2 extra spaces before "(DISTANCE km)"
-      $formatted = sprintf("\033[36m%-16s ↔ %-16s\033[0m  (%.4f km)", $edge[0], $edge[1], $edge[2]);
-      $displayLength = $getDisplayLength($formatted);
-      $maxDisplayLength = max($maxDisplayLength, $displayLength);
-    }
-
-    // Set a fixed spacer between columns (5 original + 4 extra = 9 spaces)
-    $columnSpacer = "         "; // 9 spaces
-
-    // Calculate split point
-    $totalEdges = count($edges);
-    $midPoint = (int) ($totalEdges / 2);
-
-    // Print two columns side by side
-    for ($i = 0; $i < $midPoint; $i++) {
-      $edge1 = $edges[$i];
-      $edge2 = $edges[$i + $midPoint];
-
-      // Format and pad both edges to maximum display length with 2 extra spaces
-      $line1 = sprintf("\033[36m%-16s ↔ %-16s\033[0m  (%.4f km)", $edge1[0], $edge1[1], $edge1[2]);
-      $line2 = sprintf("\033[36m%-16s ↔ %-16s\033[0m  (%.4f km)", $edge2[0], $edge2[1], $edge2[2]);
-
-      // Pad both lines to the maximum display length
-      $paddedLine1 = $padToDisplayWidth($line1, $maxDisplayLength);
-      $paddedLine2 = $padToDisplayWidth($line2, $maxDisplayLength);
-
-      // Print both lines side by side with new spacer
-      echo $paddedLine1.$columnSpacer.$paddedLine2."\n";
-    }
-
-    // Handle the case if totalEdges is odd (left-align lone entry in first column)
-    if ($totalEdges % 2 != 0) {
-      $lastEdge = $edges[$totalEdges - 1];
-      $lastLine = sprintf("\033[36m%-16s ↔ %-16s\033[0m  (%.4f km)", $lastEdge[0], $lastEdge[1], $lastEdge[2]);
-      $paddedLastLine = $padToDisplayWidth($lastLine, $maxDisplayLength);
-      echo $paddedLastLine."\n";
-    }
-
-    echo "\n\n";
   }
+
+  // Sort edges for consistency (optional)
+  usort($edges, function ($a, $b) {
+    return strcmp($a[0].$a[1], $b[0].$b[1]);
+  });
+
+  // Calculate split point
+  $totalEdges = count($edges);
+  $midPoint = (int) ($totalEdges / 2);
+  $hasOdd = ($totalEdges % 2 != 0);
+
+  // Table borders - adjusted with correct spacing
+  $topBorder = "╔═══════════════════════════╦═════╦═══════════════════════════╦═════════════════╗";
+  $headerBorder = "╠═══════════════════════════╬═════╬═══════════════════════════╬═════════════════╣";
+  $bottomBorder = "╚═══════════════════════════╩═════╩═══════════════════════════╩═════════════════╝";
+
+  // Print first table header - with exactly 2 spaces between tables
+  echo $topBorder."  ".$topBorder."\n";
+
+  // Print column headers - correctly spaced
+  echo "║ \033[1mFrom (ID)\033[0m                 ║  \033[1mσ\033[0m  ║ \033[1mTo (ID)\033[0m                   ║ \033[1mWeight (km)\033[0m     ║  ║ \033[1mFrom (ID)\033[0m                 ║  \033[1mσ\033[0m  ║ \033[1mTo (ID)\033[0m                   ║ \033[1mWeight (km)\033[0m     ║\n";
+
+  // Print header separator
+  echo $headerBorder."  ".$headerBorder."\n";
+
+  // Print two columns side by side
+  for ($i = 0; $i < $midPoint; $i++) {
+    $edge1 = $edges[$i];
+    $edge2 = $edges[$i + $midPoint];
+
+    // Format with orange color and exactly match the header spacing
+    printf(
+      "║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║  ║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║\n",
+      $edge1[0],
+      $edge1[1],
+      $edge1[2],
+      $edge2[0],
+      $edge2[1],
+      $edge2[2]
+    );
+  }
+
+  // Handle the case if totalEdges is odd (left-align lone entry in first column)
+  if ($hasOdd) {
+    $lastEdge = $edges[$totalEdges - 1];
+
+    printf(
+      "║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║  ║ %-21s     ║  ↔  ║ %-21s     ║ %-15.4f ║\n",
+      $lastEdge[0],
+      $lastEdge[1],
+      $lastEdge[2],
+      "",
+      "",
+      0.0000
+    );
+  }
+
+  // Print table footer
+  echo $bottomBorder."  ".$bottomBorder."\n\n";
+}
 }
