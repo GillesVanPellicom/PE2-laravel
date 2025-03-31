@@ -25,6 +25,7 @@
                         <th class="border border-gray-300 px-4 py-2">ID</th>
                         <th class="border border-gray-300 px-4 py-2">Employee</th>
                         <th class="border border-gray-300 px-4 py-2">Function</th>
+                        <th class="border border-gray-300 px-4 py-2">Location</th>
                         <th class="border border-gray-300 px-4 py-2">Start Date</th>
                         <th class="border border-gray-300 px-4 py-2">End Date</th>
                         <th class="border border-gray-300 px-4 py-2">Contract Status</th>
@@ -33,10 +34,12 @@
                 </thead>
                 <tbody>
                     @foreach($contracts as $contract)
+                        @if(@auth()->user()->hasRole('admin') || @auth()->user()->employee->contracts->location->id == $contract->location->id)
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->function->name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $contract->location->description }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->start_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->end_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -63,12 +66,14 @@
                                 @endif
                             </td>
                         </tr>
+                        @else
+                        @endif
                     @endforeach
                 </tbody>
             </table>
         </div>
         <div class="mt-6 flex justify-center">
-        {{ $contracts->links() }}
+            {{ $contracts->links() }}
         </div>
 </div>
 </x-sidebar>
