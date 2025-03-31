@@ -128,54 +128,54 @@ class KdTree {
     echo "\n";
   }
 
-/**
- * Prints the KD-tree structure with color formatting for debugging.
- *
- * @param ?KdNode $node The current node in the KD-tree
- * @param int $depth The current depth in the tree
- * @param string $prefix The prefix string for tree visualization
- * @param bool $isTail Whether this is the last child of its parent
- * @param bool $isLeft Whether this node is a left child
- * @return void
- */
-private function printTree(?KdNode $node, int $depth, string $prefix, bool $isTail, bool $isLeft = true): void {
+  /**
+   * Prints the KD-tree structure with color formatting for debugging.
+   *
+   * @param ?KdNode  $node  The current node in the KD-tree
+   * @param  int  $depth  The current depth in the tree
+   * @param  string  $prefix  The prefix string for tree visualization
+   * @param  bool  $isTail  Whether this is the last child of its parent
+   * @param  bool  $isLeft  Whether this node is a left child
+   * @return void
+   */
+  private function printTree(?KdNode $node, int $depth, string $prefix, bool $isTail, bool $isLeft = true): void {
     if ($node === null) {
-        return;
+      return;
     }
 
-    $lat = $node->node->getLat(CoordType::DEGREE);
-    $long = $node->node->getLong(CoordType::DEGREE);
+    $lat = $node->node->getLat();
+    $long = $node->node->getLong();
     $axis = $node->axis; // 0 for latitude, 1 for longitude
     $axisLabel = $axis == 0 ? "Lateral axis" : "Longitudinal axis";
     $splitValue = $axis == 0 ? $lat : $long;
-    $nodeInfo = sprintf("\033[1;33m%s\033[0m (%s: \033[1;32m%.4f\033[0m) [\033[1;35m%.4f\033[0m,\033[1;35m %.4f\033[0m]",
-        $node->node->getID(), $axisLabel, $splitValue, $lat, $long);
+    $nodeInfo = sprintf("\033[38;2;255;140;0m%s\033[0m (%s: \033[1;32m%.4f\033[0m) [\033[1;35m%.4f\033[0m,\033[1;35m %.4f\033[0m]",
+      $node->node->getID(), $axisLabel, $splitValue, $lat, $long);
 
     // Print the current node
     if ($depth == 0) {
-        echo "\033[1;34m[Root]\033[0m " . $nodeInfo . "\n";
+      echo "\033[1;34m[Root]\033[0m ".$nodeInfo."\n";
     } else {
-        echo "\033[1;37m" . $prefix . ($isTail ? "└──" : "├──") . "\033[0m"
-             . ($isLeft ? "\033[1;36mL\033[0m" : "\033[1;31mR\033[0m")
-             . ": " . $nodeInfo . "\n";
+      echo "\033[1;37m".$prefix.($isTail ? "└──" : "├──")."\033[0m"
+        .($isLeft ? "\033[1;36mL\033[0m" : "\033[1;31mR\033[0m")
+        .": ".$nodeInfo."\n";
     }
 
     // Determine the new prefix for children
-    $newPrefix = $prefix . ($isTail ? "    " : "\033[1;37m│   \033[0m");
+    $newPrefix = $prefix.($isTail ? "    " : "\033[1;37m│   \033[0m");
 
     // Print left and right children
     if ($node->left !== null || $node->right !== null) {
-        if ($node->left !== null) {
-            $this->printTree($node->left, $depth + 1, $newPrefix, $node->right === null, true);
-        }
-        if ($node->right !== null) {
-            $this->printTree($node->right, $depth + 1, $newPrefix, true, false);
-        }
+      if ($node->left !== null) {
+        $this->printTree($node->left, $depth + 1, $newPrefix, $node->right === null, true);
+      }
+      if ($node->right !== null) {
+        $this->printTree($node->right, $depth + 1, $newPrefix, true, false);
+      }
     }
 
     // Add a newline to separate different levels and maintain the pipe symbol
     if ($depth > 0 && $isTail) {
-        echo "\033[1;37m" . $prefix . "\033[0m\n";
+      echo "\033[1;37m".$prefix."\033[0m\n";
     }
-}
+  }
 }

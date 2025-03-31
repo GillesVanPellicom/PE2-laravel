@@ -294,10 +294,10 @@ namespace App\Services\Router {
       if ($this->debug) {
         echo "\033[1;34m=== Starting Closest Node Search ===\033[0m\n".
           "Input Coordinates: [\033[1;35m".sprintf("%.4f", $latDeg)."\033[0m,\033[1;35m ".sprintf("%.4f",
-            $longDeg)."\033[0m] (degrees)\n".
+            $longDeg)."\033[0m]\n".
           "Criteria: \n".
-          "  mustBeEntry : \033[1;".($mustBeEntry ? "32" : "31")."m".($mustBeEntry ? "true" : "false")."\033[0m\n".
-          "  mustBeExit  : \033[1;".($mustBeExit ? "32" : "31")."m".($mustBeExit ? "true" : "false")."\033[0m\n";
+          "  mustBeEntry : \033[1;".($mustBeEntry ? "32" : "31")."m".($mustBeEntry ? "Yes" : "No")."\033[0m\n".
+          "  mustBeExit  : \033[1;".($mustBeExit ? "32" : "31")."m".($mustBeExit ? "Yes" : "No")."\033[0m\n";
       }
 
       // Determine which kdTree to use based on entry/exit criteria
@@ -336,7 +336,7 @@ namespace App\Services\Router {
         $nodeId = $closestNode->getID();
         $nodeLat = $closestNode->getLat(CoordType::DEGREE);
         $nodeLong = $closestNode->getLong(CoordType::DEGREE);
-        echo "Closest conforming Node found: \033[1;33m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n";
+        echo "Closest conforming Node found:\n  \033[38;2;255;140;0m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n";
       }
 
       return $closestNode->getID();
@@ -480,7 +480,7 @@ namespace App\Services\Router {
             if ($this->debug) {
               echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
                   $tentativeGScore)." | New fScore: ".sprintf("%.6f",
-                  $fScore[$neighborID])."\n    \033[1;35mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
+                  $fScore[$neighborID])."\n    \033[33mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
                   $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
                   $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
 
@@ -490,7 +490,7 @@ namespace App\Services\Router {
               echo "      Heuristic Admissible: $admissibilitySymbol\n\n";
             }
           } else {
-            $this->debug && print  "    \033[37mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
+            $this->debug && print  "    \033[1;35mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
                 $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
           }
         }

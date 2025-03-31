@@ -286,7 +286,7 @@ class Node {
    * @return void
    * @throws RuntimeException If required attributes (desc, latDeg, longDeg, isEntryNode, isExitNode) are missing
    */
-public function printNode(): void {
+  public function printNode(): void {
     mb_internal_encoding('UTF-8');
     mb_http_output('UTF-8');
     ini_set('default_charset', 'utf-8');
@@ -298,34 +298,36 @@ public function printNode(): void {
 
     $id = mb_substr($this->getID(), 0, 20, 'UTF-8');
     if (mb_strlen($this->getID(), 'UTF-8') < 20) {
-        $id = str_pad($id, 20, ' ', STR_PAD_RIGHT);
+      $id = str_pad($id, 20, ' ', STR_PAD_RIGHT);
     }
 
     $descLen = mb_strlen($desc, 'UTF-8');
     if ($descLen > 38) {
-        $desc = mb_substr($desc, 0, 35, 'UTF-8') . '...';
+      $desc = mb_substr($desc, 0, 35, 'UTF-8').'...';
     } else {
-        $paddingNeeded = 38 - $descLen;
-        $desc = $desc . str_repeat(' ', $paddingNeeded);
+      $paddingNeeded = 38 - $descLen;
+      $desc = $desc.str_repeat(' ', $paddingNeeded);
     }
 
     $type = mb_substr($this->getType()->value, 0, 20, 'UTF-8');
     if (mb_strlen($this->getType()->value, 'UTF-8') > 20) {
-        $type = mb_substr($type, 0, 17, 'UTF-8') . '...';
+      $type = mb_substr($type, 0, 17, 'UTF-8').'...';
     } else {
-        $type = str_pad($type, 20, ' ', STR_PAD_RIGHT);
+      $type = str_pad($type, 20, ' ', STR_PAD_RIGHT);
     }
 
     printf(
-        "║ \033[32m%-29s\033[0m ║ %-38s ║ %10.4f ║ %11.4f ║ %-20s ║ %-5s ║ %-4s ║\n",
-        $id,
-        $desc,
-        $this->getLat(CoordType::DEGREE),
-        $this->getLong(CoordType::DEGREE),
-        $type,
-        $this->isEntryNode() ? 'Yes' : 'No',
-        $this->isExitNode() ? 'Yes' : 'No'
+      "║ \033[38;2;255;140;0m%-29s\033[0m ║ %-38s ║ \033[1;35m%10.4f\033[0m ║ \033[1;35m%11.4f\033[0m ║ %-20s ║",
+      $id,
+      $desc,
+      $this->getLat(),
+      $this->getLong(),
+      $type,
+
     );
+        $ex = $this->isEntryNode() ? "\033[32mYes\033[0m  " : "\033[31mNo\033[0m   ";
+        $en = $this->isExitNode() ? "\033[32mYes\033[0m  " : "\033[31mNo\033[0m   ";
+        echo ' '.$ex.' ║ '.$en."║\n";
 }
 
   /**
@@ -337,8 +339,8 @@ public function printNode(): void {
   public function printAddressNode(): void {
     echo "\033[32mImaginary node: ".$this->getID()."\033[0m\n";
     echo "  Desc.      :  ".$this->getDescription()."\n";
-    echo "  Latitude   :  ".sprintf("%.4f", $this->getLat(CoordType::DEGREE))."\n";
-    echo "  Longitude  :  ".sprintf("%.4f", $this->getLong(CoordType::DEGREE))."\n";
+    echo "  Latitude   :  ".sprintf("%.4f", $this->getLat())."\n";
+    echo "  Longitude  :  ".sprintf("%.4f", $this->getLong())."\n";
     echo "  Type       :  ".$this->getType()->value."\n";
     echo "\033[33m--------------------\033[0m\n";
   }
