@@ -46,7 +46,7 @@
             <ul class="space-y-2">
                 @foreach($employees as $employee)
                     <li class="employee-item p-2 bg-gray-100 rounded shadow flex justify-between items-center"
-                        data-employee-id="{{ $employee->id }}">
+                        data-employee-id="{{ $employee->employee->id }}">
                         <span>{{ $employee->first_name }} {{ $employee->last_name }}</span>
                         <div class="relative">
                             <button onclick="toggleMenu(this)" class="dots-menu-button">
@@ -80,20 +80,25 @@
         </div>
     </div>
 
-    <div id="dispatch_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-6 rounded shadow-lg w-1/3">
-            <h2 id="dispatch_modal_title" class="text-xl font-bold mb-4">Dispatch Packages</h2>
-            <p id="dispatch_modal_content" class="text-gray-700 mb-4">Select packages for the employee.</p>
-            <div class="flex justify-end">
-                <button onclick="closeModal('dispatch_modal')" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2">
-                    Cancel
-                </button>
-                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                    Dispatch Route
-                </button>
-            </div>
+<!-- Vervang de bestaande dispatch modal met deze versie -->
+<div id="dispatch_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded shadow-lg w-1/3">
+        <h2 id="dispatch_modal_title" class="text-xl font-bold mb-4">Select Employee for Dispatch</h2>
+        <div id="dispatch_modal_content" class="text-gray-700 mb-4">
+            <!-- Employee selection will be dynamically inserted here -->
+        </div>
+        <div class="flex justify-end">
+            <button onclick="closeModal('dispatch_modal')" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2">
+                Cancel
+            </button>
+            <button onclick="confirmDispatch()"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Confirm Dispatch
+            </button>
         </div>
     </div>
+</div>
 
     <script>
         // Variables to store current DC info

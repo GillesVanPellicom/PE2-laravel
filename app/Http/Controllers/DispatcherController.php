@@ -14,7 +14,17 @@ class DispatcherController extends Controller
 {
     public function index()
     {
-        $employees = User::whereHas('employee')->get();
+        // Get employees who have an active contract with the courier function
+        $employees = User::whereHas('employee.contracts', function($query) {
+            $query->whereHas('function', function($q) {
+                $q->where('name', 'LIKE', '%courier%');
+            })
+            ->where(function($q) {
+                $q->where('end_date', '>=', now())
+                  ->orWhereNull('end_date');
+            });
+        })->get();
+
         $distributionCenters = RouterNodes::where('location_type', 'DISTRIBUTION_CENTER')->get();
         $cities = City::all();
         
@@ -119,71 +129,81 @@ class DispatcherController extends Controller
     }
 
     public function dispatchSelectedPackages(Request $request)
-{
-    try {
-        $packageRefs = $request->input('packages', []);
-        $employeeId = $request->input('employee_id');
-        
-        \Log::info("Dispatching packages:", [
-            'refs' => $packageRefs,
-            'employee_id' => $employeeId
-        ]);
+    {
+        try {
+            $packageRefs = $request->input('packages', []);
+            $employeeId = $request->input('employee_id');
+            
+            \Log::info("Dispatching packages:", [
+                'refs' => $packageRefs,
+                'employee_id' => $employeeId
+            ]);
 
-        // First check if the employee has a courier record
-        $courier = \App\Models\Courier::where('employee_id', $employeeId)->first();
-        
-        if (!$courier) {
+            // Check if employee has an active courier contract
+            $employee = \App\Models\Employee::with('contracts.function')
+                ->whereHas('contracts', function($query) {
+                    $query->whereHas('function', function($q) {
+                        $q->where('name', 'LIKE', '%courier%');
+                    })
+                    ->where(function($q) {
+                        $q->where('end_date', '>=', now())
+                        ->orWhereNull('end_date');
+                    });
+                })
+                ->find($employeeId);
+
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected employee is not an active courier'
+                ], 400);
+            }
+
+            \DB::beginTransaction();
+
+            $packages = Package::whereIn('reference', $packageRefs)
+                ->whereHas('movements', function ($query) {
+                    $query->whereNotNull('arrival_time')
+                        ->whereNull('departure_time')
+                        ->whereNull('check_in_time');
+                })
+                ->with('movements')
+                ->get();
+
+            $updatedCount = 0;
+            foreach ($packages as $package) {
+                $latestMovement = $package->movements()->latest()->first();
+                if ($latestMovement) {
+                    $latestMovement->departure_time = now();
+                    $latestMovement->handled_by_employee_id = $employeeId; // Changed from handled_by_courier_id
+                    $latestMovement->save();
+                    
+                    $package->status = 'DISPATCHED';
+                    $package->save();
+                    
+                    $updatedCount++;
+                }
+            }
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "$updatedCount packages dispatched successfully",
+                'updated_count' => $updatedCount
+            ]);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error("Error dispatching packages:", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Selected employee is not registered as a courier'
-            ], 400);
+                'message' => 'Failed to dispatch packages: ' . $e->getMessage()
+            ], 500);
         }
-
-        \DB::beginTransaction();
-
-        $packages = Package::whereIn('reference', $packageRefs)
-            ->whereHas('movements', function ($query) {
-                $query->whereNotNull('arrival_time')
-                    ->whereNull('departure_time')
-                    ->whereNull('check_in_time');
-            })
-            ->with('movements')
-            ->get();
-
-        $updatedCount = 0;
-        foreach ($packages as $package) {
-            $latestMovement = $package->movements()->latest()->first();
-            if ($latestMovement) {
-                $latestMovement->departure_time = now();
-                $latestMovement->handled_by_courier_id = $courier->id; // Use courier ID instead of employee ID
-                $latestMovement->save();
-                
-                $package->status = 'DISPATCHED';
-                $package->save();
-                
-                $updatedCount++;
-            }
-        }
-
-        \DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => "$updatedCount packages dispatched successfully to courier",
-            'updated_count' => $updatedCount
-        ]);
-    } catch (\Exception $e) {
-        \DB::rollBack();
-        \Log::error("Error dispatching packages:", [
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to dispatch packages: ' . $e->getMessage()
-        ], 500);
     }
-}
 
     public function processSelectedPackages(Request $request)
     {
