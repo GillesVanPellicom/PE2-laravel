@@ -47,13 +47,14 @@ class CourierController extends Controller
                 array_shift($scannedPackages); // Remove the oldest package
             }
             $scannedPackages[] = $package->id; // Add the new package
+
             session()->put('scanned_packages', $scannedPackages); // Save the updated list
         }
         try {
-        $package->generateMovements();
-        } catch (Exception $e){
+            $package->generateMovements();
+        } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Critical Error!", "message" => "Failed to generate a route for this package."])->render()], 500);
-        };
+        }
 
         $mode = $request->mode; // Get the mode from the request
         if (!in_array($mode, ["INFO", "DELIVER", "IN", "OUT"])) {
@@ -61,24 +62,24 @@ class CourierController extends Controller
 
         }
         if ($mode == "INFO") { // If the user requested package info
-            $currentMove = PackageMovement::where('package_id', $package->id)->where("current_node_id", $package->current_location_id)->first(); // Find the corresponding package movement
-            $nextMove = PackageMovement::where('package_id', $package->id)->find($currentMove->next_movement);
+            $currentMove = $package->movements()->where("current_node_id", $package->current_location_id)->first(); // Find the corresponding package movement
             $ref = $package->reference;
             $sender = $package->user->first_name . " " . $package->user->last_name;
             $reciever = $package->name . " " . $package->last_name;
             $phone = $package->receiver_phone_number;
-            $weight = $package->weight;
+            $weight = $package->weightClass->name;
             $dimension = $package->dimension;
             $from = LocationController::getAddressString($package->originLocation);
             $to = LocationController::getAddressString($package->destinationLocation);
-            //$nextStop = $currentMove ? LocationController::getAddressString($currentMove->toLocation) : null;
+            //$nextMove = $package->movements()->find($currentMove->next_movement);
+            //$nextStop = is_null($currentMove->next_movement) ? LocationController::getAddressString($currentMove->node) : $currentMove;
             return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to"))->render()]);
         }
-        $package->move(MoveOperationType::DELIVER);
+
         try {
             [$status, $message] = $package->move(MoveOperationType::from($mode));
-        } catch(Exception $e) {
-            return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $message])->render()], 500);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
 
         }
         if ($status)

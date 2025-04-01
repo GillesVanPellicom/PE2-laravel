@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-gray-100">
+<x-app-layout>
     <main class="flex items-center justify-center min-h-screen">
-        <div class="bg-white p-8 rounded shadow-md w-full max-w-2xl">
+        <div class="mt-4 mb-4 bg-white p-8 rounded shadow-md w-full max-w-2xl">
             <h1 class="text-2xl font-bold mb-6">Customers</h1>
             <div class="mb-4">
                 <p class="text-sm font-medium text-gray-700">Your role: <span class="font-normal">{{ Auth::user()->role }}</span></p>
@@ -96,6 +86,4 @@
             </form>
         </div>
     </main>
-</body>
-
-</html>
+</x-app-layout>

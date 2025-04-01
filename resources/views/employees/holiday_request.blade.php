@@ -32,6 +32,7 @@
                 <th>Vacation Type</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Day Type</th> <!-- Add Day Type column -->
                 <th>Status</th>
             </tr>
         </thead>
@@ -43,6 +44,7 @@
                     <td>{{ $vacation->vacation_type }}</td>
                     <td>{{ $vacation->start_date }}</td>
                     <td>{{ $vacation->end_date }}</td>
+                    <td>{{ $vacation->day_type }}</td> <!-- Display Day Type -->
                     <td>{{ $vacation->approve_status }}</td>
                 </tr>
             @endforeach

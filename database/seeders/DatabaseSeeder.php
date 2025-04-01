@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder {
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
       UserRoleSeeder::class,
+      MessageTemplatesSeeder::class,
     ]);
 
   }
