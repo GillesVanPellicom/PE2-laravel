@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('reference')->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('origin_location_id')->constrained('locations');
-            $table->foreignId('current_location_id')->nullable()->constrained('locations');
+            $table->string('current_location_id')->nullable();
             $table->foreignId('destination_location_id')->nullable()->constrained('locations');
             $table->foreignId('addresses_id')->nullable()->constrained('addresses');
             $table->string('status');

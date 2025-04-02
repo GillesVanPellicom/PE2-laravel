@@ -1,0 +1,11 @@
+# Basic settings
+myhostname = pe2-project.com
+mydomain = pe2-project.com
+mynetworks = 0.0.0.0/0
+inet_interfaces = all
+
+# TLS settings
+smtpd_use_tls = yes
+smtpd_tls_cert_file = /etc/postfix/ssl/smtpd.crt
+smtpd_tls_key_file = /etc/postfix/ssl/smtpd.key
+smtp_tls_security_level = may  # Optional for outgoing

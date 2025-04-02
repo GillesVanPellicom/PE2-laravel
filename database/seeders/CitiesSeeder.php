@@ -134,6 +134,125 @@ class CitiesSeeder extends Seeder
                 'country_id' => 60,
                 'created_at' => now(),
                 'updated_at' => now()
+            ],
+            [
+                'name' => 'Eindhoven',
+                'postocde' => '5502',
+                'country_id' => 126,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'Malaga',
+                'postcode' => '29001',
+                'country_id' => 164, // Spain
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Dusseldorf',
+                'postcode' => '40474',
+                'country_id' => 64, // Spain
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Katowice',
+                'postcode' => '42-625',
+                'country_id' => 140, // Poland
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Poznań',
+                'postcode' => '60-189',
+                'country_id' => 140, // Poland
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Lisboa',
+                'postcode' => '1700-111',
+                'country_id' => 141, // Portugal
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Porto',
+                'postcode' => '4000-008',
+                'country_id' => 141, // Portugal
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Rome',
+                'postcode' => '00054',
+                'country_id' => 82, // Italïe
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Milan',
+                'postcode' => '20054',
+                'country_id' => 82, // Italïe
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Athens',
+                'postcode' => '19019',
+                'country_id' => 66, // Griekenland
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Heraklion',
+                'postcode' => '141 22',
+                'country_id' => 66, // Griekenland
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Copenhagen',
+                'postcode' => '2770',
+                'country_id' => 46, // Denemarken
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Billund',
+                'postcode' => '7190',
+                'country_id' => 46, // Denemarken
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Aalborg',
+                'postcode' => '9400',
+                'country_id' => 46, // Denemarken
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Oslo',
+                'postcode' => '2061',
+                'country_id' => 131, // Noorwegen
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Stockholm',
+                'postcode' => '168 76',
+                'country_id' => 169, // Zweden
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Helsinki',
+                'postcode' => '01530',
+                'country_id' => 59, // Finland
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         ]);
     }

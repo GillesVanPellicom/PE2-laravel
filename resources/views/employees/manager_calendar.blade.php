@@ -3,44 +3,46 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-     <div class="flex gap-6">
-        <!-- Sidebar -->
-        <div class="w-1/4 bg-white p-4 shadow-md rounded-lg">
-            <h2 class="text-xl font-semibold mb-2">Available Employees</h2>
-            <div id="employeeList" class="p-2 bg-gray-100 rounded-md"></div>
+    <div class="flex gap-6">
+    <!-- Sidebar (Smaller) -->
+    <div class="w-1/5 bg-white p-6 shadow-lg rounded-lg space-y-6">
+        <h2 class="text-xl font-semibold text-gray-800">Available Employees</h2>
+        <div id="employeeList" class="p-4 bg-gray-100 rounded-md shadow-sm"></div>
 
-            <h2 class="text-xl font-semibold mt-4 mb-2">Sick Employees</h2>
-            <div id="sickEmployeeList" class="p-2 bg-red-100 rounded-md"></div>
+        <h2 class="text-xl font-semibold text-gray-800">Sick Employees</h2>
+        <div id="sickEmployeeList" class="p-4 bg-red-100 rounded-md shadow-sm"></div>
 
-            <h2 class="text-xl font-semibold mt-4 mb-2">Holiday Requests</h2>
-            <div id="holidayEmployeeList" class="p-2 bg-yellow-100 rounded-md"></div>
+        <h2 class="text-xl font-semibold text-gray-800">Holiday Requests</h2>
+        <div id="holidayEmployeeList" class="p-4 bg-yellow-100 rounded-md shadow-sm"></div>
 
-            <h2 class="text-xl font-semibold mt-4 mb-2">Training Sessions</h2>
-            <div id="trainingList" class="p-2 bg-blue-100 rounded-md"></div>
-            <button onclick="addTrainingSession()" class="mt-3 w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add Training</button>
-        </div>
+        <h2 class="text-xl font-semibold text-gray-800">Training Sessions</h2>
+        <div id="trainingList" class="p-4 bg-blue-100 rounded-md shadow-sm"></div>
+        
+        <button onclick="addTrainingSession()" class="w-full bg-blue-500 text-white py-2 rounded-md shadow-md hover:bg-blue-600 transition duration-200 ease-in-out">Add Training</button>
+    </div>
 
-        <!-- Calendar Section -->
-        <div class="w-3/4 bg-white p-6 shadow-md rounded-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h1 class="text-2xl font-bold">Manager Calendar</h1>
-                
-                <!-- Notifications -->
-                <div class="relative">
-                    <span class="text-2xl cursor-pointer" onclick="toggleNotifications()">🔔</span>
-                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2" id="notificationBadge">0</span>
-                    <div class="absolute right-0 mt-2 w-64 bg-white shadow-lg p-4 hidden" id="notificationDropdown"></div>
-                </div>
+    <!-- Calendar Section (Centered) -->
+    <div class="w-3/5 bg-white p-8 shadow-lg rounded-lg space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Manager Calendar</h1>
+            
+            <!-- Notifications (Moved 20px to the Right) -->
+            <div class="relative ml-auto">
+                <span class="text-2xl cursor-pointer text-gray-800" onclick="toggleNotifications()">🔔</span>
+                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2" id="notificationBadge">0</span>
+                <div class="absolute left-10 mt-2 w-64 bg-white shadow-lg p-4 rounded-md hidden" id="notificationDropdown"></div>
             </div>
-
-            <button onclick="clearStorage()" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Clear All Data</button>
-            <div id="calendar" class="mt-4"></div>
         </div>
-    </div>
 
-    <div class="mt-6">
-        <a href="employees/calendar" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">View Calendar</a>
+        <button onclick="clearStorage()" class="w-full bg-red-500 text-white py-2 rounded-md shadow-md hover:bg-red-600 transition duration-200 ease-in-out">Clear All Data</button>
+
+        <div id="calendar" class="mt-4"></div>
     </div>
+</div>
+
+<div class="mt-6 text-center">
+    <a href="employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
+</div>
 
 
     <script>
@@ -73,7 +75,7 @@
         holidays.forEach(holiday => {
             Object.entries(holiday.holidays).forEach(([date, period]) => {
                 events.push({
-                    title: `${holiday.name}'s Holiday (${period})`,
+                    title: `${holiday.name}'s Holiday (${holiday.day_type})`, // Include day_type in the title
                     start: date,
                     allDay: true,
                     backgroundColor: '#ff7f7f',
@@ -152,34 +154,34 @@
 
     let formattedDate = formatDateForComparison(date); // Format the date as "YYYY-MM-DD"
 
-    // ✅ Fetch Approved Holidays from Backend
+    // Fetch Approved Holidays from Backend
     fetch('/approved-vacations')
         .then(response => response.json())
         .then(data => {
             console.log("Fetched approved holidays:", data); // Debugging log
 
-            // ✅ Find employees who have vacations on the selected date
+            // Find employees who have vacations on the selected date
             let holidayEmployees = data.filter(holiday => 
                 formattedDate >= holiday.start_date && formattedDate <= holiday.end_date
             );
 
             console.log("Employees on holiday:", holidayEmployees); // Debugging log
 
-            // ✅ Display employees on holiday
+            // Display employees on holiday in the sidebar
             displayHolidays(formattedDate, holidayEmployees);
 
-            // ✅ Update available employees list
+            // Update available employees list
             updateAvailableEmployees(holidayEmployees);
         })
         .catch(error => console.error("Error fetching approved vacations:", error));
 }
 
 
-// ✅ Function to Display Holidays in the Sidebar
+// Function to Display Holidays in the Sidebar
 function displayHolidays(formattedDate, holidayEmployees) {
     let holidayEmployeeList = document.getElementById("holidayEmployeeList");
     
-    // ✅ Clear the list first to prevent duplicates
+    // Clear the list first to prevent duplicates
     holidayEmployeeList.innerHTML = "";  
 
     if (holidayEmployees.length > 0) {
@@ -190,7 +192,7 @@ function displayHolidays(formattedDate, holidayEmployees) {
         holidayEmployees.forEach(holiday => {
             let div = document.createElement("div");
             div.className = "holiday-employee";
-            div.innerText = `${holiday.name}`;
+            div.innerText = `${holiday.name} (${holiday.day_type || 'N/A'})`; // Include day_type in the display
             holidayEmployeeList.appendChild(div);
         });
     } else {
@@ -201,7 +203,7 @@ function displayHolidays(formattedDate, holidayEmployees) {
 }
 
 
-// ✅ Format date for backend comparison ("YYYY-MM-DD")
+// Format date for backend comparison ("YYYY-MM-DD")
 function formatDateForComparison(date) {
     return new Date(date).toISOString().split('T')[0]; 
 }
@@ -263,15 +265,15 @@ function formatDate(dateString) {
         sendVacationUpdate(vacationId, "approved");
     }
 
-    function denyVacation(vacationId) {
-        sendVacationUpdate(vacationId, "rejected");
+    function denyVacation(vacationId, dayType) {
+        sendVacationUpdate(vacationId, "rejected", dayType);
     }
 
-    function sendVacationUpdate(vacationId, status) {
+    function sendVacationUpdate(vacationId, status, dayType = null) {
         $.ajax({
             url: `/vacations/${vacationId}/update-status`,
             type: "POST",
-            data: { status: status },
+            data: { status: status, day_type: dayType },
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function(response) {
                 console.log("Vacation updated:", response);
@@ -316,13 +318,17 @@ function formatDate(dateString) {
                     requestItem.className = "notification-item";
                     let formattedDate = formatDate(request.start_date);
 
+                    // Include day_type in the notification
                     requestItem.innerHTML = `
-                        <p><strong>${request.employee_name}</strong> requested a holiday on ${formattedDate}</p>
+                        <p><strong>${request.employee_name}</strong> requested a holiday on ${formattedDate} (${request.day_type})</p>
                         <button class="btn approve" onclick="approveVacation(${request.id})">Approve</button>
-                        <button class="btn reject" onclick="denyVacation(${request.id})">Reject</button>
+                        <button class="btn reject" onclick="denyVacation(${request.id}, '${request.day_type}')">Reject</button>
                     `;
                     notificationDropdown.appendChild(requestItem);
                 });
+            },
+            error: function (xhr) {
+                console.error("Error fetching holiday requests:", xhr.responseText);
             }
         });
     }

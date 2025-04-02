@@ -10,7 +10,12 @@ class Employee extends Model
 
     public function contracts()
     {
-        return $this->hasMany(EmployeeContract::class, 'employee_id');
+        return $this->hasOne(EmployeeContract::class, 'employee_id');
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class, 'employee_id');
     }
 
     public function user()

@@ -15,6 +15,7 @@ return new class extends Migration {
       $table->decimal('lonDeg', 12, 8)->nullable();
       $table->boolean('isEntry')->default(false);
       $table->boolean('isExit')->default(false);
+      $table->foreignId('address_id')->constrained('addresses');
       $table->timestamps();
 
       // Computed columns
