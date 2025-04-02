@@ -49,7 +49,8 @@ class Package extends Model {
     'delivery_method_id',
     'dimension',
     'weight_price',
-    'delivery_price'
+    'delivery_price',
+    'paid'
   ];
 
   protected $attributes = [

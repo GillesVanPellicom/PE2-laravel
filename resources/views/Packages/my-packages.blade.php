@@ -197,7 +197,7 @@
                                         View Details
                                     </a>
                                     @else
-                                    <a class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-md transition-colors duration-200">
+                                    <a href="{{ route('packagepayment',$package->id)}}" class="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-md transition-colors duration-200">
                                         <i class="fas fa-credit-card mr-2"></i>Pay Now
                                     </a>
                                     @endif
