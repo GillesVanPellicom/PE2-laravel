@@ -206,6 +206,9 @@ Route::middleware("auth")->group(function () {
     Route::post('/send-package', [PackageController::class, 'store'])
         ->name('package.store');
 
+    Route::post('/package/{id}/return', [PackageController::class, 'returnPackage'])
+        ->name('packages.return');
+
     Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
     Route::get('/my-packages', [PackageController::class, 'mypackages'])
