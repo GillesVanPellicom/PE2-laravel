@@ -206,6 +206,9 @@ Route::middleware("auth")->group(function () {
     Route::post('/send-package', [PackageController::class, 'store'])
         ->name('package.store');
 
+    Route::post('/update-prices', [PackageController::class, 'updatePrices'])
+        ->name('update-prices');
+
     Route::post('/package/{id}/return', [PackageController::class, 'returnPackage'])
         ->name('packages.return');
 
