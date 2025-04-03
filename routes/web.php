@@ -164,12 +164,13 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
-
-Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
-Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
-Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
-Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
-Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+Route::middleware(['auth','pickup'])->group(function () {
+    Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+    Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
+    Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
+    Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
+    Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+});
 
 
 // ======================= End Pick Up Point ====================== //
