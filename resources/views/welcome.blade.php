@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-gray-100 min-h-[calc(100vh-121px)] flex items-center justify-center">
         <div class="max-w-md w-full bg-white p-6 rounded-lg shadow-md">
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Homepage</h1>
             <p class="text-center text-gray-600 mb-6">This is the homepage.</p>
@@ -12,9 +12,9 @@
                         Sign Out
                     </button>
                 </form>
-                <a href="{{ route('customers') }}"
+                <a href="{{ route('profile') }}"
                     class="block text-center text-blue-500 hover:underline hover:text-blue-600">
-                    Customers
+                    Profile
                 </a>
             @endauth
 
