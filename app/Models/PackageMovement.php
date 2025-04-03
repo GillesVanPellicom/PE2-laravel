@@ -7,6 +7,9 @@ use App\Models\RouterEdges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|static where(string $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
+ */
 class PackageMovement extends Model {
   use HasFactory;
 

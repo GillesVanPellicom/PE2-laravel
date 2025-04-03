@@ -13,7 +13,7 @@ return new class extends Migration {
       $table->id();
       $table->string('infrastructure_id')->nullable()->unique()->default(null);
       $table->string('description');
-      $table->enum('location_type', ['ADDRESS', 'PICKUP_POINT', 'DROPOFF_POINT']);
+      $table->enum('location_type', ['ADDRESS', 'PICKUP_POINT', 'DROPOFF_POINT', 'OFFICE']);
       $table->foreignId('addresses_id')->constrained('addresses');
       $table->string('contact_number');
       $table->string('opening_hours')->nullable();

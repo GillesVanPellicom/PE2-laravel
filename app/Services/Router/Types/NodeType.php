@@ -12,4 +12,5 @@ enum NodeType: string {
   case DISTRIBUTION_CENTER = 'DISTRIBUTION_CENTER';
   case AIRPORT = 'AIRPORT';
   case ADDRESS = 'ADDRESS';
+  case OFFICE = 'OFFICE';
 }

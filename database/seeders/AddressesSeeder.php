@@ -81,6 +81,28 @@ class AddressesSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            // HR Offices
+            [
+                'street' => 'Rue Montoyer',
+                'house_number' => '15',
+                'cities_id' => 2, // Brussels
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'street' =>'Paseo de la castellana',
+                'house_number' => '93',
+                'cities_id' => 7,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'street' => 'Canoga Ave',
+                'house_number' => '5820',
+                'cities_id' => 11,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]
         ]);
 
         Address::factory()->count(200)->create();

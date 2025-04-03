@@ -12,6 +12,7 @@ use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\NoPathFoundException;
+use App\Services\Router\Types\Exceptions\RerouteToSelfException;
 use App\Services\Router\Types\Exceptions\RouterException;
 use App\Services\Router\Types\MoveOperationType;
 use App\Services\Router\Types\Node;
@@ -48,7 +49,8 @@ class Package extends Model {
     'delivery_method_id',
     'dimension',
     'weight_price',
-    'delivery_price'
+    'delivery_price',
+    'paid'
   ];
 
   protected $attributes = [
@@ -165,6 +167,76 @@ class Package extends Model {
 
 
   /**
+   * @return void
+   * @throws InvalidCoordinateException
+   * @throws InvalidRouterArgumentException
+   * @throws NoPathFoundException
+   * @throws NodeNotFoundException
+   * @throws RouterException
+   * @throws Exception
+   */
+  public function return(): void {
+    $this->reroute($this->getAttribute('originLocation'));
+  }
+
+
+  /**
+   * Reroute the package to a new destination.
+   *
+   * This method updates the package's movements to a new destination.
+   * It generates movements if none exist and commits the new path as movements.
+   *
+   * @param  Location|string  $destination  The new destination for the package.
+   * @return void
+   * @throws Exception If movements are uninitialized or current movement not found.
+   * @throws RouterException
+   * @throws InvalidRouterArgumentException
+   * @throws NodeNotFoundException
+   * @throws InvalidCoordinateException
+   * @throws NoPathFoundException
+   */
+  public function reroute(Location|string $destination): void {
+
+    // Check for self-rerouting
+    if (($destination == $this->current_location_id) ||
+      ($destination instanceof Location && $destination->id == $this->current_location_id)) {
+      throw new RerouteToSelfException($destination);
+    }
+
+    $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
+    if ($movements->isEmpty()) {
+      $this->generateMovements();
+    }
+
+    // Get the current location node
+    $currentNode = $this->getCurrentMovement();
+    if (!$currentNode) {
+      throw new RouterException('Current location not found.');
+    }
+
+    // Resolve the Router service
+    /** @var Router $router */
+    $router = App::make(Router::class);
+
+    $currentLocation = $this->getCurrentMovement()->getID();
+    if (is_numeric($currentLocation)) {
+      $currentLocation = Location::find($currentLocation);
+    }
+
+    // Get the path from origin to destination
+    $path = $router->getPath(
+      $currentLocation,
+      $destination
+    );
+
+    // Commit the path as movements
+    $this->commitMovements($path);
+  }
+
+
+  /**
    * Get the next location for the package.
    *
    * This method retrieves the next location node for the package based on its current movement.
@@ -185,13 +257,13 @@ class Package extends Model {
     // Get the current location node
     $currentNode = $this->getCurrentMovement();
     if (!$currentNode) {
-      throw new Exception('Current location not found.');
+      throw new RouterException('Current location not found.');
     }
 
     // Find the current movement based on the current node's ID
     $currentMovement = $movements->firstWhere('current_node_id', $currentNode->getID());
     if (!$currentMovement) {
-      throw new Exception('Current movement not found.');
+      throw new RouterException('Current movement not found.');
     }
 
     // If there is no next movement, return null
@@ -208,7 +280,7 @@ class Package extends Model {
     // Get the node for the next movement's current_node_id
     $node = Node::fromId($nextMovement->current_node_id);
     if (!$node) {
-      throw new Exception('No next movement found.');
+      throw new RouterException('No next movement found.');
     }
 
     // Initialize and return the node with movement timestamps
@@ -273,7 +345,7 @@ class Package extends Model {
     // Find the current movement based on the current location ID
     $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
     if (!$currentMovement) {
-      throw new Exception("No current movement found.");
+      throw new RouterException("No current movement found.");
     }
 
     // List of timestamps in sequence
@@ -308,7 +380,7 @@ class Package extends Model {
 
     // If all timestamps are set and there is a next movement, throw an exception
     if (!is_null($currentMovement->next_movement)) {
-      throw new Exception('Package did not move to next movement.');
+      throw new RouterException('Package did not move to next movement.');
     }
   }
 
@@ -505,7 +577,7 @@ class Package extends Model {
     }
 
     // If all timestamps are set but there is a next movement, throw an exception
-    throw new Exception('All timestamps are already set for the current movement.');
+    throw new RouterException('All timestamps are already set for the current movement.');
   }
 
 
@@ -529,6 +601,11 @@ class Package extends Model {
    */
   private function commitMovements(array $path): void {
     DB::transaction(function () use ($path) {
+      // Check if the package already has movements and remove them
+      if ($this->movements()->exists()) {
+        $this->movements()->delete();
+      }
+
       $previousMovement = null;
       $previousNode = null;
 
