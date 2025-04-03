@@ -161,6 +161,9 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
 });
 
+// contract PDF
+Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
+
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
@@ -206,10 +209,13 @@ Route::middleware("auth")->group(function () {
     Route::post('/send-package', [PackageController::class, 'store'])
         ->name('package.store');
 
+    Route::post('/update-prices', [PackageController::class, 'updatePrices'])
+        ->name('update-prices');
+
     Route::post('/package/{id}/return', [PackageController::class, 'returnPackage'])
         ->name('packages.return');
 
-    Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
+    Route::get('/package-label/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employee-contract-template');
 
     Route::get('/my-packages', [PackageController::class, 'mypackages'])
         ->name('packages.mypackages');
@@ -227,7 +233,7 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 use App\Http\Controllers\RouteCreatorController;
 
 
-Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+//Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
