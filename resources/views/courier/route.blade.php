@@ -27,8 +27,12 @@
                         @if ($firstPackage["end"])
                             <div class="flex space-x-4 mt-4">
                                 <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
-                                    ✓ Deliver
+                                    ✓ 
                                 </button>
+
+                                <a href="{{ route('courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
+                                    ✍ 
+                                </a>
 
                                 <button class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none" onclick="openModal('{{ $firstPackage['ref'] }}')">
                                     Send Back
@@ -153,12 +157,23 @@
                 const packageRef = this.getAttribute('data-ref');
 
                 const url = deliverRoute.replace(':id', packageRef);
-                fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }})
-                    .then(response => response.json())
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         console.log(data.message);
                         if (data.success) {
-                            location.reload(); 
+                            location.reload(); // Reload the page on success
                         }
                     })
                     .catch(error => console.error('Delivery error:', error));
