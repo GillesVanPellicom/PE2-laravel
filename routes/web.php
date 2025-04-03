@@ -137,6 +137,21 @@ Route::middleware(['permission:HR.create'])->group(function(){
     Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
 
     Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+
+    Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
+
+    Route::get('/vacations/sick-leaves', [VacationController::class, 'getSickLeaves'])->name('vacations.sickLeaves');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+
 });
 
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
@@ -160,9 +175,6 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
     Route::get('/create-function', [EmployeeController::class, 'create_function'])->name('employees.create_function');
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
 });
-
-// contract PDF
-Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
 
 // ======================= End Employee ====================== //
 
