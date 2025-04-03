@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role, Location};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
 use carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EmployeeController extends Controller
 {
@@ -138,7 +140,10 @@ class EmployeeController extends Controller
 
     public function contracts()
     {
-        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
+        $user = Auth::user();
+        $location = $user->employee->contracts->location_id;
+
+        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', $location)->paginate(2);
         return view('employees.contracts', compact('contracts'));
     }
 
@@ -304,5 +309,29 @@ class EmployeeController extends Controller
 
         EmployeeFunction::create($function);
         return redirect()->route('employees.functions')->with('success', 'Function created successfully');
+    }
+
+    public function generateEmployeeContract($id)
+    {
+        if (!Auth::check()) {
+            abort(401, 'Unauthorized access');
+        }
+
+        $contract = EmployeeContract::with([
+            'employee',
+            'function'
+        ])->findOrFail($id);
+
+            $data = [
+                'contract' => $contract,
+                'employer' => $contract->employee->team->manager->user,
+                'employer_address' => $contract->employee->team->manager->user->address,
+                'employee' => $contract->employee->user,
+                'employee_address' => $contract->employee->user->address,
+                'function' => $contract->function,
+            ];
+
+        $pdf = Pdf::loadView('employees.employee-contract-template', $data);
+        return $pdf->stream('employee-contract.pdf');
     }
 }
