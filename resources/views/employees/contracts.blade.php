@@ -2,6 +2,18 @@
     @section("pageName","Contracts")
 
 <x-sidebar>
+    <script>
+        window.onload = function() {
+            const pdfUrl = "{{ session('pdf_url') }}";
+            if (pdfUrl) {
+                window.open(pdfUrl, '_blank');
+            }
+        }
+
+        function show_contract(contract) {
+            window.open('/contracts/' + contract, '_blank');
+        }
+    </script>
 
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
@@ -34,7 +46,7 @@
                 </thead>
                 <tbody>
                     @foreach($contracts as $contract)
-                        @if(@auth()->user()->hasRole('admin') || @auth()->user()->employee->contracts->location->id == $contract->location->id)
+                        
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
@@ -64,10 +76,9 @@
                                         End date already set
                                     </button>
                                 @endif
+                                <button onclick="show_contract('contract_{{ $contract->employee->user->last_name }}_{{ $contract->employee->user->first_name }}_{{ $contract->created_at }}.pdf')">Click me</button>
                             </td>
                         </tr>
-                        @else
-                        @endif
                     @endforeach
                 </tbody>
             </table>

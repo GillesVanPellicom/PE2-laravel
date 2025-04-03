@@ -12,6 +12,7 @@ use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
 use carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
@@ -189,6 +190,11 @@ class EmployeeController extends Controller
     public function contracts()
     {
         $user = Auth::user();
+        if($user->hasRole(['HRManager', 'admin']))
+        {
+            $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
+            return view('employees.contracts', compact('contracts'));
+        }
         $location = $user->employee->contracts->location_id;
 
         $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', $location)->paginate(2);
@@ -253,12 +259,14 @@ class EmployeeController extends Controller
             $employee->leave_balance = $request->vacation_days;
             $employee->save();
     
-            EmployeeContract::create($contract);
+            $cont = EmployeeContract::create($contract);
 
             $role = EmployeeFunction::find($request->function)->role;
             $user = User::find($employee->user_id);
             $user->syncRoles([]);
             $user->assignRole($role);
+
+            EmployeeController::generateEmployeeContract($cont->contract_id);
 
             return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
         }
@@ -359,11 +367,8 @@ class EmployeeController extends Controller
         return redirect()->route('employees.functions')->with('success', 'Function created successfully');
     }
 
-    public function generateEmployeeContract($id)
+    public static function generateEmployeeContract($id)
     {
-        if (!Auth::check()) {
-            abort(401, 'Unauthorized access');
-        }
 
         $contract = EmployeeContract::with([
             'employee',
@@ -379,7 +384,17 @@ class EmployeeController extends Controller
                 'function' => $contract->function,
             ];
 
+
         $pdf = Pdf::loadView('employees.employee-contract-template', $data);
-        return $pdf->stream('employee-contract.pdf');
+
+        $contractPath = public_path('contracts');
+        if (!file_exists($contractPath)) {
+            mkdir($contractPath, 0777, true); // Create the directory with full permissions
+        }
+
+        $timestamp = $contract->created_at;
+        $filename = "contract_{$contract->employee->user->last_name}_{$contract->employee->user->first_name}_{$timestamp}";
+        $pdf->save(public_path("contracts/{$filename}.pdf"));
+        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
     }
 }
