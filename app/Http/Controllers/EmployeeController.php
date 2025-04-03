@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role, Vacation};
 use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
@@ -23,8 +23,56 @@ class EmployeeController extends Controller
 
     public function managerCalendar()
     {
-        $employees = Employee::with('user')->get(); // Fetch employees + user data
-        return view('employees.manager_calendar', compact('employees')); 
+        $employees = Employee::with('user')->get();
+        $totalEmployees = $employees->count();
+
+        // Fetch approved holidays and group them by date
+        $approvedHolidays = Vacation::where('approve_status', 'Approved')
+            ->with(['employee.user'])
+            ->get()
+            ->groupBy(function ($vacation) {
+                return $vacation->start_date; // Group by start_date
+            });
+
+        // Calculate availability for each time slot and the whole day
+        $availability = [
+            'totalEmployees' => $totalEmployees // Include total employees for fallback
+        ];
+        foreach ($approvedHolidays as $date => $holidays) {
+            $morningUnavailable = 0; // 08:00–12:00
+            $afternoonUnavailable = 0; // 12:00–17:00
+            $fullDayUnavailable = 0; // 08:00–17:00
+
+            foreach ($holidays as $holiday) {
+                if ($holiday->day_type === 'Whole Day') {
+                    $fullDayUnavailable++;
+                } elseif ($holiday->day_type === 'First Half') {
+                    $morningUnavailable++;
+                } elseif ($holiday->day_type === 'Second Half') {
+                    $afternoonUnavailable++;
+                }
+            }
+
+            $availability[$date] = [
+                'morning' => [
+                    'available' => $totalEmployees - $morningUnavailable,
+                    'percentage' => (($totalEmployees - $morningUnavailable) / $totalEmployees) * 100,
+                ],
+                'afternoon' => [
+                    'available' => $totalEmployees - $afternoonUnavailable,
+                    'percentage' => (($totalEmployees - $afternoonUnavailable) / $totalEmployees) * 100,
+                ],
+                'fullDay' => [
+                    'available' => $totalEmployees - $fullDayUnavailable,
+                    'percentage' => (($totalEmployees - $fullDayUnavailable) / $totalEmployees) * 100,
+                ],
+            ];
+        }
+
+        // Debugging: Log availability data
+        \Log::info('Employee Availability:', $availability);
+
+        return view('employees.manager_calendar', compact('employees', 'totalEmployees', 'approvedHolidays', 'availability'));
     }
 
     public function holidayRequest()
@@ -32,8 +80,6 @@ class EmployeeController extends Controller
         $employees = Employee::with('user')->get(); // Fetch employees with user data
         return view('holiday-request', compact('employees'));
     }
-
-
 
     public function create()
     {
