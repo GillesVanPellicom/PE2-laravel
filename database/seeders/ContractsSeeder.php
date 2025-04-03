@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ContractsSeeder extends Seeder
 {
@@ -25,7 +26,9 @@ class ContractsSeeder extends Seeder
             ['employee_id' => 4, 'job_id' => 8, 'location_id' => 8, 'start_date' => '2024-03-02', 'end_date' => null,  'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
         ]);
 
-        
+        $directoryPath = public_path('contracts');
+        exec("rm -rf " . escapeshellarg($directoryPath), $output, $status);
+        Log::info($status === 0 ? "Directory removed" : "Failed to remove directory");
 
         $contracts = EmployeeContract::all();
         foreach($contracts as $contract) {

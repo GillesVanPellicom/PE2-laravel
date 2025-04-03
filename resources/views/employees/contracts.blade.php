@@ -9,6 +9,10 @@
                 window.open(pdfUrl, '_blank');
             }
         }
+
+        function show_contract(contract) {
+            window.open('/contracts/' + contract, '_blank');
+        }
     </script>
 
     <div class="container mx-auto py-10">
@@ -72,6 +76,7 @@
                                         End date already set
                                     </button>
                                 @endif
+                                <button onclick="show_contract('contract_{{ $contract->employee->user->last_name }}_{{ $contract->employee->user->first_name }}_{{ $contract->created_at }}.pdf')">Click me</button>
                             </td>
                         </tr>
                     @endforeach

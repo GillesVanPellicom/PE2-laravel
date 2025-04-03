@@ -345,8 +345,8 @@ class EmployeeController extends Controller
         }
 
         $timestamp = $contract->created_at;
-
-        $pdf->save(public_path("contracts/{$timestamp}.pdf"));
-        
+        $filename = "contract_{$contract->employee->user->last_name}_{$contract->employee->user->first_name}_{$timestamp}";
+        $pdf->save(public_path("contracts/{$filename}.pdf"));
+        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
     }
 }
