@@ -171,10 +171,6 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
 
 Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
 Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
-=======
-// contract PDF
-Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
-
 
 // ======================= End Employee ====================== //
 
