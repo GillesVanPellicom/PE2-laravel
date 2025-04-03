@@ -593,7 +593,142 @@ public function packagePayment($packageID) {
     ->first();
     return view('packagepayment',compact('package')); 
 }
+
+public function bulkOrder()
+{
+    $weightClasses = WeightClass::where('is_active', true)->get();
+    $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
+    $locations = Location::all();
+
+    return view('Packages.bulk-order', compact('weightClasses', 'deliveryMethods', 'locations'));
 }
 
+public function storeBulkOrder(Request $request)
+{
+    $userId = Auth::user()->id;
 
+    // Validate the bulk order input
+    $validatedData = $request->validate([
+        'packages' => 'required|array|min:1',
+        'packages.*.name' => 'required|string|max:255',
+        'packages.*.lastName' => 'required|string|max:255',
+        'packages.*.receiverEmail' => 'required|email|max:255',
+        'packages.*.receiver_phone_number' => 'required|string|max:255',
+        'packages.*.dimension' => 'required|string|max:255',
+        'packages.*.weight_id' => 'required|exists:weight_classes,id',
+        'packages.*.delivery_method_id' => 'required|exists:delivery_method,id',
+        'packages.*.destination_location_id' => 'nullable|exists:locations,id',
+        'packages.*.addressInput' => 'nullable|string|max:255',
+    ]);
 
+    $createdPackages = [];
+
+    foreach ($validatedData['packages'] as $packageData) {
+        $deliveryMethod = DeliveryMethod::findOrFail($packageData['delivery_method_id']);
+        $weightClass = WeightClass::findOrFail($packageData['weight_id']);
+
+        // Verify that the delivery method and weight class are valid
+        if ($deliveryMethod->requires_location && empty($packageData['destination_location_id'])) {
+            return back()->withErrors(['error' => 'A destination location is required for the selected delivery method.']);
+        }
+
+        // Handle address-based delivery
+        if (!$deliveryMethod->requires_location) {
+            try {
+                // Get address details from Geoapify
+                $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                    'text' => $packageData['addressInput'],
+                    'apiKey' => env('GEOAPIFY_API_KEY'),
+                    'format' => 'json',
+                    'limit' => 1
+                ]);
+
+                if (!$response->successful() || empty($response->json()['results'])) {
+                    return back()->withErrors(['error' => 'Could not validate address for one of the packages.']);
+                }
+
+                $addressData = $response->json()['results'][0];
+
+                // Extract address components
+                $street = $addressData['street'] ?? '';
+                $houseNumber = $addressData['housenumber'] ?? '';
+                $busNumber = isset($addressData['unit']) ? $addressData['unit'] : null;
+                $city = $addressData['city'] ?? '';
+                $postalCode = $addressData['postcode'] ?? '';
+                $countryName = $addressData['country'] ?? '';
+
+                // Check if country exists
+                $country = Country::firstOrCreate(['country_name' => $countryName]);
+
+                // Check if city exists
+                $city = City::firstOrCreate([
+                    'name' => $city,
+                    'postcode' => $postalCode,
+                    'country_id' => $country->id
+                ]);
+
+                // Check if exact address exists
+                $existingAddress = Address::where([
+                    'street' => $street,
+                    'house_number' => $houseNumber,
+                    'bus_number' => $busNumber,
+                    'cities_id' => $city->id
+                ])->first();
+
+                if ($existingAddress) {
+                    $address = $existingAddress;
+                    $destinationLocation = Location::where('addresses_id', $address->id)
+                        ->where('location_type', 'ADDRESS')
+                        ->first();
+                } else {
+                    // Create new address
+                    $address = Address::create([
+                        'street' => $street,
+                        'house_number' => $houseNumber,
+                        'bus_number' => $busNumber,
+                        'cities_id' => $city->id
+                    ]);
+                    $destinationLocation = null;
+                }
+
+                // Create destination location if it doesn't exist
+                if (!$destinationLocation) {
+                    $destinationLocation = Location::create([
+                        'addresses_id' => $address->id,
+                        'location_type' => 'ADDRESS',
+                        'description' => 'Customer Address ' . $packageData['name'] . ' ' . $packageData['lastName'],
+                        'contact_number' => $packageData['receiver_phone_number'],
+                        'latitude' => $addressData['lat'],
+                        'longitude' => $addressData['lon'],
+                        'is_active' => true
+                    ]);
+                }
+
+                $packageData['destination_location_id'] = $destinationLocation->id;
+            } catch (\Exception $e) {
+                return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
+            }
+        }
+
+        // Create the package
+        $package = Package::create([
+            'reference' => $this->generateUniqueTrackingNumber(),
+            'user_id' => $userId,
+            'name' => $packageData['name'],
+            'lastName' => $packageData['lastName'],
+            'receiverEmail' => $packageData['receiverEmail'],
+            'receiver_phone_number' => $packageData['receiver_phone_number'],
+            'dimension' => $packageData['dimension'],
+            'weight_id' => $packageData['weight_id'],
+            'delivery_method_id' => $packageData['delivery_method_id'],
+            'origin_location_id' => Auth::user()->address->id,
+            'destination_location_id' => $packageData['destination_location_id'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        $createdPackages[] = $package;
+    }
+
+    return redirect()->route('packagepayment',$package->id)->with('success', 'Package created successfully');
+}
+}

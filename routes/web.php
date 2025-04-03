@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Middleware\Authenticate;
 use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
@@ -221,13 +220,21 @@ Route::middleware("auth")->group(function () {
     Route::post('/send-package', [PackageController::class, 'store'])
         ->name('package.store');
 
-    Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
+    Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])
+        ->name('generate-package-label');
 
     Route::get('/my-packages', [PackageController::class, 'mypackages'])
         ->name('packages.mypackages');
 
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
+
+    Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
+        ->name('packages.bulk-order');
+        
+    Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
+        ->name('packages.bulk-order.store');
+    
 });
 
 //--------------------------------- Tracking Packages ---------------------------------//
