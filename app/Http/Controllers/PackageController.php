@@ -591,6 +591,12 @@ public function packagePayment($packageID) {
     ->where('user_id', Auth::user()->id)
     ->where('id', $packageID)
     ->first();
+    if(Auth::user()->id !== $package->user_id){
+        abort(403, 'You are not authorised to acces this payment page');
+    }
+    if($package->paid == true){
+        abort(403, 'This Package is already paid.');
+    }
     return view('packagepayment',compact('package')); 
 }
 }
