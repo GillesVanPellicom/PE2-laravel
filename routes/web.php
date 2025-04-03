@@ -167,7 +167,7 @@ Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContra
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
-Route::middleware(['auth','pickup'])->group(function () {
+Route::middleware(['auth','role:pickup'])->group(function () {
     Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
     Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
     Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
