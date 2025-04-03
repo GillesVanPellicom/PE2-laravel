@@ -35,7 +35,6 @@ class RolesAndPermissionsSeeder extends Seeder
         'pickup.view',
         'pickup.edit',
         /* END Pickup */
-
     ];
 
 
@@ -54,7 +53,6 @@ class RolesAndPermissionsSeeder extends Seeder
         "HRManager" => ["HR.create", "HR.assign"],
         "HR" => ["HR.checkall"],
         /* END Employees */
-
         /* START Pickup */
         "pickup" => ["pickup.view", "pickup.edit"],
         /* END Pickup */
@@ -63,7 +61,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
     private array $roleInheritance = [
         /* START BASE -=- Everthing should in some way inherit from employee */
-        "employee" => ["scan", "HR"],
+        "employee" => ["scan", "HR","pickup"],
         /* END BASE */
 
         /* START Courier */

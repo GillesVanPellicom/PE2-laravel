@@ -12,10 +12,12 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                        {{ __('Pick Up Point') }}
-                    </x-nav-link>
+                <div id="nav" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    @role('pickup')
+                        <x-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                            {{ __('Pick Up Point') }}
+                        </x-nav-link>
+                    @endrole
                     <x-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
                         {{ __('Courier') }}
                     </x-nav-link>
@@ -33,7 +35,7 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ml-6">
-            
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
@@ -50,7 +52,7 @@
                             </div>
                         </button>
                     </x-slot>
-                    
+
                     <x-slot name="content">
                         <x-dropdown-link href="{{ route('customers') }}">
                             {{ __('Profile') }}
@@ -88,9 +90,12 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                {{ __('Pick Up Point') }}
-            </x-responsive-nav-link>
+            @role('pickup')
+                <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                    {{ __('Pick Up Point') }}
+                </x-responsive-nav-link>
+            @endrole
+
             <x-responsive-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
                 {{ __('Courier') }}
             </x-responsive-nav-link>
