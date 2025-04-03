@@ -24,7 +24,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('welcome');
         }
-    
+
         $countries = Country::all();
         return view('auth.register', compact('countries'));
     }
@@ -32,7 +32,7 @@ class AuthController extends Controller
     public function showCustomers()
     {
         $countries = Country::all();
-        return view('customers', compact('countries'));
+        return view('profile', compact('countries'));
     }
 
     public function update(Request $request)
@@ -91,18 +91,18 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'password' => 'required',
         ]);
-    
+
         $user = User::where('email', $credentials['email'])->first();
-        
+
             if ($employee = Employee::where('user_id', $user->id)->first()) {
-                
+
                 $active_contract = EmployeeContract::where('employee_id', $employee->id)
                     ->where(function ($query) {
                         $query->where('end_date', '>', Carbon::now())
                             ->orWhereNull('end_date');
                     })
                     ->first();
-    
+
                 if (!$active_contract) {
                     return back()->withErrors([
                         'email' => 'Your contract has ended.',
@@ -119,12 +119,12 @@ class AuthController extends Controller
                     return redirect()->route($route);
                 }
             }
-    
+
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ]);
     }
-    
+
 
     public function store(Request $request)
     {
@@ -187,6 +187,6 @@ class AuthController extends Controller
         if ($request->is('courier/*')) {
             return redirect()->route('courier');
         }
-        return redirect('/login');
+        return redirect('/');
     }
 }

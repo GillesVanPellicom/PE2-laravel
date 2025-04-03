@@ -37,8 +37,8 @@ Route::get('/login', function () {
     return view('auth.login');
 })->middleware("guest")->name('auth.login');
 
-Route::post('/login', function (\Illuminate\Http\Request $request) {
-    return app(AuthController::class)->authenticate($request, "customers");
+Route::post('/login', function (Request $request) {
+    return app(AuthController::class)->authenticate($request);
 })->name('auth.authenticate');
 
 // Register
@@ -56,7 +56,7 @@ Route::get("/logout", fn() =>
 
 // Customers
 Route::middleware("auth")->group(function () {
-    Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+    Route::get('/profile', [AuthController::class, 'showCustomers'])->name('profile');
 });
 
 // ======================= End Authentication ====================== //
@@ -68,7 +68,7 @@ use App\Http\Controllers\CourierRouteController;
 
 Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
 
-Route::post('/courier', function (\Illuminate\Http\Request $request) {
+Route::post('/courier', function (Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
 

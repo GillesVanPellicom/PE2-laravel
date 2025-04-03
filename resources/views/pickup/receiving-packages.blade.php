@@ -26,7 +26,7 @@
                 <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
                     <table class="min-w-full table-auto bg-gray-200 shadow-xl  sm:rounded-b-lg overflow-hidden">
                         <div class=" bg-gray-50 overflow-hidden shadow-lg sm:rounded-t-lg flex items-center sm:justify-between p-3">
-                            <h2 class=" text-base font-semibold flex-grow w-full">List of packages that have passed one week of waiting: </h2>
+                            <h2 class=" text-base font-semibold flex-grow w-full">List of packages that you are expected to receive:  </h2>
                             <div class="flex justify-between items-center gap-3">
                                 <form action="{{route('pickup.dashboard.receiving-packages')}}" method="get">
                                     <x-secondary-button type="submit"><x-refresh-logo ></x-refresh-logo></x-secondary-button>
