@@ -34,7 +34,7 @@
                 </thead>
                 <tbody>
                     @foreach($contracts as $contract)
-                        @if(@auth()->user()->hasRole('admin') || @auth()->user()->employee->contracts->location->id == $contract->location->id)
+                        
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
@@ -66,8 +66,6 @@
                                 @endif
                             </td>
                         </tr>
-                        @else
-                        @endif
                     @endforeach
                 </tbody>
             </table>

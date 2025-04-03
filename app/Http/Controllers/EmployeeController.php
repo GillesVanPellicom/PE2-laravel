@@ -140,6 +140,11 @@ class EmployeeController extends Controller
     public function contracts()
     {
         $user = Auth::user();
+        if($user->hasRole(['HRManager', 'admin']))
+        {
+            $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
+            return view('employees.contracts', compact('contracts'));
+        }
         $location = $user->employee->contracts->location_id;
 
         $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', $location)->paginate(2);
