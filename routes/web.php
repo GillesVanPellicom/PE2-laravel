@@ -144,6 +144,10 @@ Route::middleware(['permission:HR.create'])->group(function(){
 
     Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
     Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
 });
 
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
