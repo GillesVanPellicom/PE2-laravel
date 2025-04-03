@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|Address find(mixed $id)
+ */
 class Address extends Model
 {
     use HasFactory;
@@ -34,6 +37,7 @@ protected $fillable = ['street', 'house_number', 'bus_number', 'cities_id'];
     {
         return $this->hasMany(Employee::class, 'address_id');
     }
+    
     public function packages () {
         return $this->hasMany(Package::class, 'addresses_id');
     }

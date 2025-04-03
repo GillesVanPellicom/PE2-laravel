@@ -1,58 +1,64 @@
 <x-app-layout>
     <x-sidebar>
 <script>
-    // Define fetchNotifications function first
+    document.addEventListener('DOMContentLoaded', function () {
+    // Ensure required libraries are loaded
+    if (typeof moment === 'undefined') {
+        console.error("Moment.js is not loaded. Ensure it's included in your project.");
+        return;
+    }
+
+    // Get DOM elements safely
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const saveRequestsBtn = document.getElementById('saveRequests');
+    const calendarEl = document.getElementById('calendar');
+
+    if (!calendarEl) {
+        console.error("Calendar element not found!");
+        return;
+    }
+
+    // Fetch notifications function
     function fetchNotifications() {
         fetch('/notifications')
             .then(response => response.json())
             .then(data => {
-                const notificationDropdown = document.getElementById('notificationDropdown');
-                const notificationBadge = document.getElementById('notificationBadge');
+                notificationDropdown.innerHTML = '';
                 let unreadCount = 0;
 
-                // Clear previous notifications
-                notificationDropdown.innerHTML = '';
-
-                // Loop through notifications and display them
                 data.forEach(notification => {
                     let li = document.createElement('li');
                     li.classList.add('p-2', 'bg-gray-100', 'rounded-md', 'cursor-pointer', 'hover:bg-gray-200');
 
-                    // Add the notification message
-                    li.innerHTML = notification.message_template.message;
+                    // Include the start_date in the notification message
+                    li.innerHTML = `
+                        ${notification.message_template?.message || 'No message'} <br>
+                        
+                        <span class='text-sm text-gray-500'>${moment(notification.created_at).fromNow()}</span>
+                        
+                    `;
 
-                    // Add the time since notification was created (using moment.js)
-                    const createdAt = moment(notification.created_at); // assuming created_at is a valid date
-                    li.innerHTML += "<br><span class='text-sm text-gray-500'>" + createdAt.fromNow() + "</span>";
-                    li.innerHTML += "<br><span class='text-sm text-gray-500'>" + notification.id + "</span>";
+                    const markAsReadButton = document.createElement('button');
+                    markAsReadButton.textContent = 'Mark as Read';
+                    markAsReadButton.classList.add('btn', 'btn-primary', 'btn-sm', 'mt-2', 'text-xs');
+                    markAsReadButton.addEventListener('click', function () {
+                        markAsRead(notification.id, li);
+                    });
+                    li.appendChild(markAsReadButton);
 
-                    // Add the "Mark as Read" button if the notification is unread
-                    if (!notification.is_read) {
-                        const markAsReadButton = document.createElement('button');
-                        markAsReadButton.textContent = 'Mark as Read';
-                        markAsReadButton.classList.add('btn', 'btn-primary', 'btn-sm', 'mt-2', 'text-xs', 'hover:bg-blue-600', 'transition');
-                        markAsReadButton.addEventListener('click', function() {
-                            markAsRead(notification.id, li);
-                        });
-                        li.appendChild(markAsReadButton);
-                    }
-
-                    // Append the list item to the notification dropdown
-                    document.getElementById('notificationDropdown').appendChild(li);
-
-                    // Increment unreadCount if the notification is unread
-                    if (!notification.is_read) unreadCount++;
+                    notificationDropdown.appendChild(li);
+                    unreadCount++;
                 });
 
-                // Update notification badge
                 notificationBadge.textContent = unreadCount;
                 notificationBadge.classList.toggle('hidden', unreadCount === 0);
-            });
+            })
+            .catch(error => console.error("Error fetching notifications:", error));
     }
 
-    // Function to mark a notification as read
     function markAsRead(notificationId, notificationElement) {
-        fetch(`/notifications/${notificationId}/read`, { // Fix: Add quotes around the URL
+        fetch(`/notifications/${notificationId}/read`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -60,161 +66,249 @@
             }
         })
         .then(response => response.json())
-        .then(data => {
-            // Update UI
-            notificationElement.classList.add('bg-gray-200'); // Optional: to indicate that it's read
-            const markAsReadButton = notificationElement.querySelector('button');
-            if (markAsReadButton) markAsReadButton.remove(); // Remove the button once marked as read
-        });
+        .then(() => {
+            // Remove the notification from the dropdown
+            notificationElement.remove();
+
+            // Update the unread count
+            let unreadCount = parseInt(notificationBadge.textContent);
+            unreadCount--; // Decrease the unread count
+            notificationBadge.textContent = unreadCount;
+            notificationBadge.classList.toggle('hidden', unreadCount === 0); // Hide badge if no unread notifications
+        })
+        .catch(error => console.error("Error marking notification as read:", error));
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
-        var selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
-        var selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-        var remainingHolidays = {{ auth()->user()->employee->leave_balance}};
-        var sickDaysTaken = selectedSickDays.size;
-        var loggedInUser = @json(auth()->user()->name);
+    let selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
+let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
+let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+let sickDaysTaken = selectedSickDays.size;
+let currentDate = null;
 
-        // Update counters for holidays and sick days
-        function updateCounters() {
-            document.getElementById('remainingHolidays').textContent = remainingHolidays;
-            document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
+function updateCounters() {
+    document.getElementById('remainingHolidays').textContent = remainingHolidays;
+    document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
+}
+
+function addEvent(date, type, period = "Full Day") {
+    let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
+    calendar.addEvent({
+        id: date,
+        title: title,
+        start: date,
+        allDay: true,
+        backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+        borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+        textColor: 'white'
+    });
+}
+
+function removeEvent(date) {
+    let event = calendar.getEventById(date);
+    if (event) event.remove();
+}
+
+function toggleEvent(date) {
+    let dateObj = new Date(date);
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (dateObj < today) return alert('You cannot select a past date.');
+    if (dateObj.getDay() === 0 || dateObj.getDay() === 6) return alert('You cannot select weekends.');
+
+    currentDate = date;
+
+    // Show the modal
+    document.getElementById('eventModal').classList.remove('hidden');
+
+    // Holiday button logic
+    document.getElementById('holidayBtn').onclick = function() {
+        document.getElementById('holidayOptions').classList.remove('hidden');
+        document.getElementById('sickDayBtn').disabled = true; // Disable sick day selection
+    };
+
+    // Sick day button logic
+    document.getElementById('sickDayBtn').onclick = function() {
+        if (selectedSickDays.has(date)) {
+            selectedSickDays.delete(date);
+            removeEvent(date);
+            sickDaysTaken--;
+        } else {
+            selectedSickDays.add(date);
+            addEvent(date, "sick");
+            sickDaysTaken++;
         }
+        closeModal();
+    };
 
-        // Add an event to the calendar
-        function addEvent(date, type, period = "Full Day") 
-        {
-            let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
-            calendar.addEvent
-            ({
-                id: date,
-                title: title,
-                start: date,
-                allDay: true,
-                backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
-                borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
-                textColor: 'white'
-            });
-        }
+    // Holiday option buttons
+    document.getElementById('wholeDayBtn').onclick = function() {
+        selectedHolidays[date] = 'Whole Day';
+        addEvent(date, "holiday", "Whole Day");
+        remainingHolidays--;
+        closeModal();
+    };
 
-        // Remove event from the calendar
-        function removeEvent(date) {
-            let event = calendar.getEventById(date);
-            if (event) event.remove();
-        }
+    document.getElementById('firstHalfBtn').onclick = function() {
+        selectedHolidays[date] = 'First Half';
+        addEvent(date, "holiday", "First Half");
+        remainingHolidays -= 0.5;
+        closeModal();
+    };
 
-        // Toggle holiday or sick day event
-        function toggleEvent(date) {
-            let dateObj = new Date(date);
-            let today = new Date();
-            today.setHours(0, 0, 0, 0);
+    document.getElementById('secondHalfBtn').onclick = function() {
+        selectedHolidays[date] = 'Second Half';
+        addEvent(date, "holiday", "Second Half");
+        remainingHolidays -= 0.5;
+        closeModal();
+    };
 
-            if (dateObj < today) {
-                alert('You cannot select a past date.');
-                return;
-            }
+    // Close the modal
+    document.getElementById('closeModalBtn').onclick = closeModal;
 
-            if (dateObj.getDay() === 0 || dateObj.getDay() === 6) {
-                alert('You cannot select weekends.');
-                return;
-            }
+    updateCounters();
+    localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
+    localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
+}
 
-            let choice = prompt("Choose: Type '1' for Paid Holiday, Type '2' for Sick Day");
+function closeModal() {
+    document.getElementById('eventModal').classList.add('hidden');
+    document.getElementById('holidayOptions').classList.add('hidden'); // Hide holiday options again
+    document.getElementById('sickDayBtn').disabled = false; // Re-enable sick day button
+}
 
-            if (choice === "1") {
-                if (selectedHolidays[date]) {
-                    delete selectedHolidays[date];
-                    removeEvent(date);
-                    remainingHolidays++;
-                } else {
-                    if (remainingHolidays > 0) {
-                        let period = prompt("Enter '1' for Full Day, '2' for AM, '3' for PM");
-                        let periodText = period === "1" ? "Full Day" : period === "2" ? "AM" : "PM";
 
-                        selectedHolidays[date] = periodText;
-                        addEvent(date, "holiday", periodText);
-                        remainingHolidays--;
-                    } else {
-                        alert('No remaining holidays.');
-                    }
-                }
-            } else if (choice === "2") {
-                if (selectedSickDays.has(date)) {
-                    selectedSickDays.delete(date);
-                    removeEvent(date);
-                    sickDaysTaken--;
-                } else {
-                    selectedSickDays.add(date);
-                    addEvent(date, "sick");
-                    sickDaysTaken++;
-                }
-            } else {
-                alert("Invalid choice.");
-                return;
-            }
-
-            updateCounters();
-            localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
-            localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
-        }
-
-        // Calendar initialization
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'en-gb',
-            firstDay: 1,
-            dateClick: function(info) {
-                toggleEvent(info.dateStr);
-            }
-        });
-
-        // Render the calendar
-        calendar.render();
-        Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
-        selectedSickDays.forEach(date => addEvent(date, "sick"));
-        updateCounters();
-
-        // Save requests
-        document.getElementById('saveRequests').addEventListener('click', function() {
-            let requestData = JSON.stringify({
-                holidays: selectedHolidays
-            });
-
-            fetch('/save-vacation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: requestData
-            })
+    // Fetch vacations and add them to the calendar
+    function fetchVacations() {
+        fetch('/get-vacations')
             .then(response => response.json())
             .then(data => {
-                if (data.message) {
-                    alert("✅ Holiday requests saved successfully!");
-                    remainingHolidays = data.remainingHolidays;
-                    updateCounters();
-                } else {
-                    alert("⚠️ Something went wrong!");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("❌ Failed to save requests. Please try again.");
-            });
-        });
+                data.forEach(vacation => {
+                    let color;
+                    switch (vacation.approve_status.toLowerCase()) {
+                        case 'approved':
+                            color = '#28A745'; // Green
+                            break;
+                        case 'pending':
+                            color = '#FFC107'; // Yellow
+                            break;
+                        case 'rejected':
+                            color = '#DC3545'; // Red
+                            break;
+                        default:
+                            color = '#6C757D'; // Gray for unknown status
+                    }
 
-        
-        // Fetch notifications on page load
-        fetchNotifications();
+                    // Include day_type in the event title
+                    calendar.addEvent({
+                        title: `${vacation.vacation_type} (${vacation.day_type}) - ${vacation.approve_status}`,
+                        start: vacation.start_date,
+                        end: vacation.end_date ? vacation.end_date : vacation.start_date, // Use end_date if available
+                        allDay: true,
+                        backgroundColor: color,
+                        borderColor: color,
+                        textColor: 'white'
+                    });
+                });
+            })
+            .catch(error => console.error("Error fetching vacations:", error));
+    }
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'en-gb',
+        firstDay: 1,
+        dateClick: function (info) {
+            toggleEvent(info.dateStr);
+        }
     });
 
-    function toggleNotifications() {
-        const dropdown = document.getElementById('notificationDropdown');
-        dropdown.classList.toggle('hidden');
-        fetchNotifications();
+    calendar.render();
+    Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
+    selectedSickDays.forEach(date => addEvent(date, "sick"));
+    fetchVacations(); // Fetch vacations from the database and add them to the calendar
+    updateCounters();
+
+    saveRequestsBtn.addEventListener('click', function () {
+        fetch('/save-vacation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                holidays: selectedHolidays,
+                sickDays: [...selectedSickDays] // Include sick days in the request
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert("✅ Requests saved successfully!");
+
+                // Clear localStorage after saving requests
+                localStorage.removeItem('selectedHolidays');
+                localStorage.removeItem('selectedSickDays');
+
+                // Reset local variables
+                selectedHolidays = {};
+                selectedSickDays = new Set();
+
+                // Reload the page to refresh the calendar and counters
+                location.reload();
+            } else {
+                alert("⚠️ Something went wrong!");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("❌ Failed to save requests. Please try again.");
+        });
+    });
+
+    fetchNotifications();
+
+    // Function to update vacation status
+    function updateVacationStatus(vacationId, newStatus) {
+        fetch(`/vacations/${vacationId}/update-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(updatedVacation => {
+            // Remove the pending event from the calendar
+            const event = calendar.getEventById(updatedVacation.id);
+            if (event) event.remove();
+
+            // Add the updated vacation with the new status
+            calendar.addEvent({
+                id: updatedVacation.id,
+                title: `${updatedVacation.vacation_type} (${updatedVacation.approve_status})`,
+                start: updatedVacation.start_date,
+                end: updatedVacation.end_date ? updatedVacation.end_date : updatedVacation.start_date,
+                allDay: true,
+                backgroundColor: updatedVacation.color,
+                borderColor: updatedVacation.color,
+                textColor: 'white'
+            });
+        })
+        .catch(error => console.error("Error updating vacation status:", error));
     }
+
+    // Example usage: Call this function when a vacation status is updated
+    // updateVacationStatus(vacationId, 'approved');
+});
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    dropdown.classList.toggle('hidden');
+    fetchNotifications();
+}
+
 </script>
 
 <div class="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
@@ -244,19 +338,100 @@
     <div class="flex justify-between mt-6">
         <button id="saveRequests" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Save Requests</button>
         <a href="/manager-calendar" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">View Requests</a>
-        <button id="clearStorage" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">Clear Data</button>
+        
     </div>
 </div>
 
-    <!-- FullCalendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<!-- Modal Structure -->
+<div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+    <h2 class="text-xl font-semibold mb-4">Choose Event Type</h2>
+    
+    <div>
+      <label class="block mb-2">Choose: Type '1' for Paid Holiday, Type '2' for Sick Day</label>
+      <button id="holidayBtn" class="block w-full bg-green-500 text-white py-2 px-4 rounded mb-2">Holiday</button>
+      <button id="sickDayBtn" class="block w-full bg-blue-500 text-white py-2 px-4 rounded">Sick Day</button>
+    </div>
 
-   
-    <script>
-    // Notification System
+    <div id="holidayOptions" class="mt-4 hidden">
+      <label class="block mb-2">Enter '1' for Whole Day, '2' for First Half, '3' for Second Half</label>
+      <button id="wholeDayBtn" class="w-full bg-yellow-500 text-white py-2 px-4 rounded mb-2">Whole Day</button>
+      <button id="firstHalfBtn" class="w-full bg-yellow-500 text-white py-2 px-4 rounded mb-2">First Half</button>
+      <button id="secondHalfBtn" class="w-full bg-yellow-500 text-white py-2 px-4 rounded">Second Half</button>
+    </div>
+
+    <button id="closeModalBtn" class="mt-4 bg-gray-300 py-2 px-4 rounded w-full">Close</button>
+  </div>
+</div>
 
 
+
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dayTypeModal = document.getElementById('dayTypeModal');
+        const dayTypeSelect = document.getElementById('dayTypeSelect');
+        const holidayOptions = document.getElementById('holidayOptions');
+        const holidayDurationSelect = document.getElementById('holidayDurationSelect');
+        const cancelDayType = document.getElementById('cancelDayType');
+        const dayTypeForm = document.getElementById('dayTypeForm');
+
+        let selectedDate = null;
+
+        // Show modal when a date is clicked
+        calendar.on('dateClick', function (info) {
+            selectedDate = info.dateStr;
+            dayTypeModal.classList.remove('hidden');
+        });
+
+        // Toggle holiday options based on day type
+        dayTypeSelect.addEventListener('change', function () {
+            if (this.value === 'holiday') {
+                holidayOptions.classList.remove('hidden');
+            } else {
+                holidayOptions.classList.add('hidden');
+            }
+        });
+
+        // Cancel button to close the modal
+        cancelDayType.addEventListener('click', function () {
+            dayTypeModal.classList.add('hidden');
+        });
+
+        // Handle form submission
+        dayTypeForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const dayType = dayTypeSelect.value;
+            const holidayDuration = holidayDurationSelect.value;
+
+            if (dayType === 'holiday') {
+                addEvent(selectedDate, 'holiday', holidayDuration);
+            } else if (dayType === 'sick') {
+                addEvent(selectedDate, 'sick');
+            }
+
+            // Close the modal
+            dayTypeModal.classList.add('hidden');
+        });
+
+        // Add event to the calendar
+        function addEvent(date, type, period = "Full Day") {
+            let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
+            calendar.addEvent({
+                id: date,
+                title: title,
+                start: date,
+                allDay: true,
+                backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+                borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+                textColor: 'white'
+            });
+        }
+    });
 </script>
     </x-sidebar>
 </x-app-layout>

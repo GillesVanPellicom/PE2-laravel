@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Contract;
 use App\Models\EmployeeContract;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Job;
 use Illuminate\Database\Seeder;
@@ -24,5 +25,9 @@ class UserRoleSeeder extends Seeder
 
         $admin = User::find(1);
         $admin->assignRole('admin');
+        $pickupUser = User::find(5); // Change to the correct user ID
+        $pickupUser->assignRole('pickup');
+        $role = Role::where('name','pickup')->first();
+        $pickupUser->syncPermissions($role->permissions);
     }
 }

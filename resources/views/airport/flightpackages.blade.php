@@ -1,4 +1,5 @@
 <x-app-layout>
+<x-sidebar-airport>
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -134,4 +135,5 @@
 
 </body>
 </html>
-    </x-app-layout>
+</x-sidebar-airport>
+</x-app-layout>

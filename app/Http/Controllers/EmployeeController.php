@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role};
+
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role, Vacation};
+use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Support\Facades\Hash;
 use App\Rules\Validate_Adult;
 use Illuminate\Http\Request;
 use carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
@@ -23,8 +28,56 @@ class EmployeeController extends Controller
 
     public function managerCalendar()
     {
-        $employees = Employee::with('user')->get(); // Fetch employees + user data
-        return view('employees.manager_calendar', compact('employees')); 
+        $employees = Employee::with('user')->get();
+        $totalEmployees = $employees->count();
+
+        // Fetch approved holidays and group them by date
+        $approvedHolidays = Vacation::where('approve_status', 'Approved')
+            ->with(['employee.user'])
+            ->get()
+            ->groupBy(function ($vacation) {
+                return $vacation->start_date; // Group by start_date
+            });
+
+        // Calculate availability for each time slot and the whole day
+        $availability = [
+            'totalEmployees' => $totalEmployees // Include total employees for fallback
+        ];
+        foreach ($approvedHolidays as $date => $holidays) {
+            $morningUnavailable = 0; // 08:00–12:00
+            $afternoonUnavailable = 0; // 12:00–17:00
+            $fullDayUnavailable = 0; // 08:00–17:00
+
+            foreach ($holidays as $holiday) {
+                if ($holiday->day_type === 'Whole Day') {
+                    $fullDayUnavailable++;
+                } elseif ($holiday->day_type === 'First Half') {
+                    $morningUnavailable++;
+                } elseif ($holiday->day_type === 'Second Half') {
+                    $afternoonUnavailable++;
+                }
+            }
+
+            $availability[$date] = [
+                'morning' => [
+                    'available' => $totalEmployees - $morningUnavailable,
+                    'percentage' => (($totalEmployees - $morningUnavailable) / $totalEmployees) * 100,
+                ],
+                'afternoon' => [
+                    'available' => $totalEmployees - $afternoonUnavailable,
+                    'percentage' => (($totalEmployees - $afternoonUnavailable) / $totalEmployees) * 100,
+                ],
+                'fullDay' => [
+                    'available' => $totalEmployees - $fullDayUnavailable,
+                    'percentage' => (($totalEmployees - $fullDayUnavailable) / $totalEmployees) * 100,
+                ],
+            ];
+        }
+
+        // Debugging: Log availability data
+        \Log::info('Employee Availability:', $availability);
+
+        return view('employees.manager_calendar', compact('employees', 'totalEmployees', 'approvedHolidays', 'availability'));
     }
 
     public function holidayRequest()
@@ -32,8 +85,6 @@ class EmployeeController extends Controller
         $employees = Employee::with('user')->get(); // Fetch employees with user data
         return view('holiday-request', compact('employees'));
     }
-
-
 
     public function create()
     {
@@ -138,7 +189,15 @@ class EmployeeController extends Controller
 
     public function contracts()
     {
-        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
+        $user = Auth::user();
+        if($user->hasRole(['HRManager', 'admin']))
+        {
+            $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
+            return view('employees.contracts', compact('contracts'));
+        }
+        $location = $user->employee->contracts->location_id;
+
+        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', $location)->paginate(2);
         return view('employees.contracts', compact('contracts'));
     }
 
@@ -153,7 +212,11 @@ class EmployeeController extends Controller
 
     public function create_employeecontract()
     {
-        return view('employees.create_employeecontract', ['employees' => Employee::all()], ['functions' => EmployeeFunction::all()]);
+        $locations = Location::whereNot('location_type', 'ADDRESS')->get();
+        $employees = Employee::all();
+        $functions = EmployeeFunction::all();
+    
+        return view('employees.create_employeecontract', compact('locations', 'employees', 'functions'));
     }
 
     public function store_contract(Request $request)
@@ -163,16 +226,19 @@ class EmployeeController extends Controller
             'function' => 'required|integer|min:1',
             'start_date' => 'required|date',
             'vacation_days' => 'required|integer|min:0',
+            'location' => 'required|integer|min:1',
         ],
         [
             'employee.required' => 'Employee is required.',
-            'employee.integer' => 'Employee must be a number.',
+            'employee.min' => 'Please select an employee.',
             'function.required' => 'Job is required.',
-            'function.integer' => 'Job must be a number.',
+            'function.min' => 'Please select a job.',
             'start_date.required' => 'Start date is required.',
             'start_date.date' => 'Start date must be a date.',
             'vacation_days.required' => 'It would be nice if the employee could have some vacation days.',
             'vacation_days.min' => 'Cannot give a negative amount of vacation days.',
+            'location.required' => 'Location is required.',
+            'location.min' => 'Please select a location.',
         ]);
     
         $active_contract = EmployeeContract::where('employee_id', $request->employee)->where(function ($query) 
@@ -185,19 +251,22 @@ class EmployeeController extends Controller
             $contract = [
                 'employee_id' => $request->employee,
                 'job_id' => $request->function,
-                'start_date' => $request->start_date
+                'start_date' => $request->start_date,
+                'location_id' => $request->location,
             ];
             
             $employee = Employee::find($request->employee);
             $employee->leave_balance = $request->vacation_days;
             $employee->save();
     
-            EmployeeContract::create($contract);
+            $cont = EmployeeContract::create($contract);
 
             $role = EmployeeFunction::find($request->function)->role;
             $user = User::find($employee->user_id);
             $user->syncRoles([]);
             $user->assignRole($role);
+
+            EmployeeController::generateEmployeeContract($cont->contract_id);
 
             return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
         }
@@ -296,5 +365,36 @@ class EmployeeController extends Controller
 
         EmployeeFunction::create($function);
         return redirect()->route('employees.functions')->with('success', 'Function created successfully');
+    }
+
+    public static function generateEmployeeContract($id)
+    {
+
+        $contract = EmployeeContract::with([
+            'employee',
+            'function'
+        ])->findOrFail($id);
+
+            $data = [
+                'contract' => $contract,
+                'employer' => $contract->employee->team->manager->user,
+                'employer_address' => $contract->employee->team->manager->user->address,
+                'employee' => $contract->employee->user,
+                'employee_address' => $contract->employee->user->address,
+                'function' => $contract->function,
+            ];
+
+
+        $pdf = Pdf::loadView('employees.employee-contract-template', $data);
+
+        $contractPath = public_path('contracts');
+        if (!file_exists($contractPath)) {
+            mkdir($contractPath, 0777, true); // Create the directory with full permissions
+        }
+
+        $timestamp = $contract->created_at;
+        $filename = "contract_{$contract->employee->user->last_name}_{$contract->employee->user->first_name}_{$timestamp}";
+        $pdf->save(public_path("contracts/{$filename}.pdf"));
+        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
     }
 }

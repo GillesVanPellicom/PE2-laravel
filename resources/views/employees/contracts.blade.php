@@ -2,6 +2,18 @@
     @section("pageName","Contracts")
 
 <x-sidebar>
+    <script>
+        window.onload = function() {
+            const pdfUrl = "{{ session('pdf_url') }}";
+            if (pdfUrl) {
+                window.open(pdfUrl, '_blank');
+            }
+        }
+
+        function show_contract(contract) {
+            window.open('/contracts/' + contract, '_blank');
+        }
+    </script>
 
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
@@ -24,6 +36,8 @@
                     <tr>
                         <th class="border border-gray-300 px-4 py-2">ID</th>
                         <th class="border border-gray-300 px-4 py-2">Employee</th>
+                        <th class="border border-gray-300 px-4 py-2">Function</th>
+                        <th class="border border-gray-300 px-4 py-2">Location</th>
                         <th class="border border-gray-300 px-4 py-2">Start Date</th>
                         <th class="border border-gray-300 px-4 py-2">End Date</th>
                         <th class="border border-gray-300 px-4 py-2">Contract Status</th>
@@ -32,9 +46,12 @@
                 </thead>
                 <tbody>
                     @foreach($contracts as $contract)
+                        
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $contract->function->name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $contract->location->description }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->start_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->end_date }}</td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -59,6 +76,7 @@
                                         End date already set
                                     </button>
                                 @endif
+                                <button onclick="show_contract('contract_{{ $contract->employee->user->last_name }}_{{ $contract->employee->user->first_name }}_{{ $contract->created_at }}.pdf')">Click me</button>
                             </td>
                         </tr>
                     @endforeach
@@ -66,7 +84,7 @@
             </table>
         </div>
         <div class="mt-6 flex justify-center">
-        {{ $contracts->links() }}
+            {{ $contracts->links() }}
         </div>
 </div>
 </x-sidebar>

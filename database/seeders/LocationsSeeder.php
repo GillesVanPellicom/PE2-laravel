@@ -52,7 +52,97 @@ class LocationsSeeder extends Seeder {
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
+            [
+                'description' => 'Einhoven Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 51.4469, 
+                'longitude' => 5.4034,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'Madrid Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 40.4644,  
+                'longitude' => -3.5882,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'Rome Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 41.8606,   
+                'longitude' => 12.4543,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'Heraklion Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 35.31960,    
+                'longitude' => 25.1378,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'HR OFFICE 1',
+                'location_type' => 'OFFICE',
+                'infrastructure_id' => null,
+                'latitude' => 50.8413,    
+                'longitude' => 4.3683,
+                'addresses_id' => 10,
+                'contact_number' => '+32 2 123 55 88',
+                'opening_hours' => null,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'HR OFFICE 2',
+                'location_type' => 'OFFICE',
+                'infrastructure_id' => null,
+                'latitude' => 40.4508,
+                'longitude' => -3.6917,
+                'addresses_id' => 11, // placeholder
+                'contact_number' => '+32 2 156 75 17', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'HR OFFICE 3',
+                'location_type' => 'OFFICE',
+                'infrastructure_id' => null,
+                'latitude' => 34.1758,    
+                'longitude' => -118.5968,
+                'addresses_id' => 12, // placeholder
+                'contact_number' => '+32 2 956 12 54', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
             
         ]);
         Location::factory()->count(100)->create();
