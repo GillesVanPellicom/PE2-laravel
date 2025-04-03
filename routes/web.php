@@ -148,6 +148,10 @@ Route::middleware(['permission:HR.create'])->group(function(){
     Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
     Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
 
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+
 });
 
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
@@ -171,10 +175,6 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
     Route::get('/create-function', [EmployeeController::class, 'create_function'])->name('employees.create_function');
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
 });
-
-
-Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
-Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
 
 // ======================= End Employee ====================== //
 
