@@ -2,6 +2,14 @@
     @section("pageName","Contracts")
 
 <x-sidebar>
+    <script>
+        window.onload = function() {
+            const pdfUrl = "{{ session('pdf_url') }}";
+            if (pdfUrl) {
+                window.open(pdfUrl, '_blank');
+            }
+        }
+    </script>
 
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">

@@ -30,6 +30,12 @@ class RolesAndPermissionsSeeder extends Seeder
         "HR.create",
         "HR.assign",
         /* END Employees */
+
+        /* START Pickup */
+        'pickup.view',
+        'pickup.edit',
+        /* END Pickup */
+
     ];
 
 
@@ -48,6 +54,10 @@ class RolesAndPermissionsSeeder extends Seeder
         "HRManager" => ["HR.create", "HR.assign"],
         "HR" => ["HR.checkall"],
         /* END Employees */
+
+        /* START Pickup */
+        "pickup" => ["pickup.view", "pickup.edit"],
+        /* END Pickup */
     ];
 
 
