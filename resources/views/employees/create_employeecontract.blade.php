@@ -30,15 +30,6 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date') }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    @error('start_date')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="mb-4">
                     <label for="function" class="block text-sm font-medium text-gray-700">Function:</label>
                     <select name="function" id="function"
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -50,6 +41,31 @@
                         @endforeach
                     </select>
                     @error('function')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="location" class="block text-sm font-medium text-gray-700">Location:</label>
+                    <select name="location" id="location"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="-1">Select a location</option>
+                        @foreach($locations as $location)
+                            <option value="{{ $location->id }}"
+                            @if(old('location') == $location->id) selected @endif>    
+                            {{ $location->description }}</option>
+                        @endforeach
+                    </select>
+                    @error('location')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date:</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date') }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('start_date')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static \Illuminate\Database\Eloquent\Builder|RouterEdges where(string|\Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
+ * @method static RouterEdges create(array $attributes = [])
  */
 class RouterEdges extends Model {
   protected $table = 'router_edges';
