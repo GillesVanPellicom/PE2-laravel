@@ -37,7 +37,7 @@
     </div>
 
     {{-- Step Details --}}
-    <h3 class="text-xl font-semibold mb-4">Details per Stap</h3>
+    <h3 class="text-xl font-semibold mb-4">Details per step</h3>
     <div class="space-y-4">
         @foreach ($movements as $movement)
             <div class="p-4 border rounded-lg shadow-sm 
@@ -53,14 +53,14 @@
                         
                         {{-- Show timestamps based on status --}}
                         @if ($movement->status == 'completed')
-                            <p>✅ Aangekomen op: <span class="font-medium">{{ $movement->getArrivedAt() }}</span></p>
-                            <p>🚚 Vertrokken op: <span class="font-medium">{{ $movement->getDepartedAt() }}</span></p>
+                            <p>✅ Arrived at: <span class="font-medium">{{ $movement->getArrivedAt() }}</span></p>
+                            <p>🚚 Departed at: <span class="font-medium">{{ $movement->getDepartedAt() }}</span></p>
                         @elseif ($movement->status == 'current')
-                            <p>📍 Huidige locatie sinds: <span class="font-medium">{{ $movement->getCheckedInAt() }}</span></p>
+                            <p>📍 Current location since: <span class="font-medium">{{ $movement->getCheckedInAt() }}</span></p>
                         @elseif ($movement->status == 'in_transit')
-                            <p>🚚 Onderweg sinds: <span class="font-medium">{{ $movement->getDepartedAt() }}</span></p>
+                            <p>🚚 In transit since: <span class="font-medium">{{ $movement->getDepartedAt() }}</span></p>
                         @else
-                            <p>⏳ Nog niet vertrokken</p>
+                            <p>⏳ Not yet departed</p>
                         @endif
                     </div>
                 </div>

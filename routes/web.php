@@ -23,6 +23,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DispatcherController;
+use App\Http\Controllers\CourierRouteController;
 
 // ======================= Start Authentication ====================== //
 
@@ -37,8 +38,8 @@ Route::get('/login', function () {
     return view('auth.login');
 })->middleware("guest")->name('auth.login');
 
-Route::post('/login', function (\Illuminate\Http\Request $request) {
-    return app(AuthController::class)->authenticate($request, "customers");
+Route::post('/login', function (Request $request) {
+    return app(AuthController::class)->authenticate($request);
 })->name('auth.authenticate');
 
 // Register
@@ -56,7 +57,7 @@ Route::get("/logout", fn() =>
 
 // Customers
 Route::middleware("auth")->group(function () {
-    Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+    Route::get('/profile', [AuthController::class, 'showCustomers'])->name('profile');
 });
 
 // ======================= End Authentication ====================== //
@@ -64,11 +65,10 @@ Route::middleware("auth")->group(function () {
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
-use App\Http\Controllers\CourierRouteController;
 
 Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
 
-Route::post('/courier', function (\Illuminate\Http\Request $request) {
+Route::post('/courier', function (Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
 
@@ -95,14 +95,19 @@ Route::middleware("auth")->group(function () {
         ->middleware("permission:scan")->name("courier.logout");
 });
 
-# Test Route
+
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
 //Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 
 Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
 
-# <= END Courier Mobile App
+Route::post('/courier/deliver/{id}', [CourierRouteController::class, 'deliver'])->name('courier.deliver');
+
+Route::get('/courier/signature/{id}', [CourierRouteController::class, 'signature'])->name('courier.signature');
+
+Route::post('/courier/submit-signature', [CourierRouteController::class, 'submitSignature'])->name('courier.submitSignature');
+
 
 // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
