@@ -850,7 +850,6 @@ public function generatePackageLabel($packageID)
 
             return null;
         } catch (\Exception $e) {
-            \Log::error('Geoapify API Error: ' . $e->getMessage());
             return null;
         }
     }
