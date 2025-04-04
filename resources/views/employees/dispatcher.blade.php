@@ -42,7 +42,7 @@
 
         <!-- Right sidebar with employees -->
         <div class="w-1/6 bg-white p-4 overflow-y-auto border-l">
-            <h2 class="text-xl font-bold mb-4">Employees</h2>
+            <h2 class="text-xl font-bold mb-4">Couriers</h2>
             <ul class="space-y-2">
                 @foreach($employees as $employee)
                     <li class="employee-item p-2 bg-gray-100 rounded shadow flex justify-between items-center"
@@ -174,101 +174,124 @@
             document.querySelector('.flex-1.p-6 h2').textContent = centerDescription;
             
             let html = `
-                <div class="grid grid-cols-2 gap-6 h-full">
-                    <!-- Ready to Deliver Packages -->
-                    <div class="bg-white p-4 rounded-lg shadow flex flex-col max-h-full">
-                        <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10">
-                            <div class="flex items-center gap-4">
-                                <h3 class="text-xl font-semibold">Ready to Deliver (${data.readyToDeliver.length})</h3>
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="select-all-ready" class="h-5 w-5 text-blue-600 rounded">
-                                    <label for="select-all-ready" class="text-sm">Select All</label>
+                <div class="h-full space-y-6">
+                    <!-- Unassigned Packages -->
+                    ${data.unassignedGroups.map(group => `
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center gap-4">
+                                    <h3 class="text-xl font-semibold">Next Stop: ${group.nextMovement} (${group.packages.length})</h3>
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" 
+                                            id="select-all-${group.city.toLowerCase()}" 
+                                            class="h-5 w-5 text-blue-600 rounded select-all-group"
+                                            data-city="${group.city}">
+                                        <label for="select-all-${group.city.toLowerCase()}" class="text-sm">Select All</label>
+                                    </div>
                                 </div>
+                                <button onclick="dispatchSelectedPackages('${group.city}')" 
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                                    Assign to Courier
+                                </button>
                             </div>
-                            <button onclick="dispatchSelectedPackages()" 
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                                Dispatch Selected
-                            </button>
-                        </div>
-                        <div class="overflow-auto flex-1">
-                            <div class="space-y-4">
-                                ${data.readyToDeliver.length === 0 
-                                    ? '<p class="text-gray-500">No packages ready for delivery</p>'
-                                    : data.readyToDeliver.map(package => `
-                                        <div class="border p-4 rounded-md">
-                                            <div class="flex items-center gap-4">
-                                                <input type="checkbox" 
-                                                    name="ready_package" 
-                                                    value="${package.ref}"
-                                                    class="h-5 w-5 text-blue-600 rounded">
-                                                <div class="min-w-0 flex-1">
-                                                    <p class="font-medium truncate">Reference: ${package.ref}</p>
-                                                    <p class="text-sm text-gray-600 truncate">Destination: ${package.destination}</p>
-                                                    <p class="text-sm text-gray-600">Status: ${package.status}</p>
-                                                </div>
+                            <div class="space-y-2">
+                                ${group.packages.map(package => `
+                                    <div class="border p-4 rounded-md">
+                                        <div class="flex items-center gap-4">
+                                            <input type="checkbox" 
+                                                name="package" 
+                                                value="${package.ref}"
+                                                data-city="${group.city}"
+                                                class="h-5 w-5 text-blue-600 rounded">
+                                            <div class="flex-1">
+                                                <p class="font-medium">Reference: ${package.ref}</p>
+                                                <p class="text-sm text-gray-600">Destination: ${package.destination}</p>
+                                                <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
                                             </div>
                                         </div>
-                                    `).join('')}
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
-                    </div>
+                    `).join('')}
 
-                    <!-- In Stock Packages -->
-                    <div class="bg-white p-4 rounded-lg shadow flex flex-col max-h-full">
-                        <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10">
-                            <div class="flex items-center gap-4">
-                                <h3 class="text-xl font-semibold">In Stock (${data.inStock.length})</h3>
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="select-all-stock" class="h-5 w-5 text-green-600 rounded">
-                                    <label for="select-all-stock" class="text-sm">Select All</label>
-                                </div>
-                            </div>
-                            <button onclick="processSelectedPackages()" 
-                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-                                Process Selected
-                            </button>
-                        </div>
-                        <div class="overflow-auto flex-1">
-                            <div class="space-y-4">
-                                ${data.inStock.length === 0
-                                    ? '<p class="text-gray-500">No packages in stock</p>'
-                                    : data.inStock.map(package => `
-                                        <div class="border p-4 rounded-md">
-                                            <div class="flex items-center gap-4">
-                                                <input type="checkbox" 
-                                                    name="stock_package" 
-                                                    value="${package.ref}"
-                                                    class="h-5 w-5 text-green-600 rounded">
-                                                <div class="min-w-0 flex-1">
-                                                    <p class="font-medium truncate">Reference: ${package.ref}</p>
-                                                    <p class="text-sm text-gray-600 truncate">Next Destination: ${package.nextDestination}</p>
-                                                    <p class="text-sm text-gray-600">Status: ${package.status}</p>
-                                                </div>
-                                            </div>
+                    <!-- Assigned Packages -->
+                    ${data.assignedGroups.map(group => `
+                        <div class="bg-gray-50 p-4 rounded-lg shadow">
+                            <h3 class="text-xl font-semibold mb-4">Assigned for transport to: ${group.nextMovement} (${group.packages.length})</h3>
+                            <div class="space-y-2">
+                                ${group.packages.map(package => `
+                                    <div class="border p-4 rounded-md bg-white">
+                                        <div class="flex-1">
+                                            <p class="font-medium">Reference: ${package.ref}</p>
+                                            <p class="text-sm text-gray-600">Destination: ${package.destination}</p>
+                                            <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
+                                            <p class="text-sm text-blue-600">Assigned to: ${package.courier}</p>
                                         </div>
-                                    `).join('')}
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
-                    </div>
+                    `).join('')}
                 </div>
             `;
             
             document.getElementById('package-content').innerHTML = html;
 
-            // Add event listeners for "Select All" checkboxes
-            document.getElementById('select-all-ready')?.addEventListener('change', (e) => {
-                document.querySelectorAll('input[name="ready_package"]')
-                    .forEach(checkbox => checkbox.checked = e.target.checked);
-            });
+            // Replace the existing select-all event listener with this
+            document.querySelectorAll('.select-all-group').forEach(checkbox => {
+                checkbox.addEventListener('change', async (e) => {
+                    const city = e.target.id.replace('select-all-', '');
+                    const checkboxes = document.querySelectorAll(`input[data-city="${city}"]`);
+                    
+                    if (e.target.checked) {
+                        // Get all package references for this city
+                        const packages = Array.from(checkboxes).map(cb => cb.value);
+                        
+                        try {
+                            const response = await fetch('/distribution-center/calculate-optimal-selection', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({ packages: packages })
+                            });
 
-            document.getElementById('select-all-stock')?.addEventListener('change', (e) => {
-                document.querySelectorAll('input[name="stock_package"]')
-                    .forEach(checkbox => checkbox.checked = e.target.checked);
+                            const data = await response.json();
+                            
+                            if (!response.ok) {
+                                throw new Error(data.message || 'Failed to calculate optimal selection');
+                            }
+
+                            // Check only the packages that fit within the distance limit
+                            checkboxes.forEach(cb => {
+                                cb.checked = data.packages.includes(cb.value);
+                            });
+                            
+                            // Update "Select All" checkbox state
+                            e.target.checked = data.packages.length === packages.length;
+                            
+                            if (data.packages.length < packages.length) {
+                                alert(`Only ${data.packages.length} packages can be selected within the 150km limit`);
+                            }
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert(error.message);
+                            e.target.checked = false;
+                            checkboxes.forEach(cb => cb.checked = false);
+                        }
+                    } else {
+                        // Uncheck all packages for this city
+                        checkboxes.forEach(cb => cb.checked = false);
+                    }
+                });
             });
         }
-
         async function dispatchSelectedPackages() {
-            const selectedPackages = Array.from(document.querySelectorAll('input[name="ready_package"]:checked'))
+            const selectedPackages = Array.from(document.querySelectorAll('input[name="package"]:checked'))
                 .map(checkbox => checkbox.value);
 
             if (selectedPackages.length === 0) {
@@ -332,7 +355,8 @@
 
                 closeModal('dispatch_modal');
                 showPackages(currentDcId, currentDcDescription);
-                alert(data.message);
+                alert('Packages successfully assigned to courier');
+
             } catch (error) {
                 console.error('Error:', error);
                 alert(error.message);

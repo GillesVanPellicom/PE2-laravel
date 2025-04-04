@@ -229,8 +229,8 @@ Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
-
-
+Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
 
 // ======================= End CourierRouteCreator ====================== //
 
