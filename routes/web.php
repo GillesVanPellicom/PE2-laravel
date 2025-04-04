@@ -215,7 +215,7 @@ Route::middleware("auth")->group(function () {
     Route::post('/package/{id}/return', [PackageController::class, 'returnPackage'])
         ->name('packages.return');
 
-    Route::get('/package-label/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employee-contract-template');
+    Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
     Route::get('/my-packages', [PackageController::class, 'mypackages'])
         ->name('packages.mypackages');
@@ -233,7 +233,7 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 use App\Http\Controllers\RouteCreatorController;
 
 
-//Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
