@@ -30,6 +30,10 @@ class RolesAndPermissionsSeeder extends Seeder
         "HR.create",
         "HR.assign",
         /* END Employees */
+
+        /*START Airport*/
+        "airport.view",
+        /*END Airport*/
     ];
 
 
@@ -48,6 +52,10 @@ class RolesAndPermissionsSeeder extends Seeder
         "HRManager" => ["HR.create", "HR.assign"],
         "HR" => ["HR.checkall"],
         /* END Employees */
+
+        /* START Airport */
+        "airport" => ["airport.view"],
+        /* END Airport */
     ];
 
 
@@ -63,8 +71,6 @@ class RolesAndPermissionsSeeder extends Seeder
         /* START Employees */
         "HR" => ["HRManager"],
         /* END Employees */
-
-
     ];
 
 
