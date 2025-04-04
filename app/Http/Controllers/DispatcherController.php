@@ -170,7 +170,7 @@ class DispatcherController extends Controller
                 if ($currentAssignment->node_description !== $newPackageMovement->node_description) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Courier already has assignments to {$currentAssignment->node_description}. Cannot assign packages from different loadout."
+                        'message' => "Courier already has assignments to {$currentAssignment->node_description}. Cannot assign packages from different tableout."
                     ], 400);
                 }
             }
