@@ -56,15 +56,34 @@ class PackageController extends Controller
         return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: '.$package->reference.' was successfully updated to '.$statusToSet);
     }
     public function showPackagesToReturn () {
-        $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
-            ->where('status', '!=', 'Returned')
-            ->where('status', '!=', 'Cancelled')
-            ->where('updated_at', '<', Carbon::now()->subDays(7))
-            ->paginate(10);
-        return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
+    $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
+        ->where('status', '!=', 'Returned')
+        ->where('status', '!=', 'Cancelled')
+        ->whereHas('deliveryMethod', function ($query) {
+            $query->where('code', 'PICKUP_POINT');
+        })
+        ->where('updated_at', '<', Carbon::now()->subDays(7))
+        ->paginate(10);
+
+    return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
     }
     public function showReceivingPackages () {
-        $packages = Package::where('status', '!=', 'delivered')->paginate(10);
+        $today = Carbon::today();
+
+        $packages = Package::where('status', '!=', 'delivered')
+            ->where('status', '!=', 'returned')
+            ->where('status', '!=', 'cancelled')
+            ->whereHas('deliveryMethod', function ($query) {
+                $query->where('code', 'PICKUP_POINT');
+            })
+            ->with(['movements' => function ($query) use ($today) {
+                $query->whereDate('arrival_time', $today);
+            }])
+            ->whereHas('movements', function ($query) use ($today) {
+                $query->whereDate('arrival_time', $today);
+            })
+            ->paginate(10);
+
         return view('pickup.receiving-packages', compact('packages'));
     }
 
@@ -174,21 +193,21 @@ class PackageController extends Controller
     public function updatePrices(Request $request)
     {
         Log::info('Update Prices Request:', $request->all());
-    
+
         $weightId = $request->input('weight_id');
         $deliveryMethodId = $request->input('delivery_method_id');
         $weightPrice = $request->input('weight_price');
         $deliveryPrice = $request->input('delivery_price');
-    
+
         $deliveryMethod = DeliveryMethod::findOrFail($request->input('delivery_method_id'));
-    
+
         $originLocation = Auth::user()->address->city->country->country_name;
         Log::info('Origin Location: ' . $originLocation);
-    
+
         if ($deliveryMethod->requires_location) {
             $locationId = $request->input('destination_location_id');
             Log::info('Location ID received: ' . $locationId);
-            
+
             if (!$locationId) {
                 Log::error('No location ID provided for a delivery method that requires location');
                 return response()->json([
@@ -197,10 +216,10 @@ class PackageController extends Controller
                     'updatedTotalPrice' => $weightPrice + $deliveryPrice
                 ]);
             }
-            
+
             $location = Location::with('address.city.country')->find($locationId);
             Log::info('Location found:', ['location' => $location ? 'yes' : 'no']);
-            
+
             if ($location && $location->address && $location->address->city && $location->address->city->country) {
                 $destinationLocation = $location->address->city->country->country_name;
                 Log::info('Destination Location from location: ' . $destinationLocation);
@@ -211,7 +230,7 @@ class PackageController extends Controller
         } else {
             $addressData = $request->input('address_data');
             Log::info('Address data received:', ['address_data' => $addressData]);
-            
+
             if (!$addressData || !isset($addressData['country'])) {
                 Log::error('No address data or country provided');
                 return response()->json([
@@ -220,22 +239,22 @@ class PackageController extends Controller
                     'updatedTotalPrice' => $weightPrice + $deliveryPrice
                 ]);
             }
-            
+
             $destinationLocation = $addressData['country'];
             Log::info('Destination Location from address: ' . $destinationLocation);
         }
-    
+
         $deliveryPriceMultiplier = $this->calculateDistanceMultiplier($originLocation, $destinationLocation);
         Log::info('Delivery Price Multiplier: ' . $deliveryPriceMultiplier);
-    
+
         $updatedDeliveryPrice = $deliveryPrice * $deliveryPriceMultiplier;
         $updatedTotalPrice = $weightPrice + $updatedDeliveryPrice;
-        
+
         Log::info('Final Prices:', [
             'updatedDeliveryPrice' => $updatedDeliveryPrice,
             'updatedTotalPrice' => $updatedTotalPrice
         ]);
-    
+
         return response()->json([
             'success' => true,
             'updatedDeliveryPrice' => $updatedDeliveryPrice,
@@ -481,11 +500,11 @@ class PackageController extends Controller
 
         $userId = Auth::user()->id;
         $userAddress = Auth::user()->address;
-        
+
         $destinationLocation = Location::findOrFail($originalPackage->origin_location_id);
-        
+
         $originLocation = Location::where('addresses_id', $userAddress->id)->first();
-        
+
         if (!$originLocation) {
             try {
                 $addressString = urlencode(
@@ -548,11 +567,11 @@ class PackageController extends Controller
                 return back()->withErrors(['error' => 'Error processing address location: ' . $e->getMessage()]);
             }
         }
-        
+
         $deliveryMethod = DeliveryMethod::where('code', 'address')->firstOrFail();
-        
+
         $weightClass = WeightClass::findOrFail($originalPackage->weight_id);
-        
+
         $returnPackageData = [
             'reference' => $this->generateUniqueTrackingNumber(),
             'user_id' => $userId,
@@ -571,18 +590,18 @@ class PackageController extends Controller
             'destination_location_id' => $destinationLocation->id,
             'addresses_id' => $destinationLocation->addresses_id,
         ];
-        
+
         $returnPackage = Package::create($returnPackageData);
-        
+
         if (!$returnPackage) {
             return back()->withErrors(['error' => 'Failed to create return package']);
         }
 
         $originalPackage->status = 'Returned';
         $originalPackage->save();
-        
+
         $returnPackage->getMovements();
-        
+
         return redirect()->route('packages.packagedetails', $returnPackage->id)
             ->with('success', 'Return package created successfully');
     }
@@ -779,38 +798,38 @@ public function generatePackageLabel($packageID)
     {
         $apiKey = env('GOOGLE_MAPS_DISTANCE_API_KEY');
         $units = env('GOOGLE_MAPS_DISTANCE_UNITS', 'metric');
-        
+
         $stepSize = 200;
-        
+
         $maxMultiplier = 10.0;
-        
+
         // Base URL for Google Distance Matrix API
         $url = "https://maps.googleapis.com/maps/api/distancematrix/json";
-        
+
         $params = [
             'origins' => $fromCountry,
             'destinations' => $toCountry,
             'units' => $units,
             'key' => $apiKey
         ];
-        
+
         // Make API request
         $response = Http::get($url, $params);
-        
+
         // Check if request was successful
         if ($response->successful()) {
             $data = $response->json();
-            
+
             if (isset($data['rows'][0]['elements'][0]['distance']['value'])) {
                 $distanceInKm = $data['rows'][0]['elements'][0]['distance']['value'] / 1000;
-                
+
                 $multiplier = 1 + floor(($distanceInKm / $stepSize)/2);
-                
+
                 // Apply maximum multiplier cap
                 return min($multiplier, $maxMultiplier);
             }
         }
-        
+
         return 1.0;
     }
 
@@ -828,7 +847,7 @@ public function generatePackageLabel($packageID)
             if (isset($data['features']) && count($data['features']) > 0) {
                 return $data['features'][0]['properties']['country'];
             }
-            
+
             return null;
         } catch (\Exception $e) {
             return null;
@@ -843,7 +862,7 @@ public function packagePayment($packageID) {
     ->where('user_id', Auth::user()->id)
     ->where('id', $packageID)
     ->first();
-    return view('packagepayment',compact('package')); 
+    return view('packagepayment',compact('package'));
 }
 }
 
