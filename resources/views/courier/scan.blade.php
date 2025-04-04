@@ -51,6 +51,16 @@
                     <i class="fa-solid fa-house-flag text-2xl"></i>
                     <span class="mt-2 text-md">Deliver</span>
                 </button>
+                <button onclick="chooseAction('RETURN')"
+                    class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    <i class="fa-solid fa-arrow-rotate-left text-2xl"></i>
+                    <span class="mt-2 text-md">Return</span>
+                </button>
+                <button onclick="chooseAction('FAILED')"
+                    class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-600 text-white p-4 rounded-xl focus:outline-none aspect-square">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    <span class="mt-2 text-md">Failed</span>
+                </button>
             </div>
         </div>
     </div>
