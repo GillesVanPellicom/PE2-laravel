@@ -862,6 +862,10 @@ public function packagePayment($packageID) {
     ->where('user_id', Auth::user()->id)
     ->where('id', $packageID)
     ->first();
+
+    $package->paid = true;
+    $package->save();
+
     return view('packagepayment',compact('package'));
 }
 }
