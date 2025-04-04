@@ -850,7 +850,6 @@ public function generatePackageLabel($packageID)
 
             return null;
         } catch (\Exception $e) {
-            \Log::error('Geoapify API Error: ' . $e->getMessage());
             return null;
         }
     }
@@ -863,6 +862,10 @@ public function packagePayment($packageID) {
     ->where('user_id', Auth::user()->id)
     ->where('id', $packageID)
     ->first();
+
+    $package->paid = true;
+    $package->save();
+
     return view('packagepayment',compact('package'));
 }
 }
