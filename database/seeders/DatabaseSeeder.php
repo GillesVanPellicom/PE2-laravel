@@ -16,13 +16,14 @@ class DatabaseSeeder extends Seeder {
     // Seed roles and permissions
     $this->call([
       RolesAndPermissionsSeeder::class,
-      CountriesSeeder::class,       // 🔥 Countries after cities
-      CitiesSeeder::class,          // 🔥 Cities after locations
+      CountriesSeeder::class,       
+      CitiesSeeder::class,          
       AddressesSeeder::class,
-      LocationsSeeder::class,       // 🔥 First location because it's a foreign key
+      LocationsSeeder::class,
+      UserSeeder::class,
+      TeamsSeeder::class,       
       EmployeesSeeder::class,
       FunctionsSeeder::class,
-      TeamsSeeder::class,
       PayrollSeeder::class,
       AirlinesSeeder::class,
       AirplanesSeeder::class,
@@ -31,10 +32,14 @@ class DatabaseSeeder extends Seeder {
       VehiclesSeeder::class,
       DeliveryMethodSeeder::class,
       WeightClassSeeder::class,
-      CustomerSeeder::class,
       PackageSeeder::class,
-      PackageMovementsSeeder::class,
       FlightsSeeder::class,
+      VacationSeeder::class,
+      FlightsContractSeeder::class,
+      RouterNodesSeeder::class,
+      RouterEdgesSeeder::class,
+      UserRoleSeeder::class,
+      MessageTemplatesSeeder::class,
     ]);
 
   }

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id('contract_id');
             $table->foreignId('employee_id')->constrained('employees');
             $table->foreignId('job_id')->constrained('functions');
+            $table->foreignId('location_id')->constrained('locations');
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->string('status');
             $table->timestamps();
         });
     }

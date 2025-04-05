@@ -4,8 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Models\Address;
+use App\Database\Factories\AddressFactory;
 
 class AddressesSeeder extends Seeder
 {
@@ -17,7 +18,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Brussels Airport Street',
                 'house_number' => '1',
                 'cities_id' => 2, // Brussels
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -25,7 +25,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Schiphol Boulevard',
                 'house_number' => '101',
                 'cities_id' => 3, // Amsterdam
-                'country_id' => 2, // Netherlands
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -33,7 +32,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Willy-Brandt-Platz',
                 'house_number' => '1',
                 'cities_id' => 4, // Berlin
-                'country_id' => 3, // Germany
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -43,7 +41,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Brussels DC Street',
                 'house_number' => '50',
                 'cities_id' => 1, // Brussels
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -51,7 +48,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Amsterdam DC Street',
                 'house_number' => '75',
                 'cities_id' => 2, // Amsterdam
-                'country_id' => 2, // Netherlands
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -61,7 +57,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Antwerp Pickup Street',
                 'house_number' => '12',
                 'cities_id' => 4, // Antwerp
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -69,7 +64,6 @@ class AddressesSeeder extends Seeder
                 'street' => 'Berlin Pickup Street',
                 'house_number' => '25',
                 'cities_id' => 3, // Berlin
-                'country_id' => 3, // Germany
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -77,11 +71,40 @@ class AddressesSeeder extends Seeder
                 'street' => 'Jan Pieter De Nayerlaan',
                 'house_number' => '5',
                 'cities_id' => 2, // Brussels
-                'country_id' => 1, // Belgium
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'street' => 'Jan Pieter De Nayerlaan',
+                'house_number' => '6',
+                'cities_id' => 2, // Brussels
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            // HR Offices
+            [
+                'street' => 'Rue Montoyer',
+                'house_number' => '15',
+                'cities_id' => 2, // Brussels
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'street' =>'Paseo de la castellana',
+                'house_number' => '93',
+                'cities_id' => 7,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'street' => 'Canoga Ave',
+                'house_number' => '5820',
+                'cities_id' => 11,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]
         ]);
+
+        Address::factory()->count(200)->create();
     }
 }
-?>

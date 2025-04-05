@@ -3,99 +3,148 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Location;
 
-class LocationsSeeder extends Seeder
-{
-    public function run(): void
-    {
+class LocationsSeeder extends Seeder {
+    public function run(): void {
+        // NOTICE
+        // Make sure any latitude and longitude values are realistic.
+        // Actually check them on a map.
+        // The router does not work if you use fictional values.
+
         DB::table('locations')->insert([
-            // Airports
             [
-                'name' => 'Brussels Airport',
-                'location_type' => 'Airport',
-                'addresses_id' => 1, // Address ID for Brussels Airport
-                'contact_number' => '+32 2 753 77 53',
-                'opening_hours' => '24/7',
+                'description' => 'tmpdesc: 7019 Forbes Ave, Lake Balboa, CA 91406, USA',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 34.19831,
+                'longitude' => -118.49897,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Amsterdam Schiphol',
-                'location_type' => 'Airport',
-                'addresses_id' => 2, // Address ID for Schiphol
-                'contact_number' => '+31 20 794 0800',
-                'opening_hours' => '24/7',
+                'description' => 'Antwerp Pickup Point 1',
+                'location_type' => 'PICKUP_POINT',
+                'infrastructure_id' => '@PIP_0001',
+                'latitude' => 51.18944,
+                'longitude' => 4.46027,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Berlin Brandenburg Airport',
-                'location_type' => 'Airport',
-                'addresses_id' => 3, // Address ID for Berlin Brandenburg
-                'contact_number' => '+49 30 609160910',
-                'opening_hours' => '24/7',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // Distribution Centers
-            [
-                'name' => 'Brussels Distribution Center',
-                'location_type' => 'Distribution Center',
-                'addresses_id' => 4, // Address ID for Distribution Center
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
+                'description' => 'Brussels Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 50.84927,
+                'longitude' => 4.41279,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Amsterdam Distribution Center',
-                'location_type' => 'Distribution Center',
-                'addresses_id' => 5, // Address ID for Distribution Center
-                'contact_number' => '+31 20 345 67 89',
-                'opening_hours' => '08:00 - 18:00',
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // Pickup Points
-            [
-                'name' => 'Antwerp Pickup Point',
-                'location_type' => 'Pickup Point',
-                'addresses_id' => 6, // Address ID for Pickup Point
-                'contact_number' => '+32 3 456 78 90',
-                'opening_hours' => '09:00 - 17:00',
+                'description' => 'Einhoven Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 51.4469, 
+                'longitude' => 5.4034,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Berlin Pickup Point',
-                'location_type' => 'Pickup Point',
-                'addresses_id' => 7, // Address ID for Pickup Point
-                'contact_number' => '+49 30 123 456 789',
-                'opening_hours' => '09:00 - 17:00',
+                'description' => 'Madrid Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 40.4644,  
+                'longitude' => -3.5882,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            //Parcel Lockers
             [
-                'name' => 'Antwerp Parcel Locker',
-                'location_type' => 'Parcel Locker',
-                'addresses_id' => 6, // Address ID for Parcel Locker
-                'contact_number' => '+32 2 123 45 67',
-                'opening_hours' => '08:00 - 18:00',
+                'description' => 'Rome Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 41.8606,   
+                'longitude' => 12.4543,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'description' => 'Heraklion Private Individu 1',
+                'location_type' => 'ADDRESS',
+                'infrastructure_id' => null,
+                'latitude' => 35.31960,    
+                'longitude' => 25.1378,
+                'addresses_id' => 1, // placeholder
+                'contact_number' => '+32 2 123 45 67', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'HR OFFICE 1',
+                'location_type' => 'OFFICE',
+                'infrastructure_id' => null,
+                'latitude' => 50.8413,    
+                'longitude' => 4.3683,
+                'addresses_id' => 10,
+                'contact_number' => '+32 2 123 55 88',
+                'opening_hours' => null,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'HR OFFICE 2',
+                'location_type' => 'OFFICE',
+                'infrastructure_id' => null,
+                'latitude' => 40.4508,
+                'longitude' => -3.6917,
+                'addresses_id' => 11, // placeholder
+                'contact_number' => '+32 2 156 75 17', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'description' => 'HR OFFICE 3',
+                'location_type' => 'OFFICE',
+                'infrastructure_id' => null,
+                'latitude' => 34.1758,    
+                'longitude' => -118.5968,
+                'addresses_id' => 12, // placeholder
+                'contact_number' => '+32 2 956 12 54', // placeholder
+                'opening_hours' => null, // placeholder
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            
         ]);
+        Location::factory()->count(100)->create();
     }
 }
-?>

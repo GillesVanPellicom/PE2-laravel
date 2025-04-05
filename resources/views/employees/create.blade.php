@@ -1,121 +1,266 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <style>
-        body {
-            background-color: #aaa;
-        }
-        .cent {
-            width: 50%; /* or any fixed width */
-            margin: 0 auto;
-            text-align: center; /* Optional for centering text */
-        }
-    </style>
-</head>
-<body>
-    <div class="cent">
-    <h1>new employee</h1>
-    <div>
-        <h1><a href="{{ route('employees.index') }}">Home</a></h1>
-    </div>
-    <div>
-        <form method="post" action="{{ route('employees.store_employee') }}">
-            @csrf           <!--protection against cross-site request forgery-->
-            @method('POST')
-            <!-- https://5balloons.info/retain-old-form-data-on-validation-error-in-laravel/ -->
-            <div>
-                <label for="lastname">Lastname:</label>
-                <input type="text" name="lastname" id="lastname"  value="{{ old('lastname') }}">
-            </div>
+<x-app-layout>
+    @section("pageName","Employees")
 
-            <div>
-                <label for="firstname">Firstname:</label>
-                <input type="text" name="firstname" id="firstname"  value="{{ old('firstname') }}">
-            </div>
+    <x-sidebar>
 
-            <div>
-                <label for="email">Email:</label>
-                <input type="email" name="email" id="email"  value="{{ old('email') }}">
-            </div>
+    <div class="container mx-auto py-10">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-4">Create Employee</h1>
+        </div>
+        <div class="max-w-3xl mx-auto bg-white p-8 rounded shadow">
+            <form method="post" action="{{ route('employees.store_employee') }}">
+                @csrf
+                @method('POST')
 
-            <div>
-                <label for="phone">Phone:</label>
-                <input type="text" name="phone" id="phone"  value="{{ old('phone') }}">
-            </div>
+                <div class="mb-4">
+                    <label for="lastname" class="block text-sm font-medium text-gray-700">Lastname:</label>
+                    <input type="text" name="lastname" id="lastname" value="{{ old('lastname') }}" autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('lastname')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="birth_date">Birth date:</label>
-                <input type="date" name="birth_date" id="birth_date"  value="{{ old('birth_date') }}">
-            </div>
+                <div class="mb-4">
+                    <label for="firstname" class="block text-sm font-medium text-gray-700">Firstname:</label>
+                    <input type="text" name="firstname" id="firstname" value="{{ old('firstname') }}" autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('firstname')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="country">Country:</label>
-                <select name="country" id="country">
-                    <option value="-1">Select a country</option>
-                @foreach($countries as $country)
-                    <option value="{{ $country->id }}">{{ $country->country_name }}</option>
-                @endforeach
-                </select>
-            </div>
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
+                    <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('email')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="city">City:</label>
-                <select name="city" id="city">
-                    <option value="-1">Select a city</option>
-                    @foreach($cities as $city)
-                        <option value="{{ $city->id }}">
-                            {{ $city->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('city')
-                    <p>{{ $message }}</p>
-                @enderror
-            </div>
+                <div class="mb-4">
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone:</label>
+                    <input type="text" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('phone')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="street">Street:</label>
-                <input type="text" name="street" id="street"  value="{{ old('street') }}">
-                @error('street')
-                    <p>{{ $message }}</p>
-                @enderror
-            </div>
+                <div class="mb-4">
+                    <label for="birth_date" class="block text-sm font-medium text-gray-700">Birth date:</label>
+                    <input type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}" autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('birth_date')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="house_number">House number:</label>
-                <input type="text" name="house_number" id="house_number" value="{{ old('house_number') }}">
-                @error('house_number')
-                    <p>{{ $message }}</p>
-                @enderror
-            </div>
+                <div class="mb-4">
+                    <label for="street" class="block text-sm font-medium text-gray-700">Street:</label>
+                    <input type="text" name="street" id="street" value="{{ old('street') }}" autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('street')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="nationality">Nationality:</label>
-                <input type="text" name="nationality" id="nationality" value="{{ old('nationality') }}">
-            </div>
+                <div id="autocomplete-container" class="mb-4"></div>
 
-            <div>
-                <label for="leave_balance">Leave balance:</label>
-                <input type="text" name="leave_balance" id="leave_balance"  value="{{ old('leave_balance') }}">
-            </div>
+                <div class="mb-4">
+                    <label for="city" class="block text-sm font-medium text-gray-700">City:</label>
+                    <input type="text" name="city" id="city" value="{{ old('city') }}" readonly autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('city')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <button type="submit">Create</button>
-            </div>
+                <div class="mb-4">
+                    <label for="country" class="block text-sm font-medium text-gray-700">Country:</label>
+                    <input type="text" name="country" id="country" value="{{ old('country') }}" readonly autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('country')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-        </form>
+                <div class="mb-4">
+                    <label for="house_number" class="block text-sm font-medium text-gray-700">House number:</label>
+                    <input type="text" name="house_number" id="house_number" value="{{ old('house_number') }}" readonly autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('house_number')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-        @if (session('success'))
-            <div>
-                {{ session('success') }}
-            </div>
-        @endif
+                <div class="mb-4">
+                    <label for="Apartment_number" class="block text-sm font-medium text-gray-700">Bus number (Optional):</label>
+                    <input type="text" name="Apartment_number" id="Apartment_number" value="{{ old('Apartment_number') }}" readonly autocomplete="random-something-goofy-to-prevent-autocomplete"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('Apartment_number')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
+                <div class="mb-4">
+                    <input type="number" name="postcode" id="postcode" value="{{ old('postcode') }}" hidden>
+                </div>
+
+                <div class="mb-4">
+                    <label for="team" class="block text-sm font-medium text-gray-700">Team:</label>
+                    <select name="team" id="team"
+                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="-1">Select a team</option>
+                        @foreach($teams as $team)
+                            
+                            <option value="{{ $team->id }}"
+                                @if(old('team') == $team->id)
+                                 selected 
+                                @endif>
+                                {{ $team->department }}</option>
+                        @endforeach
+                    </select>
+                    @error('team')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <button type="submit" 
+                        class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
+                        Create
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-</body>
-</html>
+
+    <script>
+    function addressAutocomplete(containerElement, streetInput, cityInput, countryInput, options) {
+    const MIN_ADDRESS_LENGTH = 3;
+    const DEBOUNCE_DELAY = 300;
+
+    let currentTimeout;
+    let currentPromiseReject;
+    let currentItems = [];
+    let focusedItemIndex = -1;
+
+    streetInput.addEventListener("input", function () {
+        const currentValue = streetInput.value;
+
+        if (currentTimeout) clearTimeout(currentTimeout);
+        if (currentPromiseReject) currentPromiseReject({ canceled: true });
+
+        currentTimeout = setTimeout(() => {
+            if (currentValue.length < MIN_ADDRESS_LENGTH) return;
+
+            const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+                currentValue
+            )}&format=json&limit=5&apiKey=840a8882828f47b3b5562c323855442c`;
+
+            const promise = new Promise((resolve, reject) => {
+                currentPromiseReject = reject;
+                fetch(url)
+                    .then((response) => {
+                        currentPromiseReject = null;
+                        response.ok ? response.json().then(resolve) : response.json().then(reject);
+                    })
+                    .catch(reject);
+            });
+
+            promise
+                .then((data) => {
+                    currentItems = data.results || [];
+                    showSuggestions(currentItems);
+                })
+                .catch((err) => {
+                    if (!err.canceled) console.error(err);
+                });
+        }, DEBOUNCE_DELAY);
+    });
+
+    function showSuggestions(items) {
+        closeDropDownList();
+
+        const autocompleteItemsElement = document.createElement("div");
+
+        // Updated Tailwind classes for proper alignment and width
+        autocompleteItemsElement.setAttribute(
+            "class",
+            "autocomplete-items absolute z-10 bg-white shadow-md rounded-lg border border-gray-300 max-h-60 overflow-y-auto mt-1 left-0 right-0"
+        );
+
+        containerElement.style.position = "relative"; // Ensure parent container is relative for proper alignment
+        containerElement.appendChild(autocompleteItemsElement);
+
+        items.forEach((item, index) => {
+            const itemElement = document.createElement("div");
+            itemElement.textContent = item.formatted;
+
+            // Add Tailwind styling to the suggestion items
+            itemElement.setAttribute("class", "p-2 cursor-pointer hover:bg-gray-100");
+
+            itemElement.addEventListener("click", () => {
+                // Populate fields with the selected address components
+                streetInput.value = item.street || item.name || '';
+                if (cityInput) cityInput.value = item.city || '';
+                if (countryInput) countryInput.value = item.country || '';
+
+                const houseNumberInput = document.getElementById("house_number");
+                const busNumberInput = document.getElementById("Apartment_number");
+                const postcodeInput = document.getElementById("postcode");
+
+                if (item.housenumber) {
+                    const houseNumberPattern = /^(\d+)(\D+)?$/; // Splits numbers and letters (e.g., 123B -> "123", "B")
+                    const match = houseNumberPattern.exec(item.housenumber);
+
+                    if (match) {
+                        if (houseNumberInput) houseNumberInput.value = match[1]; // The numeric part
+                        if (busNumberInput) busNumberInput.value = match[2] || ''; // The non-numeric part (optional)
+                    } else {
+                        // Fallback if no match
+                        if (houseNumberInput) houseNumberInput.value = item.housenumber;
+                        if (busNumberInput) busNumberInput.value = '';
+                    }
+                } else {
+                    if (houseNumberInput) houseNumberInput.value = '';
+                    if (busNumberInput) busNumberInput.value = '';
+                }
+
+                if (postcodeInput) postcodeInput.value = item.postcode || '';
+
+                closeDropDownList();
+            });
+
+            autocompleteItemsElement.appendChild(itemElement);
+        });
+    }
+
+
+
+
+
+    function closeDropDownList() {
+        const dropdown = containerElement.querySelector(".autocomplete-items");
+        if (dropdown) containerElement.removeChild(dropdown);
+        focusedItemIndex = -1;
+    }
+}
+
+const streetInput = document.getElementById("street");
+const cityInput = document.getElementById("city");
+const countryInput = document.getElementById("country");
+const autocompleteContainer = document.getElementById("autocomplete-container");
+
+// Initialize autocomplete
+addressAutocomplete(autocompleteContainer, streetInput, cityInput, countryInput, {
+    placeholder: "Enter an address here"
+});
+
+</script>
+
+</x-sidebar>
+</x-app-layout>

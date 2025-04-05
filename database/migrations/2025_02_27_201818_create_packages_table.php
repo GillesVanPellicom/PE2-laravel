@@ -14,17 +14,19 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->nullable();
-            $table->foreignId('customer_id')->constrained('customers');
+            $table->foreignId('user_id')->constrained('users');
             $table->foreignId('origin_location_id')->constrained('locations');
-            $table->foreignId('current_location_id')->nullable()->constrained('locations');
+            $table->string('current_location_id')->nullable();
             $table->foreignId('destination_location_id')->nullable()->constrained('locations');
             $table->foreignId('addresses_id')->nullable()->constrained('addresses');
             $table->string('status');
             $table->foreignId('weight_id')->constrained('weight_classes');
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
-            $table->string('weight_price');
-            $table->string('delivery_price');
+            $table->string('weight_price')->default(0);
+            $table->float('weight')->nullable();
+            $table->boolean('paid')->default(false);
+            $table->string('delivery_price')->default(0);
             $table->string('name');
             $table->string('lastName');
             $table->string('receiverEmail');
@@ -33,11 +35,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('packages');
-    }
+  /**
+   * Reverse the migrations.
+   */
+  public function down(): void {
+    Schema::dropIfExists('packages');
+  }
 };

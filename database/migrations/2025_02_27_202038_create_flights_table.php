@@ -12,13 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('flights', function (Blueprint $table) {
-            $table->id('flight_id');
+            $table->id();
             $table->foreignId('airplane_id')->constrained('airplanes');
             $table->foreignId('depart_location_id')->constrained('locations');
             $table->foreignId('arrive_location_id')->constrained('locations');
-            $table->dateTime('departure_time');
-            $table->dateTime('arrival_time');
+            $table->Time('departure_time');
+            $table->float('time_flight_minutes'); 
+            $table->enum('departure_day_of_week', [
+                'Monday', 
+                'Tuesday', 
+                'Wednesday', 
+                'Thursday', 
+                'Friday', 
+                'Saturday', 
+                'Sunday'
+            ]); 
+            $table->date('departure_date');
             $table->string('status');
+            $table->integer('delayed_minutes')->nullable();
+            $table->boolean('isActive');
             $table->timestamps();
         });
         

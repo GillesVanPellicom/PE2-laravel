@@ -1,10 +1,32 @@
 <x-app-layout>
+    <style>
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e5e7eb;
+            border-radius: 50%;
+            border-top: 3px solid #2563eb;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     <div class="min-h-screen bg-gray-100 py-12">
         <div class="max-w-3xl mx-auto">
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div class="px-8 py-6 border-b border-gray-200">
                     <h2 class="text-3xl font-bold text-gray-800">Send Package</h2>
                     <p class="mt-2 text-gray-600">Fill in the details to send your package</p>
+
+                    <div id="updatedDeliveryPrice"></div>
+                    <div id="updatedTotalPrice"></div>
                 </div>
 
                 @if($errors->any())
@@ -47,16 +69,6 @@
                 <form action="{{ route('package.store') }}" method="POST" class="px-8 py-6">
                     @csrf
                     <div class="space-y-6">
-                        <!-- Customer Information -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="customer_id" placeholder="Customer ID" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="origin_location_id" placeholder="Origin Location ID" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
 
                         <!-- Receiver Information -->
                         <div class="bg-gray-50 rounded-lg p-6">
@@ -77,10 +89,6 @@
                         <div class="bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Package Details</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="reference" placeholder="Reference" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="status" placeholder="Status" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <input type="text" name="dimension" placeholder="Dimension" required 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -127,13 +135,17 @@
                         <!-- Dynamic Location Section -->
                         <div id="locationSection" style="display: none;" class="bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Select a Location</h3>
-                            <select name="destination_location_id" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <select onchange="updatePrices()" name="destination_location_id" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Select a location</option>
                                 @foreach($deliveryMethods as $method)
                                     <optgroup label="{{ $method->name }}" data-code="{{ $method->code }}" style="display: none;">
                                         @foreach($locations->where('location_type', $method->code) as $location)
                                             <option value="{{ $location->id }}">
-                                                {{ $location->name }} - {{ $location->address }}
+                                                {{ $location->description }} - {{ $location->address->street }} {{ $location->address->house_number }}
+                                                @if ($location->address->bus_number)
+                                                    - {{ $location->address->bus_number }}
+                                                @endif
+                                                , {{ $location->address->city->postcode }} {{ $location->address->city->name }}, {{ $location->address->city->country->name }}
                                                 ({{ $location->opening_hours }})
                                             </option>
                                         @endforeach
@@ -145,15 +157,23 @@
                         <!-- Address Section -->
                         <div id="addressSection" style="display: none;" class="bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Delivery Address</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="street" placeholder="Street" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="house_number" placeholder="House Number" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="cities_id" placeholder="City ID" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="country_id" placeholder="Country ID" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <!-- Changed from grid to full width -->
+                            <div class="w-full">
+                                <div class="relative"> 
+                                    <input 
+                                        id="addressInput" 
+                                        type="text" 
+                                        name="addressInput" 
+                                        onchange="updatePrices()"
+                                        placeholder="Enter your address" 
+                                        autocomplete="off"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                    <!-- Suggestions dropdown -->
+                                    <div id="suggestions" 
+                                        class="absolute w-full top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 hidden max-h-60 overflow-y-auto">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -172,16 +192,21 @@
                                     <input type="hidden" name="delivery_price" value="0">
                                 </div>
                                 <div class="pt-3 border-t border-gray-200">
-                                    <div class="flex justify-between">
+                                    <div class="flex justify-between items-center">
                                         <span class="text-gray-900 font-medium">Total Price:</span>
-                                        <span id="totalPrice" class="text-gray-900 font-medium">€0.00</span>
+                                        <div class="flex items-center">
+                                            <div id="loadingSpinner" class="hidden">
+                                                <div class="loader"></div>
+                                            </div>
+                                            <span id="totalPrice" class="text-gray-900 font-medium">€0.00</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end">
-                            <button type="submit" 
+                            <button type="submit" id="sendpackage" 
                                 class="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                                 Send Package
                             </button>
@@ -193,64 +218,7 @@
     </div>
 
     <script>
-        function updatePrices() {
-            const weightInput = document.querySelector('input[name="weight_id"]:checked');
-            const selectedDeliveryMethod = document.querySelector('input[name="delivery_method_id"]:checked');
-            
-            // Get prices
-            const weightPrice = weightInput?.dataset?.price || 0;
-            const deliveryPrice = selectedDeliveryMethod?.dataset?.price || 0;
-            
-            // Update display
-            document.getElementById('weightPrice').textContent = `€${Number(weightPrice).toFixed(2)}`;
-            document.getElementById('deliveryPrice').textContent = `€${Number(deliveryPrice).toFixed(2)}`;
-            document.getElementById('totalPrice').textContent = `€${(Number(weightPrice) + Number(deliveryPrice)).toFixed(2)}`;
-            
-            // Update hidden inputs for form submission
-            document.querySelector('input[name="weight_price"]').value = weightPrice;
-            document.querySelector('input[name="delivery_price"]').value = deliveryPrice;
-        }
 
-        function handleDeliveryMethodChange(radio) {
-            const requiresLocation = radio.dataset.requiresLocation === "1";
-            const deliveryCode = radio.dataset.code;
-            const locationSection = document.getElementById('locationSection');
-            const addressSection = document.getElementById('addressSection');
-            const locationSelect = document.querySelector('select[name="destination_location_id"]');
-            
-            // Reset form values
-            locationSelect.value = '';
-            document.querySelector('input[name="street"]').value = '';
-            document.querySelector('input[name="house_number"]').value = '';
-            document.querySelector('input[name="cities_id"]').value = '';
-            document.querySelector('input[name="country_id"]').value = '';
-
-            // Hide both sections first
-            locationSection.style.display = 'none';
-            addressSection.style.display = 'none';
-
-            if (requiresLocation) {
-                locationSection.style.display = 'block';
-                
-                // Hide all optgroups first
-                locationSelect.querySelectorAll('optgroup').forEach(group => {
-                    group.style.display = 'none';
-                });
-                
-                // Show the matching optgroup
-                const matchingGroup = locationSelect.querySelector(`optgroup[data-code="${deliveryCode}"]`);
-                if (matchingGroup) {
-                    matchingGroup.style.display = '';
-                }
-            } else {
-                addressSection.style.display = 'block';
-            }
-            
-            // Update prices when delivery method changes
-            updatePrices();
-        }
-
-        // Add form validation before submit
         document.querySelector('form').addEventListener('submit', function(e) {
             const selectedDeliveryMethod = document.querySelector('input[name="delivery_method_id"]:checked');
             if (!selectedDeliveryMethod) {
@@ -296,5 +264,209 @@
             }
             updatePrices();
         });
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+    const addressInput = document.getElementById('addressInput');
+    const suggestionsDiv = document.getElementById('suggestions');
+    let debounceTimer;
+    
+    // Setup address autocomplete
+    addressInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        
+        if (!this.value.trim()) {
+            suggestionsDiv.innerHTML = '';
+            suggestionsDiv.classList.add('hidden');
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            const text = encodeURIComponent(this.value);
+            const apiKey = '{{ env('GEOAPIFY_API_KEY') }}';
+            
+            fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${text}&format=json&apiKey=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsDiv.innerHTML = '';
+                    
+                    if (data.results && data.results.length > 0) {
+                        suggestionsDiv.classList.remove('hidden');
+                        
+                        data.results.forEach(result => {
+                            const div = document.createElement('div');
+                            div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                            div.textContent = result.formatted;
+                            
+                            div.addEventListener('click', () => {
+                                addressInput.value = result.formatted;
+                                suggestionsDiv.classList.add('hidden');
+                                
+                                // Add a hidden input with the full address data
+                                let hiddenInput = document.getElementById('fullAddressData');
+                                if (!hiddenInput) {
+                                    hiddenInput = document.createElement('input');
+                                    hiddenInput.type = 'hidden';
+                                    hiddenInput.id = 'fullAddressData';
+                                    hiddenInput.name = 'full_address_data';
+                                    addressInput.parentNode.appendChild(hiddenInput);
+                                }
+                                hiddenInput.value = JSON.stringify(result);
+                                
+                                updatePrices();
+                            });
+                            
+                            suggestionsDiv.appendChild(div);
+                        });
+                    } else {
+                        suggestionsDiv.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching address suggestions:', error);
+                });
+        }, 300);
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.classList.add('hidden');
+        }
+    });
+
+    // Initialize the form state
+    const checkedDeliveryMethod = document.querySelector('input[name="delivery_method_id"]:checked');
+    if (checkedDeliveryMethod) {
+        handleDeliveryMethodChange(checkedDeliveryMethod);
+    }
+    updatePrices();
+});
+
+function updatePrices() {
+    const weightInput = document.querySelector('input[name="weight_id"]:checked');
+    const selectedDeliveryMethod = document.querySelector('input[name="delivery_method_id"]:checked');
+    
+    if (!weightInput || !selectedDeliveryMethod) {
+        return;
+    }
+    
+    const requiresLocation = selectedDeliveryMethod.dataset.requiresLocation === "1";
+    
+    // Get prices
+    const weightPrice = weightInput.dataset.price || 0;
+    const deliveryPrice = selectedDeliveryMethod.dataset.price || 0;
+    
+    // Update display
+    document.getElementById('weightPrice').textContent = `€${Number(weightPrice).toFixed(2)}`;
+    
+    // Update hidden inputs for form submission
+    document.querySelector('input[name="weight_price"]').value = weightPrice;
+
+    // Prepare the data object
+    const data = {
+        weight_id: weightInput.value,
+        delivery_method_id: selectedDeliveryMethod.value,
+        weight_price: weightPrice,
+        delivery_price: deliveryPrice
+    };
+
+    // Add location or address data based on delivery method
+    if (requiresLocation) {
+        const locationSelect = document.querySelector('select[name="destination_location_id"]');
+        if (locationSelect && locationSelect.value) {
+            data.destination_location_id = locationSelect.value;
+            console.log("Sending location ID:", locationSelect.value);
+        } else {
+            console.log("No location selected yet");
+            document.getElementById('deliveryPrice').textContent = `€${Number(deliveryPrice).toFixed(2)}`;
+            document.getElementById('totalPrice').textContent = `€${(Number(weightPrice) + Number(deliveryPrice)).toFixed(2)}`;
+            document.querySelector('input[name="delivery_price"]').value = deliveryPrice;
+            return;
+        }
+    } else {
+        const fullAddressData = document.getElementById('fullAddressData')?.value;
+        if (fullAddressData) {
+            data.address_data = JSON.parse(fullAddressData);
+            console.log("Sending address data:", data.address_data);
+        } else {
+            console.log("No address data available yet");
+            document.getElementById('deliveryPrice').textContent = `€${Number(deliveryPrice).toFixed(2)}`;
+            document.getElementById('totalPrice').textContent = `€${(Number(weightPrice) + Number(deliveryPrice)).toFixed(2)}`;
+            document.querySelector('input[name="delivery_price"]').value = deliveryPrice;
+            return;
+        }
+    }
+
+    console.log("Sending data to server:", data);
+
+    document.getElementById("sendpackage").disabled = true;
+    document.getElementById("totalPrice").textContent = "Calculating Price...";
+    document.getElementById("loadingSpinner").classList.remove("hidden");
+
+    // Make the AJAX call to the controller
+    fetch('{{ route("update-prices") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Received response:", data);
+        if (data.updatedDeliveryPrice) {
+            document.getElementById('deliveryPrice').textContent = "€" + Number(data.updatedDeliveryPrice).toFixed(2);
+            document.querySelector('input[name="delivery_price"]').value = data.updatedDeliveryPrice;
+        }
+        if (data.updatedTotalPrice) {
+            document.getElementById('totalPrice').textContent = "€" + Number(data.updatedTotalPrice).toFixed(2);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating prices:', error);
+    })
+    .finally(() => {
+        document.getElementById("loadingSpinner").classList.add("hidden");
+        document.getElementById("sendpackage").disabled = false;
+    });
+}
+
+function handleDeliveryMethodChange(radio) {
+    const requiresLocation = radio.dataset.requiresLocation === "1";
+    const deliveryCode = radio.dataset.code;
+    const locationSection = document.getElementById('locationSection');
+    const addressSection = document.getElementById('addressSection');
+    const locationSelect = document.querySelector('select[name="destination_location_id"]');
+    
+    // Reset form values
+    locationSelect.value = '';
+
+    locationSection.style.display = 'none';
+    addressSection.style.display = 'none';
+
+    if (requiresLocation) {
+        locationSection.style.display = 'block';
+        
+        locationSelect.querySelectorAll('optgroup').forEach(group => {
+            group.style.display = 'none';
+        });
+        
+        const matchingGroup = locationSelect.querySelector(`optgroup[data-code="${deliveryCode}"]`);
+        if (matchingGroup) {
+            matchingGroup.style.display = '';
+        }
+    } else {
+        addressSection.style.display = 'block';
+    }
+    
+    updatePrices();
+}
     </script>
 </x-app-layout>

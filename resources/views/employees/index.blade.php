@@ -1,68 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <style>
-        body {
-            background-color: #aaa;
-        }
-        .cent {
-            width: 50%; /* or any fixed width */
-            margin: 0 auto;
-            text-align: center; /* Optional for centering text */
-        }
-    </style>
-</head>
-<body>
-    <div class="cent">
-    <h1>employees</h1>
-    <div>
-        <h1><a href="{{ route('employees.create') }}">create employee</a></h1>
-    </div>
+<x-app-layout>
+    @section("pageName","Employees")
 
-    <div>
-        <table>
-            <thead>
-                <tr>
-                    <th>id</th>
-                    <th>last name</th>
-                    <th>first name</th>
-                    <th>email</th>
-                    <th>phone number</th>
-                    <th>birth date</th>
-                    <th>address</th>
-                    <th>nationality</th>
-                    <th>city</th>
-                    <th>country</th>
-                    <th>leave balance</th>
-                    <th>created at</th>
-                    <th>updated at</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($employees as $employee)
+<x-sidebar>
+
+    <div class="container mx-auto py-10">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-4">Employees</h1>
+        </div>
+
+        @if (session('success'))
+            <div class="bg-green-100 text-green-800 p-4 mb-6 rounded shadow">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="flex justify-center">
+            <table class="table-auto border-collapse border border-gray-300 w-full text-sm">
+                <thead class="bg-gray-100">
                     <tr>
-                        <td>{{ $employee->id }}</td>
-                        <td>{{ $employee->last_name }}</td>
-                        <td>{{ $employee->first_name }}</td>
-                        <td>{{ $employee->email }}</td>
-                        <td>{{ $employee->phone_number }}</td>
-                        <td>{{ $employee->birth_date }}</td>
-                        <td>{{ $employee->address->street }} {{ $employee->address->house_number }}</td>
-                        <td>{{ $employee->nationality }}</td>
-                        <td>{{ $employee->address->city->name }}</td>
-                        <td>{{ $employee->address->city->country->country_name }}</td>
-                        <td>{{ $employee->leave_balance }}</td>
-                        <td>{{ $employee->created_at }}</td>
-                        <td>{{ $employee->updated_at }}</td>
+                        <th class="border border-gray-300 px-4 py-2">ID</th>
+                        <th class="border border-gray-300 px-4 py-2">Last Name</th>
+                        <th class="border border-gray-300 px-4 py-2">First Name</th>
+                        <th class="border border-gray-300 px-4 py-2">Email</th>
+                        <th class="border border-gray-300 px-4 py-2">Phone Number</th>
+                        <th class="border border-gray-300 px-4 py-2">Birth Date</th>
+                        <th class="border border-gray-300 px-4 py-2">Address</th>
+                        <th class="border border-gray-300 px-4 py-2">City</th>
+                        <th class="border border-gray-300 px-4 py-2">Country</th>
+                        <th class="border border-gray-300 px-4 py-2">Leave Balance</th>
+                        <th class="border border-gray-300 px-4 py-2">Team</th>
+                        <th class="border border-gray-300 px-4 py-2">Created At</th>
+                        <th class="border border-gray-300 px-4 py-2">Updated At</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($employees as $employee)
+                        <tr class="even:bg-gray-50 odd:bg-white">
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->id }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->last_name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->first_name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->email }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->phone_number }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->birth_date }}</td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                {{ $employee->address->street }} {{ $employee->address->house_number }} {{ $employee->address->bus_number }}
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->address->city->name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->address->city->country->country_name }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->leave_balance }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->team->department }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->created_at }}</td>
+                            <td class="border border-gray-300 px-4 py-2">{{ $employee->updated_at }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-6 flex justify-center">
+            {{ $employees->links() }}
+        </div>
     </div>
-</div>
-</body>
-</html>
+</x-sidebar>
+</x-app-layout>
