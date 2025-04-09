@@ -5,17 +5,18 @@
             <div class="flex justify-center items-center w-auto">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a class="flex  justify-center justify-items-center items-center gap-4" href="">
+                    <a class="flex  justify-center justify-items-center items-center gap-4" href="{{route('welcome')}}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 " />
-                        @yield('pageName', '')
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                        {{ __('Pick Up Point') }}
-                    </x-nav-link>
+                <div id="nav" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    @role('pickup')
+                        <x-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                            {{ __('Pick Up Point') }}
+                        </x-nav-link>
+                    @endrole
                     <x-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
                         {{ __('Courier') }}
                     </x-nav-link>
@@ -32,13 +33,15 @@
             </div>
 
             <!-- Settings Dropdown -->
+
             <div class="hidden sm:flex sm:items-center sm:ml-6">
-            
+                @auth()
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  bg-white  hover:text-gray-700  focus:outline-none transition ease-in-out duration-150">
-                            @auth<div>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>@endauth
+
+                                <div>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>
 
                             <div class="ml-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -50,16 +53,16 @@
                             </div>
                         </button>
                     </x-slot>
-                    
+
                     <x-slot name="content">
-                        <x-dropdown-link href="{{ route('customers') }}">
+                        <x-dropdown-link href="{{ route('profile') }}">
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('auth.logout') }}">
                             @csrf
-                            <x-dropdown-link
+                            <x-dropdown-link class="cursor-pointer"
                                 onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
@@ -67,7 +70,19 @@
                         </form>
                     </x-slot>
                 </x-dropdown>
+                @else
+                    <div class="flex items-center gap-1">
+                        <x-nav-link :href="route('auth.login')" :active="request()->routeIs('auth.login')">
+                            {{ __('Login') }}
+                        </x-nav-link>
+                        <span class="text-gray-500">|</span>
+                        <x-nav-link :href="route('auth.register')" :active="request()->routeIs('auth.register')">
+                            {{ __('Register') }}
+                        </x-nav-link>
+                    </div>
+                @endauth
             </div>
+
 
             <!-- Hamburger -->
             <div class="-mr-2 flex items-center sm:hidden">
@@ -88,9 +103,12 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                {{ __('Pick Up Point') }}
-            </x-responsive-nav-link>
+            @role('pickup')
+                <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                    {{ __('Pick Up Point') }}
+                </x-responsive-nav-link>
+            @endrole
+
             <x-responsive-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
                 {{ __('Courier') }}
             </x-responsive-nav-link>
@@ -106,28 +124,40 @@
         </div>
 
         <!-- Responsive Settings Options -->
+
         <div class="pt-4 pb-1 border-t border-gray-200 ">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800 "></div>
                 <div class="font-medium text-sm text-gray-500"></div>
             </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('auth.logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link
-                        onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
+            @auth()
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link href="route('profile.edit')">
+                        {{ __('Profile') }}
                     </x-responsive-nav-link>
-                </form>
-            </div>
+
+                    <!-- Authentication -->
+                    <form method="POST" action="{{ route('auth.logout') }}">
+                        @csrf
+
+                        <x-responsive-nav-link class="cursor-pointer"
+                                               onclick="event.preventDefault();
+                                        this.closest('form').submit();">
+                            {{ __('Log Out') }}
+                        </x-responsive-nav-link>
+                    </form>
+                </div>
+            @else
+                <div class="mt-1 space-y-1">
+                    <x-responsive-nav-link :href="route('auth.login')" :active="request()->routeIs('auth.login')">
+                        {{ __('Login') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('auth.register')" :active="request()->routeIs('auth.register')">
+                        {{ __('Register') }}
+                    </x-responsive-nav-link>
+                </div>
+            @endauth
         </div>
+
     </div>
 </nav>
