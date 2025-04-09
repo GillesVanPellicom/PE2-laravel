@@ -18,7 +18,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-lg font-medium text-gray-900">Total Amount:</span>
                                     <span class="text-2xl font-bold text-blue-600">
-                                        ${{ $package->weight_price + $package->delivery_price }}
+                                    @if(session('bulk_order_total_price'))
+                                        €{{ number_format(session('bulk_order_weight_price', 0) + session('bulk_order_delivery_price', 0), 2) }}
+                                    @else
+                                    €{{ number_format(($package->weight_price ?? 0) + ($package->delivery_price ?? 0), 2) }}
+                                    @endif
                                     </span>
                                 </div>
                             </div>

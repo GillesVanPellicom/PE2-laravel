@@ -52,7 +52,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
 
     private array $roleInheritance = [
-        /* START BASE */
+        /* START BASE -=- Everthing should in some way inherit from employee */
         "employee" => ["scan", "HR"],
         /* END BASE */
 
