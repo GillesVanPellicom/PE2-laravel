@@ -10,15 +10,9 @@
                         </div>
                     </div>
 
-                    @php
-                        $isBulk = session('bulk_order_package_ids') && count(session('bulk_order_package_ids')) > 0;
-                        $packageId = $isBulk ? session('bulk_order_package_ids')[0] : $package->id;
-                        $routeName = $isBulk ? 'packages.bulk-details' : 'packages.packagedetails';
-                    @endphp
-
                     <form id="submit-form" 
-                        action="{{ route($routeName, ['id' => $isBulk ? implode(',', session('bulk_order_package_ids')) : $package->id]) }}" 
-                        method="GET" 
+                        action="{{ route('packages.bulk-details', ['ids' => implode(',', session('bulk_order_package_ids', []))]) }}"
+                        method="POST" 
                         class="mt-8 space-y-6">
                         @csrf
                         <div class="bg-white">

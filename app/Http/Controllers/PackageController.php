@@ -1015,7 +1015,6 @@ public function storeBulkOrder(Request $request)
         $createdPackages[] = $package;
     }
 
-    // Store the total price, weight price, and delivery price in the session
     session([
         'bulk_order_total_price' => $totalWeightPrice + $totalDeliveryPrice,
         'bulk_order_weight_price' => $totalWeightPrice,
@@ -1023,11 +1022,58 @@ public function storeBulkOrder(Request $request)
         'bulk_order_package_ids' => collect($createdPackages)->pluck('id')->toArray(),
     ]);
 
-    return redirect()->route('packagepayment', $createdPackages[0]->id)
-        ->with('bulk_order_total_price', $totalWeightPrice + $totalDeliveryPrice)
-        ->with('bulk_order_weight_price', $totalWeightPrice)
-        ->with('bulk_order_delivery_price', $totalDeliveryPrice)
-        ->with('bulk_order_package_ids', collect($createdPackages)->pluck('id')->toArray())
-        ->with('success', 'Packages created successfully');
+    return redirect()->route('bulk-packagepayment', ['id' => $createdPackages[0]->id])
+    ->with('bulk_order_total_price', $totalWeightPrice + $totalDeliveryPrice)
+    ->with('bulk_order_weight_price', $totalWeightPrice)
+    ->with('bulk_order_delivery_price', $totalDeliveryPrice)
+    ->with('bulk_order_package_ids', collect($createdPackages)->pluck('id')->toArray())
+    ->with('success', 'Packages created successfully');
+}
+
+public function bulkPackageDetails($ids)
+{
+    $packageIds = explode(',', $ids);
+
+    $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+        ->whereIn('id', $packageIds)
+        ->get();
+
+    if ($packages->isEmpty()) {
+        return back()->withErrors(['error' => 'No packages found for the provided IDs.']);
+    }
+
+    foreach ($packages as $package) {
+        $package->qrCode = base64_encode(QrCode::format('png')
+            ->size(150)
+            ->margin(0)
+            ->generate($package->id));
+    }
+
+    // Use the correct view name
+    return view('Packages.bulk-package-details', compact('packages'))
+        ->with('success', 'Payment completed successfully.');
+}
+
+public function bulkPackagePayment($packageID) {
+    $package = Package::with(['user'])
+        ->where('user_id', Auth::user()->id)
+        ->where('id', $packageID)
+        ->first();
+
+    if (!$package) {
+        return back()->withErrors(['error' => 'Package not found.']);
+    }
+
+    $package->paid = true;
+    $package->save();
+
+    $bulkOrderPackageIds = session('bulk_order_package_ids', []);
+    if (empty($bulkOrderPackageIds)) {
+        $bulkOrderPackageIds = [$packageID];
+        session(['bulk_order_package_ids' => $bulkOrderPackageIds]);
+    }
+
+    return view('packagepayment', compact('package'))
+        ->with('success', 'Payment completed successfully.');
 }
 }

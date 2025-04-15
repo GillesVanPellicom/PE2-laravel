@@ -261,6 +261,9 @@ Route::middleware("auth")->group(function () {
     Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
         ->name('packages.bulk-order.store');
     
+    Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
+        ->name('packages.bulk-details');
+
 });
 
 //--------------------------------- Tracking Packages ---------------------------------//
@@ -289,5 +292,9 @@ Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistri
 Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
     ->middleware('auth')
     ->name('packagepayment');
+
+Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
+    ->middleware('auth')
+    ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
