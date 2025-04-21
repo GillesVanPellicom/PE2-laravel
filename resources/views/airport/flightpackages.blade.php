@@ -11,80 +11,107 @@
 </head>
 <body class="bg-gray-100 p-6">
 
-    <h1 class="text-2xl font-bold mb-4">Incoming Flights</h1>
-    <div class="overflow-x-auto">
+    <h1 class="text-2xl font-bold mb-4">Packages at Your Location</h1>
+
+    <!-- Unassigned Packages Table -->
+    <h2 class="text-xl font-semibold mb-2">Unassigned Packages</h2>
+    <div class="overflow-x-auto mb-8">
         <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead>
                 <tr class="bg-gray-200">
-                    <th class="py-2 px-4 border">Flight Number</th>
-                    <th class="py-2 px-4 border">Departure Time</th>
-                    <th class="py-2 px-4 border">Departure Place</th>
-                    <th class="py-2 px-4 border">Flight Duration (min)</th>
-                    <th class="py-2 px-4 border">Estimated Arrival Time</th>
-                    <th class="py-2 px-4 border">Arrival Place</th>
-                    <th class="py-2 px-4 border">Status</th>
-                    <th class="py-2 px-4 border">Packages</th>
+                    <th class="py-2 px-4 border">Package Reference</th>
+                    <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Action</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($flights as $flight)
-                    @if($flight->arrive_location_id == 1)
-                    <tr class="border-b">
-                        <td class="py-2 px-4 border">{{ $flight->id }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->departure_time }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->departureAirport->name }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->time_flight_minutes }}</td>
-                        <td class="py-2 px-4 border">{{ \Carbon\Carbon::parse($flight->departure_time)->addMinutes($flight->time_flight_minutes)->format('H:i') }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->arrivalAirport->name }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->status }}</td>
-                        <td class="py-2 px-4 border">
-                            <button onclick="showPackages({{ $flight->id }})" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                                View Packages ({{ count($flight->arrivalLocation->packages ?? []) }})
-                            </button>
-                        </td>
-                    </tr>
-                    @endif
-                @endforeach
+                @forelse($packages->filter(fn($package) => !$package->assigned_flight) as $package)
+                <tr class="border-b">
+                    <td class="py-2 px-4 border">{{ $package->reference }}</td>
+                    <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
+                    <td class="py-2 px-4 border">
+                        <button onclick="openFlightModal({{ $package->id }})" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                            Assign to Flight
+                        </button>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="py-2 px-4 border text-center text-gray-600">No unassigned packages available.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
-    <h1 class="text-2xl font-bold mt-8 mb-4">Outgoing Flights</h1>
-    <div class="overflow-x-auto">
+    <!-- Reassign Packages Table -->
+    <h2 class="text-xl font-semibold mb-2">Packages to be Reassigned</h2>
+    <div class="overflow-x-auto mb-8">
         <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead>
                 <tr class="bg-gray-200">
-                    <th class="py-2 px-4 border">Flight Number</th>
-                    <th class="py-2 px-4 border">Departure Time</th>
-                    <th class="py-2 px-4 border">Departure Place</th>
-                    <th class="py-2 px-4 border">Flight Duration (min)</th>
-                    <th class="py-2 px-4 border">Estimated Arrival Time</th>
-                    <th class="py-2 px-4 border">Arrival Place</th>
-                    <th class="py-2 px-4 border">Status</th>
-                    <th class="py-2 px-4 border">Packages</th>
+                    <th class="py-2 px-4 border">Package Reference</th>
+                    <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Action</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($flights as $flight)
-                    @if($flight->depart_location_id == 1)
-                    <tr class="border-b">
-                        <td class="py-2 px-4 border">{{ $flight->id }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->departure_time }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->departureAirport->name }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->time_flight_minutes }}</td>
-                        <td class="py-2 px-4 border">{{ \Carbon\Carbon::parse($flight->departure_time)->addMinutes($flight->time_flight_minutes)->format('H:i') }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->arrivalAirport->name }}</td>
-                        <td class="py-2 px-4 border">{{ $flight->status }}</td>
-                        <td class="py-2 px-4 border">
-                            <button onclick="showPackages({{ $flight->id }})" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                                View Packages ({{ count($flight->departureLocation->packages ?? []) }})
-                            </button>
-                        </td>
-                    </tr>
-                    @endif
-                @endforeach
+                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->status === 'Canceled') as $package)
+                <tr class="border-b">
+                    <td class="py-2 px-4 border">{{ $package->reference }}</td>
+                    <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
+                    <td class="py-2 px-4 border">
+                        <button onclick="openFlightModal({{ $package->id }})" 
+                            class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700 transition">
+                            Re-assign Flight
+                        </button>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3" class="py-2 px-4 border text-center text-gray-600">No packages to be reassigned.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Assigned Packages Table -->
+    <h2 class="text-xl font-semibold mb-2">Assigned Packages</h2>
+    <div class="overflow-x-auto mb-8">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 border">Package Reference</th>
+                    <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Assigned Flight</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->status !== 'Canceled') as $package)
+                <tr class="border-b">
+                    <td class="py-2 px-4 border">{{ $package->reference }}</td>
+                    <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
+                    <td class="py-2 px-4 border">
+                        @php
+                            $flight = is_numeric($package->assigned_flight) 
+                                ? $flights->firstWhere('id', $package->assigned_flight) 
+                                : null;
+                        @endphp
+
+                        @if($flight)
+                            Flight {{ $flight->id }} - {{ $flight->departure_time }} to {{ $flight->arrivalAirport->name ?? 'Unknown' }}
+                        @else
+                            Flight ID: {{ $package->assigned_flight }}
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="py-2 px-4 border text-center text-gray-600">No assigned packages available.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
@@ -100,7 +127,30 @@
         </div>
     </div>
 
+    <!-- Flight Selection Modal -->
+    <div id="flightModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-1/2 max-w-lg shadow-lg">
+            <button class="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl" onclick="closeFlightModal()">&times;</button>
+            <h2 class="text-xl font-semibold mb-4">Select a Flight</h2>
+            <ul id="flightList" class="max-h-60 overflow-y-auto border p-3 rounded bg-gray-100 space-y-2">
+                @foreach($flights as $flight)
+                    <li>
+                        <button onclick="assignFlight(selectedPackageId, {{ $flight->id }})" 
+                            class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
+                            Flight {{ $flight->id }} - {{ $flight->departure_time }} to {{ $flight->arrivalAirport->name ?? 'Unknown' }}
+                        </button>
+                    </li>
+                @endforeach
+            </ul>
+            <div class="text-right mt-4">
+                <button onclick="closeFlightModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+    let selectedPackageId = null;
+
     function showPackages(flightId) {
         document.getElementById('flightId').innerText = flightId;
         let packageList = document.getElementById('packageList');
@@ -128,9 +178,44 @@
         document.getElementById('packageModal').classList.remove("hidden");
     }
 
-        function closeModal() {
-            document.getElementById('packageModal').classList.add("hidden");
-        }
+    function openFlightModal(packageId) {
+        selectedPackageId = packageId;
+        document.getElementById('flightModal').classList.remove('hidden');
+    }
+
+    function closeFlightModal() {
+        document.getElementById('flightModal').classList.add('hidden');
+        selectedPackageId = null;
+    }
+
+    function assignFlight(packageId, flightId) {
+        fetch(`/assign-flight`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ packageId, flightId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Package assigned to flight successfully!");
+                location.reload();
+            } else {
+                // Display the error message from the backend
+                alert("Failed to assign package to flight: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An unexpected error occurred while assigning the package.");
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('packageModal').classList.add("hidden");
+    }
     </script>
 
 </body>

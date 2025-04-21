@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('status');
             $table->integer('delayed_minutes')->nullable();
             $table->boolean('isActive');
+            $table->float('current_weight')->default(0); // Add this column to track current weight
             $table->timestamps();
         });
         

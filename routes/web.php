@@ -190,6 +190,8 @@ Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store
 
 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
 
+Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
+
 Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
 
 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');

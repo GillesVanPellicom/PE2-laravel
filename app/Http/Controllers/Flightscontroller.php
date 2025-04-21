@@ -32,6 +32,7 @@ class Flightscontroller extends Controller
         }
 
         return view('airport.flights', ['flights' => $flights]);
+        
     }
 
     public function flightcreate(){
@@ -88,7 +89,63 @@ class Flightscontroller extends Controller
 
     public function flightPackages()
     {
-        $flights = Flight::with(['departureAirport', 'arrivalAirport', 'arrivalLocation.packages', 'departureLocation.packages'])->get();
-        return view('airport.flightpackages', compact('flights'));
+        $employeeLocationId = 1; // Replace with logic to get the employee's location dynamically if needed
+
+        $flights = Flight::with([
+            'departureAirport', 
+            'arrivalAirport', 
+            'arrivalLocation.packages', 
+            'departureLocation.packages'
+        ])->get();
+
+        $packages = \App\Models\Package::where('current_location_id', $employeeLocationId)
+            ->where('status', 'Pending') // Filter packages by status "Pending"
+            ->get();
+
+        return view('airport.flightpackages', compact('flights', 'packages'));
+    }
+
+    public function assignFlight(Request $request)
+    {
+        $packageId = $request->input('packageId');
+        $flightId = $request->input('flightId');
+
+        $package = \App\Models\Package::findOrFail($packageId);
+        $flight = Flight::findOrFail($flightId);
+        $contract = \App\Models\FlightContract::where('flight_id', $flightId)->first();
+
+        if (!$contract) {
+            return response()->json(['success' => false, 'message' => 'Flight contract not found.']);
+        }
+
+        // Ensure the package has a valid weight
+        if (!isset($package->weight) || $package->weight <= 0) {
+            return response()->json(['success' => false, 'message' => 'Invalid package weight.']);
+        }
+
+        $remainingCapacity = $contract->max_capacity - $flight->current_weight;
+
+        // Check if the package weight exceeds the remaining capacity
+        if ($package->weight > $remainingCapacity) {
+            return response()->json(['success' => false, 'message' => 'Package weight exceeds remaining flight capacity.']);
+        }
+
+        try {
+            // Assign the package to the flight
+            $package->assigned_flight = $flightId;
+            $package->save();
+
+            // Update the flight's current weight
+            $flight->current_weight += $package->weight;
+            $flight->save();
+
+            return response()->json(['success' => true, 'message' => 'Package assigned successfully.']);
+        } catch (\Throwable $e) {
+            // Log the error for debugging purposes
+            \Log::error('Error assigning package to flight: ' . $e->getMessage());
+
+            // Return a generic error message only for unexpected exceptions
+            return response()->json(['success' => false, 'message' => 'An unexpected error occurred while assigning the package.']);
+        }
     }
 }

@@ -24,6 +24,7 @@
                     <th class="py-2 px-4 border">Estimated Arrival Time</th>
                     <th class="py-2 px-4 border">Arrival Place</th>
                     <th class="py-2 px-4 border">Status</th>
+                    <th class="py-2 px-4 border">Packages</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +46,12 @@
                                 {{$flight->status}}
                             @endif
                         </td>
+                        <td class="py-2 px-4 border">
+                            <button onclick="showPackages({{ $flight->id }})" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                View Packages ({{ \App\Models\Package::where('assigned_flight', $flight->id)->count() }})
+                            </button>
+                        </td>
                     </tr>
                 @endif
                 @endforeach
@@ -63,6 +70,7 @@
                     <th class="py-2 px-4 border">Estimated Arrival Time</th>
                     <th class="py-2 px-4 border">Arrival Place</th>
                     <th class="py-2 px-4 border">Status</th>
+                    <th class="py-2 px-4 border">Packages</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,11 +92,61 @@
                                 {{$flight->status}} (Flight has been canceled)
                             @endif
                         </td>
+                        <td class="py-2 px-4 border">
+                            <button onclick="showPackages({{ $flight->id }})" 
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                View Packages ({{ \App\Models\Package::where('assigned_flight', $flight->id)->count() }})
+                            </button>
+                        </td>
                     </tr>
                 @endif
                 @endforeach
             </tbody>
         </table>
+    </div>
+
+    <script>
+    function showPackages(flightId) {
+        document.getElementById('flightId').innerText = flightId;
+        let packageList = document.getElementById('packageList');
+        packageList.innerHTML = ''; // Clear previous list
+
+        let packages = [];
+
+        @foreach($flights as $flight)
+            if ({{ $flight->id }} === flightId) {
+                packages = {!! json_encode(\App\Models\Package::where('assigned_flight', $flight->id)->get()) !!};
+            }
+        @endforeach
+
+        if (packages.length === 0) {
+            packageList.innerHTML = '<li class="text-gray-600">No packages assigned to this flight</li>';
+        } else {
+            packages.forEach(pkg => {
+                let li = document.createElement('li');
+                li.textContent = pkg.reference;
+                li.classList.add("bg-white", "p-2", "rounded", "shadow-sm");
+                packageList.appendChild(li);
+            });
+        }
+
+        document.getElementById('packageModal').classList.remove("hidden");
+    }
+
+    function closeModal() {
+        document.getElementById('packageModal').classList.add("hidden");
+    }
+    </script>
+
+    <div id="packageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-1/2 max-w-lg shadow-lg">
+            <button class="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl" onclick="closeModal()">&times;</button>
+            <h2 class="text-xl font-semibold mb-4">Packages for Flight <span id="flightId"></span></h2>
+            <ul id="packageList" class="max-h-60 overflow-y-auto border p-3 rounded bg-gray-100 space-y-2"></ul>
+            <div class="text-right mt-4">
+                <button onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition">Close</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>

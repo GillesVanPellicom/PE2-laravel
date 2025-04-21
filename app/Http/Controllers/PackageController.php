@@ -19,7 +19,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\Flight;
+use App\Models\FlightContract;
 
 class PackageController extends Controller
 {

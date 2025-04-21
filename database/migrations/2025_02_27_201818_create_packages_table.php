@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('lastName');
             $table->string('receiverEmail');
             $table->string('receiver_phone_number');
+            $table->string('assigned_flight')->nullable();
             $table->timestamps();
         });
     }
