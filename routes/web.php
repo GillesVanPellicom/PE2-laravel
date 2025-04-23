@@ -24,6 +24,7 @@ use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DispatcherController;
 use App\Http\Controllers\CourierRouteController;
+use App\Http\Controllers\InvoiceController;
 
 // ======================= Start Authentication ====================== //
 
@@ -241,6 +242,13 @@ Route::middleware("auth")->group(function () {
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
 });
+
+// Invoices
+
+Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
+
+Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+->name('invoices.myinvoices');
 
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
