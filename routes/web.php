@@ -270,3 +270,13 @@ Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment']
     ->name('packagepayment');
 
 // ======================= Package Payment End  ====================== //
+
+// API Start
+
+Route::post('/tokens/create', function (Request $request) {
+    $request->user()->tokens()->where("name", "api")->delete();
+    $token = $request->user()->createToken("api");
+    return response()->json(['token' => $token->plainTextToken]);
+})->name("tokens.create");
+
+// API End

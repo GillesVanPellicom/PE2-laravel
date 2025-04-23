@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder {
       AirplanesSeeder::class,
       AirportsSeeder::class,
       ContractsSeeder::class,
-      VehiclesSeeder::class,
       DeliveryMethodSeeder::class,
       WeightClassSeeder::class,
       PackageSeeder::class,
@@ -40,6 +39,7 @@ class DatabaseSeeder extends Seeder {
       RouterEdgesSeeder::class,
       UserRoleSeeder::class,
       MessageTemplatesSeeder::class,
+      VehiclesSeeder::class,
     ]);
 
   }
