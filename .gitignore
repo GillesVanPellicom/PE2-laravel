@@ -28,7 +28,7 @@ vendor/composer/installed.php
 !vendor/symfony/
 .editorconfig
 /*.sql
-
+/public/contracts/*
 # Add your own gitignore rules below
 
 
