@@ -211,28 +211,15 @@ Route::middleware(['permission:airport.view'])->group(function () {
     Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
     Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+    Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
 
-<<<<<<< HEAD
-Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
-
-Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
-
-Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
-
-Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
-Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
-
-Route::patch('/flightContracts/{id}/updateEndDate', [Flightscontroller::class, 'updateContractEndDate'])->name('flightContracts.updateEndDate');
-
-Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
-
-=======
     Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
     Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
 
+    Route::patch('/flightContracts/{id}/updateEndDate', [Flightscontroller::class, 'updateContractEndDate'])->name('flightContracts.updateEndDate');
+
     Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
 });
->>>>>>> Development
 // ======================= End Airport ====================== //
 
 // ======================= Start Customer ====================== //
