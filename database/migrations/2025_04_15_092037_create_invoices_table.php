@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('users');
             $table->decimal('discount')->default(0);
             $table->date('expiry_date');
+            $table->boolean('is_paid')->default(0);
+            $table->date('paid_at')->nullable();
             $table->timestamps();
         });
     }
