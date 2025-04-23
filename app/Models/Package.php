@@ -49,7 +49,8 @@ class Package extends Model {
     'delivery_method_id',
     'dimension',
     'weight_price',
-    'delivery_price'
+    'delivery_price',
+    'paid'
   ];
 
   protected $attributes = [
@@ -579,6 +580,50 @@ class Package extends Model {
     throw new RouterException('All timestamps are already set for the current movement.');
   }
 
+  public function undoMove(MoveOperationType $operation){
+    $timestamps = [
+      'arrival_time' => MoveOperationType::OUT,
+      'check_in_time' => MoveOperationType::IN,
+      'check_out_time' => MoveOperationType::OUT,
+      'departure_time' => MoveOperationType::IN,
+    ];
+
+    $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
+    if ($movements->isEmpty()) {
+      $this->generateMovements();
+    }
+
+    // Find the current movement based on the current location ID
+    $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
+    if (!$currentMovement) {
+      return [false, "This package does not have a valid package movement."];
+    }
+
+    if ($currentMovement->arrival_time == null){
+      if ($operation == MoveOperationType::OUT) return [false, "Move operations do not match."];
+      $previousMovement = $this->movements()->where("next_movement", $currentMovement->id)->first();
+      if (!$previousMovement)
+        return [false, "No previous movement found, cannot undo action."];
+      $previousMovement->departure_time = null;
+      $previousMovement->save();
+      $this->current_location_id = $previousMovement->current_node_id;
+      $this->save();
+    } else if ($currentMovement->check_in_time == null){
+      if ($operation == MoveOperationType::IN) return [false, "Move operations do not match."];
+      $currentMovement->arrival_time = null;
+    } else if ($currentMovement->check_out_time == null) {
+      if ($operation == MoveOperationType::OUT) return [false, "Move operations do not match."];
+      $currentMovement->check_in_time = null;
+    }else if ($currentMovement->departure_time == null) {
+      if ($operation == MoveOperationType::IN) return [false, "Move operations do not match."];
+      $currentMovement->check_out_time = null;
+    }
+    $currentMovement->save();
+    return [true, "Action succesfully undone."];
+
+  }
 
   /**
    * Set the current movement of the package.

@@ -73,7 +73,16 @@ class FunctionsSeeder extends Seeder
                 'salary_max' => 3000.00,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-            ]
+            ],
+            [
+                'name' => 'Pickup point employee',
+                'role' => 'pickup',
+                'description' => 'employee of a pickup point',
+                'salary_min' => 4000.00,
+                'salary_max' => 6000.00,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
     }
 }

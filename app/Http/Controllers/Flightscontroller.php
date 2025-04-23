@@ -216,4 +216,41 @@ class Flightscontroller extends Controller
 
         return view('airport.airports', ['nextFlight' => $nextFlight, 'packages' => $packages]);
     }
+
+    public function airports()
+    {
+        // Hardcoded current airport ID for the employee
+        $currentAirportId = 1;
+
+        $flights = Flight::with(['departureAirport', 'arrivalAirport'])->whereIn('status', ['Delayed', 'Canceled'])->get();
+        $messages = [];
+
+        foreach ($flights as $flight) {
+            if ($flight->status === 'Delayed') {
+                if ($flight->depart_location_id == $currentAirportId) {
+                    $direction = 'to';
+                    $location = $flight->arrivalAirport->name ?? 'unknown location';
+                } elseif ($flight->arrive_location_id == $currentAirportId) {
+                    $direction = 'from';
+                    $location = $flight->departureAirport->name ?? 'unknown location';
+                } else {
+                    continue; // Skip flights not related to the current airport
+                }
+                $messages[] = "Flight {$flight->id} {$direction} {$location} is delayed, make sure the packages that need rerouting are rerouted.";
+            } elseif ($flight->status === 'Canceled') {
+                if ($flight->depart_location_id == $currentAirportId) {
+                    $direction = 'to';
+                    $location = $flight->arrivalAirport->name ?? 'unknown location';
+                } elseif ($flight->arrive_location_id == $currentAirportId) {
+                    $direction = 'from';
+                    $location = $flight->departureAirport->name ?? 'unknown location';
+                } else {
+                    continue; // Skip flights not related to the current airport
+                }
+                $messages[] = "Flight {$flight->id} {$direction} {$location} is cancelled, make sure the packages are rerouted.";
+            }
+        }
+
+        return view('airport.airports', compact('messages'));
+    }
 }
