@@ -23,6 +23,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DispatcherController;
+use App\Http\Controllers\CourierRouteController;
+use App\Http\Controllers\InvoiceController;
 
 // ======================= Start Authentication ====================== //
 
@@ -37,8 +39,8 @@ Route::get('/login', function () {
     return view('auth.login');
 })->middleware("guest")->name('auth.login');
 
-Route::post('/login', function (\Illuminate\Http\Request $request) {
-    return app(AuthController::class)->authenticate($request, "customers");
+Route::post('/login', function (Request $request) {
+    return app(AuthController::class)->authenticate($request);
 })->name('auth.authenticate');
 
 // Register
@@ -56,7 +58,7 @@ Route::get("/logout", fn() =>
 
 // Customers
 Route::middleware("auth")->group(function () {
-    Route::get('/customers', [AuthController::class, 'showCustomers'])->name('customers');
+    Route::get('/profile', [AuthController::class, 'showCustomers'])->name('profile');
 });
 
 // ======================= End Authentication ====================== //
@@ -64,11 +66,10 @@ Route::middleware("auth")->group(function () {
 // ======================= Start Courier ====================== //
 
 # => Courier Mobile app
-use App\Http\Controllers\CourierRouteController;
 
 Route::get('/courier', [CourierController::class, "index"])->middleware(["guest"])->name('courier');
 
-Route::post('/courier', function (\Illuminate\Http\Request $request) {
+Route::post('/courier', function (Request $request) {
     return app(AuthController::class)->authenticate($request, "courier.scan");
 })->name('courier.authenticate');
 
@@ -95,14 +96,19 @@ Route::middleware("auth")->group(function () {
         ->middleware("permission:scan")->name("courier.logout");
 });
 
-# Test Route
+
 Route::get("/courier/generate/{id}", [PackageController::class, "generateQRcode"])->name("generateQR");
 
 //Route::get('/courier/route', [CourierRouteController::class, 'showRoute'])->name('courier.route');
 
 Route::get('/distribution-center/{id}/packages', [CourierRouteController::class, 'getDistributionCenterPackages'])->name('distribution-center.packages');
 
-# <= END Courier Mobile App
+Route::post('/courier/deliver/{id}', [CourierRouteController::class, 'deliver'])->name('courier.deliver');
+
+Route::get('/courier/signature/{id}', [CourierRouteController::class, 'signature'])->name('courier.signature');
+
+Route::post('/courier/submit-signature', [CourierRouteController::class, 'submitSignature'])->name('courier.submitSignature');
+
 
 // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
 
@@ -137,6 +143,21 @@ Route::middleware(['permission:HR.create'])->group(function(){
     Route::post('/vacations/{id}/update-status', [VacationController::class, 'updateStatus']);
 
     Route::get('/employees/holiday-requests', [VacationController::class, 'showAllVacations'])->name('employees.holiday_requests');
+
+    Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('notifications.fetch');
+
+    Route::get('/vacations/sick-leaves', [VacationController::class, 'getSickLeaves'])->name('vacations.sickLeaves');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+    Route::get('/manager/sick-day-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeave.fetch');
+    Route::put('/manager/sick-day-notifications/{id}/read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeave.markAsRead');
+
+
 });
 
 Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(function () {
@@ -164,12 +185,13 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
-
-Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
-Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
-Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
-Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
-Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+Route::middleware(['auth','role:pickup'])->group(function () {
+    Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
+    Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
+    Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
+    Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
+    Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+});
 
 
 // ======================= End Pick Up Point ====================== //
@@ -206,6 +228,12 @@ Route::middleware("auth")->group(function () {
     Route::post('/send-package', [PackageController::class, 'store'])
         ->name('package.store');
 
+    Route::post('/update-prices', [PackageController::class, 'updatePrices'])
+        ->name('update-prices');
+
+    Route::post('/package/{id}/return', [PackageController::class, 'returnPackage'])
+        ->name('packages.return');
+
     Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
     Route::get('/my-packages', [PackageController::class, 'mypackages'])
@@ -214,6 +242,13 @@ Route::middleware("auth")->group(function () {
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
 });
+
+// Invoices
+
+Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
+
+Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+->name('invoices.myinvoices');
 
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
@@ -243,3 +278,13 @@ Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment']
     ->name('packagepayment');
 
 // ======================= Package Payment End  ====================== //
+
+// API Start
+
+Route::post('/tokens/create', function (Request $request) {
+    $request->user()->tokens()->where("name", "api")->delete();
+    $token = $request->user()->createToken("api");
+    return response()->json(['token' => $token->plainTextToken]);
+})->name("tokens.create");
+
+// API End

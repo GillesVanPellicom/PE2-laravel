@@ -12,7 +12,7 @@ return new class extends Migration {
     Schema::create('package_movements', function (Blueprint $table) {
       $table->id();
       $table->foreignId('package_id')->constrained('packages');
-      $table->foreignId('handled_by_courier_id')->nullable()->constrained('couriers');
+      $table->foreignId('handled_by_courier_id')->nullable()->constrained('employees');
       $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
       $table->dateTime('departure_time')->nullable();
       $table->dateTime('arrival_time')->nullable();

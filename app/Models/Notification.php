@@ -24,7 +24,18 @@ class Notification extends Model
     {
         return $this->belongsTo(MessageTemplate::class);
     }
-    
+
+    public function getFormattedMessageAttribute()
+    {
+        $message = $this->messageTemplate->message ?? '';
+        $data = json_decode($this->data, true);
+
+        foreach ($data as $key => $value) {
+            $message = str_replace("{" . $key . "}", $value, $message);
+        }
+
+        return $message;
+    }
 }
 
 

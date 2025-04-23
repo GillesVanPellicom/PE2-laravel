@@ -24,6 +24,10 @@ class RolesAndPermissionsSeeder extends Seeder
         "courier.route",
         "scan.deliver",
 
+        // START API
+        "token.create",
+        // END API
+
         /* START Employees */
         "courier.packages",
         "HR.checkall",
@@ -34,6 +38,10 @@ class RolesAndPermissionsSeeder extends Seeder
         /*START Airport*/
         "airport.view",
         /*END Airport*/
+        /* START Pickup */
+        'pickup.view',
+        'pickup.edit',
+        /* END Pickup */
     ];
 
 
@@ -42,8 +50,9 @@ class RolesAndPermissionsSeeder extends Seeder
         "admin" => ["*"],
         /* ADMIN */
 
-        /* START Courier */
         "employee" => ["employee"],
+
+        /* START Courier */
         "scan" => ["scan"],
         "courier" => ["courier.route", "scan.deliver", "courier.packages"],
         /* END Courier */
@@ -56,12 +65,19 @@ class RolesAndPermissionsSeeder extends Seeder
         /* START Airport */
         "airport" => ["airport.view"],
         /* END Airport */
+        /* START Pickup */
+        "pickup" => ["pickup.view", "pickup.edit"],
+        /* END Pickup */
+
+        // START API
+        "api" => ["token.create"]
+        //END API
     ];
 
 
     private array $roleInheritance = [
-        /* START BASE */
-        "employee" => ["scan", "HR"],
+        /* START BASE -=- Everthing should in some way inherit from employee */
+        "employee" => ["scan", "HR","pickup"],
         /* END BASE */
 
         /* START Courier */
