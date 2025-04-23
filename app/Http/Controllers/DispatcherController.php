@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\RouterNodes;
@@ -195,6 +196,15 @@ class DispatcherController extends Controller
                     'message' => 'Selected employee is not an active courier'
                 ], 400);
             }
+        // First check if the employee has a courier record
+        $courier = Employee::findOrFail($employeeId);
+        
+        if (!$courier) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected employee is not registered as a courier'
+            ], 400);
+        }
 
             \DB::beginTransaction();
 

@@ -37,4 +37,8 @@ class Employee extends Model
         return $this->hasMany(Notification::class, 'user_id');
     }
 
+    public function packageMovements () {
+        return $this->hasMany(PackageMovement::class, 'handled_by_courier_id');
+    }
+
 }
