@@ -11,6 +11,126 @@ use App\Models\PackageInInvoice;
 
 class InvoiceController extends Controller
 {
+    public function myinvoices(Request $request)
+    {
+        if (!Auth::check() || Auth::user()->isCompany !== 1) {
+            abort(401, 'Unauthorized access');
+        }
+
+        $query = Invoice::with(['company'])
+        ->where('company_id', Auth::user()->id);
+
+        // Search functionality
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            
+            $numericId = null;
+            if (preg_match('/INV-(\d+)/', $searchTerm, $matches)) {
+                $numericId = $matches[1];
+            }
+
+            $query->where(function($q) use ($searchTerm, $numericId) {
+                $q->where('id', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('id', $numericId)
+                ->orWhereHas('company', function($q) use ($searchTerm) {
+                    $q->where('company_name', 'LIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+    
+        // Status filter
+        if ($request->has('status') && $request->status !== 'All Invoices') {
+            switch ($request->status) {
+                case 'Paid':
+                    $query->where('is_paid', true);
+                    break;
+                case 'Pending':
+                    $query->where('is_paid', false)
+                          ->where('expiry_date', '>', now());
+                    break;
+                case 'Overdue':
+                    $query->where('is_paid', false)
+                          ->where('expiry_date', '<', now());
+                    break;
+            }
+        }
+    
+        $invoices = $query->paginate(10)->withQueryString();
+    
+        // Calculate packages and amount for each invoice
+        foreach ($invoices as $invoice) {
+            // Get package count
+            $invoice->package_count = PackageInInvoice::where('invoice_id', $invoice->id)->count();
+    
+            // Get all packages in this invoice
+            $packages = Package::whereIn('id', function ($query) use ($invoice) {
+                $query->select('package_id')
+                      ->from('packages_in_invoice')
+                      ->where('invoice_id', $invoice->id);
+            })->get();
+    
+            // Calculate Subtotal (sum of all package prices)
+            $subtotal = $packages->sum(function ($package) { 
+                return (float)$package->weight_price + (float)$package->delivery_price; 
+            });
+    
+            // Get discount from invoice
+            $discount = (float)$invoice->discount;
+    
+            // Calculate discounted subtotal (ensure it doesn't go below 0)
+            $discountedSubtotal = max(0, $subtotal - $discount);
+    
+            // Calculate VAT (21%) on the discounted subtotal
+            $vat = $discountedSubtotal * 0.21;
+    
+            // Calculate Total (discounted subtotal + VAT)
+            $total = $discountedSubtotal + $vat;
+    
+            // Add all values to the invoice object
+            $invoice->subtotal = $subtotal;
+            $invoice->discounted_subtotal = $discountedSubtotal;
+            $invoice->total_amount = $total;
+    
+            // Determine status and color
+            if ($invoice->is_paid) {
+                $invoice->status = 'Paid ('.$invoice->paid_at.')';
+                $invoice->status_color = 'green';
+            } else {
+                if ($invoice->expiry_date < now()) {
+                    $invoice->status = 'Overdue ('.$invoice->expiry_date.')';
+                    $invoice->status_color = 'red';
+                } else {
+                    $invoice->status = 'Pending';
+                    $invoice->status_color = 'orange';
+                }
+            }
+        }
+    
+        // Calculate total outstanding amount (sum of unpaid invoices)
+        $totalOutstanding = $invoices->where('is_paid', false)
+            ->sum('total_amount');
+    
+        // Calculate total paid this month
+        $totalPaidThisMonth = $invoices->where('is_paid', true)
+            ->where('paid_at', '>=', now()->startOfMonth())
+            ->sum('total_amount');
+    
+        $totalpackages = PackageInInvoice::whereIn('invoice_id', function($query) {
+            $query->select('id')
+                ->from('invoices')
+                ->where('company_id', Auth::user()->id);
+        })->count();
+
+        return view('customers.invoices.invoice-overview', [
+            'invoices' => $invoices,
+            'totalpackages' => $totalpackages,
+            'totalOutstanding' => $totalOutstanding,
+            'totalPaidThisMonth' => $totalPaidThisMonth,
+            'selectedStatus' => $request->status ?? 'All Invoices',
+            'searchTerm' => $request->search ?? ''
+        ]);
+    }
+
     public function generateInvoice($invoiceID)
     {
          if (!Auth::check()) {
@@ -19,7 +139,7 @@ class InvoiceController extends Controller
 
         $invoice = Invoice::findOrFail($invoiceID);
 
-         if (Auth::user()->id !== $invoice->company_id || Auth::user()->is_company !== true) {
+         if (Auth::user()->id !== $invoice->company_id || Auth::user()->isCompany !== 1) {
              abort(403, 'You are not authorized to access this invoice');
          }
 
@@ -38,7 +158,7 @@ class InvoiceController extends Controller
         $discount = (float)$invoice->discount;
 
         // Calculate discounted subtotal
-        $discountedSubtotal = $subtotal - $discount;
+        $discountedSubtotal = max(0, $subtotal - $discount);
 
         // Calculate VAT (21% on discounted subtotal)
         $vat = $discountedSubtotal * 0.21;

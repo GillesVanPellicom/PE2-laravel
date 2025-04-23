@@ -17,6 +17,8 @@ class Invoice extends Model
         'company_id',
         'discount',
         'expiry_date',
+        'is_paid',
+        'paid_at',
     ];
 
     /**

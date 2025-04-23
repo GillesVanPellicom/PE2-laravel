@@ -245,11 +245,10 @@ Route::middleware("auth")->group(function () {
 
 // Invoices
 
-Route::get('/invoice', function () {
-    return view('customers.invoices.invoice-template');
-})->name('invoice');
-
 Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
+
+Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+->name('invoices.myinvoices');
 
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
