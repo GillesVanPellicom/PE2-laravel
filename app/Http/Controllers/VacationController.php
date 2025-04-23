@@ -198,42 +198,54 @@ class VacationController extends Controller
         }
 
         // Process sick days
-        foreach ($request->sickDays as $date) {
-            // Ensure the sick leave is only for today
-            if ($date !== now()->toDateString()) {
-                return response()->json(['error' => 'Sick leave can only be requested for today'], 400);
+        foreach ($request->sickDays as $dateRange) {
+            $startDate = $dateRange['start_date'];
+            $endDate = $dateRange['end_date'];
+
+            $current = new \DateTime($startDate);
+            $end = new \DateTime($endDate);
+
+            while ($current <= $end) {
+                $formattedDate = $current->format('Y-m-d');
+
+                // Check if a sick leave already exists for the same day
+                $existingSickLeave = Vacation::where('employee_id', $user->employee->id)
+                    ->where('vacation_type', 'Sick Leave')
+                    ->where('start_date', $formattedDate)
+                    ->exists();
+
+                if (!$existingSickLeave) {
+                    Vacation::create([
+                        'employee_id' => $user->employee->id,
+                        'vacation_type' => 'Sick Leave',
+                        'start_date' => $formattedDate,
+                        'end_date' => $formattedDate,
+                        'approve_status' => 'Approved',
+                        'day_type' => 'Whole Day',
+                    ]);
+
+                    // Create a notification for the sick leave
+                    $template = MessageTemplate::where('key', 'sick_leave_notification')->first();
+                    if ($template) {
+                        Notification::create([
+                            'user_id' => $user->id,
+                            'message_template_id' => $template->id,
+                            'is_read' => false,
+                        ]);
+
+                        // Log notification creation
+                        \Log::info('Sick leave notification created', [
+                            'user_id' => $user->id,
+                            'message_template_id' => $template->id,
+                        ]);
+                    } else {
+                        // Log missing template
+                        \Log::warning('Sick leave notification template not found');
+                    }
+                }
+
+                $current->modify('+1 day');
             }
-
-            // Check if a sick leave already exists for the same day
-            $existingSickLeave = Vacation::where('employee_id', $user->employee->id)
-                ->where('vacation_type', 'Sick Leave')
-                ->where('start_date', $date)
-                ->exists();
-
-            if ($existingSickLeave) {
-                return response()->json(['error' => 'You have already requested a sick leave for today.'], 400);
-            }
-
-            $vacation = Vacation::create([
-                'employee_id' => $user->employee->id,
-                'vacation_type' => 'Sick Leave',
-                'start_date' => $date,
-                'end_date' => $date,
-                'approve_status' => 'Approved',
-                'day_type' => 'Whole Day',
-            ]);
-
-            // Create a notification for the employee who called in sick
-            Notification::create([
-                'user_id' => $user->id, // Notification is linked to the logged-in user
-                'message_template_id' => 4, // Message template ID for sick leave notification
-                'data' => json_encode([
-                    'vacation_id' => $vacation->id, // Link the vacation ID
-                    'employee_name' => $user->first_name . ' ' . $user->last_name,
-                    'date' => $date,
-                ]),
-                'is_read' => false,
-            ]);
         }
 
         // Deduct holiday balance
