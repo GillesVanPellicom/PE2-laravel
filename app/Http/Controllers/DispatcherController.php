@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\RouterNodes;
@@ -130,7 +131,7 @@ class DispatcherController extends Controller
         ]);
 
         // First check if the employee has a courier record
-        $courier = \App\Models\Courier::where('employee_id', $employeeId)->first();
+        $courier = Employee::findOrFail($employeeId);
         
         if (!$courier) {
             return response()->json([

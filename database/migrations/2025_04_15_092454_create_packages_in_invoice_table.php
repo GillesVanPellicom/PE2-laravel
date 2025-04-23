@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vehicles', function (Blueprint $table) {
+        Schema::create('packages_in_invoice', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('current_locations_id')->constrained('locations');
-            $table->string('vehicle_type');
-            $table->string('license_plate');
-            $table->integer('capacity');
-            $table->string('status');
+            $table->foreignId('invoice_id')->constrained('invoices');
+            $table->foreignId('package_id')->constrained('packages');
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vehicles');
+        Schema::dropIfExists('packages_in_invoice');
     }
 };

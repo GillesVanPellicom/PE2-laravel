@@ -24,6 +24,7 @@ use App\Http\Controllers\VacationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DispatcherController;
 use App\Http\Controllers\CourierRouteController;
+use App\Http\Controllers\InvoiceController;
 
 // ======================= Start Authentication ====================== //
 
@@ -242,6 +243,13 @@ Route::middleware("auth")->group(function () {
         ->name('packages.packagedetails');
 });
 
+// Invoices
+
+Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
+
+Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+->name('invoices.myinvoices');
+
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
 //--------------------------------- ENDTracking Packages ---------------------------------//
@@ -270,3 +278,13 @@ Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment']
     ->name('packagepayment');
 
 // ======================= Package Payment End  ====================== //
+
+// API Start
+
+Route::post('/tokens/create', function (Request $request) {
+    $request->user()->tokens()->where("name", "api")->delete();
+    $token = $request->user()->createToken("api");
+    return response()->json(['token' => $token->plainTextToken]);
+})->name("tokens.create");
+
+// API End
