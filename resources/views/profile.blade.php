@@ -103,4 +103,31 @@
             <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Update</button>
         </form>
     </div>
+
+    @if (Auth::user()->employee)
+    <div class="mt-4">
+    @php
+        $contract = Auth::user()->employee->contracts
+            ->where('employee_id', Auth::user()->employee->id)
+            ->where(function ($query) {
+                $query->where('end_date', '>', \Carbon\Carbon::now())
+                    ->orWhereNull('end_date');
+            })
+            ->first();
+
+        $created_at = $contract ? $contract->created_at : null;
+
+        $filePath = $created_at 
+            ? "contracts/contract_" . Auth::user()->last_name . "_" . Auth::user()->first_name . "_" . $created_at . ".pdf"
+            : null;
+    @endphp
+
+    @if ($filePath && file_exists(public_path($filePath)))
+        <embed src="{{ asset($filePath) }}" type="application/pdf" width="100%" height="600px">
+    @else
+        <p>Contract not found.</p>
+    @endif
+    </div>
+    @endif
+
 </x-app-layout>

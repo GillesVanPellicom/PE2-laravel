@@ -18,9 +18,19 @@ class EmployeeController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        if($user->hasRole(['HRManager', 'admin']))
+        {
+            $employees = User::whereHas('employee', function ($query) {
+                $query->whereHas('contracts', function ($subQuery) {
+                    $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+                });
+            })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(3);
+            return view('employees.index', compact('employees'), ['teams' => Team::all()]);
+        }
         $employees = User::whereHas('employee', function ($query) {
             $query->whereHas('contracts', function ($subQuery) {
-                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', Auth::user()->employee->contracts->location_id);
             });
         })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(3);
         return view('employees.index', compact('employees'), ['teams' => Team::all()]);
