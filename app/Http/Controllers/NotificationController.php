@@ -47,7 +47,9 @@ class NotificationController extends Controller
 
     public function fetchSickDayNotifications()
     {
-        $notifications = Notification::where('message_template_id', 4) // Filter by sick leave message template
+        $notifications = Notification::whereHas('messageTemplate', function ($query) {
+                $query->where('key', 'sick_leave_notification'); // Ensure the correct message template key is used
+            })
             ->where('is_read', false) // Fetch only unread notifications
             ->with(['messageTemplate', 'user']) // Include message template and user relationships
             ->get();
@@ -58,7 +60,7 @@ class NotificationController extends Controller
                 'message' => str_replace(
                     ['{employee_name}', '{date}'],
                     [
-                        $notification->user->first_name . ' ' . $notification->user->last_name, // Use the user's name
+                        optional($notification->user)->first_name . ' ' . optional($notification->user)->last_name, // Use the user's name
                         $notification->created_at->format('Y-m-d') // Use the notification's creation date
                     ],
                     $notification->messageTemplate->message ?? 'No message'

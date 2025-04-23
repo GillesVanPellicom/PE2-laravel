@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role, Vacation};
+use App\Models\{Employee, Country, City, Address, EmployeeContract, User, EmployeeFunction, Team, Role, Vacation, Location};
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Hash;
@@ -381,5 +381,89 @@ class EmployeeController extends Controller
 
         $pdf = Pdf::loadView('employees.employee-contract-template', $data);
         return $pdf->stream('employee-contract.pdf');
+    }
+
+    public function getAvailabilityData(Request $request)
+    {
+        $startDate = $request->query('start_date', now()->startOfWeek()->toDateString());
+        $endDate = $request->query('end_date', now()->endOfWeek()->toDateString());
+
+        if (!$startDate || !$endDate) {
+            return response()->json(['error' => 'Invalid date range provided.'], 400);
+        }
+
+        try {
+            $availabilityData = [];
+            $currentDate = Carbon::parse($startDate);
+            $endDate = Carbon::parse($endDate);
+
+            while ($currentDate->lte($endDate)) {
+                $date = $currentDate->toDateString();
+
+                $totalEmployees = \App\Models\Employee::count();
+
+                $onHolidayCount = \App\Models\Vacation::where('vacation_type', 'Holiday')
+                    ->where('approve_status', 'Approved')
+                    ->where('start_date', '<=', $date)
+                    ->where('end_date', '>=', $date)
+                    ->count();
+
+                $sickCount = \App\Models\Vacation::where('vacation_type', 'Sick Leave')
+                    ->where('approve_status', 'Approved')
+                    ->where('start_date', '<=', $date)
+                    ->where('end_date', '>=', $date)
+                    ->count();
+
+                $availableCount = $totalEmployees - $onHolidayCount - $sickCount;
+
+                $availabilityData[] = [
+                    'date' => $date,
+                    'available' => $availableCount,
+                    'onHoliday' => $onHolidayCount,
+                    'sick' => $sickCount,
+                ];
+
+                $currentDate->addDay();
+            }
+
+            return response()->json($availabilityData);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching availability data:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'An error occurred while fetching availability data.'], 500);
+        }
+    }
+
+    public function getUnavailableEmployees(Request $request)
+    {
+        $date = $request->query('date');
+
+        if (!$date) {
+            return response()->json(['error' => 'Date parameter is required.'], 400);
+        }
+
+        $onHoliday = Vacation::where('vacation_type', 'Holiday')
+            ->where('approve_status', 'Approved')
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->with('employee.user')
+            ->get()
+            ->map(function ($vacation) {
+                return optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name;
+            });
+
+        $sick = Vacation::where('vacation_type', 'Sick Leave')
+            ->where('approve_status', 'Approved')
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->with('employee.user')
+            ->get()
+            ->map(function ($vacation) {
+                return optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name;
+            });
+
+        return response()->json([
+            'onHoliday' => $onHoliday,
+            'sick' => $sick,
+        ]);
     }
 }

@@ -172,7 +172,9 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
 });
 
+Route::get('/get-availability-data', [EmployeeController::class, 'getAvailabilityData'])->name('availability.data');
 
+Route::get('/get-unavailable-employees', [EmployeeController::class, 'getUnavailableEmployees'])->name('unavailable.employees');
 
 // contract PDF
 Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
