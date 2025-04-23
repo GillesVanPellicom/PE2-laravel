@@ -258,6 +258,7 @@ Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatc
 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
 Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
 Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
+Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
 
 // ======================= End CourierRouteCreator ====================== //
 

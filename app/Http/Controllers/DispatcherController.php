@@ -71,6 +71,8 @@ class DispatcherController extends Controller
             ->leftJoin('users', 'employees.user_id', '=', 'users.id')
             ->where('current_rn.id', '=', $dcId)
             ->where('current_rn.location_type', '=', 'DISTRIBUTION_CENTER')
+            ->whereNull('pm.departure_time')
+            ->whereNull('pm.check_in_time') 
             ->orderBy('cities.name')
             ->orderBy('pm.created_at', 'DESC')
             ->get();
@@ -93,28 +95,28 @@ class DispatcherController extends Controller
                 'unassignedGroups' => $unassignedPackages->map(function ($groupPackages, $cityName) {
                     $nextMovementDesc = $groupPackages->first()->next_movement_description;
                     return [
-                        'city' => $cityName ?? 'Unknown',
-                        'nextMovement' => $nextMovementDesc ?? 'Unknown',
+                        'city' => $cityName ?? 'Home Delivery',  // Changed from 'Unknown'
+                        'nextMovement' => $nextMovementDesc ?? 'Home Delivery',  // Changed from 'Unknown'
                         'packages' => $groupPackages->map(function ($package) {
                             return [
                                 'ref' => $package->reference,
                                 'id' => $package->id,
-                                'destination' => $package->destination_description ?? 'Unknown',
-                                'next_node' => $package->next_node_description ?? 'Unknown'
+                                'destination' => $package->destination_description ?? 'Home Address',  // Changed from 'Unknown'
+                                'next_node' => $package->next_node_description ?? 'Home Delivery'  // Changed from 'Unknown'
                             ];
                         })->values()->all()
                     ];
                 })->values()->all(),
                 'assignedGroups' => $assignedPackages->map(function ($groupPackages, $cityName) {
                     return [
-                        'city' => $cityName ?? 'Unknown',
-                        'nextMovement' => $groupPackages->first()->next_movement_description ?? 'Unknown',
+                        'city' => $cityName ?? 'Home Delivery',
+                        'nextMovement' => $groupPackages->first()->next_movement_description ?? 'Home Delivery',
                         'packages' => $groupPackages->map(function ($package) {
                             return [
                                 'ref' => $package->reference,
                                 'id' => $package->id,
-                                'destination' => $package->destination_description ?? 'Unknown',
-                                'next_node' => $package->next_node_description ?? 'Unknown',
+                                'destination' => $package->destination_description ?? 'Home Address',
+                                'next_node' => $package->next_node_description ?? 'Home Delivery',
                                 'courier' => trim($package->courier_first_name . ' ' . $package->courier_last_name) ?: 'Unassigned'
                             ];
                         })->values()->all()
@@ -246,6 +248,67 @@ class DispatcherController extends Controller
             ], 500);
         }
     }
+
+    public function unassignPackages(Request $request)
+{
+    try {
+        $packageRefs = $request->input('packages', []);
+        
+        \Log::info("Unassigning packages:", [
+            'refs' => $packageRefs
+        ]);
+
+        \DB::beginTransaction();
+
+        $updatedCount = 0;
+        foreach ($packageRefs as $ref) {
+            $package = Package::where('reference', $ref)->first();
+            if (!$package) continue;
+
+            $currentMovement = $package->movements()
+                ->whereNull('departure_time')
+                ->whereNull('check_in_time')
+                ->first();
+
+            if ($currentMovement && $currentMovement->next_movement) {
+                $nextMovement = $package->movements()
+                    ->where('id', $currentMovement->next_movement)
+                    ->first();
+
+                if ($nextMovement) {
+                    $nextMovement->handled_by_courier_id = null;
+                    $nextMovement->save();
+                    
+                    \Log::info("Unassigned package movement", [
+                        'package_ref' => $ref,
+                        'movement_id' => $nextMovement->id
+                    ]);
+                    
+                    $updatedCount++;
+                }
+            }
+        }
+
+        \DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => "$updatedCount packages unassigned successfully",
+            'updated_count' => $updatedCount
+        ]);
+
+    } catch (\Exception $e) {
+        \DB::rollBack();
+        \Log::error("Error unassigning packages:", [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to unassign packages: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
     private $routeTrace;
 

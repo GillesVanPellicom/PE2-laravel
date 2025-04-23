@@ -26,17 +26,19 @@
         </div>
 
         <!-- Main content area -->
-        <div class="flex-1 p-6 overflow-hidden flex flex-col">
-            <h2 class="text-2xl font-bold mb-6">
-                @if(isset($distributionCenter) && $distributionCenter)
-                    {{ $distributionCenter->description }}
-                @else
-                    Select a Distribution Center
-                @endif
-            </h2>
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div class="p-6 flex flex-col h-full">
+                <h2 class="text-2xl font-bold sticky top-0 bg-white z-10 pb-4">
+                    @if(isset($distributionCenter) && $distributionCenter)
+                        {{ $distributionCenter->description }}
+                    @else
+                        Select a Distribution Center
+                    @endif
+                </h2>
 
-            <div id="package-content" class="flex-1 overflow-hidden">
-                <!-- Dynamic content will be loaded here -->
+                <div id="package-content" class="flex-1 overflow-y-auto">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
             </div>
         </div>
 
@@ -169,127 +171,127 @@
             }
         }
 
+
         function updatePackageDisplay(data, centerDescription) {
             console.log('Updating package display with:', { data, centerDescription });
-            document.querySelector('.flex-1.p-6 h2').textContent = centerDescription;
+            document.querySelector('.text-2xl.font-bold').textContent = centerDescription;
             
             let html = `
-                <div class="h-full space-y-6">
-                    <!-- Unassigned Packages -->
-                    ${data.unassignedGroups.map(group => `
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <div class="flex justify-between items-center mb-4">
-                                <div class="flex items-center gap-4">
-                                    <h3 class="text-xl font-semibold">Next Stop: ${group.nextMovement} (${group.packages.length})</h3>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" 
-                                            id="select-all-${group.city.toLowerCase()}" 
-                                            class="h-5 w-5 text-blue-600 rounded select-all-group"
-                                            data-city="${group.city}">
-                                        <label for="select-all-${group.city.toLowerCase()}" class="text-sm">Select All</label>
-                                    </div>
-                                </div>
-                                <button onclick="dispatchSelectedPackages('${group.city}')" 
-                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                                    Assign to Courier
-                                </button>
-                            </div>
-                            <div class="space-y-2">
-                                ${group.packages.map(package => `
-                                    <div class="border p-4 rounded-md">
+                <div class="space-y-6">
+                    <!-- Unassigned Packages Section -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold mb-4">Unassigned Packages</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            ${data.unassignedGroups.map(group => `
+                                <div class="bg-white p-4 rounded-lg shadow">
+                                    <div class="flex justify-between items-center mb-4 bg-white z-10">
                                         <div class="flex items-center gap-4">
-                                            <input type="checkbox" 
-                                                name="package" 
-                                                value="${package.ref}"
-                                                data-city="${group.city}"
-                                                class="h-5 w-5 text-blue-600 rounded">
-                                            <div class="flex-1">
-                                                <p class="font-medium">Reference: ${package.ref}</p>
-                                                <p class="text-sm text-gray-600">Destination: ${package.destination}</p>
-                                                <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
+                                            <h3 class="text-xl font-semibold">Going to: ${group.nextMovement} (${group.packages.length})</h3>
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox" 
+                                                    id="select-all-unassigned-${group.city.toLowerCase()}" 
+                                                    class="h-5 w-5 text-blue-600 rounded select-all-group"
+                                                    data-city="${group.city}">
+                                                <label for="select-all-unassigned-${group.city.toLowerCase()}" class="text-sm">Select All</label>
                                             </div>
                                         </div>
+                                        <button onclick="dispatchSelectedPackages('${group.city}')" 
+                                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                                            Assign to Courier
+                                        </button>
                                     </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `).join('')}
-
-                    <!-- Assigned Packages -->
-                    ${data.assignedGroups.map(group => `
-                        <div class="bg-gray-50 p-4 rounded-lg shadow">
-                            <h3 class="text-xl font-semibold mb-4">Assigned for transport to: ${group.nextMovement} (${group.packages.length})</h3>
-                            <div class="space-y-2">
-                                ${group.packages.map(package => `
-                                    <div class="border p-4 rounded-md bg-white">
-                                        <div class="flex-1">
-                                            <p class="font-medium">Reference: ${package.ref}</p>
-                                            <p class="text-sm text-gray-600">Destination: ${package.destination}</p>
-                                            <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
-                                            <p class="text-sm text-blue-600">Assigned to: ${package.courier}</p>
+                                    <div class="overflow-y-auto h-[300px] border rounded-lg">
+                                        <div class="space-y-2 p-2">
+                                            ${group.packages.map(package => `
+                                                <div class="border p-4 rounded-md hover:bg-gray-50">
+                                                    <div class="flex items-center gap-4">
+                                                        <input type="checkbox" 
+                                                            name="package" 
+                                                            value="${package.ref}"
+                                                            data-city="${group.city}"
+                                                            class="h-5 w-5 text-blue-600 rounded package-checkbox">
+                                                        <div class="flex-1">
+                                                            <p class="font-medium">Reference: ${package.ref}</p>
+                                                            <p class="text-sm text-gray-600">Destination: ${package.destination}</p>
+                                                            <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
                                         </div>
                                     </div>
-                                `).join('')}
-                            </div>
+                                </div>
+                            `).join('')}
                         </div>
-                    `).join('')}
+                    </div>
+
+                    <!-- Assigned Packages Section -->
+                    <div>
+                        <h2 class="text-xl font-bold mb-4">Assigned Packages</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            ${data.assignedGroups.map(group => `
+                                <div class="bg-gray-50 p-4 rounded-lg shadow">
+                                    <div class="flex justify-between items-center mb-4 bg-gray-50 z-10">
+                                        <div class="flex items-center gap-4">
+                                            <h3 class="text-xl font-semibold">Assigned for transport to: ${group.nextMovement} (${group.packages.length})</h3>
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox" 
+                                                    id="select-all-assigned-${group.city.toLowerCase()}" 
+                                                    class="h-5 w-5 text-blue-600 rounded select-all-group"
+                                                    data-city="${group.city}">
+                                                <label for="select-all-assigned-${group.city.toLowerCase()}" class="text-sm">Select All</label>
+                                            </div>
+                                        </div>
+                                        <button onclick="unassignSelectedPackages('${group.city}')"
+                                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                                            Unassign Selected
+                                        </button>
+                                    </div>
+                                    <div class="overflow-y-auto h-[300px] border rounded-lg bg-white">
+                                        <div class="space-y-2 p-2">
+                                            ${group.packages.map(package => `
+                                                <div class="border p-4 rounded-md hover:bg-gray-50">
+                                                    <div class="flex items-center gap-4">
+                                                        <input type="checkbox" 
+                                                            name="assigned_package" 
+                                                            value="${package.ref}"
+                                                            data-city="${group.city}"
+                                                            class="h-5 w-5 text-blue-600 rounded">
+                                                        <div class="flex-1">
+                                                            <p class="font-medium">Reference: ${package.ref}</p>
+                                                            <p class="text-sm text-gray-600">Destination: ${package.destination}</p>
+                                                            <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
+                                                            <p class="text-sm text-blue-600">Assigned to: ${package.courier}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             `;
             
             document.getElementById('package-content').innerHTML = html;
 
-            // Replace the existing select-all event listener with this
+                // Add event listeners for select-all checkboxes
             document.querySelectorAll('.select-all-group').forEach(checkbox => {
-                checkbox.addEventListener('change', async (e) => {
-                    const city = e.target.id.replace('select-all-', '');
-                    const checkboxes = document.querySelectorAll(`input[data-city="${city}"]`);
-                    
-                    if (e.target.checked) {
-                        // Get all package references for this city
-                        const packages = Array.from(checkboxes).map(cb => cb.value);
-                        
-                        try {
-                            const response = await fetch('/distribution-center/calculate-optimal-selection', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                    'Accept': 'application/json',
-                                },
-                                body: JSON.stringify({ packages: packages })
-                            });
-
-                            const data = await response.json();
-                            
-                            if (!response.ok) {
-                                throw new Error(data.message || 'Failed to calculate optimal selection');
-                            }
-
-                            // Check only the packages that fit within the distance limit
-                            checkboxes.forEach(cb => {
-                                cb.checked = data.packages.includes(cb.value);
-                            });
-                            
-                            // Update "Select All" checkbox state
-                            e.target.checked = data.packages.length === packages.length;
-                            
-                            if (data.packages.length < packages.length) {
-                                alert(`Only ${data.packages.length} packages can be selected within the 150km limit`);
-                            }
-
-                        } catch (error) {
-                            console.error('Error:', error);
-                            alert(error.message);
-                            e.target.checked = false;
-                            checkboxes.forEach(cb => cb.checked = false);
-                        }
-                    } else {
-                        // Uncheck all packages for this city
-                        checkboxes.forEach(cb => cb.checked = false);
-                    }
+                checkbox.addEventListener('change', (e) => {
+                    const city = e.target.dataset.city;
+                    const isUnassigned = e.target.id.startsWith('select-all-unassigned');
+                    const checkboxes = document.querySelectorAll(
+                        isUnassigned 
+                            ? `input[name="package"][data-city="${city}"]`
+                            : `input[name="assigned_package"][data-city="${city}"]`
+                    );
+                    checkboxes.forEach(cb => cb.checked = e.target.checked);
                 });
             });
         }
+
         async function dispatchSelectedPackages() {
             const selectedPackages = Array.from(document.querySelectorAll('input[name="package"]:checked'))
                 .map(checkbox => checkbox.value);
@@ -326,6 +328,46 @@
             modal.classList.remove('hidden');
         }
 
+        // Add this new function
+        async function unassignSelectedPackages(city) {
+            const selectedPackages = Array.from(
+                document.querySelectorAll(`input[name="assigned_package"][data-city="${city}"]:checked`)
+            ).map(checkbox => checkbox.value);
+
+            if (selectedPackages.length === 0) {
+                alert('Please select packages to unassign');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to unassign these packages?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/distribution-center/unassign-packages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ packages: selectedPackages })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to unassign packages');
+                }
+
+                showPackages(currentDcId, currentDcDescription);
+                alert('Packages successfully unassigned');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        }
         async function confirmDispatch() {
             const selectedEmployee = document.querySelector('input[name="selected_employee"]:checked');
             if (!selectedEmployee) {
