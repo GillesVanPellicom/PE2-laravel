@@ -26,7 +26,7 @@ class PackageSeeder extends Seeder
             'weight_id' => 1,
             'delivery_method_id' => 1,
             'dimension' => '30x20x15',
-            'weight' => 10,
+            'weight' => 50, // Adjusted weight for testing
             'name' => 'John',
             'lastName' => 'Doe',
             'receiverEmail' => 'john.doe@example.com',
@@ -45,7 +45,7 @@ class PackageSeeder extends Seeder
             'weight_id' => 1,
             'delivery_method_id' => 1,
             'dimension' => '30x20x15',
-            'weight' => 15,
+            'weight' => 30, // Adjusted weight for testing
             'name' => 'John',
             'lastName' => 'Doe',
             'receiverEmail' => 'john.doe@example.com',

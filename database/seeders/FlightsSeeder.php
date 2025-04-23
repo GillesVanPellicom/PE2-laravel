@@ -52,15 +52,15 @@ class FlightsSeeder extends Seeder
             ],
             [
             'airplane_id' => 4,
-            'depart_location_id'=>1,
-            'arrive_location_id'=>2,
-            'departure_time'=>Carbon::now(),
-            'time_flight_minutes'=>250,
-            'departure_day_of_week'=>'Friday',
-            'departure_date'=>Carbon::now(),
-            'status'=>'On Time',
+            'depart_location_id' => 1,
+            'arrive_location_id' => 2,
+            'departure_time' => Carbon::now()->setTime(19, 0), // Ensure correct time is set
+            'time_flight_minutes' => 250,
+            'departure_day_of_week' => 'Friday',
+            'departure_date' => Carbon::now(),
+            'status' => 'On Time',
             'isActive' => 1,
-            'created_at' => Carbon::now(), 
+            'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
             ]
         ]);

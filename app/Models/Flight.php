@@ -43,4 +43,9 @@ class Flight extends Model
     {
         return $this->belongsTo(Location::class, 'arrive_location_id', 'id');
     }
+
+    public function contract()
+    {
+        return $this->hasOne(FlightContract::class, 'flight_id', 'id');
+    }
 }

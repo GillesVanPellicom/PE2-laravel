@@ -57,7 +57,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->status === 'Canceled') as $package)
+                @forelse($packages->filter(fn($package) => $package->assigned_flight && !$flights->firstWhere('id', $package->assigned_flight)?->isActive) as $package)
                 <tr class="border-b">
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
@@ -89,7 +89,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->status !== 'Canceled') as $package)
+                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->isActive) as $package)
                 <tr class="border-b">
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
@@ -203,12 +203,12 @@
                 alert("Package assigned to flight successfully!");
                 location.reload();
             } else {
-                // Display the error message from the backend
+                console.error("Backend error:", data); // Log backend error details
                 alert("Failed to assign package to flight: " + data.message);
             }
         })
         .catch(error => {
-            console.error("Error:", error);
+            console.error("Fetch error:", error); // Log fetch error details
             alert("An unexpected error occurred while assigning the package.");
         });
     }

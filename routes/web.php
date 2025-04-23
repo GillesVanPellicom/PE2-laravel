@@ -197,6 +197,10 @@ Route::get('/airport', [AirportController::class, 'airportindex'])->name('airpor
 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
 Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
 
+Route::patch('/flightContracts/{id}/updateEndDate', [Flightscontroller::class, 'updateContractEndDate'])->name('flightContracts.updateEndDate');
+
+Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
+
 // ======================= End Airport ====================== //
 
 // ======================= Start Customer ====================== //
