@@ -24,6 +24,10 @@ class RolesAndPermissionsSeeder extends Seeder
         "courier.route",
         "scan.deliver",
 
+        // START API
+        "token.create",
+        // END API
+
         /* START Employees */
         "courier.packages",
         "HR.checkall",
@@ -31,6 +35,9 @@ class RolesAndPermissionsSeeder extends Seeder
         "HR.assign",
         /* END Employees */
 
+        /*START Airport*/
+        "airport.view",
+        /*END Airport*/
         /* START Pickup */
         'pickup.view',
         'pickup.edit',
@@ -43,8 +50,9 @@ class RolesAndPermissionsSeeder extends Seeder
         "admin" => ["*"],
         /* ADMIN */
 
-        /* START Courier */
         "employee" => ["employee"],
+
+        /* START Courier */
         "scan" => ["scan"],
         "courier" => ["courier.route", "scan.deliver", "courier.packages"],
         /* END Courier */
@@ -53,9 +61,17 @@ class RolesAndPermissionsSeeder extends Seeder
         "HRManager" => ["HR.create", "HR.assign"],
         "HR" => ["HR.checkall"],
         /* END Employees */
+
+        /* START Airport */
+        "airport" => ["airport.view"],
+        /* END Airport */
         /* START Pickup */
         "pickup" => ["pickup.view", "pickup.edit"],
         /* END Pickup */
+
+        // START API
+        "api" => ["token.create"]
+        //END API
     ];
 
 
@@ -71,8 +87,6 @@ class RolesAndPermissionsSeeder extends Seeder
         /* START Employees */
         "HR" => ["HRManager"],
         /* END Employees */
-
-
     ];
 
 

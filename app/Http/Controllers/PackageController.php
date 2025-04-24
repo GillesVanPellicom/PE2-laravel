@@ -863,6 +863,10 @@ public function generatePackageLabel($packageID)
         ->where('user_id', Auth::user()->id)
         ->where('id', $packageID)
         ->first();
+
+        $package->paid = true;
+        $package->save();
+
         return view('packagepayment',compact('package'));
     }
     public function testDeliveryAttemptOnWrongLocation ($id = 1) {

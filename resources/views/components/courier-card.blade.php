@@ -1,8 +1,13 @@
 @php
     $packageids = session()->get('scanned_packages', []);
-    $packages = empty($packageids) ? [] : collect(\App\Models\Package::whereIn('id', $packageids)
-        ->orderByRaw('FIELD(id, ' . implode(',', $packageids) . ')')
-        ->get())->reverse();
+    $successList = session()->get('recent_success', []);
+    $packages = empty($packageids)
+        ? []
+        : collect(
+            \App\Models\Package::whereIn('id', $packageids)
+                ->orderByRaw('FIELD(id, ' . implode(',', $packageids) . ')')
+                ->get(),
+        )->reverse();
 @endphp
 
 @foreach ($packages as $package)
@@ -15,8 +20,16 @@
             <i class="fa-solid fa-angle-left icon"></i>
         </div>
 
-        <div style="display: none;" class="flex">
-            <p>I have no idea what to put here.</p>
+        <div style="display: none;" class="flex flex-col">
+            <p class="m-2"> <span class="font-bold"> Status: </span> {{ $package->status }}</p>
+            <button onclick="getPackageInfo({{ $package->id }})"
+                class="bg-gray-800 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Package Information
+            </button>
+            
+            <button onclick="undoAction({{ $package->id }})" class="bg-red-700 text-white px-4 mt-2 py-2 rounded hover:bg-red-900">
+                Undo Action
+            </button>
         </div>
     </div>
 @endforeach
