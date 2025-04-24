@@ -856,15 +856,19 @@ public function generatePackageLabel($packageID)
     }
 
 
-public function packagePayment($packageID) {
-    $package = Package::with([
-        'user'
-    ])
-    ->where('user_id', Auth::user()->id)
-    ->where('id', $packageID)
-    ->first();
-    return view('packagepayment',compact('package'));
-}
+    public function packagePayment($packageID) {
+        $package = Package::with([
+            'user'
+        ])
+        ->where('user_id', Auth::user()->id)
+        ->where('id', $packageID)
+        ->first();
+        return view('packagepayment',compact('package'));
+    }
+    public function testDeliveryAttemptOnWrongLocation ($id = 1) {
+        $package = Package::find($id);
+        return view('testDeliveryAttemptOnWrongLocation', compact('package'));
+    }
 }
 
 
