@@ -62,7 +62,59 @@ class FlightsSeeder extends Seeder
             'isActive' => 1,
             'created_at' => Carbon::now(), 
             'updated_at' => Carbon::now()
-            ]
+            ],
+            [
+                'airplane_id' => 5,
+                'depart_location_id' => 1, // Example: '@AIR_EBBR'
+                'arrive_location_id' => 2, // Example: '@AIR_EPWA'
+                'departure_time' => Carbon::now()->addHours(2),
+                'time_flight_minutes' => 120,
+                'departure_day_of_week' => 'Tuesday',
+                'departure_date' => Carbon::now()->addDays(1),
+                'status' => 'On Time',
+                'isActive' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'airplane_id' => 6,
+                'depart_location_id' => 2, // Example: '@AIR_EPWA'
+                'arrive_location_id' => 3, // Example: '@AIR_EDDM'
+                'departure_time' => Carbon::now()->addHours(4),
+                'time_flight_minutes' => 180,
+                'departure_day_of_week' => 'Wednesday',
+                'departure_date' => Carbon::now()->addDays(2),
+                'status' => 'On Time',
+                'isActive' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'airplane_id' => 7,
+                'depart_location_id' => 3, // Example: '@AIR_EDDM'
+                'arrive_location_id' => 4, // Example: '@AIR_EBCI'
+                'departure_time' => Carbon::now()->addHours(6),
+                'time_flight_minutes' => 90,
+                'departure_day_of_week' => 'Thursday',
+                'departure_date' => Carbon::now()->addDays(3),
+                'status' => 'On Time',
+                'isActive' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'airplane_id' => 8,
+                'depart_location_id' => 4, // Example: '@AIR_EBCI'
+                'arrive_location_id' => 5, // Example: '@AIR_LPPT'
+                'departure_time' => Carbon::now()->addHours(8),
+                'time_flight_minutes' => 240,
+                'departure_day_of_week' => 'Friday',
+                'departure_date' => Carbon::now()->addDays(4),
+                'status' => 'On Time',
+                'isActive' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
     }
 }

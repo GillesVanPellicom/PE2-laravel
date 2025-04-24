@@ -31,7 +31,7 @@ class PackageMovement extends Model {
   }
 
   public function handledByCourier() {
-    return $this->belongsTo(Courier::class, 'handled_by_courier_id');
+    return $this->belongsTo(User::class, 'handled_by_courier_id');
   }
 
   public function vehicle() {

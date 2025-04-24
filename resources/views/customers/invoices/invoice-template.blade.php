@@ -17,7 +17,7 @@
             </td>
             <td width="50%" class="company-info">
                 <h3>INVOICE</h3>
-                <p>Invoice #: INV-2024001</p>
+                <p>Invoice #: INV-2025001</p>
                 <p>Date: {{$invoice->created_at->format('Y-m-d')}}</p>
                 <br>
                 <p>Company Name</p>
@@ -32,12 +32,15 @@
     <table class="invoice-details">
         <tr>
             <td width="50%">
-                <strong>Bill To:</strong><br>
-                Customer Name<br>
-                Company Name<br>
-                Street Address<br>
-                City, Country<br>
-                VAT Number
+                <strong>Bill To:</strong>
+                {{$company->company_name}}<br>
+                {{$company_address->street}} {{$company_address->house_number}}
+                @if($company_address->bus_number)
+                 - {{$company_address->bus_number}}
+                @endif
+                <br>
+                {{$company_address->city->postcode}} {{$company_address->city->name}}, {{$company_address->city->country->country_name}}<br>
+                {{$company->VAT_Number}}
             </td>
             <td width="50%">
 
@@ -52,54 +55,50 @@
                 <th>Delivery Method</th>
                 <th>Weight Class</th>
                 <th>Country</th>
-                <th>Amount</th>
+                <!-- <th>Amount</th> -->
                 <th>Price</th>
                 <th class="text-right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
+            @foreach ($packages as $package)
             <tr>
-                <td>PKG001</td>
-                <td>Home Address</td>
-                <td>Light (0-2kg)</td>
-                <td>Belgium</td>
-                <td>1</td>
-                <td>€15.00</td>
-                <td class="text-right">€15.00</td>
+                <td>{{$package->reference}}</td>
+                <td>{{$package->deliveryMethod->name}}</td>
+                <td>{{$package->weightClass->name}} ({{$package->weightClass->weight_min}}kg - {{$package->weightClass->weight_max}}kg)</td>
+                <td>
+                @if($package->deliveryMethod->requires_location)
+                    {{ $package->destinationLocation->address->city->country->country_name }}
+                @else
+                    {{ $package->address->city->country->country_name }}
+                @endif
+                </td>
+                <!-- <td>1</td> -->
+                <td>€{{ number_format((float)$package->weight_price + (float)$package->delivery_price, 2) }}</td>            
+                  <td class="text-right">€{{ (float)$package->weight_price + (float)$package->delivery_price }}</td>
             </tr>
-            <tr>
-                <td>PKG002</td>
-                <td>Pickup Point</td>
-                <td>Medium (2-5kg)</td>
-                <td>Netherlands</td>
-                <td>2</td>
-                <td>€20.00</td>
-                <td class="text-right">€40.00</td>
-            </tr>
-            <tr>
-                <td>PKG003</td>
-                <td>Parcel Locker</td>
-                <td>Heavy (5-10kg)</td>
-                <td>Germany</td>
-                <td>1</td>
-                <td>€25.00</td>
-                <td class="text-right">€25.00</td>
-            </tr>
+            @endforeach
         </tbody>
     </table>
 
     <table class="totals-table">
         <tr>
             <td width="60%">Subtotal:</td>
-            <td class="text-right">€80.00</td>
+            <td class="text-right">€{{$subtotal}}</td>
         </tr>
+        @if($discount > 0)
+        <tr>
+            <td>Discount:</td>
+            <td class="text-right">- €{{$discount}}</td>
+        </tr>
+        @endif
         <tr>
             <td>VAT (21%):</td>
-            <td class="text-right">€16.80</td>
+            <td class="text-right">€{{$VAT}}</td>
         </tr>
         <tr class="total-row">
             <td>Total:</td>
-            <td class="text-right">€101.80</td>
+            <td class="text-right">€{{$total}}</td>
         </tr>
     </table>
 
