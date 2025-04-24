@@ -165,6 +165,8 @@ Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(functi
     Route::get('/contracts', [EmployeeController::class, 'contracts'])->name('employees.contracts');
     Route::get('/teams', [EmployeeController::class, 'teams'])->name('employees.teams');
     Route::get('/functions', [EmployeeController::class, 'functions'])->name('employees.functions');
+    Route::get('/search', [EmployeeController::class, 'search'])->name('employees.search');
+    Route::get('/searchContract', [EmployeeController::class, 'searchContract'])->name('employees.searchContract');
 });
 
 Route::middleware(['permission:HR.create'])->prefix('employees')->group(function () {
@@ -180,6 +182,10 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
 
     Route::get('/create-function', [EmployeeController::class, 'create_function'])->name('employees.create_function');
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
+});
+
+Route::middleware(['permission:HR.create'])->group(function () {
+    Route::post('/contracts/{id}', [EmployeeController::class, 'updateEndTime'])->name('contracts.updateEndTime');
 });
 
 // ======================= End Employee ====================== //

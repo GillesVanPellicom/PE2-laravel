@@ -145,30 +145,33 @@
     </div>
 
     @if (Auth::user()->employee)
-    <div class="mt-4">
-    @php
-        $contract = Auth::user()->employee->contracts
-            ->where('employee_id', Auth::user()->employee->id)
-            ->where(function ($query) {
-                $query->where('end_date', '>', \Carbon\Carbon::now())
-                    ->orWhereNull('end_date');
-            })
-            ->first();
+        <div class="mt-4">
+            @php
+                $contract = Auth::user()->employee->contracts
+                    ->where('employee_id', Auth::user()->employee->id)
+                    ->where(function ($query) {
+                        $query->where('end_date', '>', \Carbon\Carbon::now())
+                            ->orWhereNull('end_date');
+                    })
+                    ->first();
 
-        $created_at = $contract ? $contract->created_at : null;
+                $created_at = $contract ? $contract->created_at : null;
 
-        $filePath = $created_at 
-            ? "contracts/contract_" . Auth::user()->last_name . "_" . Auth::user()->first_name . "_" . $created_at . ".pdf"
-            : null;
-    @endphp
+                $filePath = $created_at 
+                    ? "contracts/contract_" . Auth::user()->last_name . "_" . Auth::user()->first_name . "_" . $created_at . ".pdf"
+                    : null;
+            @endphp
 
-    @if ($filePath && file_exists(public_path($filePath)))
-        <embed src="{{ asset($filePath) }}" type="application/pdf" width="100%" height="600px">
-    @else
-        <p>Contract not found.</p>
+            @if ($filePath && file_exists(public_path($filePath)))
+                <div class="max-w-3xl mx-auto p-4">
+                    <embed src="{{ asset($filePath) }}" type="application/pdf" class="w-full h-[600px] border border-gray-300 rounded-md shadow-md">
+                </div>
+            @else
+                <p class="text-center text-gray-500">Contract not found.</p>
+            @endif
+        </div>
     @endif
-    </div>
-    @endif
+
 
     @can("token.create")
     <script>
