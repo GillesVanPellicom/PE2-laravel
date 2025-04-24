@@ -702,7 +702,7 @@ public function generatePackageLabel($packageID)
             'qr_code' => $qrCode
         ];
 
-    $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
+    $pdf = Pdf::loadView('Packages.generate-package-label', $data)->setPaper('a4', 'landscape');
     return $pdf->stream('package-label.pdf');
 }
 
@@ -1075,5 +1075,15 @@ public function bulkPackagePayment($packageID) {
 
     return view('packagepayment', compact('package'))
         ->with('success', 'Payment completed successfully.');
+}
+public function companyDashboard()
+{
+    $userId = Auth::id();
+
+    // Fetch total packages and unpaid packages for the current user
+    $totalPackages = Package::where('user_id', $userId)->count();
+    $unpaidPackages = Package::where('user_id', $userId)->where('paid', false)->count();
+
+    return view('Packages.company-dashboard', compact('totalPackages', 'unpaidPackages'));
 }
 }
