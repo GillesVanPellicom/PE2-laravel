@@ -188,6 +188,15 @@ Route::middleware(['permission:HR.create'])->group(function () {
     Route::post('/contracts/{id}', [EmployeeController::class, 'updateEndTime'])->name('contracts.updateEndTime');
 });
 
+Route::get('/get-availability-data', [EmployeeController::class, 'getAvailabilityData'])->name('availability.data');
+
+Route::get('/get-unavailable-employees', [EmployeeController::class, 'getUnavailableEmployees'])->name('unavailable.employees');
+
+// contract PDF
+Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
+
+
+
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
@@ -203,26 +212,26 @@ Route::middleware(['auth','role:pickup'])->group(function () {
 // ======================= End Pick Up Point ====================== //
 
 // ======================= Start Airport ====================== //
+Route::middleware(['permission:airport.view'])->group(function () {
+    Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
 
-Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
+    Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');
 
-Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');
+    Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
 
-Route::post('/contract', [ContractController::class, 'store'])->name('contract.store');
+    Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
 
-Route::get('/flights', [FlightsController::class, 'flightindex'])->name('flights');
+    Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('flightcreate');
 
-Route::get('/flightcreate', [Flightscontroller::class, 'flightcreate'])->name('flightcreate');
+    Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
-Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
+    Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
 
-Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+    Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
+    Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
 
-Route::get('/airport', [AirportController::class, 'airportindex'])->name('airports');
-
-Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
-Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
-
+    Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
+});
 // ======================= End Airport ====================== //
 
 // ======================= Start Customer ====================== //
