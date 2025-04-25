@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Middleware\Authenticate;
 use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
@@ -27,8 +26,6 @@ use App\Http\Controllers\CourierRouteController;
 use App\Http\Controllers\InvoiceController;
 
 // ======================= Start Authentication ====================== //
-
-
 
 Route::get('/', function () {
     return view('real-homepage');
@@ -60,6 +57,23 @@ Route::get("/logout", fn() =>
 Route::middleware("auth")->group(function () {
     Route::get('/profile', [AuthController::class, 'showCustomers'])->name('profile');
 });
+
+// Email Verification Routes
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // ======================= End Authentication ====================== //
 
@@ -257,6 +271,21 @@ Route::middleware("auth")->group(function () {
 
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
+
+    Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
+        ->name('packages.bulk-order');
+        
+    Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
+        ->name('packages.bulk-order.store');
+    
+    Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
+        ->name('packages.bulk-details');
+
+    Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
+        ->name('packages.company-dashboard');
+        
+    Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
+        ->name('packages.complete-bulk-payment');
 });
 
 // Invoices
@@ -292,6 +321,10 @@ Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistri
 Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
     ->middleware('auth')
     ->name('packagepayment');
+
+Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
+    ->middleware('auth')
+    ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
 
