@@ -65,6 +65,9 @@
                         <x-dropdown-link href="{{ route('profile') }}">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+                        <x-dropdown-link href="{{route('packages.mypackages')}}">
+                            {{ __('My Packages') }}
+                        </x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('auth.logout') }}">
