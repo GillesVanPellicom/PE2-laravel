@@ -12,23 +12,30 @@
 
                 <!-- Navigation Links -->
                 <div id="nav" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    @role('pickup')
+                    @role('pickup|admin')
                         <x-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
                             {{ __('Pick Up Point') }}
                         </x-nav-link>
                     @endrole
-                    <x-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
-                        {{ __('Courier') }}
-                    </x-nav-link>
+                    @role('courier|admin')
+                        <x-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
+                            {{ __('Courier') }}
+                        </x-nav-link>
+                    @endrole
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                         {{ __('Send Package') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
-                        {{ __('Employees') }}
-                    </x-nav-link>
+                    @role('HRManager|HR|admin')
+                        <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
+                            {{ __('Employees') }}
+                        </x-nav-link>
+                    @endrole
+                    @role('airport|admin')
                     <x-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
                         {{ __('Airport') }}
                     </x-nav-link>
+                    @endrole
+
                 </div>
             </div>
 
