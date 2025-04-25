@@ -46,6 +46,7 @@ class Package extends Model {
     'lastName',
     'receiverEmail',
     'receiver_phone_number',
+    'weight',
     'weight_id',
     'delivery_method_id',
     'dimension',
@@ -584,7 +585,14 @@ class Package extends Model {
     throw new RouterException('All timestamps are already set for the current movement.');
   }
 
-  public function undoMove(MoveOperationType $operation) {
+  /**
+   * @throws RouterException
+   * @throws InvalidRouterArgumentException
+   * @throws NodeNotFoundException
+   * @throws InvalidCoordinateException
+   * @throws NoPathFoundException
+   */
+  public function undoMove(MoveOperationType $operation): array {
     $timestamps = [
       'arrival_time' => MoveOperationType::OUT,
       'check_in_time' => MoveOperationType::IN,
