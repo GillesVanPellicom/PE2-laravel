@@ -42,6 +42,10 @@ class RolesAndPermissionsSeeder extends Seeder
         'pickup.view',
         'pickup.edit',
         /* END Pickup */
+
+        /*START DC*/
+        'assign.courier',
+        /*END DC*/
     ];
 
 
@@ -70,8 +74,11 @@ class RolesAndPermissionsSeeder extends Seeder
         /* END Pickup */
 
         // START API
-        "api" => ["token.create"]
+        "api" => ["token.create"],
         //END API
+        //Distribution Center
+        "DCManager" => ["assign.courier"],
+        //END
     ];
 
 

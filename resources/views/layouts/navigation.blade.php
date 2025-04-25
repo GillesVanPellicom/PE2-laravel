@@ -38,7 +38,11 @@
                         {{ __('Airport') }}
                     </x-nav-link>
                     @endrole
-
+                    @role('DCManager|admin')
+                    <x-nav-link :href="route('dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
+                        {{ __('Dispatcher') }}
+                    </x-nav-link>
+                    @endrole
                 </div>
             </div>
 

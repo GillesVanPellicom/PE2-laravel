@@ -1,5 +1,6 @@
 <?php
 
+
 use App\Http\Middleware\Authenticate;
 use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
@@ -71,7 +72,7 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
-    
+
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
@@ -274,16 +275,16 @@ Route::middleware("auth")->group(function () {
 
     Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
         ->name('packages.bulk-order');
-        
+
     Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
         ->name('packages.bulk-order.store');
-    
+
     Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
         ->name('packages.bulk-details');
 
     Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
         ->name('packages.company-dashboard');
-        
+
     Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
         ->name('packages.complete-bulk-payment');
 });
@@ -303,10 +304,15 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 
 use App\Http\Controllers\RouteCreatorController;
 
+Route::middleware(['role:DCManager'])->group(function () {
+    Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
-Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+    Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
 
-Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
+    Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
+});
+
+
 
 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
 Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
