@@ -110,24 +110,29 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @role('pickup')
-                <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                    {{ __('Pick Up Point') }}
-                </x-responsive-nav-link>
+            @role('pickup|admin')
+            <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                {{ __('Pick Up Point') }}
+            </x-responsive-nav-link>
             @endrole
-
+            @role('courier|admin')
             <x-responsive-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
                 {{ __('Courier') }}
             </x-responsive-nav-link>
+            @endrole
             <x-responsive-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                 {{ __('Send Package') }}
             </x-responsive-nav-link>
+            @role('HRManager|HR|admin')
             <x-responsive-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
                 {{ __('Employees') }}
             </x-responsive-nav-link>
+            @endrole
+            @role('airport|admin')
             <x-responsive-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
                 {{ __('Airport') }}
             </x-responsive-nav-link>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->
