@@ -11,7 +11,6 @@ return new class extends Migration {
   public function up(): void {
     Schema::create('locations', function (Blueprint $table) {
       $table->id();
-      $table->string('infrastructure_id')->nullable()->unique()->default(null);
       $table->string('description');
       $table->enum('location_type', ['ADDRESS', 'PICKUP_POINT', 'DROPOFF_POINT', 'OFFICE']);
       $table->foreignId('addresses_id')->constrained('addresses');

@@ -25,6 +25,9 @@
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                         {{ __('Send Package') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
+                        {{ __('Company Dashboard') }}
+                    </x-nav-link>
                     @role('HRManager|HR|admin')
                         <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
                             {{ __('Employees') }}

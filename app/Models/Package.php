@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\ConsoleHelper;
 use App\Models\Address;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
@@ -45,6 +46,7 @@ class Package extends Model {
     'lastName',
     'receiverEmail',
     'receiver_phone_number',
+    'weight',
     'weight_id',
     'delivery_method_id',
     'dimension',
@@ -464,10 +466,13 @@ class Package extends Model {
     /** @var Router $router */
     $router = App::make(Router::class);
 
-    // Get the path from origin to destination
+    $o = $this->getAttribute('origin_location_id');
+    $d = $this->getAttribute('destination_location_id');
+
+    // Get the path from origin to destination, cast to Location if appropriate;
     $path = $router->getPath(
-      $this->getAttribute('originLocation'),
-      $this->getAttribute('destinationLocation')
+      is_numeric($o) ? Location::find($o) : $o,
+      is_numeric($d) ? Location::find($d) : $d,
     );
 
     // Commit the path as movements
@@ -580,7 +585,14 @@ class Package extends Model {
     throw new RouterException('All timestamps are already set for the current movement.');
   }
 
-  public function undoMove(MoveOperationType $operation){
+  /**
+   * @throws RouterException
+   * @throws InvalidRouterArgumentException
+   * @throws NodeNotFoundException
+   * @throws InvalidCoordinateException
+   * @throws NoPathFoundException
+   */
+  public function undoMove(MoveOperationType $operation): array {
     $timestamps = [
       'arrival_time' => MoveOperationType::OUT,
       'check_in_time' => MoveOperationType::IN,
@@ -601,24 +613,39 @@ class Package extends Model {
       return [false, "This package does not have a valid package movement."];
     }
 
-    if ($currentMovement->arrival_time == null){
-      if ($operation == MoveOperationType::OUT) return [false, "Move operations do not match."];
+    if ($currentMovement->arrival_time == null) {
+      if ($operation == MoveOperationType::OUT) {
+        return [false, "Move operations do not match."];
+      }
       $previousMovement = $this->movements()->where("next_movement", $currentMovement->id)->first();
-      if (!$previousMovement)
+      if (!$previousMovement) {
         return [false, "No previous movement found, cannot undo action."];
+      }
       $previousMovement->departure_time = null;
       $previousMovement->save();
       $this->current_location_id = $previousMovement->current_node_id;
       $this->save();
-    } else if ($currentMovement->check_in_time == null){
-      if ($operation == MoveOperationType::IN) return [false, "Move operations do not match."];
-      $currentMovement->arrival_time = null;
-    } else if ($currentMovement->check_out_time == null) {
-      if ($operation == MoveOperationType::OUT) return [false, "Move operations do not match."];
-      $currentMovement->check_in_time = null;
-    }else if ($currentMovement->departure_time == null) {
-      if ($operation == MoveOperationType::IN) return [false, "Move operations do not match."];
-      $currentMovement->check_out_time = null;
+    } else {
+      if ($currentMovement->check_in_time == null) {
+        if ($operation == MoveOperationType::IN) {
+          return [false, "Move operations do not match."];
+        }
+        $currentMovement->arrival_time = null;
+      } else {
+        if ($currentMovement->check_out_time == null) {
+          if ($operation == MoveOperationType::OUT) {
+            return [false, "Move operations do not match."];
+          }
+          $currentMovement->check_in_time = null;
+        } else {
+          if ($currentMovement->departure_time == null) {
+            if ($operation == MoveOperationType::IN) {
+              return [false, "Move operations do not match."];
+            }
+            $currentMovement->check_out_time = null;
+          }
+        }
+      }
     }
     $currentMovement->save();
     return [true, "Action succesfully undone."];
