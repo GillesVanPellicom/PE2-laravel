@@ -871,6 +871,7 @@ class PackageController extends Controller {
 
     return view('packagepayment',compact('package'));
 }
+
 public function bulkOrder()
 {
     $weightClasses = WeightClass::where('is_active', true)->get();
