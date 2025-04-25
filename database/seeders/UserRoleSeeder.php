@@ -29,5 +29,13 @@ class UserRoleSeeder extends Seeder
         $pickupUser->assignRole('pickup');
         $role = Role::where('name','pickup')->first();
         $pickupUser->syncPermissions($role->permissions);
+
+        $courierUser = User::find(6); // Change to the correct user ID
+        $courierUser->assignRole('courier');
+        $role = Role::where('name','courier')->first();
+        $courierUser->syncPermissions($role->permissions);
+        $courierUser->assignRole('scan');
+        $role = Role::where('name','scan')->first();
+        $courierUser->syncPermissions($role->permissions);
     }
 }
