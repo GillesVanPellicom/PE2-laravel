@@ -13,6 +13,12 @@
     const notificationBadge = document.getElementById('notificationBadge');
     const saveRequestsBtn = document.getElementById('saveRequests');
     const calendarEl = document.getElementById('calendar');
+    const sickDayRangePicker = document.getElementById('sickDayRangePicker');
+    const sickStartDate = document.getElementById('sickStartDate');
+    const sickEndDate = document.getElementById('sickEndDate');
+    const applySickDaysBtn = document.getElementById('applySickDaysBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const eventModal = document.getElementById('eventModal');
 
     if (!calendarEl) {
         console.error("Calendar element not found!");
@@ -80,103 +86,120 @@
     }
 
     let selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
-let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
-let sickDaysTaken = selectedSickDays.size;
-let currentDate = null;
+    let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
+    let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+    let sickDaysTaken = selectedSickDays.size;
+    let currentDate = null;
 
-function updateCounters() {
-    document.getElementById('remainingHolidays').textContent = remainingHolidays;
-    document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
-}
+    function updateCounters() {
+        document.getElementById('remainingHolidays').textContent = remainingHolidays;
+        document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
+    }
 
-function addEvent(date, type, period = "Full Day") {
-    let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
-    calendar.addEvent({
-        id: date,
-        title: title,
-        start: date,
-        allDay: true,
-        backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
-        borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
-        textColor: 'white'
-    });
-}
+    function addEvent(date, type, period = "Full Day") {
+        let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
+        calendar.addEvent({
+            id: date,
+            title: title,
+            start: date,
+            allDay: true,
+            backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+            borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
+            textColor: 'white'
+        });
+    }
 
-function removeEvent(date) {
-    let event = calendar.getEventById(date);
-    if (event) event.remove();
-}
+    function removeEvent(date) {
+        let event = calendar.getEventById(date);
+        if (event) event.remove();
+    }
 
-function toggleEvent(date) {
-    let dateObj = new Date(date);
-    let today = new Date();
-    today.setHours(0, 0, 0, 0);
+    function toggleEvent(date) {
+        let dateObj = new Date(date);
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    if (dateObj < today) return alert('You cannot select a past date.');
-    if (dateObj.getDay() === 0 || dateObj.getDay() === 6) return alert('You cannot select weekends.');
+        if (dateObj < today) return alert('You cannot select a past date.');
+        if (dateObj.getDay() === 0 || dateObj.getDay() === 6) return alert('You cannot select weekends.');
 
-    currentDate = date;
+        currentDate = date;
 
-    // Show the modal
-    document.getElementById('eventModal').classList.remove('hidden');
+        // Show the modal
+        document.getElementById('eventModal').classList.remove('hidden');
 
-    // Holiday button logic
-    document.getElementById('holidayBtn').onclick = function() {
-        document.getElementById('holidayOptions').classList.remove('hidden');
-        document.getElementById('sickDayBtn').disabled = true; // Disable sick day selection
-    };
+        // Holiday button logic
+        document.getElementById('holidayBtn').onclick = function () {
+            document.getElementById('holidayOptions').classList.remove('hidden');
+            document.getElementById('sickDayBtn').disabled = true; // Disable sick day selection
+        };
 
-    // Sick day button logic
-    document.getElementById('sickDayBtn').onclick = function() {
-        if (selectedSickDays.has(date)) {
-            selectedSickDays.delete(date);
-            removeEvent(date);
-            sickDaysTaken--;
-        } else {
-            selectedSickDays.add(date);
-            addEvent(date, "sick");
-            sickDaysTaken++;
-        }
-        closeModal();
-    };
+        // Sick day button logic
+        document.getElementById('sickDayBtn').onclick = function () {
+            document.getElementById('sickDayRangePicker').classList.remove('hidden'); // Show the date range picker
+        };
 
-    // Holiday option buttons
-    document.getElementById('wholeDayBtn').onclick = function() {
-        selectedHolidays[date] = 'Whole Day';
-        addEvent(date, "holiday", "Whole Day");
-        remainingHolidays--;
-        closeModal();
-    };
+        // Handle sick day range submission
+        document.getElementById('applySickDaysBtn').onclick = function () {
+            const startDate = document.getElementById('sickStartDate').value;
+            const endDate = document.getElementById('sickEndDate').value;
 
-    document.getElementById('firstHalfBtn').onclick = function() {
-        selectedHolidays[date] = 'First Half';
-        addEvent(date, "holiday", "First Half");
-        remainingHolidays -= 0.5;
-        closeModal();
-    };
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates for the sick leave.');
+                return;
+            }
 
-    document.getElementById('secondHalfBtn').onclick = function() {
-        selectedHolidays[date] = 'Second Half';
-        addEvent(date, "holiday", "Second Half");
-        remainingHolidays -= 0.5;
-        closeModal();
-    };
+            let current = new Date(startDate);
+            const end = new Date(endDate);
 
-    // Close the modal
-    document.getElementById('closeModalBtn').onclick = closeModal;
+            while (current <= end) {
+                const formattedDate = current.toISOString().split('T')[0];
+                selectedSickDays.add(formattedDate);
+                addEvent(formattedDate, "sick");
+                current.setDate(current.getDate() + 1);
+            }
 
-    updateCounters();
-    localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
-    localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
-}
+            sickDaysTaken = selectedSickDays.size;
+            closeModal();
+        };
 
-function closeModal() {
-    document.getElementById('eventModal').classList.add('hidden');
-    document.getElementById('holidayOptions').classList.add('hidden'); // Hide holiday options again
-    document.getElementById('sickDayBtn').disabled = false; // Re-enable sick day button
-}
+        // Holiday option buttons
+        document.getElementById('wholeDayBtn').onclick = function () {
+            selectedHolidays[date] = 'Whole Day';
+            addEvent(date, "holiday", "Whole Day");
+            remainingHolidays--;
+            closeModal();
+        };
 
+        document.getElementById('firstHalfBtn').onclick = function () {
+            selectedHolidays[date] = 'First Half';
+            addEvent(date, "holiday", "First Half");
+            remainingHolidays -= 0.5;
+            closeModal();
+        };
+
+        document.getElementById('secondHalfBtn').onclick = function () {
+            selectedHolidays[date] = 'Second Half';
+            addEvent(date, "holiday", "Second Half");
+            remainingHolidays -= 0.5;
+            closeModal();
+        };
+
+        // Close the modal
+        document.getElementById('closeModalBtn').onclick = closeModal;
+
+        updateCounters();
+        localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
+        localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
+    }
+
+    function closeModal() {
+        document.getElementById('eventModal').classList.add('hidden');
+        document.getElementById('holidayOptions').classList.add('hidden'); // Hide holiday options again
+        document.getElementById('sickDayRangePicker').classList.add('hidden'); // Hide sick day range picker
+        document.getElementById('sickDayBtn').disabled = false; // Re-enable sick day button
+        sickStartDate.value = '';
+        sickEndDate.value = '';
+    }
 
     // Fetch vacations and add them to the calendar
     function fetchVacations() {
@@ -230,6 +253,10 @@ function closeModal() {
     updateCounters();
 
     saveRequestsBtn.addEventListener('click', function () {
+        const sickDaysArray = [...selectedSickDays].map(date => {
+            return { start_date: date, end_date: date }; // Format sick days as date ranges
+        });
+
         fetch('/save-vacation', {
             method: 'POST',
             headers: {
@@ -238,7 +265,7 @@ function closeModal() {
             },
             body: JSON.stringify({
                 holidays: selectedHolidays,
-                sickDays: [...selectedSickDays] // Include sick days in the request
+                sickDays: sickDaysArray // Send sick days as date ranges
             })
         })
         .then(response => response.json())
@@ -360,6 +387,13 @@ function toggleNotifications() {
       <button id="secondHalfBtn" class="w-full bg-yellow-500 text-white py-2 px-4 rounded">Second Half</button>
     </div>
 
+    <div id="sickDayRangePicker" class="mt-4 hidden">
+      <label class="block mb-2">Select Sick Leave Date Range:</label>
+      <input type="date" id="sickStartDate" class="block w-full mb-2 border rounded px-2 py-1">
+      <input type="date" id="sickEndDate" class="block w-full mb-2 border rounded px-2 py-1">
+      <button id="applySickDaysBtn" class="w-full bg-blue-500 text-white py-2 px-4 rounded">Apply Sick Days</button>
+    </div>
+
     <button id="closeModalBtn" class="mt-4 bg-gray-300 py-2 px-4 rounded w-full">Close</button>
   </div>
 </div>
@@ -369,69 +403,5 @@ function toggleNotifications() {
 <!-- FullCalendar JS -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const dayTypeModal = document.getElementById('dayTypeModal');
-        const dayTypeSelect = document.getElementById('dayTypeSelect');
-        const holidayOptions = document.getElementById('holidayOptions');
-        const holidayDurationSelect = document.getElementById('holidayDurationSelect');
-        const cancelDayType = document.getElementById('cancelDayType');
-        const dayTypeForm = document.getElementById('dayTypeForm');
-
-        let selectedDate = null;
-
-        // Show modal when a date is clicked
-        calendar.on('dateClick', function (info) {
-            selectedDate = info.dateStr;
-            dayTypeModal.classList.remove('hidden');
-        });
-
-        // Toggle holiday options based on day type
-        dayTypeSelect.addEventListener('change', function () {
-            if (this.value === 'holiday') {
-                holidayOptions.classList.remove('hidden');
-            } else {
-                holidayOptions.classList.add('hidden');
-            }
-        });
-
-        // Cancel button to close the modal
-        cancelDayType.addEventListener('click', function () {
-            dayTypeModal.classList.add('hidden');
-        });
-
-        // Handle form submission
-        dayTypeForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const dayType = dayTypeSelect.value;
-            const holidayDuration = holidayDurationSelect.value;
-
-            if (dayType === 'holiday') {
-                addEvent(selectedDate, 'holiday', holidayDuration);
-            } else if (dayType === 'sick') {
-                addEvent(selectedDate, 'sick');
-            }
-
-            // Close the modal
-            dayTypeModal.classList.add('hidden');
-        });
-
-        // Add event to the calendar
-        function addEvent(date, type, period = "Full Day") {
-            let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
-            calendar.addEvent({
-                id: date,
-                title: title,
-                start: date,
-                allDay: true,
-                backgroundColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
-                borderColor: type === "holiday" ? '#ff7f7f' : '#7fafff',
-                textColor: 'white'
-            });
-        }
-    });
-</script>
     </x-sidebar>
 </x-app-layout>
