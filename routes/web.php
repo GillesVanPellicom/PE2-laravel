@@ -31,7 +31,7 @@ use App\Http\Controllers\InvoiceController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('real-homepage');
 })->name('welcome');
 
 // Login
