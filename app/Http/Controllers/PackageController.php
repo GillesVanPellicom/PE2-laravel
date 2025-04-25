@@ -460,7 +460,7 @@ class PackageController extends Controller
                 $package = Package::create($packageData);
 
             } catch (\Exception $e) {
-                return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
+                return back()->withErrors(['error' => 'Error destination_location_id address: ' . $e->getMessage()]);
             }
         } else {
             $destinationLocation = Location::findOrFail($validatedData['destination_location_id']);
