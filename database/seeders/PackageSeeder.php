@@ -18,8 +18,8 @@ class PackageSeeder extends Seeder
         DB::table('packages')->insert([
             'reference' => 'REF125496',
             'user_id' => 1,
-            'origin_location_id' => 6,
-            'destination_location_id' => 7,
+            'origin_location_id' => '6',
+            'destination_location_id' => '@PIP_0001',
             'addresses_id' => 4,
             'status' => 'Pending',
             'weight_id' => 1,
