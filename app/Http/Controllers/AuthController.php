@@ -11,6 +11,7 @@ use App\Models\Address;
 use App\Models\City;
 use App\Models\Country;
 use carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -95,7 +96,6 @@ class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
             if ($employee = Employee::where('user_id', $user->id)->first()) {
-
                 $active_contract = EmployeeContract::where('employee_id', $employee->id)
                     ->where(function ($query) {
                         $query->where('end_date', '>', Carbon::now())
@@ -104,22 +104,26 @@ class AuthController extends Controller
                     ->first();
 
                 if (!$active_contract) {
+                    Log::channel('login')->warning('Unsuccessful login attempt: Contract ended for user ID ' . $user->id);
                     return back()->withErrors([
                         'email' => 'Your contract has ended.',
                     ]);
                 } else {
                     if (Auth::attempt($credentials)) {
                         $request->session()->regenerate();
+                        Log::channel('login')->info('Successful login: User ID ' . $user->id);
                         return redirect()->route($route);
                     }
                 }
             } else {
                 if (Auth::attempt($credentials)) {
                     $request->session()->regenerate();
+                    Log::channel('login')->info('Successful login: User ID ' . $user->id);
                     return redirect()->route($route);
                 }
             }
 
+            Log::channel('login')->warning('Unsuccessful login attempt: Invalid credentials for email ' . $credentials['email']);
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ]);
@@ -178,6 +182,12 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = Auth::user();
+
+        if ($user) {
+            Log::channel('login')->info('User signed out: User ID ' . $user->id);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

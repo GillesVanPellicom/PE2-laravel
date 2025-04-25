@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Middleware\Authenticate;
 use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
@@ -28,10 +27,8 @@ use App\Http\Controllers\InvoiceController;
 
 // ======================= Start Authentication ====================== //
 
-
-
 Route::get('/', function () {
-    return view('welcome');
+    return view('real-homepage');
 })->name('welcome');
 
 // Login
@@ -60,6 +57,23 @@ Route::get("/logout", fn() =>
 Route::middleware("auth")->group(function () {
     Route::get('/profile', [AuthController::class, 'showCustomers'])->name('profile');
 });
+
+// Email Verification Routes
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // ======================= End Authentication ====================== //
 
@@ -165,6 +179,8 @@ Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(functi
     Route::get('/contracts', [EmployeeController::class, 'contracts'])->name('employees.contracts');
     Route::get('/teams', [EmployeeController::class, 'teams'])->name('employees.teams');
     Route::get('/functions', [EmployeeController::class, 'functions'])->name('employees.functions');
+    Route::get('/search', [EmployeeController::class, 'search'])->name('employees.search');
+    Route::get('/searchContract', [EmployeeController::class, 'searchContract'])->name('employees.searchContract');
 });
 
 Route::middleware(['permission:HR.create'])->prefix('employees')->group(function () {
@@ -182,6 +198,9 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
 });
 
+Route::middleware(['permission:HR.create'])->group(function () {
+    Route::post('/contracts/{id}', [EmployeeController::class, 'updateEndTime'])->name('contracts.updateEndTime');
+});
 
 Route::get('/get-availability-data', [EmployeeController::class, 'getAvailabilityData'])->name('availability.data');
 
@@ -195,15 +214,16 @@ Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContra
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
-Route::middleware(['auth','role:pickup'])->group(function () {
+Route::middleware(['auth','permission:pickup.view'])->group(function () {
     Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
     Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
     Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
     Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
     Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+
 });
-
-
+Route::get('testDeliveryAttemptOnWrongLocation/{id}', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
+Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
 // ======================= End Pick Up Point ====================== //
 
 // ======================= Start Airport ====================== //
@@ -251,6 +271,21 @@ Route::middleware("auth")->group(function () {
 
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
+
+    Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
+        ->name('packages.bulk-order');
+        
+    Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
+        ->name('packages.bulk-order.store');
+    
+    Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
+        ->name('packages.bulk-details');
+
+    Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
+        ->name('packages.company-dashboard');
+        
+    Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
+        ->name('packages.complete-bulk-payment');
 });
 
 // Invoices
@@ -286,6 +321,10 @@ Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistri
 Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
     ->middleware('auth')
     ->name('packagepayment');
+
+Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
+    ->middleware('auth')
+    ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
 

@@ -21,52 +21,57 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 
-class PackageController extends Controller
-{
+class PackageController extends Controller {
 
-    public function index()
-    {
+    public function index () {
         if (request()->has('search')) {
-            $packages = Package::where('reference', 'like', '%' . request('search','') . '%')
-                ->orWhere('name', 'like', '%' . request('search','') . '%')
-                ->orWhere('receiverEmail', 'like', '%' . request('search','') . '%')
-                ->orWhere('receiver_phone_number', 'like', '%' . request('search','') . '%')
+            $packages = Package::where('reference', 'like', '%' . request('search', '') . '%')
+                ->orWhere('name', 'like', '%' . request('search', '') . '%')
+                ->orWhere('receiverEmail', 'like', '%' . request('search', '') . '%')
+                ->orWhere('receiver_phone_number', 'like', '%' . request('search', '') . '%')
                 ->paginate(10)->withQueryString();
-        } else {
+        }
+        else {
             $packages = Package::paginate(10)->withQueryString();
         }
         return view('pickup.dashboard', compact('packages'));
     }
+
     public function show ($id) {
         try {
             $id = $id !== ' ' ? $id : request()->get('id');
             $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
             return view('pickup.packageInfo', compact('package'));
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        }
+        catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             //return response()->view('errors.pickup.404', ['message' => 'The entered package not found'], 404);
-            return redirect()->route('pickup.dashboard')->with('package-not-found', 'The package "'.$id.'" does not exist');
-        } catch (\Exception $e) {
-            return redirect()->route('pickup.dashboard')->with('error' , 'An unexpected error occurred, retry again or contact your administrator');
+            return redirect()->route('pickup.dashboard')->with('package-not-found', 'The package "' . $id . '" does not exist');
+        }
+        catch (\Exception $e) {
+            return redirect()->route('pickup.dashboard')->with('error', 'An unexpected error occurred, retry again or contact your administrator');
         }
     }
+
     public function setStatusPackage ($id) {
         $package = Package::findOrFail($id);
-        $statusToSet = request()->get('status')?? '';
+        $statusToSet = request()->get('status') ?? '';
         $package->update(['status' => $statusToSet]);
-        return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: '.$package->reference.' was successfully updated to '.$statusToSet);
+        return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
     }
-    public function showPackagesToReturn () {
-    $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
-        ->where('status', '!=', 'Returned')
-        ->where('status', '!=', 'Cancelled')
-        ->whereHas('deliveryMethod', function ($query) {
-            $query->where('code', 'PICKUP_POINT');
-        })
-        ->where('updated_at', '<', Carbon::now()->subDays(7))
-        ->paginate(10);
 
-    return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
+    public function showPackagesToReturn () {
+        $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
+            ->where('status', '!=', 'Returned')
+            ->where('status', '!=', 'Cancelled')
+            ->whereHas('deliveryMethod', function ($query) {
+                $query->where('code', 'PICKUP_POINT');
+            })
+            ->where('updated_at', '<', Carbon::now()->subDays(7))
+            ->paginate(10);
+
+        return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
     }
+
     public function showReceivingPackages () {
         $today = Carbon::today();
 
@@ -147,8 +152,8 @@ class PackageController extends Controller
             'destinationLocation.address.city.country',
             'address.city.country'
         ])
-        ->where('id', $packageID)
-        ->first();
+            ->where('id', $packageID)
+            ->first();
 
         if (!$package) {
             abort(404, 'Package not found');
@@ -166,9 +171,8 @@ class PackageController extends Controller
 
         // Calculate estimated delivery
 
-            $deliveryEstimate = $this->calculateEstimatedDelivery($originAddress, $destinationAddress);
-            $package->delivery_estimate = $deliveryEstimate;
-
+        $deliveryEstimate = $this->calculateEstimatedDelivery($originAddress, $destinationAddress);
+        $package->delivery_estimate = $deliveryEstimate;
 
         $qrCode = base64_encode(QrCode::format('png')
             ->size(150)
@@ -181,8 +185,7 @@ class PackageController extends Controller
         ]);
     }
 
-    public function create()
-    {
+    public function create () {
         $weightClasses = WeightClass::where('is_active', true)->get();
         $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
         $locations = Location::all();
@@ -190,8 +193,7 @@ class PackageController extends Controller
         return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations'));
     }
 
-    public function updatePrices(Request $request)
-    {
+    public function updatePrices (Request $request) {
         Log::info('Update Prices Request:', $request->all());
 
         $weightId = $request->input('weight_id');
@@ -459,10 +461,12 @@ class PackageController extends Controller
                 // Create the package
                 $package = Package::create($packageData);
 
-            } catch (\Exception $e) {
-                return back()->withErrors(['error' => 'Error destination_location_id address: ' . $e->getMessage()]);
             }
-        } else {
+            catch (\Exception $e) {
+                return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
+            }
+        }
+        else {
             $destinationLocation = Location::findOrFail($validatedData['destination_location_id']);
             $packageData = collect($validatedData)
                 ->merge([
