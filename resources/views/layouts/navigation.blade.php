@@ -143,6 +143,11 @@
                 {{ __('Airport') }}
             </x-responsive-nav-link>
             @endrole
+            @role('DCManager|admin')
+            <x-responsive-nav-link :href="route('dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
+                {{ __('Dispatcher') }}
+            </x-responsive-nav-link>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->
