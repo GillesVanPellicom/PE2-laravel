@@ -275,8 +275,11 @@ Route::middleware("auth")->group(function () {
     Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
         ->name('packages.bulk-details');
 
-     Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
+    Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
         ->name('packages.company-dashboard');
+        
+    Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
+        ->name('packages.complete-bulk-payment');
 });
 
 // Invoices

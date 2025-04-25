@@ -1054,7 +1054,20 @@ public function bulkPackageDetails($ids)
         ->with('success', 'Payment completed successfully.');
 }
 
-public function bulkPackagePayment($packageID) {
+public function bulkPackagePayment($packageID)
+{
+    $bulkOrderPackageIds = session('bulk_order_package_ids', []);
+
+    if (empty($bulkOrderPackageIds)) {
+        return back()->withErrors(['error' => 'No packages found for the bulk order.']);
+    }
+
+    // Update all packages in the bulk order to "paid"
+    Package::whereIn('id', $bulkOrderPackageIds)
+        ->where('user_id', Auth::user()->id)
+        ->update(['paid' => true]);
+
+    // Fetch the first package for display purposes
     $package = Package::with(['user'])
         ->where('user_id', Auth::user()->id)
         ->where('id', $packageID)
@@ -1064,18 +1077,10 @@ public function bulkPackagePayment($packageID) {
         return back()->withErrors(['error' => 'Package not found.']);
     }
 
-    $package->paid = true;
-    $package->save();
-
-    $bulkOrderPackageIds = session('bulk_order_package_ids', []);
-    if (empty($bulkOrderPackageIds)) {
-        $bulkOrderPackageIds = [$packageID];
-        session(['bulk_order_package_ids' => $bulkOrderPackageIds]);
-    }
-
     return view('packagepayment', compact('package'))
         ->with('success', 'Payment completed successfully.');
 }
+
 public function companyDashboard()
 {
     $userId = Auth::id();
