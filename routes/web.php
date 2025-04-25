@@ -304,7 +304,7 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 
 use App\Http\Controllers\RouteCreatorController;
 
-Route::middleware(['role:DCManager'])->group(function () {
+Route::middleware(['permission:assign.courier'])->group(function () {
     Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
     Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
