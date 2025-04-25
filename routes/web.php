@@ -28,7 +28,7 @@ use App\Http\Controllers\InvoiceController;
 // ======================= Start Authentication ====================== //
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('real-homepage');
 })->name('welcome');
 
 // Login
@@ -179,6 +179,8 @@ Route::middleware(['permission:HR.checkall'])->prefix('employees')->group(functi
     Route::get('/contracts', [EmployeeController::class, 'contracts'])->name('employees.contracts');
     Route::get('/teams', [EmployeeController::class, 'teams'])->name('employees.teams');
     Route::get('/functions', [EmployeeController::class, 'functions'])->name('employees.functions');
+    Route::get('/search', [EmployeeController::class, 'search'])->name('employees.search');
+    Route::get('/searchContract', [EmployeeController::class, 'searchContract'])->name('employees.searchContract');
 });
 
 Route::middleware(['permission:HR.create'])->prefix('employees')->group(function () {
@@ -196,6 +198,9 @@ Route::middleware(['permission:HR.create'])->prefix('employees')->group(function
     Route::post('/functions', [EmployeeController::class, 'store_function'])->name('employees.store_function');
 });
 
+Route::middleware(['permission:HR.create'])->group(function () {
+    Route::post('/contracts/{id}', [EmployeeController::class, 'updateEndTime'])->name('contracts.updateEndTime');
+});
 
 Route::get('/get-availability-data', [EmployeeController::class, 'getAvailabilityData'])->name('availability.data');
 
@@ -209,15 +214,16 @@ Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContra
 // ======================= End Employee ====================== //
 
 // ======================= Start Pick Up Point ====================== //
-Route::middleware(['auth','role:pickup'])->group(function () {
+Route::middleware(['auth','permission:pickup.view'])->group(function () {
     Route::get('/pickup', [PackageController::class,'index'])->name('pickup.dashboard');
     Route::get('/pickup/package/{id}', [PackageController::class,'show'])->name('pickup.package.id');
     Route::patch('/pickup/package/{id}', [PackageController::class,'setStatusPackage'])->name('pickup.dashboard.setStatusPackage');
     Route::get('pickup/dashboard/receiving-packages', [PackageController::class,'showReceivingPackages'])->name('pickup.dashboard.receiving-packages');
     Route::get('pickup/dashboard/packages-to-return', [PackageController::class,'showPackagesToReturn'])->name('pickup.dashboard.packages-to-return');
+
 });
-
-
+Route::get('testDeliveryAttemptOnWrongLocation/{id}', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
+Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
 // ======================= End Pick Up Point ====================== //
 
 // ======================= Start Airport ====================== //
