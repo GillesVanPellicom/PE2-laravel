@@ -129,35 +129,48 @@ class AuthController extends Controller
         ]);
     }
 
-
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
+        // Determine validation rules based on account type
+        $rules = [
             'email' => 'required|unique:users,email',
             'password' => 'required|min:8',
             'confirm-password' => 'required|same:password',
             'phone_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|unique:users,phone_number',
-            'birth_date' => 'required|date|before:' . Carbon::now()->subYears(18)->format('Y-m-d'),
             'country' => 'required|string|max:100',
             'postal_code' => 'required|integer',
             'city' => 'required|string|max:100',
             'street' => 'required|string|max:100',
             'house_number' => 'required|integer',
             'bus_number' => 'nullable|string|max:10',
-        ]);
-
+        ];
+    
+        if ($request->account_type === 'individual') {
+            $rules = array_merge($rules, [
+                'first_name' => 'required|string|max:100',
+                'last_name' => 'required|string|max:100',
+                'birth_date' => 'required|date|before:' . Carbon::now()->subYears(18)->format('Y-m-d'),
+            ]);
+        } elseif ($request->account_type === 'company') {
+            $rules = array_merge($rules, [
+                'company_name' => 'required|string|max:255',
+                'VAT_Number' => 'required|string|max:50|unique:users,VAT_Number',
+            ]);
+        }
+    
+        // Validate the request
+        $validated = $request->validate($rules);
+    
         // Create or find the country
         $country = Country::firstOrCreate(['country_name' => $validated['country']], ['country_name' => $validated['country']]);
-
+    
         // Create or find the city
         $city = City::firstOrCreate([
             'name' => $validated['city'],
             'postcode' => $validated['postal_code'],
             'country_id' => $country->id,
         ]);
-
+    
         // Create the address
         $address = Address::firstOrCreate([
             'street' => $validated['street'],
@@ -165,19 +178,33 @@ class AuthController extends Controller
             'cities_id' => $city->id,
             'bus_number' => $validated['bus_number'],
         ]);
+    
+        // Prepare user data
+        $userData = [
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'phone_number' => $validated['phone_number'],
+            'address_id' => $address->id,
+            'isCompany' => 0, // Default to 0 (individual)
+        ];
+    
+        if ($request->account_type === 'individual') {
+            $userData['first_name'] = $validated['first_name'];
+            $userData['last_name'] = $validated['last_name'];
+            $userData['birth_date'] = $validated['birth_date'];
+        } elseif ($request->account_type === 'company') {
+            $userData['company_name'] = $validated['company_name'];
+            $userData['VAT_Number'] = $validated['VAT_Number']; // Ensure VAT number is saved^
+            $userData['isCompany'] = 1;
 
-        // Create the user with the address_id
-        $userData = $request->only(['first_name', 'last_name', 'email', 'phone_number', 'birth_date']);
-        $userData['password'] = Hash::make($request->password);
-        $userData['address_id'] = $address->id;
-
+        }
+    
+        // Create the user
+        Log::info($userData);
         $user = User::create($userData);
-
-         // event(new Registered($user));
-         // Email verification has been disabled for now
-
+    
         // Redirect to the login page
-        return redirect('login');
+        return redirect('login')->with('success', 'Account created successfully. Please log in.');
     }
 
     public function logout(Request $request)
