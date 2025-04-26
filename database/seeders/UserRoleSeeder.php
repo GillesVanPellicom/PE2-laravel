@@ -37,5 +37,10 @@ class UserRoleSeeder extends Seeder
         $courierUser->assignRole('scan');
         $role = Role::where('name','scan')->first();
         $courierUser->syncPermissions($role->permissions);
+
+        $DcUser = User::find(9); // Change to the correct user ID
+        $DcUser->assignRole('DCManager');
+        $role = Role::where('name','DCManager')->first();
+        $DcUser->syncPermissions($role->permissions);
     }
 }

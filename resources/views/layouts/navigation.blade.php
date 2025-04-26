@@ -38,7 +38,11 @@
                         {{ __('Airport') }}
                     </x-nav-link>
                     @endrole
-
+                    @role('DCManager|admin')
+                    <x-nav-link :href="route('dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
+                        {{ __('Dispatcher') }}
+                    </x-nav-link>
+                    @endrole
                 </div>
             </div>
 
@@ -137,6 +141,11 @@
             @role('airport|admin')
             <x-responsive-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
                 {{ __('Airport') }}
+            </x-responsive-nav-link>
+            @endrole
+            @role('DCManager|admin')
+            <x-responsive-nav-link :href="route('dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
+                {{ __('Dispatcher') }}
             </x-responsive-nav-link>
             @endrole
         </div>
