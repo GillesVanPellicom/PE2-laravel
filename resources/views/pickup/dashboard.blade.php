@@ -12,7 +12,7 @@
 
                 // When a QR Code is scanned
                 scanner.addListener('scan', function (qrData) {
-                    window.location.href = "/pickup/package/" + qrData;  // Redirect to the package page
+                    window.location.href = "/workspace/pickup/package/" + qrData;  // Redirect to the package page
                 });
 
                 // Get Available Cameras and Start Scanner
@@ -33,11 +33,11 @@
                     e.preventDefault();
                     const idValue = document.getElementById('id').value.trim();
                     if (idValue) {
-                        window.location.href = "/pickup/package/" + idValue;
+                        window.location.href = "/workspace/pickup/package/" + idValue;
                     } else {
                         document.getElementById('errSearch').style.display = 'block';
                     }
-                    // window.location.href = "/pickup/package/" + document.getElementById('id').value;
+                    // window.location.href = "/workspace/pickup/package/" + document.getElementById('id').value;
                 });
             });
 
@@ -74,8 +74,8 @@
     <div class=" flex flex-col justify-center items-center align-middle m-auto  overflow-x-auto max-w-7xl sm:rounded-lg mx-auto sm:px-6 lg:px-8">
         <div class=" flex flex-col mt-2 justify-center items-center m-auto overflow-x-auto py-5 max-w-2xl sm:rounded-lg sm:px-1 lg:px-8">
             <div class="mt-10  w-full flex flex-row gap-4 justify-start items-start">
-                <x-nav-link class=" bg-white  rounded  py-1 px-2" :href="route('pickup.dashboard.packages-to-return')" :active="request()->routeIs('pickup.dashboard') ">Packages to return</x-nav-link>
-                <x-nav-link class=" bg-white border-gray-100 rounded  py-1 px-2" :href="route('pickup.dashboard.receiving-packages')" :active="request()->routeIs('pickup.dashboard') ">Receiving Packages</x-nav-link>
+                <x-nav-link class=" bg-white  rounded  py-1 px-2" :href="route('workspace.pickup.dashboard.packages-to-return')" :active="request()->routeIs('workspace.pickup.dashboard') ">Packages to return</x-nav-link>
+                <x-nav-link class=" bg-white border-gray-100 rounded  py-1 px-2" :href="route('workspace.pickup.dashboard.receiving-packages')" :active="request()->routeIs('workspace.pickup.dashboard') ">Receiving Packages</x-nav-link>
             </div>
 
         </div>
@@ -101,7 +101,7 @@
             <div class="border-t-2 flex flex-col w-auto flex-wrap gap-2 justify-center items-center">
                 <p class="border-t-2"></p>
                 <p>Enter manually the package id or barcode</p>
-                <form id="search-form" action="{{ route('pickup.package.id' ,["id" => request()->get('id') ?request()->get('id') : ' ']) }}" method="GET" class="flex gap-3 flex-col flex-wrap">
+                <form id="search-form" action="{{ route('workspace.pickup.package.id' ,["id" => request()->get('id') ?request()->get('id') : ' ']) }}" method="GET" class="flex gap-3 flex-col flex-wrap">
 
                     <div class="flex gap-2 flex-wrap">
                         <div class="relative max-w-xs">
@@ -127,7 +127,7 @@
         <!--table class="min-w-full table-auto bg-gray-200 shadow-xl  sm:rounded-b-lg overflow-hidden">
             <div class=" bg-gray-100 overflow-hidden shadow-lg sm:rounded-t-lg flex sm:justify-between p-3">
                 <div class="relative w-full max-w-xs">
-                    <form action="{{route('pickup.dashboard')}}" method="GET">
+                    <form action="{{route('workspace.pickup.dashboard')}}" method="GET">
                         <input name="search" value="{{request()->get('search') ? request()->get('search'): ""}}" id="search" type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
@@ -139,7 +139,7 @@
                 </div>
 
                 <div class="flex items-center justify-between gap-3">
-                    <form action="{{route('pickup.dashboard',request()->query())}}" method="get"><x-secondary-button type="submit"><x-refresh-logo ></x-refresh-logo></x-secondary-button></form>
+                    <form action="{{route('workspace.pickup.dashboard',request()->query())}}" method="get"><x-secondary-button type="submit"><x-refresh-logo ></x-refresh-logo></x-secondary-button></form>
                     <x-secondary-button><x-filter-logo></x-filter-logo></x-secondary-button>
                 </div>
             </div>
@@ -166,7 +166,7 @@
                         <td class="py-3 px-4">{{ $package->reference }}</td>
                         <td class="py-3 px-4">{{ $package->deliveryMethod->name }}</td>
                         <td class="py-3 px-4">{{ $package->status }}</td>
-                        <td class="py-3 px-4 text-blue-500 cursor-pointer"><a href="{{route('pickup.package.id',["id" => $package->id])}}" >Show</a></td>
+                        <td class="py-3 px-4 text-blue-500 cursor-pointer"><a href="{{route('workspace.pickup.package.id',["id" => $package->id])}}" >Show</a></td>
 
                     </tr>
                 @endforeach
