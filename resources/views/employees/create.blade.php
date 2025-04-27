@@ -8,7 +8,7 @@
             <h1 class="text-4xl font-bold mb-4">Create Employee</h1>
         </div>
         <div class="max-w-3xl mx-auto bg-white p-8 rounded shadow">
-            <form method="post" action="{{ route('employees.store_employee') }}">
+            <form method="post" action="{{ route('workspace.employees.store_employee') }}">
                 @csrf
                 @method('POST')
 
@@ -114,10 +114,10 @@
                         class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select a team</option>
                         @foreach($teams as $team)
-                            
+
                             <option value="{{ $team->id }}"
                                 @if(old('team') == $team->id)
-                                 selected 
+                                 selected
                                 @endif>
                                 {{ $team->department }}</option>
                         @endforeach
@@ -128,7 +128,7 @@
                 </div>
 
                 <div>
-                    <button type="submit" 
+                    <button type="submit"
                         class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
                         Create
                     </button>
