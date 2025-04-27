@@ -40,9 +40,9 @@
                     // Include the start_date in the notification message
                     li.innerHTML = `
                         ${notification.message_template?.message || 'No message'} <br>
-                        
+
                         <span class='text-sm text-gray-500'>${moment(notification.created_at).fromNow()}</span>
-                        
+
                     `;
 
                     const markAsReadButton = document.createElement('button');
@@ -64,7 +64,7 @@
     }
 
     function markAsRead(notificationId, notificationElement) {
-        fetch(`/notifications/${notificationId}/read`, {
+        fetch(`/workspace/notifications/${notificationId}/read`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -203,7 +203,7 @@
 
     // Fetch vacations and add them to the calendar
     function fetchVacations() {
-        fetch('/get-vacations')
+        fetch('/workspace/get-vacations')
             .then(response => response.json())
             .then(data => {
                 data.forEach(vacation => {
@@ -257,7 +257,7 @@
             return { start_date: date, end_date: date }; // Format sick days as date ranges
         });
 
-        fetch('/save-vacation', {
+        fetch('/workspace/save-vacation', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -297,7 +297,7 @@
 
     // Function to update vacation status
     function updateVacationStatus(vacationId, newStatus) {
-        fetch(`/vacations/${vacationId}/update-status`, {
+        fetch(`/workspace/vacations/${vacationId}/update-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -352,7 +352,7 @@ function toggleNotifications() {
         <div class="flex-1">
             <!-- Holiday Info -->
             <div id="holidayInfo" class="bg-gray-100 p-4 rounded-md flex justify-between items-center">
-                <span class="font-semibold text-lg">Remaining Holidays: <span id="remainingHolidays" class="text-blue-600 font-bold">0</span></span> 
+                <span class="font-semibold text-lg">Remaining Holidays: <span id="remainingHolidays" class="text-blue-600 font-bold">0</span></span>
                 <span class="font-semibold text-lg">Sick Days Taken: <span id="sickDaysTaken" class="text-red-600 font-bold">0</span></span>
             </div>
 
@@ -364,8 +364,8 @@ function toggleNotifications() {
     <!-- Buttons -->
     <div class="flex justify-between mt-6">
         <button id="saveRequests" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Save Requests</button>
-        <a href="/manager-calendar" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">View Requests</a>
-        
+        <a href="/workspace/manager-calendar" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">View Requests</a>
+
     </div>
 </div>
 
@@ -373,7 +373,7 @@ function toggleNotifications() {
 <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
     <h2 class="text-xl font-semibold mb-4">Choose Event Type</h2>
-    
+
     <div>
       <label class="block mb-2">Choose: Type '1' for Paid Holiday, Type '2' for Sick Day</label>
       <button id="holidayBtn" class="block w-full bg-green-500 text-white py-2 px-4 rounded mb-2">Holiday</button>
