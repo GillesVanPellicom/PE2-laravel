@@ -12,36 +12,40 @@
 
                 <!-- Navigation Links -->
                 <div id="nav" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    @role('pickup|admin')
-                        <x-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                    @if(Route::is('workspace.*'))
+                        @role('pickup|admin')
+                        <x-nav-link :href="route('workspace.pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
                             {{ __('Pick Up Point') }}
                         </x-nav-link>
-                    @endrole
-                    @role('courier|admin')
-                        <x-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
+                        @endrole
+                        @role('courier|admin')
+                        <x-nav-link :href="route('workspace.courier')" :active="request()->routeIs('courier')">
                             {{ __('Courier') }}
                         </x-nav-link>
-                    @endrole
+                        @endrole
+                        @role('HRManager|HR|admin')
+                        <x-nav-link :href="route('workspace.employees.index')" :active="request()->routeIs('employees.index')">
+                            {{ __('Employees') }}
+                        </x-nav-link>
+                        @endrole
+                        @role('airport|admin')
+                        <x-nav-link :href="route('workspace.airports')" :active="request()->routeIs('airports')">
+                            {{ __('Airport') }}
+                        </x-nav-link>
+                        @endrole
+                        @role('DCManager|admin')
+                        <x-nav-link :href="route('workspace.dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
+                            {{ __('Dispatcher') }}
+                        </x-nav-link>
+                        @endrole
+                    @endif
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                         {{ __('Send Package') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
-                        {{ __('Company Dashboard') }}
-                    </x-nav-link>
-                    @role('HRManager|HR|admin')
-                        <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
-                            {{ __('Employees') }}
+                    @role('business_client|admin')
+                        <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
+                            {{ __('Company Dashboard') }}
                         </x-nav-link>
-                    @endrole
-                    @role('airport|admin')
-                    <x-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
-                        {{ __('Airport') }}
-                    </x-nav-link>
-                    @endrole
-                    @role('DCManager|admin')
-                    <x-nav-link :href="route('dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
-                        {{ __('Dispatcher') }}
-                    </x-nav-link>
                     @endrole
                 </div>
             </div>
@@ -75,6 +79,18 @@
                         <x-dropdown-link href="{{route('packages.mypackages')}}">
                             {{ __('My Packages') }}
                         </x-dropdown-link>
+                        @auth
+                            @if((!auth()->user()->hasPermissionTo('business_client.view') && auth()->user()->getRoleNames()->isNotEmpty()) || auth()->user()->hasPermissionTo('*'))
+                                <x-dropdown-link href="{{ route('workspace.index') }}">
+                                    {{ __('Workspace') }}
+                                </x-dropdown-link>
+                            @endif
+                            @if(auth()->user()->hasPermissionTo('business_client.view') && auth()->user()->getRoleNames()->isNotEmpty())
+                                <x-dropdown-link href="{{ route('packages.company-dashboard') }}">
+                                    {{ __('Company Dashboard') }}
+                                </x-dropdown-link>
+                            @endif
+                        @endauth
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('auth.logout') }}">
@@ -120,34 +136,41 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @role('pickup|admin')
-            <x-responsive-nav-link :href="route('pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                {{ __('Pick Up Point') }}
-            </x-responsive-nav-link>
-            @endrole
-            @role('courier|admin')
-            <x-responsive-nav-link :href="route('courier')" :active="request()->routeIs('courier')">
-                {{ __('Courier') }}
-            </x-responsive-nav-link>
-            @endrole
+            @if(Route::is('workspace.*'))
+                @role('pickup|admin')
+                <x-responsive-nav-link :href="route('workspace.pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
+                    {{ __('Pick Up Point') }}
+                </x-responsive-nav-link>
+                @endrole
+                @role('courier|admin')
+                <x-responsive-nav-link :href="route('workspace.courier')" :active="request()->routeIs('courier')">
+                    {{ __('Courier') }}
+                </x-responsive-nav-link>
+                @endrole
+                @role('HRManager|HR|admin')
+                <x-responsive-nav-link :href="route('workspace.employees.index')" :active="request()->routeIs('employees.index')">
+                    {{ __('Employees') }}
+                </x-responsive-nav-link>
+                @endrole
+                @role('airport|admin')
+                <x-responsive-nav-link :href="route('workspace.airports')" :active="request()->routeIs('airports')">
+                    {{ __('Airport') }}
+                </x-responsive-nav-link>
+                @endrole
+                @role('DCManager|admin')
+                <x-responsive-nav-link :href="route('workspace.dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
+                    {{ __('Dispatcher') }}
+                </x-responsive-nav-link>
+                @endrole
+            @endif
             <x-responsive-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                 {{ __('Send Package') }}
             </x-responsive-nav-link>
-            @role('HRManager|HR|admin')
-            <x-responsive-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
-                {{ __('Employees') }}
-            </x-responsive-nav-link>
-            @endrole
-            @role('airport|admin')
-            <x-responsive-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
-                {{ __('Airport') }}
-            </x-responsive-nav-link>
-            @endrole
-            @role('DCManager|admin')
-            <x-responsive-nav-link :href="route('dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
-                {{ __('Dispatcher') }}
-            </x-responsive-nav-link>
-            @endrole
+                @role('business_client|admin')
+                <x-responsive-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
+                {{ __('Company Dashboard') }}
+                </x-responsive-nav-link>
+                @endrole
         </div>
 
         <!-- Responsive Settings Options -->
@@ -158,22 +181,30 @@
                 <div class="font-medium text-sm text-gray-500"></div>
             </div>
             @auth()
-                <div class="mt-3 space-y-1">
-                    <x-responsive-nav-link href="route('profile.edit')">
-                        {{ __('Profile') }}
-                    </x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('profile') }}">
+                    {{ __('Profile') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link href="{{route('packages.mypackages')}}">
+                    {{ __('My Packages') }}
+                </x-responsive-nav-link>
 
-                    <!-- Authentication -->
-                    <form method="POST" action="{{ route('auth.logout') }}">
-                        @csrf
-
-                        <x-responsive-nav-link class="cursor-pointer"
-                                               onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                            {{ __('Log Out') }}
+                    @if(!auth()->user()->hasPermissionTo('business_client.view') && auth()->user()->getRoleNames()->isNotEmpty())
+                        <x-responsive-nav-link href="{{ route('workspace.index') }}">
+                            {{ __('Workspace') }}
                         </x-responsive-nav-link>
-                    </form>
-                </div>
+                    @elseif(auth()->user()->hasPermissionTo('business_client.view') && auth()->user()->getRoleNames()->isNotEmpty())
+                        <x-responsive-nav-link href="{{ route('packages.company-dashboard') }}">
+                            {{ __('Company Dashboard') }}
+                        </x-responsive-nav-link>
+                    @endif
+                <form method="POST" action="{{ route('auth.logout') }}">
+                    @csrf
+                    <x-responsive-nav-link class="cursor-pointer"
+                                     onclick="event.preventDefault();
+                                                this.closest('form').submit();">
+                        {{ __('Log Out') }}
+                    </x-responsive-nav-link>
+                </form>
             @else
                 <div class="mt-1 space-y-1">
                     <x-responsive-nav-link :href="route('auth.login')" :active="request()->routeIs('auth.login')">
