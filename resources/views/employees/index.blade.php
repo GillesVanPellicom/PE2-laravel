@@ -79,16 +79,16 @@
                 const query = searchInput.value;
                 const active = activeSelect.value;
 
-                if (query.length == "" && active == "1") 
+                if (query.length == "" && active == "1")
                 {
                     document.querySelector('#pagination').style.display = 'block';
-                } 
+                }
                 else
                 {
                     document.querySelector('#pagination').style.display = 'none';
                 }
 
-                fetch(`{{ route('employees.search') }}?query=${query}&active=${active}`, {
+                fetch(`{{ route('workspace.employees.search') }}?query=${query}&active=${active}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }

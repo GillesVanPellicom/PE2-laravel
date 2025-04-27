@@ -19,7 +19,7 @@ class EmployeeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         if($user->hasRole(['HRManager', 'admin']))
         {
             /*$employees = User::whereHas('employee', function ($query) {
@@ -204,7 +204,7 @@ class EmployeeController extends Controller
         $country = Country::where('country_name', $request->country)->first();
         $city = City::where('name', $request->city)->where('country_id', $country->id)->first();
 
-        if (!$city) 
+        if (!$city)
         {
             $city = City::create([
                 'name' => $request->city,
@@ -222,10 +222,10 @@ class EmployeeController extends Controller
 
         $existingAddress = Address::where('street', $request->street)->where('house_number', $request->house_number)->where('cities_id', $request->city)->where(strtoupper('bus_number'), strtoupper($request->bus_number))->first();
 
-        if ($existingAddress) 
+        if ($existingAddress)
         {
             $new_address_id = $existingAddress->id;
-        } else 
+        } else
         {
             $new_address = Address::create($address);
             $new_address_id = $new_address->id;
@@ -305,7 +305,7 @@ class EmployeeController extends Controller
         } else {
             $contracts = $contractsQuery->with(['employee.user', 'function', 'location'])->get();
         }
-        
+
 
         return response()->json(['contracts' => $contracts]);
     }
@@ -334,7 +334,7 @@ class EmployeeController extends Controller
         $locations = Location::whereNot('location_type', 'ADDRESS')->get();
         $employees = Employee::all();
         $functions = EmployeeFunction::all();
-    
+
         return view('employees.create_employeecontract', compact('locations', 'employees', 'functions'));
     }
 
@@ -364,7 +364,7 @@ class EmployeeController extends Controller
             'location.required' => 'Location is required.',
             'location.min' => 'Please select a location.',
         ]);
-    
+
         $active_contract = EmployeeContract::where('employee_id', $request->employee)
             ->where(function ($query) use ($request) {
                 $query->where('end_date', '>', $request->start_date)
@@ -379,11 +379,11 @@ class EmployeeController extends Controller
                 'start_date' => $request->start_date,
                 'location_id' => $request->location,
             ];
-            
+
             $employee = Employee::find($request->employee);
             $employee->leave_balance = $request->vacation_days;
             $employee->save();
-    
+
             $cont = EmployeeContract::create($contract);
 
             $role = EmployeeFunction::find($request->function)->role;
@@ -520,7 +520,7 @@ class EmployeeController extends Controller
         $timestamp = $contract->created_at;
         $filename = "contract_{$contract->employee->user->last_name}_{$contract->employee->user->first_name}_{$timestamp}";
         $pdf->save(public_path("contracts/{$filename}.pdf"));
-        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
+        return redirect()->route('workspace.employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
     }
 
     public function getAvailabilityData(Request $request)

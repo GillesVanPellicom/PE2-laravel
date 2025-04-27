@@ -20,7 +20,7 @@
             };
 
             function fetchHolidayRequestNotifications() {
-                fetch('/pending-vacations')
+                fetch('/workspace/pending-vacations')
                     .then(response => response.json())
                     .then(data => {
                         notificationDropdown.innerHTML = '';
@@ -63,7 +63,7 @@
             }
 
             function fetchSickDayNotifications() {
-                fetch('/manager/sick-day-notifications')
+                fetch('/workspace/manager/sick-day-notifications')
                     .then(response => response.json())
                     .then(data => {
                         sickLeaveNotificationDropdown.innerHTML = '';
@@ -97,7 +97,7 @@
             }
 
             function markSickLeaveAsRead(notificationId, notificationElement) {
-                fetch(`/manager/sick-day-notifications/${notificationId}/read`, {
+                fetch(`/workspace/manager/sick-day-notifications/${notificationId}/read`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@
             }
 
             function updateVacationStatus(vacationId, newStatus, notificationElement) {
-                fetch(`/vacations/${vacationId}/update-status`, {
+                fetch(`/workspace/vacations/${vacationId}/update-status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -189,7 +189,7 @@
     <div id="calendar" class="mt-4"></div>
 
     <div class="mt-6 text-center">
-        <a href="employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
+        <a href="/workspace/employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
     </div>
 
     <script>
@@ -205,7 +205,7 @@
         function updateSidebar(date) {
             console.log("Clicked date:", date);
 
-            fetch('/approved-vacations')
+            fetch('/workspace/approved-vacations')
                 .then(response => response.json())
                 .then(holidayData => {
                     let holidayEmployees = holidayData.filter(holiday =>
@@ -215,7 +215,7 @@
 
                     displayHolidays(date, holidayEmployees);
 
-                    fetch('/get-vacations')
+                    fetch('/workspace/get-vacations')
                         .then(response => response.json())
                         .then(sickData => {
                             let sickEmployees = sickData.filter(vacation =>
@@ -293,7 +293,7 @@
                 return;
             }
 
-            fetch(`/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
+            fetch(`/workspace/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     return response.json();
