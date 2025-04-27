@@ -19,7 +19,7 @@
                         <td>{{ $flight->id }}</td>
                         <td>{{ $flight->status }}</td>
                         <td>
-                            <form method="POST" action="{{ route('flights.updateStatus', $flight->id) }}">
+                            <form method="POST" action="{{ route('workspace.flights.updateStatus', $flight->id) }}">
                                 @csrf
                                 @method('PATCH')
                                 <label for="status">Status:</label>
