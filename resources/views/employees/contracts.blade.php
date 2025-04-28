@@ -69,7 +69,7 @@
                                 <td class="border border-gray-300 py-2 flex justify-center">
                                     <div class="flex items-center space-x-8">
                                         ${contract.end_date == null ? `
-                                        <form action="/contracts/${contract.contract_id}" method="POST" class="flex items-center space-x-2">
+                                        <form action="/workspace/contracts/${contract.contract_id}" method="POST" class="flex items-center space-x-2">
                                             <input type="hidden" name="_token" value="${csrf_token}">
                                             <input name="end_date" type="date" value="${new Date().toISOString().split('T')[0]}" class="text-xs">
                                             <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded shadow text-xs">
