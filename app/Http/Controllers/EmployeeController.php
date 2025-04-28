@@ -252,7 +252,7 @@ class EmployeeController extends Controller
 
         Employee::create($employee);
 
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully');;
+        return redirect()->route('workspace.employees.index')->with('success', 'Employee created successfully');;
     }
 
     public function contracts()
@@ -326,7 +326,7 @@ class EmployeeController extends Controller
         $contract->end_date = $request->end_date;
         $contract->save();
 
-        return redirect()->route('employees.contracts')->with('success', 'Contract ended successfully');
+        return redirect()->route('workspace.employees.contracts')->with('success', 'Contract ended successfully');
     }
 
     public function create_employeecontract()
@@ -393,10 +393,10 @@ class EmployeeController extends Controller
 
             EmployeeController::generateEmployeeContract($cont->contract_id);
 
-            return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
+            return redirect()->route('workspace.employees.contracts')->with('success', 'Contract created successfully');
         }
         else {
-            return redirect()->route('employees.contracts')->with('error', 'Employee already has a contract');
+            return redirect()->route('workspace.employees.contracts')->with('error', 'Employee already has a contract');
         }
     }
 
@@ -434,7 +434,7 @@ class EmployeeController extends Controller
         ];
 
         Team::create($team);
-        return redirect()->route('employees.teams')->with('success', 'Team created successfully');
+        return redirect()->route('workspace.employees.teams')->with('success', 'Team created successfully');
     }
 
     public function functions()
@@ -489,7 +489,7 @@ class EmployeeController extends Controller
         ];
 
         EmployeeFunction::create($function);
-        return redirect()->route('employees.functions')->with('success', 'Function created successfully');
+        return redirect()->route('workspace.employees.functions')->with('success', 'Function created successfully');
     }
 
     public static function generateEmployeeContract($id)
