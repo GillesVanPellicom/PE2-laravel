@@ -1,5 +1,6 @@
 <x-app-layout>
     <x-sidebar>
+
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
     
@@ -1147,6 +1148,51 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
+=======
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // Ensure required libraries are loaded
+    if (typeof moment === 'undefined') {
+        console.error("Moment.js is not loaded. Ensure it's included in your project.");
+        return;
+    }
+
+    // Get DOM elements safely
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const saveRequestsBtn = document.getElementById('saveRequests');
+    const calendarEl = document.getElementById('calendar');
+    const sickDayRangePicker = document.getElementById('sickDayRangePicker');
+    const sickStartDate = document.getElementById('sickStartDate');
+    const sickEndDate = document.getElementById('sickEndDate');
+    const applySickDaysBtn = document.getElementById('applySickDaysBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const eventModal = document.getElementById('eventModal');
+
+    if (!calendarEl) {
+        console.error("Calendar element not found!");
+        return;
+    }
+
+    // Fetch notifications function
+    function fetchNotifications() {
+        fetch('/notifications')
+            .then(response => response.json())
+            .then(data => {
+                notificationDropdown.innerHTML = '';
+                let unreadCount = 0;
+
+                data.forEach(notification => {
+                    let li = document.createElement('li');
+                    li.classList.add('p-2', 'bg-gray-100', 'rounded-md', 'cursor-pointer', 'hover:bg-gray-200');
+
+                    // Include the start_date in the notification message
+                    li.innerHTML = `
+                        ${notification.message_template?.message || 'No message'} <br>
+
+                        <span class='text-sm text-gray-500'>${moment(notification.created_at).fromNow()}</span>
+
+
                     `;
                 } else if (type === 'warning') {
                     toast.className = 'fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500 bg-gradient-to-r from-yellow-500 to-amber-600 text-white max-w-xs';
@@ -1233,9 +1279,24 @@
                 });
             }
 
+
             function removeEvent(date) {
                 let event = calendar.getEventById(date);
                 if (event) event.remove();
+
+                notificationBadge.textContent = unreadCount;
+                notificationBadge.classList.toggle('hidden', unreadCount === 0);
+            })
+            .catch(error => console.error("Error fetching notifications:", error));
+    }
+
+    function markAsRead(notificationId, notificationElement) {
+        fetch(`/workspace/notifications/${notificationId}/read`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+
             }
 
             function toggleEvent(date) {
@@ -1363,6 +1424,7 @@
                 }, 500);
             }
 
+
             // Create enhanced confetti effect
             function createConfetti() {
                 confettiContainer.classList.remove('hidden');
@@ -1415,6 +1477,70 @@
                         confetti.style.alignItems = 'center';
                         confetti.style.justifyContent = 'center';
                         confetti.style.background = 'transparent';
+
+            sickDaysTaken = selectedSickDays.size;
+            closeModal();
+        };
+
+        // Holiday option buttons
+        document.getElementById('wholeDayBtn').onclick = function () {
+            selectedHolidays[date] = 'Whole Day';
+            addEvent(date, "holiday", "Whole Day");
+            remainingHolidays--;
+            closeModal();
+        };
+
+        document.getElementById('firstHalfBtn').onclick = function () {
+            selectedHolidays[date] = 'First Half';
+            addEvent(date, "holiday", "First Half");
+            remainingHolidays -= 0.5;
+            closeModal();
+        };
+
+        document.getElementById('secondHalfBtn').onclick = function () {
+            selectedHolidays[date] = 'Second Half';
+            addEvent(date, "holiday", "Second Half");
+            remainingHolidays -= 0.5;
+            closeModal();
+        };
+
+        // Close the modal
+        document.getElementById('closeModalBtn').onclick = closeModal;
+
+        updateCounters();
+        localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
+        localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
+    }
+
+    function closeModal() {
+        document.getElementById('eventModal').classList.add('hidden');
+        document.getElementById('holidayOptions').classList.add('hidden'); // Hide holiday options again
+        document.getElementById('sickDayRangePicker').classList.add('hidden'); // Hide sick day range picker
+        document.getElementById('sickDayBtn').disabled = false; // Re-enable sick day button
+        sickStartDate.value = '';
+        sickEndDate.value = '';
+    }
+
+    // Fetch vacations and add them to the calendar
+    function fetchVacations() {
+        fetch('/workspace/get-vacations')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(vacation => {
+                    let color;
+                    switch (vacation.approve_status.toLowerCase()) {
+                        case 'approved':
+                            color = '#28A745'; // Green
+                            break;
+                        case 'pending':
+                            color = '#FFC107'; // Yellow
+                            break;
+                        case 'rejected':
+                            color = '#DC3545'; // Red
+                            break;
+                        default:
+                            color = '#6C757D'; // Gray for unknown status
+
                     }
                     
                     // Random color (if not already set by shape)
@@ -1466,6 +1592,7 @@
                                 default:
                                     backgroundColor = '#6B7280';
                             }
+
 
                             // Include day_type in the event title
                             calendar.addEvent({
@@ -1563,7 +1690,74 @@
                     // Remove ripple after animation
                     setTimeout(() => ripple.remove(), 700);
                 }
+
+        fetch('/workspace/save-vacation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                holidays: selectedHolidays,
+                sickDays: sickDaysArray // Send sick days as date ranges
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert("✅ Requests saved successfully!");
+
+                // Clear localStorage after saving requests
+                localStorage.removeItem('selectedHolidays');
+                localStorage.removeItem('selectedSickDays');
+
+                // Reset local variables
+                selectedHolidays = {};
+                selectedSickDays = new Set();
+
+                // Reload the page to refresh the calendar and counters
+                location.reload();
+            } else {
+                alert("⚠️ Something went wrong!");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("❌ Failed to save requests. Please try again.");
+        });
+    });
+
+    fetchNotifications();
+
+    // Function to update vacation status
+    function updateVacationStatus(vacationId, newStatus) {
+        fetch(`/workspace/vacations/${vacationId}/update-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(updatedVacation => {
+            // Remove the pending event from the calendar
+            const event = calendar.getEventById(updatedVacation.id);
+            if (event) event.remove();
+
+            // Add the updated vacation with the new status
+            calendar.addEvent({
+                id: updatedVacation.id,
+                title: `${updatedVacation.vacation_type} (${updatedVacation.approve_status})`,
+                start: updatedVacation.start_date,
+                end: updatedVacation.end_date ? updatedVacation.end_date : updatedVacation.start_date,
+                allDay: true,
+                backgroundColor: updatedVacation.color,
+                borderColor: updatedVacation.color,
+                textColor: 'white'
+
             });
+
 
             // Add theme-reactive styles to the calendar
             function updateCalendarTheme() {
@@ -1600,6 +1794,15 @@
                 }
             }
 
+        <!-- Holiday Info and Calendar Section -->
+        <div class="flex-1">
+            <!-- Holiday Info -->
+            <div id="holidayInfo" class="bg-gray-100 p-4 rounded-md flex justify-between items-center">
+                <span class="font-semibold text-lg">Remaining Holidays: <span id="remainingHolidays" class="text-blue-600 font-bold">0</span></span>
+                <span class="font-semibold text-lg">Sick Days Taken: <span id="sickDaysTaken" class="text-red-600 font-bold">0</span></span>
+            </div>
+
+
             // Initialize calendar and load data
             calendar.render();
             Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
@@ -1609,6 +1812,7 @@
             
             // Apply initial calendar theme
             setTimeout(updateCalendarTheme, 100);
+
 
             // Toggle notifications
             window.toggleNotifications = function() {
@@ -1684,6 +1888,26 @@
                     eventModal.classList.add('hidden');
                 });
             });
+
+    <!-- Buttons -->
+    <div class="flex justify-between mt-6">
+        <button id="saveRequests" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Save Requests</button>
+        <a href="/workspace/manager-calendar" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">View Requests</a>
+
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+    <h2 class="text-xl font-semibold mb-4">Choose Event Type</h2>
+
+    <div>
+      <label class="block mb-2">Choose: Type '1' for Paid Holiday, Type '2' for Sick Day</label>
+      <button id="holidayBtn" class="block w-full bg-green-500 text-white py-2 px-4 rounded mb-2">Holiday</button>
+      <button id="sickDayBtn" class="block w-full bg-blue-500 text-white py-2 px-4 rounded">Sick Day</button>
+    </div>
+
 
             // Save vacation requests with enhanced animation
             saveRequestsBtn.addEventListener('click', function () {

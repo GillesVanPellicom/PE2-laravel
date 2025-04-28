@@ -14,7 +14,7 @@
     <header class="fixed top-0 left-0 w-full bg-gray-800 text-white text-center py-4 text-xl font-bold z-50">
         ShipCompany
         @if (!request()->routeIs('courier'))
-            <a href="{{ route('courier.logout') }}"
+            <a href="{{ route('workspace.courier.logout') }}"
                 class="absolute right-5 top-1/2 transform -translate-y-1/2 text-white text-2xl hover:text-black">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </a>
@@ -25,13 +25,13 @@
 
     <!-- These should only appear if the logged in user is a courier -->
     <nav class="fixed bottom-0 left-0 w-full bg-gray-800 flex justify-around py-3">
-        <a href="{{ route('courier.route') }}" class="text-white text-3xl hover:text-black">
+        <a href="{{ route('workspace.courier.route') }}" class="text-white text-3xl hover:text-black">
             <i class="fas fa-map"></i>
         </a>
-        <a href="{{ route('courier.packages') }}" class="text-white text-3xl hover:text-black">
+        <a href="{{ route('workspace.courier.packages') }}" class="text-white text-3xl hover:text-black">
             <i class="fas fa-box"></i>
         </a>
-        <a href="{{ route('courier.scan') }}" class="text-white text-3xl hover:text-black">
+        <a href="{{ route('workspace.courier.scan') }}" class="text-white text-3xl hover:text-black">
             <i class="fa-solid fa-qrcode"></i>
         </a>
     </nav>

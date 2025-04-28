@@ -449,7 +449,7 @@
             };
 
             function fetchHolidayRequestNotifications() {
-                fetch('/pending-vacations')
+                fetch('/workspace/pending-vacations')
                     .then(response => response.json())
                     .then(data => {
                         notificationDropdown.innerHTML = '';
@@ -573,7 +573,7 @@
             }
 
             function fetchSickDayNotifications() {
-                fetch('/manager/sick-day-notifications')
+                fetch('/workspace/manager/sick-day-notifications')
                     .then(response => response.json())
                     .then(data => {
                         sickLeaveNotificationDropdown.innerHTML = '';
@@ -632,8 +632,13 @@
                     .catch(error => console.error("Error fetching sick day notifications:", error));
             }
 
+
             window.markSickLeaveAsRead = function(notificationId, notificationElement) {
                 fetch(`/manager/sick-day-notifications/${notificationId}/read`, {
+
+            function markSickLeaveAsRead(notificationId, notificationElement) {
+                fetch(`/workspace/manager/sick-day-notifications/${notificationId}/read`, {
+
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -651,8 +656,13 @@
                 .catch(error => console.error("Error marking sick leave notification as read:", error));
             };
 
+
             window.updateVacationStatus = function(vacationId, newStatus, notificationElement) {
                 fetch(`/vacations/${vacationId}/update-status`, {
+
+            function updateVacationStatus(vacationId, newStatus, notificationElement) {
+                fetch(`/workspace/vacations/${vacationId}/update-status`, {
+
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -731,9 +741,15 @@
                     .catch(error => console.error("Error fetching approved vacations:", error));
             }
 
+
             function displayHolidays(date, holidayEmployees) {
                 holidayEmployeeList.innerHTML = "";
                 holidayCount.textContent = holidayEmployees.length;
+
+    <div class="mt-6 text-center">
+        <a href="/workspace/employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
+    </div>
+
 
                 if (holidayEmployees.length > 0) {
                     holidayEmployees.forEach(holiday => {
@@ -793,6 +809,7 @@
                 }
             }
 
+
             function updateAvailableEmployees(holidays, sickEmployees = []) {
                 employeeList.innerHTML = "";
                 const employees = @json($employees);
@@ -806,6 +823,33 @@
                 });
                 
                 availableCount.textContent = availableEmployees.length;
+
+            fetch('/workspace/approved-vacations')
+                .then(response => response.json())
+                .then(holidayData => {
+                    let holidayEmployees = holidayData.filter(holiday =>
+                        holiday.vacation_type !== 'Sick Leave' &&
+                        date >= holiday.start_date && date <= holiday.end_date
+                    );
+
+                    displayHolidays(date, holidayEmployees);
+
+                    fetch('/workspace/get-vacations')
+                        .then(response => response.json())
+                        .then(sickData => {
+                            let sickEmployees = sickData.filter(vacation =>
+                                vacation.vacation_type === 'Sick Leave' &&
+                                date >= vacation.start_date && date <= vacation.end_date
+                            );
+
+                            displaySickLeaves(date, sickEmployees);
+                            updateAvailableEmployees(holidayEmployees, sickEmployees);
+                        })
+                        .catch(error => console.error("Error fetching sick leaves:", error));
+                })
+                .catch(error => console.error("Error fetching approved vacations:", error));
+        }
+
 
                 if (availableEmployees.length > 0) {
                     availableEmployees.forEach(emp => {
@@ -1060,6 +1104,7 @@
                 fetchAvailabilityData(startDate, endDate);
             }
 
+
             startDatePicker.addEventListener('change', onDateRangeChange);
             endDatePicker.addEventListener('change', onDateRangeChange);
 
@@ -1067,6 +1112,19 @@
             const calendarEl = document.getElementById('calendar');
             const calendarLoading = document.getElementById('calendarLoading');
             let calendalInstance = null;
+
+            fetch(`/workspace/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (!Array.isArray(data)) throw new Error('Invalid data format');
+                    updateChart(data);
+                })
+                .catch(error => console.error('Error fetching availability data:', error));
+        }
+
 
             function fetchEvents() {
                 // Show loading indicator
@@ -1212,6 +1270,7 @@
             const searchInput = document.getElementById('searchHolidayRequests').value.toLowerCase();
             const requests = document.querySelectorAll('#holidayRequests > div');
 
+
             requests.forEach(request => {
                 const employeeName = request.querySelector('.font-medium').textContent.toLowerCase();
                 if (employeeName.includes(searchInput)) {
@@ -1223,3 +1282,6 @@
         }
     </script>
 </x-app-layout>
+
+</x-app-layout>
+

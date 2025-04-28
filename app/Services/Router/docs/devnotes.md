@@ -1,10 +1,8 @@
 ## todo
 - make router comply with start/end dates of edges
-- Router::refresh()
-- Router::addEdge()
-- Router::removeEdge()
 - Protectorate
 - Helper suite
+- Test double edges
 
 ## Formulas
 ### Haversine
@@ -69,5 +67,3 @@ Where:
 | `fakeMove`           | Nested conditionals, complex logic          | Use timestamp list, handle address case separately              | Simplified logic                    |
 | `getCurrentMovement` | Try-catch block, redundant checks           | Simplified with helper method, removed broad exception handling | Much more robust                    |
 
-+═══════════════════════════════+════════════════════════════════════════+════════════+═════════════+══════════════════════+═══════+══════+
-| @AIR_EBAW                     | Antwerp International Airport          |    51.1894 |      4.4603 | AIRPORT              | No    | No   |

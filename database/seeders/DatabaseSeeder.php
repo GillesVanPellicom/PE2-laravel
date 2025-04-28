@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder {
       UserRoleSeeder::class,
       MessageTemplatesSeeder::class,
       VehiclesSeeder::class,
+      CourierSeeder::class,
     ]);
 
   }
