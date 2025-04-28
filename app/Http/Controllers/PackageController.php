@@ -45,10 +45,10 @@ class PackageController extends Controller {
         }
         catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             //return response()->view('errors.pickup.404', ['message' => 'The entered package not found'], 404);
-            return redirect()->route('pickup.dashboard')->with('package-not-found', 'The package "' . $id . '" does not exist');
+            return redirect()->route('workspace.pickup.dashboard')->with('package-not-found', 'The package "' . $id . '" does not exist');
         }
         catch (\Exception $e) {
-            return redirect()->route('pickup.dashboard')->with('error', 'An unexpected error occurred, retry again or contact your administrator');
+            return redirect()->route('workspace.pickup.dashboard')->with('error', 'An unexpected error occurred, retry again or contact your administrator');
         }
     }
 
@@ -56,7 +56,7 @@ class PackageController extends Controller {
         $package = Package::findOrFail($id);
         $statusToSet = request()->get('status') ?? '';
         $package->update(['status' => $statusToSet]);
-        return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
+        return redirect()->route('workspace.pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
     }
 
     public function showPackagesToReturn () {
