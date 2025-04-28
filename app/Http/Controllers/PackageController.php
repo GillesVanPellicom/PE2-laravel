@@ -274,12 +274,13 @@ class PackageController extends Controller {
 
         if (!$originLocation) {
             try {
-                $addressString = urlencode(
+                $addressString = rawurlencode(
                     $userAddress->street . ' ' .
                     $userAddress->house_number . ', ' .
                     $userAddress->city->name . ', ' .
                     $userAddress->city->country->country_name
                 );
+
 
                 // Make API request to Geoapify
                 $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
@@ -300,7 +301,7 @@ class PackageController extends Controller {
                 // If no results found
                 if (empty($geocodeData['results'])) {
 
-                    $alternativeAddress = urlencode(
+                    $alternativeAddress = rawurlencode(
                         $userAddress->street . ' ' .
                         $userAddress->house_number . ' ' .
                         $userAddress->city->name . ' ' .
