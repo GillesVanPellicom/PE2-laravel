@@ -55,14 +55,13 @@ class NotificationController extends Controller
             ->get();
 
         return response()->json($notifications->map(function ($notification) {
+            $data = json_decode($notification->data, true); // Decode the data field
+
             return [
                 'id' => $notification->id,
                 'message' => str_replace(
-                    ['{employee_name}', '{date}'],
-                    [
-                        optional($notification->user)->first_name . ' ' . optional($notification->user)->last_name, // Use the user's name
-                        $notification->created_at->format('Y-m-d') // Use the notification's creation date
-                    ],
+                    '{employee_name}',
+                    optional($notification->user)->first_name . ' ' . optional($notification->user)->last_name, // Use the user's name
                     $notification->messageTemplate->message ?? 'No message'
                 ),
                 'created_at' => $notification->created_at,
