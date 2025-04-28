@@ -39,56 +39,56 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             transition: background-color 0.3s, color 0.3s;
         }
-        
+
         .dark {
             color-scheme: dark;
         }
-        
+
         /* Custom Card Styles */
         .dashboard-card {
             @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl;
         }
-        
+
         .card-header {
             @apply p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between;
         }
-        
+
         /* Status Indicators */
         .status-badge {
             @apply text-xs font-medium px-2.5 py-0.5 rounded-full;
         }
-        
+
         .status-available {
             @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
         }
-        
+
         .status-unavailable {
             @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
         }
-        
+
         .status-holiday {
             @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
         }
-        
+
         /* Calendar styles */
         .fc .fc-button-primary {
             @apply bg-blue-600 border-blue-600 hover:bg-blue-700 hover:border-blue-700;
         }
-        
+
         .fc .fc-button-primary:not(:disabled).fc-button-active,
         .fc .fc-button-primary:not(:disabled):active {
             @apply bg-blue-700 border-blue-700 shadow-inner;
         }
-        
+
         .fc .fc-daygrid-day.fc-day-today {
             @apply bg-blue-50 dark:bg-blue-900/20;
         }
-        
+
         .fc .fc-col-header-cell-cushion,
         .fc .fc-daygrid-day-number {
             @apply text-gray-700 dark:text-gray-300;
         }
-        
+
         /* Custom tooltip */
         .calendar-tooltip {
             position: fixed;
@@ -146,7 +146,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="px-5 py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
                         Status for
@@ -155,7 +155,7 @@
                         <!-- Date will be populated by JS -->
                     </div>
                 </div>
-                
+
                 <div class="p-5 space-y-6">
                     <!-- Available Section -->
                     <div>
@@ -165,7 +165,7 @@
                             </h3>
                             <span class="status-badge status-available" id="availableCount">0</span>
                         </div>
-                        
+
                         <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
                             <div id="employeeList" class="space-y-2"></div>
                         </div>
@@ -179,7 +179,7 @@
                             </h3>
                             <span class="status-badge status-unavailable" id="sickCount">0</span>
                         </div>
-                        
+
                         <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
                             <div id="sickEmployeeList" class="space-y-2"></div>
                         </div>
@@ -193,7 +193,7 @@
                             </h3>
                             <span class="status-badge status-holiday" id="holidayCount">0</span>
                         </div>
-                        
+
                         <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
                             <div id="holidayEmployeeList" class="space-y-2"></div>
                         </div>
@@ -226,7 +226,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Sick Leave Notifications -->
                     <div class="notification-dropdown-container relative">
                         <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-red-500 dark:hover:bg-gray-700 dark:text-red-400" onclick="toggleSickLeaveNotifications()">
@@ -269,7 +269,7 @@
                             <button id="3monthsButton" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">3 Months</button>
                         </div>
                     </div>
-                    
+
                     <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 grid grid-cols-3 gap-4">
                         <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
                             <div class="text-sm text-gray-600 dark:text-gray-400">Available</div>
@@ -305,16 +305,16 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6 space-y-4 md:space-y-0">
                             <div class="flex items-center space-x-2">
                                 <label for="startDatePicker" class="text-sm font-medium text-gray-600 dark:text-gray-300">
                                     Start Date:
                                 </label>
-                                <input 
-                                    type="date" 
-                                    id="startDatePicker" 
+                                <input
+                                    type="date"
+                                    id="startDatePicker"
                                     class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
                                 />
                             </div>
@@ -323,8 +323,8 @@
                                 <label for="endDatePicker" class="text-sm font-medium text-gray-600 dark:text-gray-300">
                                     End Date:
                                 </label>
-                                <input 
-                                    type="date" 
+                                <input
+                                    type="date"
                                     id="endDatePicker"
                                     class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
                                 />
@@ -338,7 +338,7 @@
                             </div>
                             <canvas id="availabilityChart"></canvas>
                         </div>
-                        
+
                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center" id="chartDaysInfo">
                             Showing employee availability data for <span id="totalDays">0</span> days
                         </div>
@@ -362,10 +362,10 @@
                     <div class="p-5 space-y-4">
                         <!-- Search Bar -->
                         <div class="relative">
-                            <input 
-                                type="text" 
-                                id="searchHolidayRequests" 
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm" 
+                            <input
+                                type="text"
+                                id="searchHolidayRequests"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
                                 placeholder="Search by employee name..."
                                 oninput="filterHolidayRequests()"
                             />
@@ -410,18 +410,18 @@
             const darkModeToggle = document.getElementById('darkModeToggle');
             const htmlElement = document.documentElement;
             const isDarkMode = localStorage.getItem('darkMode') === 'true';
-            
+
             if (isDarkMode) {
                 htmlElement.classList.add('dark');
                 updateDarkModeButton(true);
             }
-            
+
             darkModeToggle.addEventListener('click', function() {
                 const isDark = htmlElement.classList.toggle('dark');
                 localStorage.setItem('darkMode', isDark);
                 updateDarkModeButton(isDark);
             });
-            
+
             function updateDarkModeButton(isDark) {
                 if (isDark) {
                     darkModeToggle.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,7 +469,7 @@
                         } else {
                             const container = document.createElement('div');
                             container.className = "space-y-3 max-h-[60vh] overflow-y-auto pr-1";
-                            
+
                             data.forEach(request => {
                                 const requestElement = document.createElement('div');
                                 requestElement.className = "p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow border border-gray-100 dark:border-gray-600 hover:shadow-md transition-shadow";
@@ -481,7 +481,7 @@
                                         <div class="flex-1">
                                             <h4 class="font-medium text-gray-900 dark:text-gray-100">${request.employee_name}</h4>
                                             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                                Requested holiday on ${request.start_date} 
+                                                Requested holiday on ${request.start_date}
                                                 <span class="ml-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 rounded text-xs">
                                                     ${request.day_type || 'Full Day'}
                                                 </span>
@@ -496,13 +496,13 @@
                                                 </span>
                                             </div>
                                             <div class="flex gap-2">
-                                                <button 
+                                                <button
                                                     class="px-3 py-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white text-sm font-medium rounded"
                                                     onclick="updateVacationStatus(${request.id}, 'approved', this.parentNode.parentNode.parentNode)"
                                                 >
                                                     Approve
                                                 </button>
-                                                <button 
+                                                <button
                                                     class="px-3 py-1 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm font-medium rounded"
                                                     onclick="updateVacationStatus(${request.id}, 'rejected', this.parentNode.parentNode.parentNode)"
                                                 >
@@ -515,7 +515,7 @@
                                 container.appendChild(requestElement);
                                 unreadCount++;
                             });
-                            
+
                             notificationDropdown.appendChild(container);
                         }
 
@@ -552,13 +552,13 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button 
+                                    <button
                                         class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded"
                                         onclick="updateVacationStatus(${request.id}, 'approved', this.parentNode.parentNode)"
                                     >
                                         Approve
                                     </button>
-                                    <button 
+                                    <button
                                         class="px-3 py-1 text-red-600 border border-red-200 hover:bg-red-50 text-sm font-medium rounded"
                                         onclick="updateVacationStatus(${request.id}, 'rejected', this.parentNode.parentNode)"
                                     >
@@ -593,7 +593,7 @@
                         } else {
                             const container = document.createElement('div');
                             container.className = "space-y-3 max-h-[60vh] overflow-y-auto pr-1";
-                            
+
                             data.forEach(notification => {
                                 const notificationElement = document.createElement('div');
                                 notificationElement.className = "p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow border border-gray-100 dark:border-gray-600 hover:shadow-md transition-shadow";
@@ -610,7 +610,7 @@
                                                 </svg>
                                                 ${moment(notification.created_at).fromNow()}
                                             </div>
-                                            <button 
+                                            <button
                                                 class="w-full px-3 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-medium rounded"
                                                 onclick="markSickLeaveAsRead(${notification.id}, this.parentNode.parentNode)"
                                             >
@@ -622,7 +622,7 @@
                                 container.appendChild(notificationElement);
                                 unreadCount++;
                             });
-                            
+
                             sickLeaveNotificationDropdown.appendChild(container);
                         }
 
@@ -677,7 +677,7 @@
                     unreadCount = Math.max(0, unreadCount - 1);
                     notificationBadge.textContent = unreadCount;
                     notificationBadge.classList.toggle('hidden', unreadCount === 0);
-                    
+
                     // Update calendar after vacation status change
                     if (calendalInstance) {
                         fetchEvents();
@@ -706,7 +706,7 @@
 
             function updateSidebar(date) {
                 console.log("Clicked date:", date);
-                
+
                 // Update selected date display
                 const selectedDate = new Date(date);
                 currentDateElement.textContent = selectedDate.toLocaleDateString('en-US', {
@@ -754,7 +754,7 @@
                 if (holidayEmployees.length > 0) {
                     holidayEmployees.forEach(holiday => {
                         const initials = holiday.name ? holiday.name.split(' ').map(n => n[0]).join('') : 'N/A';
-                        
+
                         const div = document.createElement("div");
                         div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
                         div.innerHTML = `
@@ -785,7 +785,7 @@
                 if (sickEmployees.length > 0) {
                     sickEmployees.forEach(sick => {
                         const initials = sick.name ? sick.name.split(' ').map(n => n[0]).join('') : 'N/A';
-                        
+
                         const div = document.createElement("div");
                         div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
                         div.innerHTML = `
@@ -813,15 +813,15 @@
             function updateAvailableEmployees(holidays, sickEmployees = []) {
                 employeeList.innerHTML = "";
                 const employees = @json($employees);
-                
+
                 const holidayNames = holidays.map(h => h.name);
                 const sickNames = sickEmployees.map(s => s.name);
-                
+
                 const availableEmployees = employees.filter(emp => {
                     const fullName = `${emp.user.first_name} ${emp.user.last_name}`;
                     return !holidayNames.includes(fullName) && !sickNames.includes(fullName);
                 });
-                
+
                 availableCount.textContent = availableEmployees.length;
 
             fetch('/workspace/approved-vacations')
@@ -855,7 +855,7 @@
                     availableEmployees.forEach(emp => {
                         const fullName = `${emp.user.first_name} ${emp.user.last_name}`;
                         const initials = fullName.split(' ').map(n => n[0]).join('');
-                        
+
                         const div = document.createElement("div");
                         div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
                         div.innerHTML = `
@@ -890,32 +890,32 @@
                 setDateRange('7d');
                 updateButtonStyles('7daysButton');
             });
-            
+
             document.getElementById('1monthButton').addEventListener('click', function() {
                 setDateRange('1m');
                 updateButtonStyles('1monthButton');
             });
-            
+
             document.getElementById('3monthsButton').addEventListener('click', function() {
                 setDateRange('3m');
                 updateButtonStyles('3monthsButton');
             });
-            
+
             function updateButtonStyles(activeButtonId) {
                 // Reset all buttons
                 ['7daysButton', '1monthButton', '3monthsButton'].forEach(id => {
                     const button = document.getElementById(id);
                     button.className = "text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600";
                 });
-                
+
                 // Style active button
                 document.getElementById(activeButtonId).className = "text-xs px-2 py-1 rounded bg-blue-100 text-blue-600 font-medium hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50";
             }
-            
+
             function setDateRange(range) {
                 const end = new Date();
                 const start = new Date();
-                
+
                 switch(range) {
                     case '7d':
                         start.setDate(end.getDate() - 7);
@@ -927,10 +927,10 @@
                         start.setMonth(end.getMonth() - 3);
                         break;
                 }
-                
+
                 startDatePicker.value = start.toISOString().split('T')[0];
                 endDatePicker.value = end.toISOString().split('T')[0];
-                
+
                 fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
             }
 
@@ -950,25 +950,25 @@
                     .then(data => {
                         if (!Array.isArray(data)) throw new Error('Invalid data format');
                         updateChart(data);
-                        
+
                         // Calculate and update stats
                         const totalDays = data.length;
                         document.getElementById('totalDays').textContent = totalDays;
-                        
+
                         // Calculate percentages for employee availability
                         const totalAvailable = data.reduce((sum, day) => sum + day.available, 0);
                         const totalSick = data.reduce((sum, day) => sum + day.sick, 0);
                         const totalHoliday = data.reduce((sum, day) => sum + day.onHoliday, 0);
                         const total = totalAvailable + totalSick + totalHoliday;
-                        
+
                         const availablePercentage = Math.round((totalAvailable / total) * 100) || 0;
                         const sickPercentage = Math.round((totalSick / total) * 100) || 0;
                         const holidayPercentage = Math.round((totalHoliday / total) * 100) || 0;
-                        
+
                         document.getElementById('availablePercentage').textContent = `${availablePercentage}%`;
                         document.getElementById('sickPercentage').textContent = `${sickPercentage}%`;
                         document.getElementById('holidayPercentage').textContent = `${holidayPercentage}%`;
-                        
+
                         chartLoading.style.display = 'none';
                     })
                     .catch(error => {
@@ -1251,17 +1251,17 @@
             fetchHolidayRequestNotifications();
             fetchHolidayRequests();
             fetchSickDayNotifications();
-            
+
             // Set initial date range (7 days)
             const initialStartDate = moment().startOf('week').format('YYYY-MM-DD');
             const initialEndDate = moment().endOf('week').format('YYYY-MM-DD');
             startDatePicker.value = initialStartDate;
             endDatePicker.value = initialEndDate;
             fetchAvailabilityData(initialStartDate, initialEndDate);
-            
+
             // Initialize calendar
             fetchEvents();
-            
+
             // Initial sidebar update with current date
             updateSidebar(moment().format('YYYY-MM-DD'));
         });
@@ -1281,7 +1281,5 @@
             });
         }
     </script>
-</x-app-layout>
-
 </x-app-layout>
 
