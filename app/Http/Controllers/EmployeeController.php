@@ -18,12 +18,80 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = User::whereHas('employee', function ($query) {
+        $user = Auth::user();
+
+        if($user->hasRole(['HRManager', 'admin']))
+        {
+            /*$employees = User::whereHas('employee', function ($query) {
+                $query->whereHas('contracts', function ($subQuery) {
+                    $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+                });
+            })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(env('EMPLOYEE_PAGINATE'));*/
+
+            $employees = User::whereHas('employee')->with(['employee', 'employee.contracts', 'employee.team'])->paginate(env('EMPLOYEE_PAGINATE'));
+            return view('employees.index', compact('employees'), ['teams' => Team::all()]);
+        }
+
+        /*$employees = User::whereHas('employee', function ($query) {
+            $query->where('location_id', Auth::user()->employee->contracts->location_id);
             $query->whereHas('contracts', function ($subQuery) {
-                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date');
+                $subQuery->where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', Auth::user()->employee->contracts->location_id);
             });
-        })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(3);
+        })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(env('EMPLOYEE_PAGINATE'));*/
+
+        $employees = User::whereHas('employee.contracts', function ($query) {
+            $query->where('location_id', Auth::user()->employee->contracts->location_id);
+        })->with(['employee', 'employee.contracts', 'employee.team'])->paginate(env('EMPLOYEE_PAGINATE'));
+
         return view('employees.index', compact('employees'), ['teams' => Team::all()]);
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $active = $request->input('active');
+        $user = Auth::user();
+        $location = "yes";
+
+        if($user->hasRole(['HRManager', 'admin'])) {
+            $location = null;
+        }
+
+        $employeesQuery = User::whereHas('employee', function ($q) use ($active) {
+            if ($active != 1) {
+                if ($active == 2) {
+                    $q->whereHas('contracts', function ($subQuery) {
+                        $subQuery->where('end_date', '>', now())->orWhereNull('end_date');
+                    });
+                } else {
+                    $q->whereDoesntHave('contracts') // Include employees without contracts
+                      ->orWhereHas('contracts', function ($subQuery) {
+                          $subQuery->where('end_date', '<', now());
+                      });
+                }
+            }
+        })
+        ->where(function ($q) use ($query) {
+            $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%$query%"])
+              ->orwhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%$query%"])
+              ->orWhere('email', 'like', "%$query%");
+        })
+        ->with(['employee', 'employee.contracts', 'employee.team', 'address', 'address.city', 'address.city.country']);
+
+        if($location != null) {
+            $employeesQuery->whereHas('employee.contracts', function ($q) use ($user) {
+                $q->where('location_id', $user->employee->contracts->location_id);
+            });
+        }
+
+        // Limit to 3 employees if filters are at default values
+        if (empty($query) && $active == "1") {
+            $employees = $employeesQuery->take(env('EMPLOYEE_PAGINATE'))->get();
+        } else {
+            $employees = $employeesQuery->get();
+        }
+
+        return response()->json(['employees' => $employees]);
     }
 
     public function managerCalendar()
@@ -136,7 +204,7 @@ class EmployeeController extends Controller
         $country = Country::where('country_name', $request->country)->first();
         $city = City::where('name', $request->city)->where('country_id', $country->id)->first();
 
-        if (!$city) 
+        if (!$city)
         {
             $city = City::create([
                 'name' => $request->city,
@@ -154,10 +222,10 @@ class EmployeeController extends Controller
 
         $existingAddress = Address::where('street', $request->street)->where('house_number', $request->house_number)->where('cities_id', $request->city)->where(strtoupper('bus_number'), strtoupper($request->bus_number))->first();
 
-        if ($existingAddress) 
+        if ($existingAddress)
         {
             $new_address_id = $existingAddress->id;
-        } else 
+        } else
         {
             $new_address = Address::create($address);
             $new_address_id = $new_address->id;
@@ -184,7 +252,7 @@ class EmployeeController extends Controller
 
         Employee::create($employee);
 
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully');;
+        return redirect()->route('workspace.employees.index')->with('success', 'Employee created successfully');;
     }
 
     public function contracts()
@@ -192,22 +260,73 @@ class EmployeeController extends Controller
         $user = Auth::user();
         if($user->hasRole(['HRManager', 'admin']))
         {
-            $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->paginate(2);
+            /*where('end_date', '>', Carbon::now())->orWhereNull('end_date')*/
+            $contracts = EmployeeContract::paginate(env('EMPLOYEE_PAGINATE'));
             return view('employees.contracts', compact('contracts'));
         }
         $location = $user->employee->contracts->location_id;
 
-        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', $location)->paginate(2);
+        $contracts = EmployeeContract::where('end_date', '>', Carbon::now())->orWhereNull('end_date')->where('location_id', $location)->paginate(env('EMPLOYEE_PAGINATE'));
         return view('employees.contracts', compact('contracts'));
+    }
+
+    public function searchContract(Request $request)
+    {
+        $query = $request->input('query');
+        $active = $request->input('active');
+
+        $contractsQuery = EmployeeContract::whereHas('employee.user', function ($q) use ($query) {
+            $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%$query%"])
+              ->orWhere('email', 'like', "%$query%");
+        });
+
+        $user = Auth::user();
+        if (!$user->hasRole(['HRManager', 'admin'])) {
+            $locationId = $user->employee->contracts->location_id;
+            $contractsQuery->where('location_id', $locationId);
+        }
+
+        if ($active !== null) {
+            if ($active == 2) { // Active contracts
+                $contractsQuery->where('start_date', '<=', now())
+                               ->where(function ($q) {
+                                   $q->where('end_date', '>', now())
+                                     ->orWhereNull('end_date');
+                               });
+            } elseif ($active == 3) { // Ended contracts
+                $contractsQuery->where('end_date', '<', now());
+            } elseif ($active == 4) { // Future contracts
+                $contractsQuery->where('start_date', '>', now());
+            }
+        }
+
+        if (empty($query) && $active == "1") {
+            $contracts = $contractsQuery->with(['employee.user', 'function', 'location'])->paginate(env('EMPLOYEE_PAGINATE'));
+        } else {
+            $contracts = $contractsQuery->with(['employee.user', 'function', 'location'])->get();
+        }
+
+
+        return response()->json(['contracts' => $contracts]);
     }
 
     public function updateEndTime(Request $request, $id)
     {
+
+        $request->validate([
+            'end_date' => 'required|date|after_or_equal:' . now()->format('Y-m-d'),
+        ],
+        [
+            'end_date.required' => 'End date is required.',
+            'end_date.date' => 'End date must be a date.',
+            'end_date.after_or_equal' => 'cannot end a contract in the past.',
+        ]);
+
         $contract = EmployeeContract::find($id, ['contract_id']);
         $contract->end_date = $request->end_date;
         $contract->save();
 
-        return redirect()->route('employees.contracts')->with('success', 'Contract ended successfully');
+        return redirect()->route('workspace.employees.contracts')->with('success', 'Contract ended successfully');
     }
 
     public function create_employeecontract()
@@ -215,7 +334,7 @@ class EmployeeController extends Controller
         $locations = Location::whereNot('location_type', 'ADDRESS')->get();
         $employees = Employee::all();
         $functions = EmployeeFunction::all();
-    
+
         return view('employees.create_employeecontract', compact('locations', 'employees', 'functions'));
     }
 
@@ -224,7 +343,11 @@ class EmployeeController extends Controller
         $request->validate([
             'employee' => 'required|integer|min:1',
             'function' => 'required|integer|min:1',
-            'start_date' => 'required|date',
+            'start_date' => [
+                'required',
+                'date',
+                'after_or_equal:' . now()->startOfMonth()->format('Y-m-d')
+            ],
             'vacation_days' => 'required|integer|min:0',
             'location' => 'required|integer|min:1',
         ],
@@ -235,17 +358,19 @@ class EmployeeController extends Controller
             'function.min' => 'Please select a job.',
             'start_date.required' => 'Start date is required.',
             'start_date.date' => 'Start date must be a date.',
+            'start_date.after_or_equal' => 'Start date must be on or after the beginning of the current month.',
             'vacation_days.required' => 'It would be nice if the employee could have some vacation days.',
             'vacation_days.min' => 'Cannot give a negative amount of vacation days.',
             'location.required' => 'Location is required.',
             'location.min' => 'Please select a location.',
         ]);
-    
-        $active_contract = EmployeeContract::where('employee_id', $request->employee)->where(function ($query) 
-        {
-            $query->where('end_date', '>', Carbon::now())
-                  ->orWhereNull('end_date');
-        })->first();
+
+        $active_contract = EmployeeContract::where('employee_id', $request->employee)
+            ->where(function ($query) use ($request) {
+                $query->where('end_date', '>', $request->start_date)
+                    ->orWhereNull('end_date');
+            })->first();
+
 
         if($active_contract == NULL) {
             $contract = [
@@ -254,11 +379,11 @@ class EmployeeController extends Controller
                 'start_date' => $request->start_date,
                 'location_id' => $request->location,
             ];
-            
+
             $employee = Employee::find($request->employee);
             $employee->leave_balance = $request->vacation_days;
             $employee->save();
-    
+
             $cont = EmployeeContract::create($contract);
 
             $role = EmployeeFunction::find($request->function)->role;
@@ -268,16 +393,16 @@ class EmployeeController extends Controller
 
             EmployeeController::generateEmployeeContract($cont->contract_id);
 
-            return redirect()->route('employees.contracts')->with('success', 'Contract created successfully');
+            return redirect()->route('workspace.employees.contracts')->with('success', 'Contract created successfully');
         }
         else {
-            return redirect()->route('employees.contracts')->with('error', 'Employee already has a contract');
+            return redirect()->route('workspace.employees.contracts')->with('error', 'Employee already has a contract');
         }
     }
 
     public function teams()
     {
-        $teams = Team::paginate(3);
+        $teams = Team::paginate(env('EMPLOYEE_PAGINATE'));
         return view('employees.teams', compact('teams'));
     }
 
@@ -309,12 +434,12 @@ class EmployeeController extends Controller
         ];
 
         Team::create($team);
-        return redirect()->route('employees.teams')->with('success', 'Team created successfully');
+        return redirect()->route('workspace.employees.teams')->with('success', 'Team created successfully');
     }
 
     public function functions()
     {
-        $functions = EmployeeFunction::paginate(3);
+        $functions = EmployeeFunction::paginate(env('EMPLOYEE_PAGINATE'));
         return view('employees.functions', compact('functions'));
     }
 
@@ -364,7 +489,7 @@ class EmployeeController extends Controller
         ];
 
         EmployeeFunction::create($function);
-        return redirect()->route('employees.functions')->with('success', 'Function created successfully');
+        return redirect()->route('workspace.employees.functions')->with('success', 'Function created successfully');
     }
 
     public static function generateEmployeeContract($id)
@@ -395,7 +520,7 @@ class EmployeeController extends Controller
         $timestamp = $contract->created_at;
         $filename = "contract_{$contract->employee->user->last_name}_{$contract->employee->user->first_name}_{$timestamp}";
         $pdf->save(public_path("contracts/{$filename}.pdf"));
-        return redirect()->route('employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
+        return redirect()->route('workspace.employees.contracts')->with('success', 'Contract created successfully')->with('pdf_url', url("contracts/{$filename}.pdf"));
     }
 
     public function getAvailabilityData(Request $request)

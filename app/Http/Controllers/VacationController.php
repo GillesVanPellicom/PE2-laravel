@@ -41,7 +41,7 @@ class VacationController extends Controller
             ->where('vacation_type', '!=', 'Sick Leave') // Exclude sick leave
             ->with(['employee.user']) // Ensure employee and user relationship is loaded
             ->get();
-    
+
         $vacationData = $vacations->map(function ($vacation) {
             return [
                 'id' => $vacation->vacation_id,
@@ -52,10 +52,10 @@ class VacationController extends Controller
                 'vacation_type' => $vacation->vacation_type, // Include vacation type
             ];
         });
-    
+
         // Debugging: Log data in Laravel (Check storage/logs/laravel.log)
         \Log::info('Approved Vacations:', $vacationData->toArray());
-    
+
         return response()->json($vacationData);
     }
 
@@ -84,14 +84,14 @@ class VacationController extends Controller
 
         return response()->json($vacations);
     }
-    
+
 
     public function showAllVacations()
     {
         $user = Auth::user();
 
         if (!$user || !$user->employee) {
-            return redirect()->route('employees.calendar')->with('error', 'You must be an employee to view holiday requests.');
+            return redirect()->route('workspace.employees.calendar')->with('error', 'You must be an employee to view holiday requests.');
         }
 
         // Exclude sick leave entries

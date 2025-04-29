@@ -5,7 +5,7 @@
         <h1>Package Inventory per Locatie</h1>
 
         <!-- Filter Form -->
-        <form method="GET" action="{{ route('package.list') }}" class="mb-4">
+        <form method="GET" action="{{ route('workspace.package.list') }}" class="mb-4">
             <div class="row">
                 <div class="col-md-4">
                     <label>Status:</label>

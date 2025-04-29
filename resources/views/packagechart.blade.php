@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <form method="GET" action="{{ route('package.chart') }}" style="text-align: center; margin-bottom: 20px;">
+    <form method="GET" action="{{ route('workspace.package.chart') }}" style="text-align: center; margin-bottom: 20px;">
         <label for="year">Selecteer een jaar:</label>
         <select name="year" id="year" onchange="this.form.submit()">
             @foreach ($availableYears as $year)
@@ -22,7 +22,7 @@
             <option value="month" {{ $groupBy == 'month' ? 'selected' : '' }}>Per Maand</option>
         </select>
     </form>
-    
+
     <h1>Aantal Inkomende Pakketten per Dag</h1>
 
     <div style="width: 50%; margin: auto;">
@@ -35,7 +35,7 @@
         <canvas id="Outgoingpackage"></canvas>
     </div>
 
-    
+
 
     <script>
         // Inkomende pakketten grafiek
@@ -109,7 +109,7 @@
                 }
             }
         });
-        
+
     </script>
 </body>
 </html>
