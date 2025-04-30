@@ -29,6 +29,9 @@
                     <x-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
                         {{ __('Airport') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('manage-invoices')" :active="request()->routeIs('manage-invoices')">
+                        {{ __('Manage Invoices') }}
+                    </x-nav-link>
                 </div>
             </div>
 

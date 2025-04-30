@@ -180,4 +180,9 @@ class InvoiceController extends Controller
         $pdf = Pdf::loadView('customers.invoices.invoice-template', $data);
         return $pdf->stream('invoice.pdf');
     }
+    public function manageInvoices() {
+        $invoices = Invoice::all();
+        return view('employees.manage_invoices',compact('invoices'));
+
+    }
 }
