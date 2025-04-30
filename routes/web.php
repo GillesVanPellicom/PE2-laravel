@@ -345,6 +345,12 @@ Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
 ->name('invoices.myinvoices');
 
+// Tickets
+
+Route::get('/tickets', function () {
+    return view('customers.tickets.support-tickets');
+})->name('tickets');
+
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
 //--------------------------------- ENDTracking Packages ---------------------------------//
