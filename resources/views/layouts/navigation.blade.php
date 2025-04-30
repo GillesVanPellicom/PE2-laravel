@@ -47,12 +47,6 @@
                             {{ __('Company Dashboard') }}
                         </x-nav-link>
                     @endrole
-                    <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
-                        {{ __('Employees') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
-                        {{ __('Airport') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('manage-invoices')" :active="request()->routeIs('manage-invoices')">
                         {{ __('Manage Invoices') }}
                     </x-nav-link>
