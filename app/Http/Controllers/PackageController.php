@@ -9,6 +9,7 @@ use App\Models\Package;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
+use Illuminate\Support\Facades\Hash;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\PackageCreatedMail;
 use App\Models\Country;
@@ -188,9 +189,10 @@ class PackageController extends Controller {
     public function create () {
         $weightClasses = WeightClass::where('is_active', true)->get();
         $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
+        $countries = Country::all();
         $locations = Location::all();
 
-        return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations'));
+        return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations', 'countries'));
     }
 
     public function updatePrices (Request $request) {
@@ -266,19 +268,108 @@ class PackageController extends Controller {
 
     public function store(Request $request)
     {
-        $userId = Auth::user()->id;
-        $userAddress = Auth::user()->address;
 
-        // check if a Location exists with the user's address_id
-        $originLocation = Location::where('addresses_id', $userAddress->id)->first();
+        if (Auth::check()){
+            $userId = Auth::user()->id;
+            $userAddress = Auth::user()->address;
+            $originLocation = Location::where('addresses_id', $userAddress->id)->first();
+            if (!$originLocation) {
 
-        if (!$originLocation) {
-            try {
+                try {
+                    $addressString = rawurlencode(
+                        $userAddress->street . ' ' .
+                        $userAddress->house_number . ' ' .
+                        $userAddress->city->name . ' ' .
+                        $userAddress->city->postcode . ' ' .
+                        $userAddress->city->country->country_name
+                    );
+
+
+                    // Make API request to Geoapify
+                    $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                        'text' => $addressString,
+                        'apiKey' => env('GEOAPIFY_API_KEY'),
+                        'format' => 'json',
+                        'limit' => 1
+                    ]);
+
+
+                    $geocodeData = $response->json();
+
+                    // If the response is not successful
+                    if (!$response->successful()) {
+                        return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()]);
+                    }
+
+                    // If no results found
+                    if (empty($geocodeData['results'])) {
+
+                        $alternativeAddress = rawurlencode(
+                            $userAddress->street . ' ' .
+                            $userAddress->house_number . ' ' .
+                            $userAddress->city->postcode . ' ' .
+                            $userAddress->city->name . ' ' .
+                            $userAddress->city->country->country_name
+                        );
+
+
+                        $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                            'text' => $alternativeAddress,
+                            'apiKey' => env('GEOAPIFY_API_KEY'),
+                            'format' => 'json',
+                            'limit' => 1
+                        ]);
+
+                        $geocodeData = $response->json();
+
+                        if (empty($geocodeData['results'])) {
+                            return back()->withErrors(['error' => 'Address could not be found']);
+                        }
+                    }
+
+                    $location = $geocodeData['results'][0];
+
+
+                    $originLocation = Location::create([
+                        'addresses_id' => $userAddress->id,
+                        'location_type' => 'ADDRESS',
+                        'description' => 'Customer Address'. ' ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+                        'contact_number' => Auth::user()->phone_number,
+                        'latitude' => $location['lat'],
+                        'longitude' => $location['lon'],
+                        'is_active' => true
+                    ]);
+
+                } catch (\Exception $e) {
+                    return back()->withErrors(['error' => 'Error processing address location: ' . $e->getMessage()]);
+                }
+            }
+        } else {
+            $originLocation = null;
+            $countryFromInput = Country::where('country_name', $request->sender_country_name)->first();
+            $cityFromInput = City::where('name', $request->sender_city_name)
+                ->where('postcode', $request->sender_postal_code)
+                ->where('country_id', $countryFromInput->id)
+                ->first();
+            $addressFromInput = Address::where('street', $request->sender_address_input)
+                ->where('house_number', $request->sender_house_number)
+                ->where('bus_number', $request->sender_bus_number)
+                ->where('cities_id', $cityFromInput->id)
+                ->first();
+            if (!$addressFromInput) {
+                $address = Address::create([
+                    'street' => $request->sender_address_input,
+                    'house_number' => $request->sender_house_number,
+                    'bus_number' => $request->sender_bus_number,
+                    'cities_id' => $cityFromInput->id
+                ]);
+                $addressFromInput = $address;
                 $addressString = rawurlencode(
-                    $userAddress->street . ' ' .
-                    $userAddress->house_number . ', ' .
-                    $userAddress->city->name . ', ' .
-                    $userAddress->city->country->country_name
+                    $address->street . ' ' .
+                    $address->house_number . ' ' .
+                    $address->city->name . ' ' .
+                    $address->city->postcode . ' ' .
+                    $address->city->country->country_name
                 );
 
 
@@ -289,84 +380,106 @@ class PackageController extends Controller {
                     'format' => 'json',
                     'limit' => 1
                 ]);
-
-
                 $geocodeData = $response->json();
-
-                // If the response is not successful
                 if (!$response->successful()) {
                     return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()]);
                 }
-
-                // If no results found
                 if (empty($geocodeData['results'])) {
-
-                    $alternativeAddress = rawurlencode(
-                        $userAddress->street . ' ' .
-                        $userAddress->house_number . ' ' .
-                        $userAddress->city->name . ' ' .
-                        $userAddress->city->country->country_name
-                    );
-
-
-                    $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
-                        'text' => $alternativeAddress,
-                        'apiKey' => env('GEOAPIFY_API_KEY'),
-                        'format' => 'json',
-                        'limit' => 1
-                    ]);
-
-                    $geocodeData = $response->json();
-
-                    if (empty($geocodeData['results'])) {
-                        return back()->withErrors(['error' => 'Address could not be found']);
-                    }
+                    return back()->withErrors(['error' => 'Address could not be found']);
                 }
-
                 $location = $geocodeData['results'][0];
-
-
                 $originLocation = Location::create([
-                    'addresses_id' => $userAddress->id,
+                    'addresses_id' => $address->id,
                     'location_type' => 'ADDRESS',
-                    'description' => 'Customer Address'. ' ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
-                    'contact_number' => Auth::user()->phone_number,
+                    'description' => 'Customer Address'. ' ' . $request->sender_firstname . ' ' . $request->sender_lastname,
+                    'contact_number' => $request->sender_phonenumber,
                     'latitude' => $location['lat'],
                     'longitude' => $location['lon'],
                     'is_active' => true
                 ]);
 
-            } catch (\Exception $e) {
-                return back()->withErrors(['error' => 'Error processing address location: ' . $e->getMessage()]);
+            } else {
+                $originLocation = Location::where('addresses_id', $addressFromInput->id)
+                    ->where('location_type', 'ADDRESS')
+                    ->first();
             }
+
         }
+        // check if a Location exists with the user's address_id
+
 
         $deliveryMethod = DeliveryMethod::findOrFail($request->delivery_method_id);
         $weightClass = WeightClass::findOrFail($request->weight_id);
+        if (!Auth::check()) {
+            $validationRules = [
+                'address_id' => 'exists:addresses,id',
+                'name' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'receiverEmail' => 'required|email|max:255',
+                'receiver_phone_number' => 'required|string|max:255',
+                'weight_id' => 'required|exists:weight_classes,id',
+                'delivery_method_id' => 'required|exists:delivery_method,id',
+                'dimension' => 'required|string|max:255',
+                'weight_price' => 'required|numeric|min:0',
+                'delivery_price' => 'required|numeric|min:0',
+                'sender_firstname' => 'required|string|max:255',
+                'sender_lastname' => 'required|string|max:255',
+                'sender_email' => 'required|email|max:255|unique:users,email',
+                'sender_phonenumber' => 'required|string|max:255|unique:users,phone_number',
+                //'sender_birthdate' => 'required|date',
+            ];
+        }
+        else{
+            $validationRules = [
+                'address_id' => 'exists:addresses,id',
+                'name' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'receiverEmail' => 'required|email|max:255',
+                'receiver_phone_number' => 'required|string|max:255',
+                'weight_id' => 'required|exists:weight_classes,id',
+                'delivery_method_id' => 'required|exists:delivery_method,id',
+                'dimension' => 'required|string|max:255',
+                'weight_price' => 'required|numeric|min:0',
+                'delivery_price' => 'required|numeric|min:0'
+            ];
+        }
 
-        $validationRules = [
-            'address_id' => 'exists:addresses,id',
-            'name' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'receiverEmail' => 'required|email|max:255',
-            'receiver_phone_number' => 'required|string|max:255',
-            'weight_id' => 'required|exists:weight_classes,id',
-            'delivery_method_id' => 'required|exists:delivery_method,id',
-            'dimension' => 'required|string|max:255',
-            'weight_price' => 'required|numeric|min:0',
-            'delivery_price' => 'required|numeric|min:0'
-        ];
 
         if ($deliveryMethod->requires_location) {
             $validationRules['destination_location_id'] = 'required|exists:locations,id';
         } else {
             $validationRules['addressInput'] = 'required|string|max:255';
         }
+        $user = null;
+        if (!Auth::check()) {
+            if($request->checked_on_create_account){
+                $validationRulesNewUser = [
+                    'password' => 'required|string|min:8|confirmed',
+                    'password_confirmation' => 'required|string|min:8'
+                ];
+                if ($request->validate($validationRulesNewUser)){
+                    $user = User::create(
+                        [
+                            'first_name' => $request->sender_firstname,
+                            'last_name' => $request->sender_lastname,
+                            'email' => $request->sender_email,
+                            'email_verified_at' => now(),
+                            'phone_number' => $request->sender_phonenumber,
+                            'birth_date'=> $request->sender_birthdate,
+                            'password' => Hash::make($request->password),
+                            'address_id' => $originLocation->addresses_id,
+                            'remember_token' => null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]
+                    );
+                }
+            }
+        }
 
         $validatedData = $request->validate($validationRules);
-
         $validatedData['reference'] = $this->generateUniqueTrackingNumber();
-        $validatedData['user_id'] = $userId;
+        $validatedData['user_id'] = (Auth::check() ? Auth::id() : empty($user)) ?  null: $user->id;
         $validatedData['status'] = 'pending';
         $validatedData['origin_location_id'] = $originLocation->id;
 
@@ -445,7 +558,7 @@ class PackageController extends Controller {
                         'is_active' => true
                     ]);
                 }
-
+                dd($request->validate($validationRules),$originLocation,$destinationLocation);
                 // Prepare package data
                 $packageData = collect($validatedData)
                     ->except(['addressInput'])
