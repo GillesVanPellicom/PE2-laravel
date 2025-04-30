@@ -21,52 +21,57 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 
-class PackageController extends Controller
-{
+class PackageController extends Controller {
 
-    public function index()
-    {
+    public function index () {
         if (request()->has('search')) {
-            $packages = Package::where('reference', 'like', '%' . request('search','') . '%')
-                ->orWhere('name', 'like', '%' . request('search','') . '%')
-                ->orWhere('receiverEmail', 'like', '%' . request('search','') . '%')
-                ->orWhere('receiver_phone_number', 'like', '%' . request('search','') . '%')
+            $packages = Package::where('reference', 'like', '%' . request('search', '') . '%')
+                ->orWhere('name', 'like', '%' . request('search', '') . '%')
+                ->orWhere('receiverEmail', 'like', '%' . request('search', '') . '%')
+                ->orWhere('receiver_phone_number', 'like', '%' . request('search', '') . '%')
                 ->paginate(10)->withQueryString();
-        } else {
+        }
+        else {
             $packages = Package::paginate(10)->withQueryString();
         }
         return view('pickup.dashboard', compact('packages'));
     }
+
     public function show ($id) {
         try {
             $id = $id !== ' ' ? $id : request()->get('id');
             $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
             return view('pickup.packageInfo', compact('package'));
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        }
+        catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             //return response()->view('errors.pickup.404', ['message' => 'The entered package not found'], 404);
-            return redirect()->route('pickup.dashboard')->with('package-not-found', 'The package "'.$id.'" does not exist');
-        } catch (\Exception $e) {
-            return redirect()->route('pickup.dashboard')->with('error' , 'An unexpected error occurred, retry again or contact your administrator');
+            return redirect()->route('workspace.pickup.dashboard')->with('package-not-found', 'The package "' . $id . '" does not exist');
+        }
+        catch (\Exception $e) {
+            return redirect()->route('workspace.pickup.dashboard')->with('error', 'An unexpected error occurred, retry again or contact your administrator');
         }
     }
+
     public function setStatusPackage ($id) {
         $package = Package::findOrFail($id);
-        $statusToSet = request()->get('status')?? '';
+        $statusToSet = request()->get('status') ?? '';
         $package->update(['status' => $statusToSet]);
-        return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: '.$package->reference.' was successfully updated to '.$statusToSet);
+        return redirect()->route('workspace.pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
     }
-    public function showPackagesToReturn () {
-    $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
-        ->where('status', '!=', 'Returned')
-        ->where('status', '!=', 'Cancelled')
-        ->whereHas('deliveryMethod', function ($query) {
-            $query->where('code', 'PICKUP_POINT');
-        })
-        ->where('updated_at', '<', Carbon::now()->subDays(7))
-        ->paginate(10);
 
-    return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
+    public function showPackagesToReturn () {
+        $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
+            ->where('status', '!=', 'Returned')
+            ->where('status', '!=', 'Cancelled')
+            ->whereHas('deliveryMethod', function ($query) {
+                $query->where('code', 'PICKUP_POINT');
+            })
+            ->where('updated_at', '<', Carbon::now()->subDays(7))
+            ->paginate(10);
+
+        return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
     }
+
     public function showReceivingPackages () {
         $today = Carbon::today();
 
@@ -147,8 +152,8 @@ class PackageController extends Controller
             'destinationLocation.address.city.country',
             'address.city.country'
         ])
-        ->where('id', $packageID)
-        ->first();
+            ->where('id', $packageID)
+            ->first();
 
         if (!$package) {
             abort(404, 'Package not found');
@@ -166,9 +171,8 @@ class PackageController extends Controller
 
         // Calculate estimated delivery
 
-            $deliveryEstimate = $this->calculateEstimatedDelivery($originAddress, $destinationAddress);
-            $package->delivery_estimate = $deliveryEstimate;
-
+        $deliveryEstimate = $this->calculateEstimatedDelivery($originAddress, $destinationAddress);
+        $package->delivery_estimate = $deliveryEstimate;
 
         $qrCode = base64_encode(QrCode::format('png')
             ->size(150)
@@ -181,8 +185,7 @@ class PackageController extends Controller
         ]);
     }
 
-    public function create()
-    {
+    public function create () {
         $weightClasses = WeightClass::where('is_active', true)->get();
         $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
         $locations = Location::all();
@@ -190,8 +193,7 @@ class PackageController extends Controller
         return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations'));
     }
 
-    public function updatePrices(Request $request)
-    {
+    public function updatePrices (Request $request) {
         Log::info('Update Prices Request:', $request->all());
 
         $weightId = $request->input('weight_id');
@@ -272,12 +274,13 @@ class PackageController extends Controller
 
         if (!$originLocation) {
             try {
-                $addressString = urlencode(
+                $addressString = rawurlencode(
                     $userAddress->street . ' ' .
                     $userAddress->house_number . ', ' .
                     $userAddress->city->name . ', ' .
                     $userAddress->city->country->country_name
                 );
+
 
                 // Make API request to Geoapify
                 $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
@@ -298,7 +301,7 @@ class PackageController extends Controller
                 // If no results found
                 if (empty($geocodeData['results'])) {
 
-                    $alternativeAddress = urlencode(
+                    $alternativeAddress = rawurlencode(
                         $userAddress->street . ' ' .
                         $userAddress->house_number . ' ' .
                         $userAddress->city->name . ' ' .
@@ -459,10 +462,12 @@ class PackageController extends Controller
                 // Create the package
                 $package = Package::create($packageData);
 
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) {
                 return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
             }
-        } else {
+        }
+        else {
             $destinationLocation = Location::findOrFail($validatedData['destination_location_id']);
             $packageData = collect($validatedData)
                 ->merge([
@@ -868,7 +873,227 @@ public function packagePayment($packageID) {
 
     return view('packagepayment',compact('package'));
 }
+
+public function bulkOrder()
+{
+    $weightClasses = WeightClass::where('is_active', true)->get();
+    $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
+    $locations = Location::all();
+
+    return view('Packages.bulk-order', compact('weightClasses', 'deliveryMethods', 'locations'));
 }
 
+public function storeBulkOrder(Request $request)
+{
+    $userId = Auth::user()->id;
 
+    // Validate the bulk order input
+    $validatedData = $request->validate([
+        'packages' => 'required|array|min:1',
+        'packages.*.name' => 'required|string|max:255',
+        'packages.*.lastName' => 'required|string|max:255',
+        'packages.*.receiverEmail' => 'required|email|max:255',
+        'packages.*.receiver_phone_number' => 'required|string|max:255',
+        'packages.*.dimension' => 'required|string|max:255',
+        'packages.*.weight_id' => 'required|exists:weight_classes,id',
+        'packages.*.delivery_method_id' => 'required|exists:delivery_method,id',
+        'packages.*.destination_location_id' => 'nullable|exists:locations,id',
+        'packages.*.addressInput' => 'nullable|string|max:255',
+    ]);
 
+    $createdPackages = [];
+    $totalWeightPrice = 0;
+    $totalDeliveryPrice = 0;
+
+    foreach ($validatedData['packages'] as $packageData) {
+        $deliveryMethod = DeliveryMethod::findOrFail($packageData['delivery_method_id']);
+        $weightClass = WeightClass::findOrFail($packageData['weight_id']);
+
+        // Calculate prices
+        $weightPrice = $weightClass->price;
+        $deliveryPrice = $deliveryMethod->price;
+
+        $totalWeightPrice += $weightPrice;
+        $totalDeliveryPrice += $deliveryPrice;
+
+        // Verify that the delivery method and weight class are valid
+        if ($deliveryMethod->requires_location && empty($packageData['destination_location_id'])) {
+            return back()->withErrors(['error' => 'A destination location is required for the selected delivery method.']);
+        }
+
+        // Handle address-based delivery
+        if (!$deliveryMethod->requires_location) {
+            try {
+                // Get address details from Geoapify
+                $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                    'text' => $packageData['addressInput'],
+                    'apiKey' => env('GEOAPIFY_API_KEY'),
+                    'format' => 'json',
+                    'limit' => 1
+                ]);
+
+                if (!$response->successful() || empty($response->json()['results'])) {
+                    return back()->withErrors(['error' => 'Could not validate address for one of the packages.']);
+                }
+
+                $addressData = $response->json()['results'][0];
+
+                // Extract address components
+                $street = $addressData['street'] ?? '';
+                $houseNumber = $addressData['housenumber'] ?? '';
+                $busNumber = isset($addressData['unit']) ? $addressData['unit'] : null;
+                $city = $addressData['city'] ?? '';
+                $postalCode = $addressData['postcode'] ?? '';
+                $countryName = $addressData['country'] ?? '';
+
+                // Check if country exists
+                $country = Country::firstOrCreate(['country_name' => $countryName]);
+
+                // Check if city exists
+                $city = City::firstOrCreate([
+                    'name' => $city,
+                    'postcode' => $postalCode,
+                    'country_id' => $country->id
+                ]);
+
+                // Check if exact address exists
+                $existingAddress = Address::where([
+                    'street' => $street,
+                    'house_number' => $houseNumber,
+                    'bus_number' => $busNumber,
+                    'cities_id' => $city->id
+                ])->first();
+
+                if ($existingAddress) {
+                    $address = $existingAddress;
+                    $destinationLocation = Location::where('addresses_id', $address->id)
+                        ->where('location_type', 'ADDRESS')
+                        ->first();
+                } else {
+                    // Create new address
+                    $address = Address::create([
+                        'street' => $street,
+                        'house_number' => $houseNumber,
+                        'bus_number' => $busNumber,
+                        'cities_id' => $city->id
+                    ]);
+                    $destinationLocation = null;
+                }
+
+                // Create destination location if it doesn't exist
+                if (!$destinationLocation) {
+                    $destinationLocation = Location::create([
+                        'addresses_id' => $address->id,
+                        'location_type' => 'ADDRESS',
+                        'description' => 'Customer Address ' . $packageData['name'] . ' ' . $packageData['lastName'],
+                        'contact_number' => $packageData['receiver_phone_number'],
+                        'latitude' => $addressData['lat'],
+                        'longitude' => $addressData['lon'],
+                        'is_active' => true
+                    ]);
+                }
+
+                $packageData['destination_location_id'] = $destinationLocation->id;
+            } catch (\Exception $e) {
+                return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
+            }
+        }
+
+        // Create the package
+        $package = Package::create([
+            'reference' => $this->generateUniqueTrackingNumber(),
+            'user_id' => $userId,
+            'name' => $packageData['name'],
+            'lastName' => $packageData['lastName'],
+            'receiverEmail' => $packageData['receiverEmail'],
+            'receiver_phone_number' => $packageData['receiver_phone_number'],
+            'dimension' => $packageData['dimension'],
+            'weight_id' => $packageData['weight_id'],
+            'delivery_method_id' => $packageData['delivery_method_id'],
+            'origin_location_id' => Auth::user()->address->id,
+            'destination_location_id' => $packageData['destination_location_id'] ?? null,
+            'weight_price' => $weightPrice,
+            'delivery_price' => $deliveryPrice,
+            'status' => 'pending',
+        ]);
+
+        $createdPackages[] = $package;
+    }
+
+    session([
+        'bulk_order_total_price' => $totalWeightPrice + $totalDeliveryPrice,
+        'bulk_order_weight_price' => $totalWeightPrice,
+        'bulk_order_delivery_price' => $totalDeliveryPrice,
+        'bulk_order_package_ids' => collect($createdPackages)->pluck('id')->toArray(),
+    ]);
+
+    return redirect()->route('bulk-packagepayment', ['id' => $createdPackages[0]->id])
+    ->with('bulk_order_total_price', $totalWeightPrice + $totalDeliveryPrice)
+    ->with('bulk_order_weight_price', $totalWeightPrice)
+    ->with('bulk_order_delivery_price', $totalDeliveryPrice)
+    ->with('bulk_order_package_ids', collect($createdPackages)->pluck('id')->toArray())
+    ->with('success', 'Packages created successfully');
+}
+
+public function bulkPackageDetails($ids)
+{
+    $packageIds = explode(',', $ids);
+
+    $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+        ->whereIn('id', $packageIds)
+        ->get();
+
+    if ($packages->isEmpty()) {
+        return back()->withErrors(['error' => 'No packages found for the provided IDs.']);
+    }
+
+    foreach ($packages as $package) {
+        $package->qrCode = base64_encode(QrCode::format('png')
+            ->size(150)
+            ->margin(0)
+            ->generate($package->id));
+    }
+
+    // Use the correct view name
+    return view('Packages.bulk-package-details', compact('packages'))
+        ->with('success', 'Payment completed successfully.');
+}
+
+public function bulkPackagePayment($packageID)
+{
+    $bulkOrderPackageIds = session('bulk_order_package_ids', []);
+
+    if (empty($bulkOrderPackageIds)) {
+        return back()->withErrors(['error' => 'No packages found for the bulk order.']);
+    }
+
+    // Update all packages in the bulk order to "paid"
+    Package::whereIn('id', $bulkOrderPackageIds)
+        ->where('user_id', Auth::user()->id)
+        ->update(['paid' => true]);
+
+    // Fetch the first package for display purposes
+    $package = Package::with(['user'])
+        ->where('user_id', Auth::user()->id)
+        ->where('id', $packageID)
+        ->first();
+
+    if (!$package) {
+        return back()->withErrors(['error' => 'Package not found.']);
+    }
+
+    return view('packagepayment', compact('package'))
+        ->with('success', 'Payment completed successfully.');
+}
+
+public function companyDashboard()
+{
+    $userId = Auth::id();
+
+    // Fetch total packages and unpaid packages for the current user
+    $totalPackages = Package::where('user_id', $userId)->count();
+    $unpaidPackages = Package::where('user_id', $userId)->where('paid', false)->count();
+
+    return view('Packages.company-dashboard', compact('totalPackages', 'unpaidPackages'));
+}
+}

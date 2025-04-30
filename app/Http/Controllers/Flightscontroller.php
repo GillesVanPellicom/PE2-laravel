@@ -10,7 +10,7 @@ class Flightscontroller extends Controller
 {
     public function flightindex()
     {
-        $today = Carbon::now()->format('l'); 
+        $today = Carbon::now()->format('l');
 
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])
             ->where('departure_day_of_week', "Friday")
@@ -50,11 +50,11 @@ class Flightscontroller extends Controller
 
         flight::create($data);
 
-        return redirect(route('airport.flights'));
+        return redirect(route('workspace.airport.flights'));
     }
 
     public function flights()
-    { 
+    {
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])
             ->get();
 

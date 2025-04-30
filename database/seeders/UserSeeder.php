@@ -35,8 +35,8 @@ class UserSeeder extends Seeder
                 'birth_date' => '1990-01-01',
                 'email' => 'john.doe@example.com',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password123'), 
-                'address_id' => 1, 
+                'password' => Hash::make('password123'),
+                'address_id' => 1,
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -120,6 +120,19 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
 
+            [
+                'first_name' => 'Szymon',
+                'last_name' => 'DC Manager',
+                'phone_number' => '0987654321',
+                'birth_date' => '1990-01-01',
+                'email'=>'dc@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password123'),
+                'address_id' => 6,
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ]);
     }
 }

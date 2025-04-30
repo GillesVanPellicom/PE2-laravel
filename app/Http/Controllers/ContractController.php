@@ -10,7 +10,7 @@ class ContractController extends Controller
 {
     public function contractindex(){
         $contracts = Contract::all();
-        
+
         return view('airport.contract', ['contracts' => $contracts]);
     }
 
@@ -28,6 +28,6 @@ class ContractController extends Controller
             'price' => 'price'
         ]);
 
-        return redirect(route('airport.contract'));
+        return redirect(route('workspace.airport.contract'));
     }
 }
