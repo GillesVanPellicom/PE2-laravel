@@ -37,7 +37,7 @@ use App\Http\Controllers\InvoiceController;
                     return view('real-homepage');
                 } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
                     return redirect()->route('workspace.courier.scan');
-                } elseif (auth()->user()->hasAnyPermission(['HR.checkall',"HR.create", "HR.assign","employee"])) {
+                } elseif (auth()->user()->hasAnyPermission(['HR.checkall',"HR.create", "HR.assign"])) {
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
                     return redirect()->route('workspace.pickup.dashboard');
@@ -299,8 +299,6 @@ Route::post('/email/verification-notification', function (Request $request) {
 // ======================= End Authentication ====================== //
 
 // ======================= Start Customer ====================== //
-
-Route::middleware("auth")->group(function () {
     Route::get('/send-package', [PackageController::class, 'create'])
         ->name('packages.send-package');
 
@@ -320,6 +318,8 @@ Route::middleware("auth")->group(function () {
 
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
+Route::middleware("auth")->group(function () {
+
 
     Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
         ->name('packages.bulk-order');
@@ -354,7 +354,7 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 // ======================= Package Payment Start  ====================== //
 
 Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
-    ->middleware('auth')
+    //->middleware('auth')
     ->name('packagepayment');
 
 Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
