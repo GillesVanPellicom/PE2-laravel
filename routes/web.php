@@ -372,3 +372,5 @@ Route::post('/tokens/create', function (Request $request) {
 })->name("tokens.create");
 
 // API End
+
+Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
