@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ticket_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ticket_id')->constrained('tickets')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->booleqn('is_customer_message');
             $table->text('message');
             $table->timestamps();
         });
