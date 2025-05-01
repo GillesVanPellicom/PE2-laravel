@@ -313,13 +313,14 @@ Route::post('/email/verification-notification', function (Request $request) {
 
     Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
-    Route::get('/my-packages', [PackageController::class, 'mypackages'])
-        ->name('packages.mypackages');
+
 
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
-Route::middleware("auth")->group(function () {
 
+Route::middleware("auth")->group(function () {
+    Route::get('/my-packages', [PackageController::class, 'mypackages'])
+        ->name('packages.mypackages');
 
     Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
         ->name('packages.bulk-order');
