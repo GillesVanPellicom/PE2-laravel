@@ -47,6 +47,9 @@
                             {{ __('Company Dashboard') }}
                         </x-nav-link>
                     @endrole
+                    <x-nav-link :href="route('manage-invoices')" :active="request()->routeIs('manage-invoices')">
+                        {{ __('Manage Invoices') }}
+                    </x-nav-link>
                 </div>
             </div>
 

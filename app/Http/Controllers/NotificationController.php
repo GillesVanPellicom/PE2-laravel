@@ -13,13 +13,17 @@ class NotificationController extends Controller
     {
         $notifications = Notification::where('user_id', auth()->id())
             ->where('is_read', 0) // Fetch only unread notifications
-            ->whereHas('messageTemplate', function ($query) {
-                $query->where('key', '!=', 'sick_leave_notification'); // Exclude sick leave notifications
-            })
-            ->with('messageTemplate', 'user')
+            ->whereIn('message_template_id', [1, 2]) // Include only message_template_id 1 and 2
+            ->with('messageTemplate') // Include the message template relationship
             ->get();
 
-        return response()->json($notifications);
+        return response()->json($notifications->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'message' => $notification->messageTemplate->message ?? 'No message', // Fetch the message from the related message template
+                'created_at' => $notification->created_at,
+            ];
+        }));
     }
 
     public function showCalendar()
@@ -36,32 +40,33 @@ class NotificationController extends Controller
     // Method to mark a notification as read
     public function markAsRead($id)
     {
-        $notification = Notification::find($id);
+        $notification = Notification::where('id', $id)
+            ->where('user_id', auth()->id()) // Ensure the notification belongs to the logged-in user
+            ->first();
+
         if ($notification) {
             $notification->is_read = true;
             $notification->save();
+
             return response()->json(['message' => 'Notification marked as read.']);
         }
-        return response()->json(['error' => 'Notification not found.'], 404);
+
+        return response()->json(['error' => 'Notification not found or unauthorized.'], 404);
     }
 
     public function fetchSickDayNotifications()
     {
-        $notifications = Notification::whereHas('messageTemplate', function ($query) {
-                $query->where('key', 'sick_leave_notification'); // Ensure the correct message template key is used
-            })
-            ->where('is_read', false) // Fetch only unread notifications
-            ->with(['messageTemplate', 'user']) // Include message template and user relationships
+        $notifications = Notification::where('message_template_id', 4) // Ensure correct message_template_id
+            ->where('is_read', 0) // Fetch only unread notifications
+            ->with(['messageTemplate', 'user']) // Include related message template and user
             ->get();
 
         return response()->json($notifications->map(function ($notification) {
-            $data = json_decode($notification->data, true); // Decode the data field
-
             return [
                 'id' => $notification->id,
                 'message' => str_replace(
                     '{employee_name}',
-                    optional($notification->user)->first_name . ' ' . optional($notification->user)->last_name, // Use the user's name
+                    optional($notification->user)->first_name . ' ' . optional($notification->user)->last_name, // Replace placeholder with employee name
                     $notification->messageTemplate->message ?? 'No message'
                 ),
                 'created_at' => $notification->created_at,
