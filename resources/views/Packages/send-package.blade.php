@@ -22,8 +22,8 @@
         <div class="max-w-3xl mx-auto">
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div class="px-8 py-6 border-b border-gray-200">
-                    <h2 class="text-3xl font-bold text-gray-800">Send Package</h2>
-                    <p class="mt-2 text-gray-600">Fill in the details to send your package</p>
+                    <h2 class="text-3xl font-bold text-gray-800">Send a Parcel</h2>
+                    <p class="mt-2 text-gray-600">Fill in the details to send your parcel</p>
 
                     <div id="updatedDeliveryPrice"></div>
                     <div id="updatedTotalPrice"></div>
@@ -84,7 +84,7 @@
                                         <div class="w-full flex flex-row gap-4">
                                             <input type="email" name="sender_email" placeholder="Email" value="{{old("sender_email")}}" required
                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                            <input type="text" name="sender_phonenumber" placeholder="Phone Number" value="{{old("sender_phonenumber")}}" required
+                                            <input type="text" name="sender_phone_number" placeholder="Phone Number" value="{{old("sender_phone_number")}}" required
                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                         </div>
                                     </div>
@@ -119,7 +119,7 @@
                                     <div class="w-full flex flex-col gap-4">
                                         <div>
                                             <label for="checked_on_create_account" class="text-sm text-gray-700">Create an account?</label>
-                                            <input type="checkbox" name="checked_on_create_account" id="checked_on_create_account" onchange="togglePasswordFields()">
+                                            <input type="checkbox" name="checked_on_create_account" id="checked_on_create_account" onchange="togglePasswordFields()" >
                                         </div>
                                         <div id="passwordFields" class="w-full flex flex-row gap-4" style="display: none;">
                                             <input type="password" name="password" placeholder="Password"
@@ -150,7 +150,7 @@
 
                         <!-- Package Details -->
                         <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Package Details</h3>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Parcel Details</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <input type="text" name="dimension" value="{{old('dimension')}}" placeholder="Dimension" required
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
@@ -477,7 +477,10 @@ function updatePrices() {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+            ...data,
+            sender_country_name: document.querySelector('select[name="sender_country_name"]')?.value
+        })
     })
     .then(response => {
         if (!response.ok) {
