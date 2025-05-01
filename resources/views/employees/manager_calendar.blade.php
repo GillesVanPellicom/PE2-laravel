@@ -39,56 +39,56 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             transition: background-color 0.3s, color 0.3s;
         }
-
+        
         .dark {
             color-scheme: dark;
         }
-
+        
         /* Custom Card Styles */
         .dashboard-card {
             @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl;
         }
-
+        
         .card-header {
             @apply p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between;
         }
-
+        
         /* Status Indicators */
         .status-badge {
             @apply text-xs font-medium px-2.5 py-0.5 rounded-full;
         }
-
+        
         .status-available {
             @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
         }
-
+        
         .status-unavailable {
             @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
         }
-
+        
         .status-holiday {
             @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
         }
-
+        
         /* Calendar styles */
         .fc .fc-button-primary {
             @apply bg-blue-600 border-blue-600 hover:bg-blue-700 hover:border-blue-700;
         }
-
+        
         .fc .fc-button-primary:not(:disabled).fc-button-active,
         .fc .fc-button-primary:not(:disabled):active {
             @apply bg-blue-700 border-blue-700 shadow-inner;
         }
-
+        
         .fc .fc-daygrid-day.fc-day-today {
             @apply bg-blue-50 dark:bg-blue-900/20;
         }
-
+        
         .fc .fc-col-header-cell-cushion,
         .fc .fc-daygrid-day-number {
             @apply text-gray-700 dark:text-gray-300;
         }
-
+        
         /* Custom tooltip */
         .calendar-tooltip {
             position: fixed;
@@ -146,7 +146,7 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="px-5 py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
                         Status for
@@ -155,7 +155,7 @@
                         <!-- Date will be populated by JS -->
                     </div>
                 </div>
-
+                
                 <div class="p-5 space-y-6">
                     <!-- Available Section -->
                     <div>
@@ -165,7 +165,7 @@
                             </h3>
                             <span class="status-badge status-available" id="availableCount">0</span>
                         </div>
-
+                        
                         <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
                             <div id="employeeList" class="space-y-2"></div>
                         </div>
@@ -179,7 +179,7 @@
                             </h3>
                             <span class="status-badge status-unavailable" id="sickCount">0</span>
                         </div>
-
+                        
                         <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
                             <div id="sickEmployeeList" class="space-y-2"></div>
                         </div>
@@ -193,7 +193,7 @@
                             </h3>
                             <span class="status-badge status-holiday" id="holidayCount">0</span>
                         </div>
-
+                        
                         <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
                             <div id="holidayEmployeeList" class="space-y-2"></div>
                         </div>
@@ -226,7 +226,7 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Sick Leave Notifications -->
                     <div class="notification-dropdown-container relative">
                         <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-red-500 dark:hover:bg-gray-700 dark:text-red-400" onclick="toggleSickLeaveNotifications()">
@@ -269,7 +269,7 @@
                             <button id="3monthsButton" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">3 Months</button>
                         </div>
                     </div>
-
+                    
                     <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 grid grid-cols-3 gap-4">
                         <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
                             <div class="text-sm text-gray-600 dark:text-gray-400">Available</div>
@@ -305,16 +305,16 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6 space-y-4 md:space-y-0">
                             <div class="flex items-center space-x-2">
                                 <label for="startDatePicker" class="text-sm font-medium text-gray-600 dark:text-gray-300">
                                     Start Date:
                                 </label>
-                                <input
-                                    type="date"
-                                    id="startDatePicker"
+                                <input 
+                                    type="date" 
+                                    id="startDatePicker" 
                                     class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
                                 />
                             </div>
@@ -323,8 +323,8 @@
                                 <label for="endDatePicker" class="text-sm font-medium text-gray-600 dark:text-gray-300">
                                     End Date:
                                 </label>
-                                <input
-                                    type="date"
+                                <input 
+                                    type="date" 
                                     id="endDatePicker"
                                     class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
                                 />
@@ -338,7 +338,7 @@
                             </div>
                             <canvas id="availabilityChart"></canvas>
                         </div>
-
+                        
                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center" id="chartDaysInfo">
                             Showing employee availability data for <span id="totalDays">0</span> days
                         </div>
@@ -362,10 +362,10 @@
                     <div class="p-5 space-y-4">
                         <!-- Search Bar -->
                         <div class="relative">
-                            <input
-                                type="text"
-                                id="searchHolidayRequests"
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                            <input 
+                                type="text" 
+                                id="searchHolidayRequests" 
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm" 
                                 placeholder="Search by employee name..."
                                 oninput="filterHolidayRequests()"
                             />
@@ -406,37 +406,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-
-            // Dark mode toggle
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const htmlElement = document.documentElement;
-            const isDarkMode = localStorage.getItem('darkMode') === 'true';
-
-            if (isDarkMode) {
-                htmlElement.classList.add('dark');
-                updateDarkModeButton(true);
-            }
-
-            darkModeToggle.addEventListener('click', function() {
-                const isDark = htmlElement.classList.toggle('dark');
-                localStorage.setItem('darkMode', isDark);
-                updateDarkModeButton(isDark);
-            });
-
-            function updateDarkModeButton(isDark) {
-                if (isDark) {
-                    darkModeToggle.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>`;
-                } else {
-                    darkModeToggle.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>`;
-                }
-            }
-
-            // Notifications
-
             const notificationDropdown = document.getElementById('notificationDropdown');
             const sickLeaveNotificationDropdown = document.getElementById('sickLeaveNotificationDropdown');
 
@@ -458,252 +427,12 @@
                 sickLeaveNotificationDropdown.classList.toggle('hidden');
             };
 
-
             // Close dropdowns when clicking outside
             document.addEventListener('click', function (event) {
                 if (!event.target.closest('#notificationDropdown') &&
                     !event.target.closest('[onclick="toggleNotifications()"]')) {
                     notificationDropdown.classList.add('hidden');
                 }
-
-            function fetchHolidayRequestNotifications() {
-                fetch('/workspace/pending-vacations')
-                    .then(response => response.json())
-                    .then(data => {
-                        notificationDropdown.innerHTML = '';
-                        let unreadCount = 0;
-
-                        if (data.length === 0) {
-                            notificationDropdown.innerHTML = `
-                                <div class="py-10 text-center">
-                                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center mb-4">
-                                        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-500 dark:text-gray-400">No holiday requests available</p>
-                                </div>
-                            `;
-                        } else {
-                            const container = document.createElement('div');
-                            container.className = "space-y-3 max-h-[60vh] overflow-y-auto pr-1";
-
-                            data.forEach(request => {
-                                const requestElement = document.createElement('div');
-                                requestElement.className = "p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow border border-gray-100 dark:border-gray-600 hover:shadow-md transition-shadow";
-                                requestElement.innerHTML = `
-                                    <div class="flex items-start gap-3">
-                                        <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 p-2 rounded-full">
-                                            <span class="text-xl">🏖️</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="font-medium text-gray-900 dark:text-gray-100">${request.employee_name}</h4>
-                                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                                Requested holiday on ${request.start_date}
-                                                <span class="ml-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 rounded text-xs">
-                                                    ${request.day_type || 'Full Day'}
-                                                </span>
-                                            </p>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                                                    <span class="relative flex h-2 w-2 mr-1">
-                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-                                                    </span>
-                                                    Pending
-                                                </span>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <button
-                                                    class="px-3 py-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white text-sm font-medium rounded"
-                                                    onclick="updateVacationStatus(${request.id}, 'approved', this.parentNode.parentNode.parentNode)"
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    class="px-3 py-1 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm font-medium rounded"
-                                                    onclick="updateVacationStatus(${request.id}, 'rejected', this.parentNode.parentNode.parentNode)"
-                                                >
-                                                    Reject
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                                container.appendChild(requestElement);
-                                unreadCount++;
-                            });
-
-                            notificationDropdown.appendChild(container);
-                        }
-
-                        notificationBadge.textContent = unreadCount;
-                        notificationBadge.classList.toggle('hidden', unreadCount === 0);
-                    })
-                    .catch(error => console.error("Error fetching holiday request notifications:", error));
-            }
-
-            function fetchHolidayRequests() {
-                fetch('/pending-vacations')
-                    .then(response => response.json())
-                    .then(data => {
-                        const holidayRequestsContainer = document.getElementById('holidayRequests');
-                        holidayRequestsContainer.innerHTML = "";
-
-                        if (data.length === 0) {
-                            holidayRequestsContainer.innerHTML = `
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    No holiday requests available.
-                                </div>
-                            `;
-                            return;
-                        }
-
-                        data.forEach(request => {
-                            const requestElement = document.createElement('div');
-                            requestElement.className = "p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between";
-                            requestElement.innerHTML = `
-                                <div>
-                                    <div class="font-medium text-gray-800 dark:text-gray-200">${request.employee_name}</div>
-                                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                                        ${request.start_date} to ${request.end_date} (${request.day_type || 'Full Day'})
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button
-                                        class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded"
-                                        onclick="updateVacationStatus(${request.id}, 'approved', this.parentNode.parentNode)"
-                                    >
-                                        Approve
-                                    </button>
-                                    <button
-                                        class="px-3 py-1 text-red-600 border border-red-200 hover:bg-red-50 text-sm font-medium rounded"
-                                        onclick="updateVacationStatus(${request.id}, 'rejected', this.parentNode.parentNode)"
-                                    >
-                                        Reject
-                                    </button>
-                                </div>
-                            `;
-                            holidayRequestsContainer.appendChild(requestElement);
-                        });
-                    })
-                    .catch(error => console.error("Error fetching holiday requests:", error));
-            }
-
-            function fetchSickDayNotifications() {
-                fetch('/workspace/manager/sick-day-notifications')
-                    .then(response => response.json())
-                    .then(data => {
-                        sickLeaveNotificationDropdown.innerHTML = '';
-                        let unreadCount = 0;
-
-                        if (data.length === 0) {
-                            sickLeaveNotificationDropdown.innerHTML = `
-                                <div class="py-10 text-center">
-                                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center mb-4">
-                                        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-500 dark:text-gray-400">No sick leave notifications available</p>
-                                </div>
-                            `;
-                        } else {
-                            const container = document.createElement('div');
-                            container.className = "space-y-3 max-h-[60vh] overflow-y-auto pr-1";
-
-                            data.forEach(notification => {
-                                const notificationElement = document.createElement('div');
-                                notificationElement.className = "p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow border border-gray-100 dark:border-gray-600 hover:shadow-md transition-shadow";
-                                notificationElement.innerHTML = `
-                                    <div class="flex items-start gap-3">
-                                        <div class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-2 rounded-full">
-                                            <span class="text-xl">🤒</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-gray-800 dark:text-gray-200">${notification.message}</p>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 mb-3 flex items-center">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                ${moment(notification.created_at).fromNow()}
-                                            </div>
-                                            <button
-                                                class="w-full px-3 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-medium rounded"
-                                                onclick="markSickLeaveAsRead(${notification.id}, this.parentNode.parentNode)"
-                                            >
-                                                Mark as Read
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
-                                container.appendChild(notificationElement);
-                                unreadCount++;
-                            });
-
-                            sickLeaveNotificationDropdown.appendChild(container);
-                        }
-
-                        sickLeaveNotificationBadge.textContent = unreadCount;
-                        sickLeaveNotificationBadge.classList.toggle('hidden', unreadCount === 0);
-                    })
-                    .catch(error => console.error("Error fetching sick day notifications:", error));
-            }
-
-
-            window.markSickLeaveAsRead = function(notificationId, notificationElement) {
-                fetch(`/manager/sick-day-notifications/${notificationId}/read`, {
-
-            function markSickLeaveAsRead(notificationId, notificationElement) {
-                fetch(`/workspace/manager/sick-day-notifications/${notificationId}/read`, {
-
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(() => {
-                    notificationElement.remove();
-                    let unreadCount = parseInt(sickLeaveNotificationBadge.textContent);
-                    unreadCount = Math.max(0, unreadCount - 1);
-                    sickLeaveNotificationBadge.textContent = unreadCount;
-                    sickLeaveNotificationBadge.classList.toggle('hidden', unreadCount === 0);
-                })
-                .catch(error => console.error("Error marking sick leave notification as read:", error));
-            };
-
-
-            window.updateVacationStatus = function(vacationId, newStatus, notificationElement) {
-                fetch(`/vacations/${vacationId}/update-status`, {
-
-            function updateVacationStatus(vacationId, newStatus, notificationElement) {
-                fetch(`/workspace/vacations/${vacationId}/update-status`, {
-
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                })
-                .then(response => response.json())
-                .then(() => {
-                    notificationElement.remove();
-                    let unreadCount = parseInt(notificationBadge.textContent);
-                    unreadCount = Math.max(0, unreadCount - 1);
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.classList.toggle('hidden', unreadCount === 0);
-
-                    // Update calendar after vacation status change
-                    if (calendalInstance) {
-                        fetchEvents();
-                    }
-                })
-                .catch(error => console.error("Error updating vacation status:", error));
-            };
-
 
                 if (!event.target.closest('#sickLeaveNotificationDropdown') &&
                     !event.target.closest('[onclick="toggleSickLeaveNotifications()"]')) {
@@ -717,192 +446,9 @@
             const availableCount = document.getElementById('availableCount');
             const sickCount = document.getElementById('sickCount');
             const holidayCount = document.getElementById('holidayCount');
-
             const currentDateElement = document.getElementById('currentDate');
-
-
-            function updateSidebar(date) {
-                console.log("Clicked date:", date);
-
-                // Update selected date display
-                const selectedDate = new Date(date);
-                currentDateElement.textContent = selectedDate.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric'
-                });
-
-                fetch('/approved-vacations')
-                    .then(response => response.json())
-                    .then(holidayData => {
-                        let holidayEmployees = holidayData.filter(holiday =>
-                            holiday.vacation_type !== 'Sick Leave' &&
-                            date >= holiday.start_date && date <= holiday.end_date
-                        );
-
-                        displayHolidays(date, holidayEmployees);
-
-                        fetch('/get-vacations')
-                            .then(response => response.json())
-                            .then(sickData => {
-                                let sickEmployees = sickData.filter(vacation =>
-                                    vacation.vacation_type === 'Sick Leave' &&
-                                    date >= vacation.start_date && date <= vacation.end_date
-                                );
-
-                                displaySickLeaves(date, sickEmployees);
-                                updateAvailableEmployees(holidayEmployees, sickEmployees);
-                            })
-                            .catch(error => console.error("Error fetching sick leaves:", error));
-                    })
-                    .catch(error => console.error("Error fetching approved vacations:", error));
-            }
-
-
-            function displayHolidays(date, holidayEmployees) {
-                holidayEmployeeList.innerHTML = "";
-                holidayCount.textContent = holidayEmployees.length;
-
-    <div class="mt-6 text-center">
-        <a href="/workspace/employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
-    </div>
-
-
-                if (holidayEmployees.length > 0) {
-                    holidayEmployees.forEach(holiday => {
-                        const initials = holiday.name ? holiday.name.split(' ').map(n => n[0]).join('') : 'N/A';
-
-                        const div = document.createElement("div");
-                        div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
-                        div.innerHTML = `
-                            <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2 text-xs">
-                                ${initials}
-                            </div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">${holiday.name} ${holiday.day_type ? `(${holiday.day_type})` : ''}</span>
-                        `;
-                        holidayEmployeeList.appendChild(div);
-                    });
-                } else {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = "flex items-center justify-center h-12 text-gray-500 dark:text-gray-400 text-sm";
-                    emptyState.innerHTML = `
-                        <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        No employees on holiday this day
-                    `;
-                    holidayEmployeeList.appendChild(emptyState);
-                }
-            }
-
-            function displaySickLeaves(date, sickEmployees) {
-                sickEmployeeList.innerHTML = "";
-                sickCount.textContent = sickEmployees.length;
-
-                if (sickEmployees.length > 0) {
-                    sickEmployees.forEach(sick => {
-                        const initials = sick.name ? sick.name.split(' ').map(n => n[0]).join('') : 'N/A';
-
-                        const div = document.createElement("div");
-                        div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
-                        div.innerHTML = `
-                            <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2 text-xs">
-                                ${initials}
-                            </div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">${sick.name} ${sick.day_type ? `(${sick.day_type})` : ''}</span>
-                        `;
-                        sickEmployeeList.appendChild(div);
-                    });
-                } else {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = "flex items-center justify-center h-12 text-gray-500 dark:text-gray-400 text-sm";
-                    emptyState.innerHTML = `
-                        <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        No employees on sick leave this day
-                    `;
-                    sickEmployeeList.appendChild(emptyState);
-                }
-            }
-
-
-            function updateAvailableEmployees(holidays, sickEmployees = []) {
-                employeeList.innerHTML = "";
-                const employees = @json($employees);
-
-                const holidayNames = holidays.map(h => h.name);
-                const sickNames = sickEmployees.map(s => s.name);
-
-                const availableEmployees = employees.filter(emp => {
-                    const fullName = `${emp.user.first_name} ${emp.user.last_name}`;
-                    return !holidayNames.includes(fullName) && !sickNames.includes(fullName);
-                });
-
-                availableCount.textContent = availableEmployees.length;
-
-            fetch('/workspace/approved-vacations')
-                .then(response => response.json())
-                .then(holidayData => {
-                    let holidayEmployees = holidayData.filter(holiday =>
-                        holiday.vacation_type !== 'Sick Leave' &&
-                        date >= holiday.start_date && date <= holiday.end_date
-                    );
-
-                    displayHolidays(date, holidayEmployees);
-
-                    fetch('/workspace/get-vacations')
-                        .then(response => response.json())
-                        .then(sickData => {
-                            let sickEmployees = sickData.filter(vacation =>
-                                vacation.vacation_type === 'Sick Leave' &&
-                                date >= vacation.start_date && date <= vacation.end_date
-                            );
-
-                            displaySickLeaves(date, sickEmployees);
-                            updateAvailableEmployees(holidayEmployees, sickEmployees);
-                        })
-                        .catch(error => console.error("Error fetching sick leaves:", error));
-                })
-                .catch(error => console.error("Error fetching approved vacations:", error));
-        }
-
-
-                if (availableEmployees.length > 0) {
-                    availableEmployees.forEach(emp => {
-                        const fullName = `${emp.user.first_name} ${emp.user.last_name}`;
-                        const initials = fullName.split(' ').map(n => n[0]).join('');
-
-                        const div = document.createElement("div");
-                        div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
-                        div.innerHTML = `
-                            <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2 text-xs">
-                                ${initials}
-                            </div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">${fullName}</span>
-                        `;
-                        employeeList.appendChild(div);
-                    });
-                } else {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = "flex items-center justify-center h-12 text-gray-500 dark:text-gray-400 text-sm";
-                    emptyState.innerHTML = `
-                        <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        No available employees this day
-                    `;
-                    employeeList.appendChild(emptyState);
-                }
-            }
-
-            // Chart setup
-            const startDatePicker = document.getElementById('startDatePicker');
-            const endDatePicker = document.getElementById('endDatePicker');
-
             const chartLoading = document.getElementById('chartLoading');
             let availabilityChart;
-
 
             // Fetch employee data for a specific day
             function fetchEmployeeData(date) {
@@ -923,56 +469,6 @@
                             availableList.innerHTML = '<div class="text-gray-500 text-sm">No available employees</div>';
                         }
 
-            // Date range buttons
-            document.getElementById('7daysButton').addEventListener('click', function() {
-                setDateRange('7d');
-                updateButtonStyles('7daysButton');
-            });
-
-            document.getElementById('1monthButton').addEventListener('click', function() {
-                setDateRange('1m');
-                updateButtonStyles('1monthButton');
-            });
-
-            document.getElementById('3monthsButton').addEventListener('click', function() {
-                setDateRange('3m');
-                updateButtonStyles('3monthsButton');
-            });
-
-            function updateButtonStyles(activeButtonId) {
-                // Reset all buttons
-                ['7daysButton', '1monthButton', '3monthsButton'].forEach(id => {
-                    const button = document.getElementById(id);
-                    button.className = "text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600";
-                });
-
-                // Style active button
-                document.getElementById(activeButtonId).className = "text-xs px-2 py-1 rounded bg-blue-100 text-blue-600 font-medium hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50";
-            }
-
-            function setDateRange(range) {
-                const end = new Date();
-                const start = new Date();
-
-                switch(range) {
-                    case '7d':
-                        start.setDate(end.getDate() - 7);
-                        break;
-                    case '1m':
-                        start.setMonth(end.getMonth() - 1);
-                        break;
-                    case '3m':
-                        start.setMonth(end.getMonth() - 3);
-                        break;
-                }
-
-                startDatePicker.value = start.toISOString().split('T')[0];
-                endDatePicker.value = end.toISOString().split('T')[0];
-
-                fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
-            }
-
-
                         // Populate sick employees
                         if (data.sick && data.sick.length > 0) {
                             data.sick.forEach(employee => {
@@ -991,7 +487,6 @@
                             holidayList.innerHTML = '<div class="text-gray-500 text-sm">No employees on holiday</div>';
                         }
 
-
                         // Update counts
                         availableCount.textContent = data.available ? data.available.length : 0;
                         sickCount.textContent = data.sick ? data.sick.length : 0;
@@ -1004,36 +499,6 @@
                             month: 'long',
                             day: 'numeric',
                         });
-=======
-                fetch(`/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!Array.isArray(data)) throw new Error('Invalid data format');
-                        updateChart(data);
-
-                        // Calculate and update stats
-                        const totalDays = data.length;
-                        document.getElementById('totalDays').textContent = totalDays;
-
-                        // Calculate percentages for employee availability
-                        const totalAvailable = data.reduce((sum, day) => sum + day.available, 0);
-                        const totalSick = data.reduce((sum, day) => sum + day.sick, 0);
-                        const totalHoliday = data.reduce((sum, day) => sum + day.onHoliday, 0);
-                        const total = totalAvailable + totalSick + totalHoliday;
-
-                        const availablePercentage = Math.round((totalAvailable / total) * 100) || 0;
-                        const sickPercentage = Math.round((totalSick / total) * 100) || 0;
-                        const holidayPercentage = Math.round((totalHoliday / total) * 100) || 0;
-
-                        document.getElementById('availablePercentage').textContent = `${availablePercentage}%`;
-                        document.getElementById('sickPercentage').textContent = `${sickPercentage}%`;
-                        document.getElementById('holidayPercentage').textContent = `${holidayPercentage}%`;
-
-                        chartLoading.style.display = 'none';
-
                     })
                     .catch(error => console.error("Error fetching employee data:", error));
             }
@@ -1340,32 +805,12 @@
             }
 
             // Initialize the page
-
             const startDatePicker = document.getElementById('startDatePicker');
             const endDatePicker = document.getElementById('endDatePicker');
             const initialStartDate = new Date();
             initialStartDate.setDate(initialStartDate.getDate() - 7);
             startDatePicker.value = initialStartDate.toISOString().split('T')[0];
             endDatePicker.value = new Date().toISOString().split('T')[0];
-
-            fetchHolidayRequestNotifications();
-            fetchHolidayRequests();
-            fetchSickDayNotifications();
-
-            // Set initial date range (7 days)
-            const initialStartDate = moment().startOf('week').format('YYYY-MM-DD');
-            const initialEndDate = moment().endOf('week').format('YYYY-MM-DD');
-            startDatePicker.value = initialStartDate;
-            endDatePicker.value = initialEndDate;
-            fetchAvailabilityData(initialStartDate, initialEndDate);
-
-            // Initialize calendar
-            fetchEvents();
-
-            // Initial sidebar update with current date
-            updateSidebar(moment().format('YYYY-MM-DD'));
-        });
-
 
             fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
 
@@ -1380,5 +825,6 @@
         });
     </script>
 </x-app-layout>
+
 
 
