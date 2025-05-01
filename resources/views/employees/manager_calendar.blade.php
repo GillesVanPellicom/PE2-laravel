@@ -257,7 +257,7 @@
                             <div class="flex items-center gap-2">
                                 <div class="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-md">
                                     <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0-01-2-2z" />
                                     </svg>
                                 </div>
                                 <span>Team Availability Trends</span>
@@ -406,583 +406,107 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Dark mode toggle
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const htmlElement = document.documentElement;
-            const isDarkMode = localStorage.getItem('darkMode') === 'true';
-            
-            if (isDarkMode) {
-                htmlElement.classList.add('dark');
-                updateDarkModeButton(true);
-            }
-            
-            darkModeToggle.addEventListener('click', function() {
-                const isDark = htmlElement.classList.toggle('dark');
-                localStorage.setItem('darkMode', isDark);
-                updateDarkModeButton(isDark);
-            });
-            
-            function updateDarkModeButton(isDark) {
-                if (isDark) {
-                    darkModeToggle.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>`;
-                } else {
-                    darkModeToggle.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>`;
-                }
-            }
-
-            // Notifications
             const notificationDropdown = document.getElementById('notificationDropdown');
-            const notificationBadge = document.getElementById('notificationBadge');
             const sickLeaveNotificationDropdown = document.getElementById('sickLeaveNotificationDropdown');
-            const sickLeaveNotificationBadge = document.getElementById('sickLeaveNotificationBadge');
 
+            // Fix malformed SVG path
+            const svgPaths = document.querySelectorAll('svg path');
+            svgPaths.forEach(path => {
+                if (path.getAttribute('d')?.includes('0-01-2')) {
+                    path.setAttribute('d', path.getAttribute('d').replace('0-01-2', '0 0 1-2'));
+                }
+            });
+
+            // Toggle notifications dropdown
             window.toggleNotifications = function () {
                 notificationDropdown.classList.toggle('hidden');
             };
 
+            // Toggle sick leave notifications dropdown
             window.toggleSickLeaveNotifications = function () {
                 sickLeaveNotificationDropdown.classList.toggle('hidden');
             };
 
-            function fetchHolidayRequestNotifications() {
-                fetch('/workspace/pending-vacations')
-                    .then(response => response.json())
-                    .then(data => {
-                        notificationDropdown.innerHTML = '';
-                        let unreadCount = 0;
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('#notificationDropdown') &&
+                    !event.target.closest('[onclick="toggleNotifications()"]')) {
+                    notificationDropdown.classList.add('hidden');
+                }
 
-                        if (data.length === 0) {
-                            notificationDropdown.innerHTML = `
-                                <div class="py-10 text-center">
-                                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center mb-4">
-                                        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-500 dark:text-gray-400">No holiday requests available</p>
-                                </div>
-                            `;
-                        } else {
-                            const container = document.createElement('div');
-                            container.className = "space-y-3 max-h-[60vh] overflow-y-auto pr-1";
-                            
-                            data.forEach(request => {
-                                const requestElement = document.createElement('div');
-                                requestElement.className = "p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow border border-gray-100 dark:border-gray-600 hover:shadow-md transition-shadow";
-                                requestElement.innerHTML = `
-                                    <div class="flex items-start gap-3">
-                                        <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 p-2 rounded-full">
-                                            <span class="text-xl">🏖️</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="font-medium text-gray-900 dark:text-gray-100">${request.employee_name}</h4>
-                                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                                Requested holiday on ${request.start_date} 
-                                                <span class="ml-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 rounded text-xs">
-                                                    ${request.day_type || 'Full Day'}
-                                                </span>
-                                            </p>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                                                    <span class="relative flex h-2 w-2 mr-1">
-                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-                                                    </span>
-                                                    Pending
-                                                </span>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <button 
-                                                    class="px-3 py-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white text-sm font-medium rounded"
-                                                    onclick="updateVacationStatus(${request.id}, 'approved', this.parentNode.parentNode.parentNode)"
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button 
-                                                    class="px-3 py-1 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm font-medium rounded"
-                                                    onclick="updateVacationStatus(${request.id}, 'rejected', this.parentNode.parentNode.parentNode)"
-                                                >
-                                                    Reject
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                                container.appendChild(requestElement);
-                                unreadCount++;
-                            });
-                            
-                            notificationDropdown.appendChild(container);
-                        }
-
-                        notificationBadge.textContent = unreadCount;
-                        notificationBadge.classList.toggle('hidden', unreadCount === 0);
-                    })
-                    .catch(error => console.error("Error fetching holiday request notifications:", error));
-            }
-
-            function fetchHolidayRequests() {
-                fetch('/pending-vacations')
-                    .then(response => response.json())
-                    .then(data => {
-                        const holidayRequestsContainer = document.getElementById('holidayRequests');
-                        holidayRequestsContainer.innerHTML = "";
-
-                        if (data.length === 0) {
-                            holidayRequestsContainer.innerHTML = `
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    No holiday requests available.
-                                </div>
-                            `;
-                            return;
-                        }
-
-                        data.forEach(request => {
-                            const requestElement = document.createElement('div');
-                            requestElement.className = "p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between";
-                            requestElement.innerHTML = `
-                                <div>
-                                    <div class="font-medium text-gray-800 dark:text-gray-200">${request.employee_name}</div>
-                                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                                        ${request.start_date} to ${request.end_date} (${request.day_type || 'Full Day'})
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button 
-                                        class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded"
-                                        onclick="updateVacationStatus(${request.id}, 'approved', this.parentNode.parentNode)"
-                                    >
-                                        Approve
-                                    </button>
-                                    <button 
-                                        class="px-3 py-1 text-red-600 border border-red-200 hover:bg-red-50 text-sm font-medium rounded"
-                                        onclick="updateVacationStatus(${request.id}, 'rejected', this.parentNode.parentNode)"
-                                    >
-                                        Reject
-                                    </button>
-                                </div>
-                            `;
-                            holidayRequestsContainer.appendChild(requestElement);
-                        });
-                    })
-                    .catch(error => console.error("Error fetching holiday requests:", error));
-            }
-
-            function fetchSickDayNotifications() {
-                fetch('/workspace/manager/sick-day-notifications')
-                    .then(response => response.json())
-                    .then(data => {
-                        sickLeaveNotificationDropdown.innerHTML = '';
-                        let unreadCount = 0;
-
-                        if (data.length === 0) {
-                            sickLeaveNotificationDropdown.innerHTML = `
-                                <div class="py-10 text-center">
-                                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center mb-4">
-                                        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-500 dark:text-gray-400">No sick leave notifications available</p>
-                                </div>
-                            `;
-                        } else {
-                            const container = document.createElement('div');
-                            container.className = "space-y-3 max-h-[60vh] overflow-y-auto pr-1";
-                            
-                            data.forEach(notification => {
-                                const notificationElement = document.createElement('div');
-                                notificationElement.className = "p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow border border-gray-100 dark:border-gray-600 hover:shadow-md transition-shadow";
-                                notificationElement.innerHTML = `
-                                    <div class="flex items-start gap-3">
-                                        <div class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-2 rounded-full">
-                                            <span class="text-xl">🤒</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-gray-800 dark:text-gray-200">${notification.message}</p>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 mb-3 flex items-center">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                ${moment(notification.created_at).fromNow()}
-                                            </div>
-                                            <button 
-                                                class="w-full px-3 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white text-sm font-medium rounded"
-                                                onclick="markSickLeaveAsRead(${notification.id}, this.parentNode.parentNode)"
-                                            >
-                                                Mark as Read
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
-                                container.appendChild(notificationElement);
-                                unreadCount++;
-                            });
-                            
-                            sickLeaveNotificationDropdown.appendChild(container);
-                        }
-
-                        sickLeaveNotificationBadge.textContent = unreadCount;
-                        sickLeaveNotificationBadge.classList.toggle('hidden', unreadCount === 0);
-                    })
-                    .catch(error => console.error("Error fetching sick day notifications:", error));
-            }
-
-
-            window.markSickLeaveAsRead = function(notificationId, notificationElement) {
-                fetch(`/manager/sick-day-notifications/${notificationId}/read`, {
-
-            function markSickLeaveAsRead(notificationId, notificationElement) {
-                fetch(`/workspace/manager/sick-day-notifications/${notificationId}/read`, {
-
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(() => {
-                    notificationElement.remove();
-                    let unreadCount = parseInt(sickLeaveNotificationBadge.textContent);
-                    unreadCount = Math.max(0, unreadCount - 1);
-                    sickLeaveNotificationBadge.textContent = unreadCount;
-                    sickLeaveNotificationBadge.classList.toggle('hidden', unreadCount === 0);
-                })
-                .catch(error => console.error("Error marking sick leave notification as read:", error));
-            };
-
-
-            window.updateVacationStatus = function(vacationId, newStatus, notificationElement) {
-                fetch(`/vacations/${vacationId}/update-status`, {
-
-            function updateVacationStatus(vacationId, newStatus, notificationElement) {
-                fetch(`/workspace/vacations/${vacationId}/update-status`, {
-
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                })
-                .then(response => response.json())
-                .then(() => {
-                    notificationElement.remove();
-                    let unreadCount = parseInt(notificationBadge.textContent);
-                    unreadCount = Math.max(0, unreadCount - 1);
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.classList.toggle('hidden', unreadCount === 0);
-                    
-                    // Update calendar after vacation status change
-                    if (calendalInstance) {
-                        fetchEvents();
-                    }
-                })
-                .catch(error => console.error("Error updating vacation status:", error));
-            };
-
-            // Set current date
-            const currentDateElement = document.getElementById('currentDate');
-            const now = new Date();
-            const formattedDate = now.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric'
+                if (!event.target.closest('#sickLeaveNotificationDropdown') &&
+                    !event.target.closest('[onclick="toggleSickLeaveNotifications()"]')) {
+                    sickLeaveNotificationDropdown.classList.add('hidden');
+                }
             });
-            currentDateElement.textContent = formattedDate;
 
-            // Sidebar employee lists
-            const employeeList = document.getElementById('employeeList');
-            const sickEmployeeList = document.getElementById('sickEmployeeList');
-            const holidayEmployeeList = document.getElementById('holidayEmployeeList');
+            const availableList = document.getElementById('employeeList');
+            const sickList = document.getElementById('sickEmployeeList');
+            const holidayList = document.getElementById('holidayEmployeeList');
             const availableCount = document.getElementById('availableCount');
             const sickCount = document.getElementById('sickCount');
             const holidayCount = document.getElementById('holidayCount');
-
-            function updateSidebar(date) {
-                console.log("Clicked date:", date);
-                
-                // Update selected date display
-                const selectedDate = new Date(date);
-                currentDateElement.textContent = selectedDate.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric'
-                });
-
-                fetch('/approved-vacations')
-                    .then(response => response.json())
-                    .then(holidayData => {
-                        let holidayEmployees = holidayData.filter(holiday =>
-                            holiday.vacation_type !== 'Sick Leave' &&
-                            date >= holiday.start_date && date <= holiday.end_date
-                        );
-
-                        displayHolidays(date, holidayEmployees);
-
-                        fetch('/get-vacations')
-                            .then(response => response.json())
-                            .then(sickData => {
-                                let sickEmployees = sickData.filter(vacation =>
-                                    vacation.vacation_type === 'Sick Leave' &&
-                                    date >= vacation.start_date && date <= vacation.end_date
-                                );
-
-                                displaySickLeaves(date, sickEmployees);
-                                updateAvailableEmployees(holidayEmployees, sickEmployees);
-                            })
-                            .catch(error => console.error("Error fetching sick leaves:", error));
-                    })
-                    .catch(error => console.error("Error fetching approved vacations:", error));
-            }
-
-
-            function displayHolidays(date, holidayEmployees) {
-                holidayEmployeeList.innerHTML = "";
-                holidayCount.textContent = holidayEmployees.length;
-
-    <div class="mt-6 text-center">
-        <a href="/workspace/employees/calendar" class="inline-block bg-green-500 text-white px-6 py-3 rounded-md shadow-md hover:bg-green-600 transition duration-200 ease-in-out">View Calendar</a>
-    </div>
-
-
-                if (holidayEmployees.length > 0) {
-                    holidayEmployees.forEach(holiday => {
-                        const initials = holiday.name ? holiday.name.split(' ').map(n => n[0]).join('') : 'N/A';
-                        
-                        const div = document.createElement("div");
-                        div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
-                        div.innerHTML = `
-                            <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2 text-xs">
-                                ${initials}
-                            </div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">${holiday.name} ${holiday.day_type ? `(${holiday.day_type})` : ''}</span>
-                        `;
-                        holidayEmployeeList.appendChild(div);
-                    });
-                } else {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = "flex items-center justify-center h-12 text-gray-500 dark:text-gray-400 text-sm";
-                    emptyState.innerHTML = `
-                        <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        No employees on holiday this day
-                    `;
-                    holidayEmployeeList.appendChild(emptyState);
-                }
-            }
-
-            function displaySickLeaves(date, sickEmployees) {
-                sickEmployeeList.innerHTML = "";
-                sickCount.textContent = sickEmployees.length;
-
-                if (sickEmployees.length > 0) {
-                    sickEmployees.forEach(sick => {
-                        const initials = sick.name ? sick.name.split(' ').map(n => n[0]).join('') : 'N/A';
-                        
-                        const div = document.createElement("div");
-                        div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
-                        div.innerHTML = `
-                            <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2 text-xs">
-                                ${initials}
-                            </div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">${sick.name} ${sick.day_type ? `(${sick.day_type})` : ''}</span>
-                        `;
-                        sickEmployeeList.appendChild(div);
-                    });
-                } else {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = "flex items-center justify-center h-12 text-gray-500 dark:text-gray-400 text-sm";
-                    emptyState.innerHTML = `
-                        <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        No employees on sick leave this day
-                    `;
-                    sickEmployeeList.appendChild(emptyState);
-                }
-            }
-
-
-            function updateAvailableEmployees(holidays, sickEmployees = []) {
-                employeeList.innerHTML = "";
-                const employees = @json($employees);
-                
-                const holidayNames = holidays.map(h => h.name);
-                const sickNames = sickEmployees.map(s => s.name);
-                
-                const availableEmployees = employees.filter(emp => {
-                    const fullName = `${emp.user.first_name} ${emp.user.last_name}`;
-                    return !holidayNames.includes(fullName) && !sickNames.includes(fullName);
-                });
-                
-                availableCount.textContent = availableEmployees.length;
-
-            fetch('/workspace/approved-vacations')
-                .then(response => response.json())
-                .then(holidayData => {
-                    let holidayEmployees = holidayData.filter(holiday =>
-                        holiday.vacation_type !== 'Sick Leave' &&
-                        date >= holiday.start_date && date <= holiday.end_date
-                    );
-
-                    displayHolidays(date, holidayEmployees);
-
-                    fetch('/workspace/get-vacations')
-                        .then(response => response.json())
-                        .then(sickData => {
-                            let sickEmployees = sickData.filter(vacation =>
-                                vacation.vacation_type === 'Sick Leave' &&
-                                date >= vacation.start_date && date <= vacation.end_date
-                            );
-
-                            displaySickLeaves(date, sickEmployees);
-                            updateAvailableEmployees(holidayEmployees, sickEmployees);
-                        })
-                        .catch(error => console.error("Error fetching sick leaves:", error));
-                })
-                .catch(error => console.error("Error fetching approved vacations:", error));
-        }
-
-
-                if (availableEmployees.length > 0) {
-                    availableEmployees.forEach(emp => {
-                        const fullName = `${emp.user.first_name} ${emp.user.last_name}`;
-                        const initials = fullName.split(' ').map(n => n[0]).join('');
-                        
-                        const div = document.createElement("div");
-                        div.className = "px-3 py-2 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center";
-                        div.innerHTML = `
-                            <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2 text-xs">
-                                ${initials}
-                            </div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">${fullName}</span>
-                        `;
-                        employeeList.appendChild(div);
-                    });
-                } else {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = "flex items-center justify-center h-12 text-gray-500 dark:text-gray-400 text-sm";
-                    emptyState.innerHTML = `
-                        <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        No available employees this day
-                    `;
-                    employeeList.appendChild(emptyState);
-                }
-            }
-
-            // Chart setup
-            const startDatePicker = document.getElementById('startDatePicker');
-            const endDatePicker = document.getElementById('endDatePicker');
+            const currentDateElement = document.getElementById('currentDate');
             const chartLoading = document.getElementById('chartLoading');
-            let availabilityChart = null;
+            let availabilityChart;
 
-            // Date range buttons
-            document.getElementById('7daysButton').addEventListener('click', function() {
-                setDateRange('7d');
-                updateButtonStyles('7daysButton');
-            });
-            
-            document.getElementById('1monthButton').addEventListener('click', function() {
-                setDateRange('1m');
-                updateButtonStyles('1monthButton');
-            });
-            
-            document.getElementById('3monthsButton').addEventListener('click', function() {
-                setDateRange('3m');
-                updateButtonStyles('3monthsButton');
-            });
-            
-            function updateButtonStyles(activeButtonId) {
-                // Reset all buttons
-                ['7daysButton', '1monthButton', '3monthsButton'].forEach(id => {
-                    const button = document.getElementById(id);
-                    button.className = "text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600";
-                });
-                
-                // Style active button
-                document.getElementById(activeButtonId).className = "text-xs px-2 py-1 rounded bg-blue-100 text-blue-600 font-medium hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50";
-            }
-            
-            function setDateRange(range) {
-                const end = new Date();
-                const start = new Date();
-                
-                switch(range) {
-                    case '7d':
-                        start.setDate(end.getDate() - 7);
-                        break;
-                    case '1m':
-                        start.setMonth(end.getMonth() - 1);
-                        break;
-                    case '3m':
-                        start.setMonth(end.getMonth() - 3);
-                        break;
-                }
-                
-                startDatePicker.value = start.toISOString().split('T')[0];
-                endDatePicker.value = end.toISOString().split('T')[0];
-                
-                fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
-            }
-
-            function fetchAvailabilityData(startDate, endDate) {
-                if (!startDate || !endDate) {
-                    console.warn("Please select both start and end dates.");
-                    return;
-                }
-
-                chartLoading.style.display = 'flex';
-
-                fetch(`/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        return response.json();
-                    })
+            // Fetch employee data for a specific day
+            function fetchEmployeeData(date) {
+                fetch(`/workspace/get-unavailable-employees?date=${date}`)
+                    .then(response => response.json())
                     .then(data => {
-                        if (!Array.isArray(data)) throw new Error('Invalid data format');
-                        updateChart(data);
-                        
-                        // Calculate and update stats
-                        const totalDays = data.length;
-                        document.getElementById('totalDays').textContent = totalDays;
-                        
-                        // Calculate percentages for employee availability
-                        const totalAvailable = data.reduce((sum, day) => sum + day.available, 0);
-                        const totalSick = data.reduce((sum, day) => sum + day.sick, 0);
-                        const totalHoliday = data.reduce((sum, day) => sum + day.onHoliday, 0);
-                        const total = totalAvailable + totalSick + totalHoliday;
-                        
-                        const availablePercentage = Math.round((totalAvailable / total) * 100) || 0;
-                        const sickPercentage = Math.round((totalSick / total) * 100) || 0;
-                        const holidayPercentage = Math.round((totalHoliday / total) * 100) || 0;
-                        
-                        document.getElementById('availablePercentage').textContent = `${availablePercentage}%`;
-                        document.getElementById('sickPercentage').textContent = `${sickPercentage}%`;
-                        document.getElementById('holidayPercentage').textContent = `${holidayPercentage}%`;
-                        
-                        chartLoading.style.display = 'none';
+                        // Clear existing lists
+                        availableList.innerHTML = '';
+                        sickList.innerHTML = '';
+                        holidayList.innerHTML = '';
+
+                        // Populate available employees
+                        if (data.available && data.available.length > 0) {
+                            data.available.forEach(employee => {
+                                availableList.innerHTML += `<div class="employee">${employee.name}</div>`;
+                            });
+                        } else {
+                            availableList.innerHTML = '<div class="text-gray-500 text-sm">No available employees</div>';
+                        }
+
+                        // Populate sick employees
+                        if (data.sick && data.sick.length > 0) {
+                            data.sick.forEach(employee => {
+                                sickList.innerHTML += `<div class="sick-employee">${employee.name}</div>`;
+                            });
+                        } else {
+                            sickList.innerHTML = '<div class="text-gray-500 text-sm">No sick employees</div>';
+                        }
+
+                        // Populate employees on holiday
+                        if (data.holiday && data.holiday.length > 0) {
+                            data.holiday.forEach(employee => {
+                                holidayList.innerHTML += `<div class="holiday-employee">${employee.name}</div>`;
+                            });
+                        } else {
+                            holidayList.innerHTML = '<div class="text-gray-500 text-sm">No employees on holiday</div>';
+                        }
+
+                        // Update counts
+                        availableCount.textContent = data.available ? data.available.length : 0;
+                        sickCount.textContent = data.sick ? data.sick.length : 0;
+                        holidayCount.textContent = data.holiday ? data.holiday.length : 0;
+
+                        // Update the current date display
+                        currentDateElement.textContent = new Date(date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                        });
                     })
-                    .catch(error => {
-                        console.error('Error fetching availability data:', error);
-                        chartLoading.style.display = 'none';
-                    });
+                    .catch(error => console.error("Error fetching employee data:", error));
             }
 
+            // Update the chart with fetched data
             function updateChart(data) {
-                const labels = data.map(day => {
-                    // Format date to be more readable (e.g., "Apr 24")
-                    const date = new Date(day.date);
-                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                });
+                const ctx = document.getElementById('availabilityChart').getContext('2d');
+                const labels = data.map(day => new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
                 const availableData = data.map(day => day.available);
                 const onHolidayData = data.map(day => day.onHoliday);
                 const sickData = data.map(day => day.sick);
@@ -991,297 +515,316 @@
                     availabilityChart.destroy();
                 }
 
-                const ctx = document.getElementById('availabilityChart').getContext('2d');
                 availabilityChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels,
                         datasets: [
-                            {
-                                label: 'Available',
-                                data: availableData,
-                                backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                                borderColor: 'rgba(34, 197, 94, 1)',
-                                borderRadius: 6,
-                                borderWidth: 1,
-                                stack: 'Stack 0'
-                            },
-                            {
-                                label: 'On Holiday',
-                                data: onHolidayData,
-                                backgroundColor: 'rgba(234, 179, 8, 0.7)',
-                                borderColor: 'rgba(234, 179, 8, 1)',
-                                borderRadius: 6,
-                                borderWidth: 1,
-                                stack: 'Stack 0'
-                            },
-                            {
-                                label: 'Sick Leave',
-                                data: sickData,
-                                backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                                borderColor: 'rgba(239, 68, 68, 1)',
-                                borderRadius: 6,
-                                borderWidth: 1,
-                                stack: 'Stack 0'
-                            }
+                            { label: 'Available', data: availableData, backgroundColor: 'rgba(34, 197, 94, 0.7)' },
+                            { label: 'On Holiday', data: onHolidayData, backgroundColor: 'rgba(234, 179, 8, 0.7)' },
+                            { label: 'Sick Leave', data: sickData, backgroundColor: 'rgba(239, 68, 68, 0.7)' }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    usePointStyle: true,
-                                    padding: 15,
-                                    font: {
-                                        size: 12
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                titleColor: '#374151',
-                                bodyColor: '#374151',
-                                borderColor: 'rgba(226, 232, 240, 1)',
-                                borderWidth: 1,
-                                cornerRadius: 10,
-                                padding: 10,
-                                boxPadding: 4,
-                                usePointStyle: true,
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.dataset.label}: ${context.raw}`;
-                                    }
-                                }
-                            }
+                            legend: { position: 'top' },
+                            tooltip: { mode: 'index', intersect: false }
                         },
                         scales: {
-                            x: {
-                                stacked: true,
-                                grid: {
-                                    display: false
-                                },
-                                border: {
-                                    display: false
-                                },
-                                ticks: {
-                                    maxRotation: 45,
-                                    minRotation: 45
-                                }
-                            },
-                            y: {
-                                stacked: true,
-                                beginAtZero: true,
-                                border: {
-                                    display: false
-                                },
-                                grid: {
-                                    color: 'rgba(226, 232, 240, 0.5)'
-                                },
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
+                            x: { stacked: true },
+                            y: { stacked: true, beginAtZero: true }
                         },
-                        onClick: function(event, elements) {
+                        onClick: (event, elements) => {
                             if (elements.length > 0) {
                                 const index = elements[0].index;
-                                const selectedDate = data[index].date;
-                                updateSidebar(selectedDate);
+                                const date = data[index].date;
+                                fetchEmployeeData(date); // Fetch and display employee data for the clicked date
                             }
                         }
                     }
                 });
             }
 
-            function onDateRangeChange() {
-                const startDate = startDatePicker.value;
-                const endDate = endDatePicker.value;
-                fetchAvailabilityData(startDate, endDate);
+            // Fetch availability data
+            function fetchAvailabilityData(startDate, endDate) {
+                chartLoading.style.display = 'flex';
+
+                fetch(`/workspace/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateChart(data);
+
+                        // Calculate percentages
+                        const totalDays = data.length;
+                        const totalAvailable = data.reduce((sum, day) => sum + day.available, 0);
+                        const totalOnHoliday = data.reduce((sum, day) => sum + day.onHoliday, 0);
+                        const totalSick = data.reduce((sum, day) => sum + day.sick, 0);
+                        const totalEmployees = totalAvailable + totalOnHoliday + totalSick;
+
+                        document.getElementById('availablePercentage').textContent = `${Math.round((totalAvailable / (totalEmployees || 1)) * 100)}%`;
+                        document.getElementById('holidayPercentage').textContent = `${Math.round((totalOnHoliday / (totalEmployees || 1)) * 100)}%`;
+                        document.getElementById('sickPercentage').textContent = `${Math.round((totalSick / (totalEmployees || 1)) * 100)}%`;
+
+                        chartLoading.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching availability data:', error);
+                        chartLoading.style.display = 'none';
+                    });
             }
 
+            // Update the date range when buttons are clicked
+            document.getElementById('7daysButton').addEventListener('click', () => {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(endDate.getDate() - 7);
 
-            startDatePicker.addEventListener('change', onDateRangeChange);
-            endDatePicker.addEventListener('change', onDateRangeChange);
+                startDatePicker.value = startDate.toISOString().split('T')[0];
+                endDatePicker.value = endDate.toISOString().split('T')[0];
+                fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
+            });
 
-            // Calendar setup
-            const calendarEl = document.getElementById('calendar');
-            const calendarLoading = document.getElementById('calendarLoading');
-            let calendalInstance = null;
+            document.getElementById('1monthButton').addEventListener('click', () => {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setMonth(endDate.getMonth() - 1);
 
-            fetch(`/workspace/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    if (!Array.isArray(data)) throw new Error('Invalid data format');
-                    updateChart(data);
-                })
-                .catch(error => console.error('Error fetching availability data:', error));
-        }
+                startDatePicker.value = startDate.toISOString().split('T')[0];
+                endDatePicker.value = endDate.toISOString().split('T')[0];
+                fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
+            });
 
+            document.getElementById('3monthsButton').addEventListener('click', () => {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setMonth(endDate.getMonth() - 3);
 
-            function fetchEvents() {
-                // Show loading indicator
-                calendarLoading.style.display = 'flex';
+                startDatePicker.value = startDate.toISOString().split('T')[0];
+                endDatePicker.value = endDate.toISOString().split('T')[0];
+                fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
+            });
 
-                // Fetch holiday and vacation data
-                Promise.all([
-                    fetch('/approved-vacations').then(res => res.json()).catch(() => []), // Default to empty array on error
-                    fetch('/get-vacations').then(res => res.json()).catch(() => []) // Default to empty array on error
-                ])
-                .then(([holidayRequests, allVacations]) => {
-                    // Ensure data is an array
-                    holidayRequests = Array.isArray(holidayRequests) ? holidayRequests : [];
-                    allVacations = Array.isArray(allVacations) ? allVacations : [];
+            // Update notification counts for holiday requests and sick leave notifications
+            function updateNotificationCounts() {
+                fetch('/workspace/pending-vacations')
+                    .then(response => response.json())
+                    .then(data => {
+                        const holidayBadge = document.getElementById('notificationBadge');
+                        holidayBadge.textContent = data.length;
+                        holidayBadge.classList.toggle('hidden', data.length === 0);
+                    })
+                    .catch(error => console.error('Error fetching holiday notifications:', error));
 
-                    // Format data for calendar
-                    const calendarEvents = [
-                        // Add holiday events
-                        ...holidayRequests
-                            .filter(vacation => vacation.vacation_type !== 'Sick Leave')
-                            .map(vacation => ({
-                                id: `holiday-${vacation.id}`,
-                                title: `${vacation.employee_name} - Holiday`,
-                                start: vacation.start_date,
-                                end: vacation.end_date,
-                                backgroundColor: 'rgba(234, 179, 8, 0.7)',
-                                borderColor: 'rgb(234, 179, 8)',
-                                textColor: 'rgb(161, 98, 7)',
-                                extendedProps: {
-                                    type: 'holiday',
-                                    employeeName: vacation.employee_name
-                                }
-                            })),
-
-                        // Add sick leave events
-                        ...allVacations
-                            .filter(vacation => vacation.vacation_type === 'Sick Leave')
-                            .map(vacation => ({
-                                id: `sick-${vacation.id}`,
-                                title: `${vacation.employee_name} - Sick Leave`,
-                                start: vacation.start_date,
-                                end: vacation.end_date,
-                                backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                                borderColor: 'rgb(239, 68, 68)',
-                                textColor: 'rgb(185, 28, 28)',
-                                extendedProps: {
-                                    type: 'sick',
-                                    employeeName: vacation.employee_name
-                                }
-                            }))
-                    ];
-
-                    // Initialize or update calendar
-                    if (!calendalInstance) {
-                        initializeCalendar(calendarEvents);
-                    } else {
-                        // Clear existing events and add new ones
-                        calendalInstance.getEvents().forEach(event => event.remove());
-                        calendarEvents.forEach(event => calendalInstance.addEvent(event));
-                    }
-
-                    // Hide loading indicator
-                    calendarLoading.style.display = 'none';
-                })
-                .catch(error => {
-                    console.error("Error fetching calendar data:", error);
-                    calendarLoading.style.display = 'none';
-                });
+                fetch('/workspace/sick-leave-notifications')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const sickLeaveBadge = document.getElementById('sickLeaveNotificationBadge');
+                        sickLeaveBadge.textContent = data.length;
+                        sickLeaveBadge.classList.toggle('hidden', data.length === 0);
+                    })
+                    .catch(error => console.error('Error fetching sick leave notifications:', error));
             }
 
-            function initializeCalendar(events) {
-                // Ensure events is an array
-                events = Array.isArray(events) ? events : [];
+            // Call updateNotificationCounts periodically
+            setInterval(updateNotificationCounts, 30000); // Update every 30 seconds
+            updateNotificationCounts(); // Initial call
 
-                calendalInstance = new FullCalendar.Calendar(calendarEl, {
-                    plugins: ['dayGrid', 'interaction'],
-                    initialView: 'dayGridMonth',
-                    events: events,
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
+            // Fetch pending vacation notifications
+            function fetchPendingVacationNotifications() {
+                fetch('/workspace/pending-vacations')
+                    .then(response => response.json())
+                    .then(data => {
+                        const container = document.querySelector('#notificationDropdown .space-y-3');
+                        const badge = document.getElementById('notificationBadge');
+                        container.innerHTML = '';
+
+                        if (data.length === 0) {
+                            container.innerHTML = '<div class="text-gray-500 text-sm">No pending holiday requests</div>';
+                            badge.classList.add('hidden');
+                            return;
+                        }
+
+                        badge.textContent = data.length;
+                        badge.classList.remove('hidden');
+
+                        data.forEach(notification => {
+                            const vacationType = notification.vacation_type || 'Holiday';
+                            const dayType = notification.day_type || 'Whole Day';
+
+                            const notificationItem = document.createElement('div');
+                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                            notificationItem.innerHTML = `
+                                <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                    ${notification.employee_name} requested ${vacationType} (${dayType})
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    From: ${notification.start_date} To: ${notification.end_date || notification.start_date}
+                                </p>
+                                <div class="flex space-x-2 mt-2">
+                                    <button class="px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition" onclick="updateVacationStatus(${notification.id}, 'Approved')">Approve</button>
+                                    <button class="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition" onclick="updateVacationStatus(${notification.id}, 'Rejected')">Reject</button>
+                                </div>
+                            `;
+                            container.appendChild(notificationItem);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching pending vacation notifications:', error));
+            }
+
+            // Make updateVacationStatus globally accessible
+            window.updateVacationStatus = function (vacationId, status) {
+                fetch(`/workspace/vacations/${vacationId}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
-                    height: 'auto',
-                    dayMaxEvents: 3,
-                    contentHeight: 400,
-                    eventDisplay: 'block',
-                    eventClick: function(info) {
-                        const event = info.event;
-                        const eventType = event.extendedProps.type;
-                        const employeeName = event.extendedProps.employeeName;
+                    body: JSON.stringify({ status }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message || 'Vacation status updated successfully.');
+                        fetchPendingVacationNotifications(); // Refresh the notifications
+                    })
+                    .catch(error => console.error('Error updating vacation status:', error));
+            };
 
-                        // Show tooltip with event details
-                        const tooltip = document.createElement('div');
-                        tooltip.className = 'calendar-tooltip bg-white shadow-xl p-3 rounded-lg border border-gray-200 z-50 absolute';
-                        tooltip.style.top = `${info.jsEvent.clientY + 10}px`;
-                        tooltip.style.left = `${info.jsEvent.clientX + 10}px`;
-                        tooltip.innerHTML = `
-                            <div class="font-medium">${employeeName}</div>
-                            <div class="text-sm ${eventType === 'holiday' ? 'text-yellow-600' : 'text-red-600'}">
-                                ${eventType === 'holiday' ? 'On Holiday' : 'On Sick Leave'}
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1">
-                                ${new Date(event.start).toLocaleDateString()} to ${new Date(event.end).toLocaleDateString()}
-                            </div>
-                        `;
+            // Fetch sick leave notifications
+            function fetchSickLeaveNotifications() {
+                fetch('/workspace/sick-leave-notifications')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const container = document.querySelector('#sickLeaveNotificationDropdown .space-y-3');
+                        container.innerHTML = '';
 
-                        document.body.appendChild(tooltip);
+                        if (data.length === 0) {
+                            container.innerHTML = '<div class="text-gray-500 text-sm">No sick leave notifications</div>';
+                            return;
+                        }
 
-                        // Remove tooltip after a delay
-                        setTimeout(() => {
-                            document.body.removeChild(tooltip);
-                        }, 3000);
+                        data.forEach(notification => {
+                            const notificationItem = document.createElement('div');
+                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                            notificationItem.innerHTML = `
+                                <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                    ${notification.message}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Submitted: ${new Date(notification.created_at).toLocaleString()}
+                                </p>
+                                <button class="mt-2 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition" onclick="markSickLeaveAsRead(${notification.id})">Mark as Read</button>
+                            `;
+                            container.appendChild(notificationItem);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching sick leave notifications:', error);
+                        const container = document.querySelector('#sickLeaveNotificationDropdown .space-y-3');
+                        container.innerHTML = '<div class="text-red-500 text-sm">Failed to load sick leave notifications.</div>';
+                    });
+            }
+
+            // Make markSickLeaveAsRead globally accessible
+            window.markSickLeaveAsRead = function (notificationId) {
+                fetch(`/workspace/sick-leave-notifications/${notificationId}/mark-as-read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
-                    dateClick: function(info) {
-                        updateSidebar(info.dateStr);
-                    }
-                });
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message || 'Notification marked as read.');
+                        fetchSickLeaveNotifications(); // Refresh the notifications
+                    })
+                    .catch(error => console.error('Error marking sick leave notification as read:', error));
+            };
 
-                calendalInstance.render();
+            // Fetch holiday requests
+            function fetchHolidayRequests() {
+                fetch('/workspace/pending-vacations')
+                    .then(response => response.json())
+                    .then(data => {
+                        const container = document.getElementById('holidayRequests');
+                        const searchInput = document.getElementById('searchHolidayRequests');
+                        container.innerHTML = '';
+
+                        if (data.length === 0) {
+                            container.innerHTML = '<div class="text-gray-500 text-sm">No holiday requests found</div>';
+                            return;
+                        }
+
+                        const renderRequests = (filteredData) => {
+                            container.innerHTML = '';
+                            filteredData.forEach(request => {
+                                const vacationType = request.vacation_type || 'Holiday';
+                                const dayType = request.day_type || 'Whole Day';
+
+                                const requestItem = document.createElement('div');
+                                requestItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                                requestItem.innerHTML = `
+                                    <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                        ${request.employee_name} requested ${vacationType} (${dayType})
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        From: ${request.start_date} To: ${request.end_date || request.start_date}
+                                    </p>
+                                    <div class="flex space-x-2 mt-2">
+                                        <button class="px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition" onclick="updateVacationStatus(${request.id}, 'Approved')">Approve</button>
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition" onclick="updateVacationStatus(${request.id}, 'Rejected')">Reject</button>
+                                    </div>
+                                `;
+                                container.appendChild(requestItem);
+                            });
+                        };
+
+                        renderRequests(data);
+
+                        searchInput.addEventListener('input', () => {
+                            const searchTerm = searchInput.value.toLowerCase();
+                            const filteredData = data.filter(request =>
+                                request.employee_name.toLowerCase().includes(searchTerm)
+                            );
+                            renderRequests(filteredData);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching holiday requests:', error));
             }
 
             // Initialize the page
-            fetchHolidayRequestNotifications();
+            const startDatePicker = document.getElementById('startDatePicker');
+            const endDatePicker = document.getElementById('endDatePicker');
+            const initialStartDate = new Date();
+            initialStartDate.setDate(initialStartDate.getDate() - 7);
+            startDatePicker.value = initialStartDate.toISOString().split('T')[0];
+            endDatePicker.value = new Date().toISOString().split('T')[0];
+
+            fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
+
+            startDatePicker.addEventListener('change', () => fetchAvailabilityData(startDatePicker.value, endDatePicker.value));
+            endDatePicker.addEventListener('change', () => fetchAvailabilityData(startDatePicker.value, endDatePicker.value));
+
+            document.querySelector('[onclick="toggleNotifications()"]').addEventListener('click', fetchPendingVacationNotifications);
+            document.querySelector('[onclick="toggleSickLeaveNotifications()"]').addEventListener('click', fetchSickLeaveNotifications);
+
+            // Fetch holiday requests on page load
             fetchHolidayRequests();
-            fetchSickDayNotifications();
-            
-            // Set initial date range (7 days)
-            const initialStartDate = moment().startOf('week').format('YYYY-MM-DD');
-            const initialEndDate = moment().endOf('week').format('YYYY-MM-DD');
-            startDatePicker.value = initialStartDate;
-            endDatePicker.value = initialEndDate;
-            fetchAvailabilityData(initialStartDate, initialEndDate);
-            
-            // Initialize calendar
-            fetchEvents();
-            
-            // Initial sidebar update with current date
-            updateSidebar(moment().format('YYYY-MM-DD'));
         });
-
-        function filterHolidayRequests() {
-            const searchInput = document.getElementById('searchHolidayRequests').value.toLowerCase();
-            const requests = document.querySelectorAll('#holidayRequests > div');
-
-
-            requests.forEach(request => {
-                const employeeName = request.querySelector('.font-medium').textContent.toLowerCase();
-                if (employeeName.includes(searchInput)) {
-                    request.style.display = 'flex';
-                } else {
-                    request.style.display = 'none';
-                }
-            });
-        } // comment 
     </script>
 </x-app-layout>
 
-</x-app-layout>
+
 

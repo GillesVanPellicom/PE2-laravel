@@ -117,6 +117,7 @@ use App\Http\Controllers\InvoiceController;
             // ======================= Start Employee ====================== //
 
             Route::middleware(['permission:employee'])->group(function () {
+                Route::post('/save-vacation', [VacationController::class, 'saveVacation'])->name('vacation.save');
                 Route::post('/save-vacation', [VacationController::class, 'store'])->name('vacation.store');
                 Route::get('/approved-vacations', [VacationController::class, 'getApprovedVacations']);
                 Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
@@ -184,8 +185,29 @@ use App\Http\Controllers\InvoiceController;
 
             Route::get('/get-unavailable-employees', [EmployeeController::class, 'getUnavailableEmployees'])->name('unavailable.employees');
 
+            
+            Route::get('/sick-leave-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeaveNotifications.fetch');
+            Route::post('/sick-leave-notifications/{id}/mark-as-read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeaveNotifications.markAsRead');
+
             // contract PDF
             Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
+
+            // Route for fetching employee notifications
+            Route::get('/employee-notifications', [NotificationController::class, 'fetchNotifications'])->name('employee.notifications');
+
+            // Route for fetching pending vacations
+            Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations'])->name('pending.vacations');
+
+            // Route for fetching sick leave notifications
+            Route::get('/sick-leave-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sick.leave.notifications');
+
+            // Route for general notifications
+            Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->middleware('auth')->name('notifications');
+
+            // Notifications
+            Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('workspace.notifications');
+            Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('workspace.notifications.read');
+
 
             // ======================= End Employee ====================== //
 
@@ -242,6 +264,8 @@ use App\Http\Controllers\InvoiceController;
             Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
 
             // ======================= End CourierRouteCreator ====================== //
+
+            
         });
 // ======================= End Middleware ====================== //
 
@@ -362,6 +386,7 @@ Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackage
     ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
+
 
 // API Start
 
