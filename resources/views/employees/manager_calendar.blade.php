@@ -822,7 +822,7 @@
 
             // Fetch holiday requests on page load
             fetchHolidayRequests();
-        });
+        }); //gewoon comentaar 
     </script>
 </x-app-layout>
 
