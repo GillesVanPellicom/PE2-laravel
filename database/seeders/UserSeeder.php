@@ -119,6 +119,7 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+
             [
                 'first_name' => 'Szymon',
                 'last_name' => 'DC Manager',

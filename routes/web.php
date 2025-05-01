@@ -25,6 +25,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DispatcherController;
 use App\Http\Controllers\CourierRouteController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\TicketController;
 
 // ======================= Start Middleware ====================== //
     Route::middleware('auth')
@@ -369,6 +370,18 @@ Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
 ->name('invoices.myinvoices');
 
+// Tickets
+
+Route::get('/tickets', [TicketController::class, 'mytickets'])
+->name('tickets.nytickets');
+
+Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+
+Route::get('/tickets/{id}', [TicketController::class, 'ticketchat'])
+->name('tickets.ticketchat');
+
+Route::post('/tickets/{id}', [TicketController::class, 'newmessage'])->name('tickets.newmessage');
+
 //--------------------------------- Tracking Packages ---------------------------------//
 Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name('track.package');
 //--------------------------------- ENDTracking Packages ---------------------------------//
@@ -397,3 +410,5 @@ Route::post('/tokens/create', function (Request $request) {
 })->name("tokens.create");
 
 // API End
+
+Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
