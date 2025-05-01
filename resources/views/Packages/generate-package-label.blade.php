@@ -122,10 +122,18 @@
             <div class="section">
                 <div class="section-title">From:</div>
                 <div class="address">
-                    {{ $customer->first_name }} {{ $customer->last_name }}<br>
-                    {{ $customer_address->street }} {{ $customer_address->house_number }}<br>
-                    {{ $customer_address->city->postcode }} {{ $customer_address->city->name }}<br>
-                    {{ $customer_country->country_name }}
+                    @if(Auth::check())
+                        {{ $customer->first_name }} {{ $customer->last_name }}<br>
+                        {{ $customer_address->street }} {{ $customer_address->house_number }}<br>
+                        {{ $customer_address->city->postcode }} {{ $customer_address->city->name }}<br>
+                        {{ $customer_country->country_name }}
+                    @else
+                        {{$customer}}<br>
+                        {{ $customer_address }}<br>
+                        {{$customer_country}}
+
+                    @endif
+
                 </div>
             </div>
 
