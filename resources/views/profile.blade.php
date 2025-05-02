@@ -9,40 +9,57 @@
                     <x-x-icon></x-x-icon>
                 </a>
             </div>
-            <div class="flex flex-row align-items-center justify-between mb-4 w-full">
-                <div class="w-full mr-2">
-                    <label for="first_name" class="block text-sm font-medium text-gray-700">First Name <span
-                            class="text-red-500">*</span></label>
-                    <input type="text" disabled id="first_name" name="first_name"
-                        value="{{ Auth::user()->first_name }}"
-                        class="mt-1 disabled: block w-full px-3 py-2 border disabled:bg-gray-200 disabled:cursor-not-allowed border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    @error('first_name')
-                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="w-full ">
-                    <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name <span
-                            class="text-red-500">*</span></label>
-                    <input type="text" disabled id="last_name" name="last_name" value="{{ Auth::user()->last_name }}"
-                        class="mt-1 block w-full px-3 py-2 border disabled:bg-gray-200 disabled:cursor-not-allowed border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    @error('last_name')
-                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
-                @if(Auth::user()->getRoleNames()->isNotEmpty())
-                    <div class="w-full ml-2">
-                        <label for="role" class="block text-sm font-medium text-gray-700">Role <span
+
+            <!-- Conditional fields for company or normal users -->
+            @if(Auth::user()->isCompany)
+                <!-- Company-specific fields -->
+                <div class="flex flex-row align-items-center justify-between mb-4 w-full">
+                    <div class="w-full mr-2">
+                        <label for="company_name" class="block text-sm font-medium text-gray-700">Company Name <span
                                 class="text-red-500">*</span></label>
-                        <input type="text" id="role" disabled name="role"
-                               value="{{ Auth::user()->getRoleNames()->first() }}"
-                               class="mt-1 disabled:bg-gray-200 disabled:cursor-not-allowed block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        @error('last_name')
-                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        <input type="text" id="company_name" name="company_name" value="{{ Auth::user()->company_name }}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('company_name')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                         @enderror
                     </div>
-                @endif
-            </div>
+                    <div class="w-full ml-2">
+                        <label for="vat" class="block text-sm font-medium text-gray-700">VAT Number <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="vat" name="vat" value="{{ Auth::user()->VAT_Number }}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('vat')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            @else
+                <!-- Normal user-specific fields -->
+                <div class="flex flex-row align-items-center justify-between mb-4 w-full">
+                    <div class="w-full mr-2">
+                        <label for="first_name" class="block text-sm font-medium text-gray-700">First Name <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="first_name" name="first_name" value="{{ Auth::user()->first_name }}"
+                            disabled
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-200 cursor-not-allowed focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('first_name')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="w-full ml-2">
+                        <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="last_name" name="last_name" value="{{ Auth::user()->last_name }}"
+                            disabled
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-200 cursor-not-allowed focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        @error('last_name')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            @endif
 
+            <!-- Common fields for both user types -->
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email <span
                         class="text-red-500">*</span></label>
@@ -62,6 +79,7 @@
                     <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                 @enderror
             </div>
+
             <div class="flex flex-row align-items-center justify-between mb-4 w-full">
                 <div class="w-full mr-2">
                     <label for="street" class="block text-sm font-medium text-gray-700">Street <span
@@ -129,19 +147,16 @@
                 </div>
             </div>
 
-
-
             <button type="submit"
                 class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Update</button>
         </form>
+
         @can("token.create")
         <div class="rounded-md mt-2 shadow border-gray-200 p-4 border">
             <button type="submit" onclick="submit()"
                 class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Regenerate
                 API Token</button>
-            <div id="tokens">
-
-            </div>
+            <div id="tokens"></div>
         </div>
         @endcan
     </div>
@@ -173,7 +188,6 @@
             @endif
         </div>
     @endif
-
 
     @can("token.create")
     <script>

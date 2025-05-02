@@ -47,12 +47,6 @@
                             {{ __('Company Dashboard') }}
                         </x-nav-link>
                     @endrole
-                    <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.index')">
-                        {{ __('Employees') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('airports')" :active="request()->routeIs('airports')">
-                        {{ __('Airport') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('manage-invoices')" :active="request()->routeIs('manage-invoices')">
                         {{ __('Manage Invoices') }}
                     </x-nav-link>
@@ -68,7 +62,13 @@
                         <button
                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  bg-white  hover:text-gray-700  focus:outline-none transition ease-in-out duration-150">
 
-                                <div>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>
+                                <div>
+                                    @if(auth()->user()->isCompany)
+                                        {{ auth()->user()->company_name }}
+                                    @else
+                                        {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}
+                                    @endif
+                                </div>
 
                             <div class="ml-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
