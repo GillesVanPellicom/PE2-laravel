@@ -33,6 +33,7 @@ namespace App\Services\Router {
   use App\Services\Router\TurnPenaltyCalculator;
   use App\Services\Router\VehicleSpeedProvider;
   use App\Services\Router\VehicleTypeResolver;
+  use DateTime;
   use Exception;
   use Illuminate\Support\Facades\DB;
   use SplPriorityQueue;
@@ -193,7 +194,7 @@ namespace App\Services\Router {
     /**
      * @param  Location|string  $origin
      * @param  Location|string  $destination
-     * @param  \DateTime|null  $startTime  Start time for the path (default: current time)
+     * @param  DateTime|null  $startTime  Start time for the path (default: current time)
      * @param  bool  $showETA  Whether to show ETA details (default: false)
      * @return array|null
      * @throws InvalidCoordinateException
@@ -205,11 +206,11 @@ namespace App\Services\Router {
     public function getPath(
       Location|string $origin,
       Location|string $destination,
-      ?\DateTime $startTime = null,
+      DateTime $startTime = null,
       bool $showETA = false
     ): ?array {
       // If no start time is provided, use current time
-      $startTime = $startTime ?? new \DateTime();
+      $startTime = $startTime ?? new DateTime();
 
       // Check type of origin and destination
       $oIsLoc = $origin instanceof Location;
@@ -262,9 +263,6 @@ namespace App\Services\Router {
         );
       }
 
-      // Calculate ETA details first (needed for both debug output and return)
-      $etaDetails = null;
-
       // Generate path with time constraints
       $path = $this->aStar($origin, $destination, $startTime);
 
@@ -313,10 +311,10 @@ namespace App\Services\Router {
      * Takes into account vehicle speed, handling time at nodes, and turn penalties.
      *
      * @param  array  $path  Array of node objects
-     * @param  \DateTime  $startTime  Start time for the path
-     * @return array Associative array with 'eta' (\DateTime) and 'totalTime' (float, in hours)
+     * @param  DateTime  $startTime  Start time for the path
+     * @return array Associative array with 'eta' (DateTime) and 'totalTime' (float, in hours)
      */
-    public function calculateETA(array $path, \DateTime $startTime): array {
+    public function calculateETA(array $path, DateTime $startTime): array {
       if (count($path) < 2) {
         return [
           'eta' => clone $startTime,
@@ -393,10 +391,10 @@ namespace App\Services\Router {
      * Prints the estimated time of arrival (ETA) details for a given path.
      *
      * @param  array  $etaDetails  ETA details from calculateETA method
-     * @param  \DateTime  $startTime  Start time for the path
+     * @param  DateTime  $startTime  Start time for the path
      * @return void
      */
-    public function printETA(array $etaDetails, \DateTime $startTime): void {
+    public function printETA(array $etaDetails, DateTime $startTime): void {
       $eta = $etaDetails['eta'];
       $totalTime = $etaDetails['totalTime'];
       $segments = $etaDetails['segments'];
@@ -500,26 +498,14 @@ namespace App\Services\Router {
       // Debug output: Result
       if ($this->debug) {
         $nodeId = $closestNode->getID();
-        $nodeLat = $closestNode->getLat(CoordType::DEGREE);
-        $nodeLong = $closestNode->getLong(CoordType::DEGREE);
+        $nodeLat = $closestNode->getLat();
+        $nodeLong = $closestNode->getLong();
         echo "Closest conforming Node found:\n  \033[38;2;255;140;0m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f",
             $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n\n";
       }
 
       return $closestNode->getID();
     }
-
-
-    /**
-     * Enable or disable debug mode.
-     *
-     * @param  bool  $enable  Enable or disable debug mode
-     * @return void
-     */
-    public function setDebug(bool $enable): void {
-      $this->debug = $enable;
-    }
-
 
     /**
      * @throws NodeAlreadyExistsException
@@ -529,6 +515,7 @@ namespace App\Services\Router {
      * @throws SelfLoopException
      * @throws NodeNotFoundException
      * @throws EdgeAlreadyExistsException
+     * @throws Exception
      */
     private function deserializeDb(): void {
       // Fetch all nodes from the database
@@ -553,8 +540,8 @@ namespace App\Services\Router {
       // Iterate over each edge and add it to the graph
       foreach ($edges as $edge) {
         // Convert validFrom and validTo to DateTime objects
-        $validFrom = new \DateTime($edge->validFrom);
-        $validTo = new \DateTime($edge->validTo);
+        $validFrom = new DateTime($edge->validFrom);
+        $validTo = new DateTime($edge->validTo);
 
         // Get vehicle type from the edge if available, default to 'Truck'
         $vehicleType = $edge->vehicle_type ?? 'Truck';
@@ -580,14 +567,14 @@ namespace App\Services\Router {
      *
      * @param  string  $startNodeID  Start node ID
      * @param  string  $endNodeID  End node ID
-     * @param  \DateTime|null  $startTime  Start time for the path (default: current time)
+     * @param  DateTime|null  $startTime  Start time for the path (default: current time)
      * @return array Path in hops between Node objects
      * @throws NodeNotFoundException|NoPathFoundException
      * @throws InvalidRouterArgumentException
      */
-    private function aStar(string $startNodeID, string $endNodeID, ?\DateTime $startTime = null): array {
+    private function aStar(string $startNodeID, string $endNodeID, ?DateTime $startTime = null): array {
       // If no start time is provided, use current time
-      $startTime = $startTime ?? new \DateTime();
+      $startTime = $startTime ?? new DateTime();
 
       $openSet = new SplPriorityQueue();
       $openSet->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
@@ -673,7 +660,7 @@ namespace App\Services\Router {
           $timeToTravel = $this->vehicleSpeedProvider->calculateTravelTime($weight, $vehicleType);
 
           $this->debug && print "  \033[38;2;255;140;0m- $neighborID\033[0m (".sprintf("%.6f",
-              $weight)." km, ".sprintf("%.6f", $timeToTravel)." hours, {$vehicleType->value})\n";
+              $weight)." km, ".sprintf("%.6f", $timeToTravel)." hours, $vehicleType->value)\n";
 
           // Calculate tentative scores
           $tentativeGScore = $gScore[$currentID] + $weight;
@@ -711,7 +698,7 @@ namespace App\Services\Router {
 
           // Debug output for handling time
           if ($this->debug && $handlingTime > 0) {
-            print "    \033[36mHandling Time:\033[0m ".sprintf("%.6f", $handlingTime)." hours ({$nodeType->value})\n";
+            print "    \033[36mHandling Time:\033[0m ".sprintf("%.6f", $handlingTime)." hours ($nodeType->value)\n";
           }
 
           // Check if this path to the neighbor is better
