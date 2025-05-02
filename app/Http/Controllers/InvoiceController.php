@@ -91,6 +91,22 @@ class InvoiceController extends Controller
             $invoice->discounted_subtotal = $discountedSubtotal;
             $invoice->total_amount = $total;
     
+            // Determine status and color  $discount = (float)$invoice->discount;
+    
+            // Calculate discounted subtotal (ensure it doesn't go below 0)
+            $discountedSubtotal = max(0, $subtotal - $discount);
+    
+            // Calculate VAT (21%) on the discounted subtotal
+            $vat = $discountedSubtotal * 0.21;
+    
+            // Calculate Total (discounted subtotal + VAT)
+            $total = $discountedSubtotal + $vat;
+    
+            // Add all values to the invoice object
+            $invoice->subtotal = $subtotal;
+            $invoice->discounted_subtotal = $discountedSubtotal;
+            $invoice->total_amount = $total;
+    
             // Determine status and color
             if ($invoice->is_paid) {
                 $invoice->status = 'Paid ('.$invoice->paid_at.')';

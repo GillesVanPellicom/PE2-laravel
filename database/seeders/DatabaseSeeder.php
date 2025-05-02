@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder {
       MessageTemplatesSeeder::class,
       VehiclesSeeder::class,
       CourierSeeder::class,
+      TicketSeeder::class,
     ]);
 
   }

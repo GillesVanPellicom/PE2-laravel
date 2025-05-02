@@ -14,9 +14,7 @@ class VacationController extends Controller
 {
     public function getPendingVacations()
     {
-        $vacations = Vacation::where('approve_status', 'pending')
-            ->with(['employee.user']) // Ensure employee model has a user() relationship
-            ->get();
+        $vacations = Vacation::where('approve_status', 'pending')->get(); // Fixed missing method call
 
         $vacations->transform(function ($vacation) {
             $employee = optional($vacation->employee);
@@ -152,8 +150,25 @@ class VacationController extends Controller
 
     public function getManagerNotifications()
     {
-        $vacations = Vacation::where('approve_status', 'pending')->with('employee')->get();
-        return response()->json($vacations);
+        // Fetch vacations with 'pending' status and vacation_type "Holiday"
+        $vacations = Vacation::where('approve_status', 'pending')
+            ->where('vacation_type', 'Holiday')
+            ->with('employee.user') // Include employee and user relationships
+            ->get();
+
+        // Transform the data for the frontend
+        $notifications = $vacations->map(function ($vacation) {
+            return [
+                'id' => $vacation->id,
+                'employee_name' => $vacation->employee->user->first_name . ' ' . $vacation->employee->user->last_name,
+                'vacation_type' => $vacation->vacation_type,
+                'day_type' => $vacation->day_type,
+                'start_date' => $vacation->start_date,
+                'end_date' => $vacation->end_date,
+            ];
+        });
+
+        return response()->json($notifications);
     }
 
     public function store(Request $request)
@@ -274,5 +289,33 @@ class VacationController extends Controller
             });
 
         return response()->json($sickLeaves);
+    }
+
+    public function saveVacation(Request $request)
+    {
+        $validated = $request->validate([
+            'holidays' => 'required|array',
+            'sickDays' => 'required|array',
+        ]);
+
+        foreach ($validated['holidays'] as $date => $type) {
+            Vacation::create([
+                'user_id' => Auth::id(),
+                'date' => $date,
+                'type' => $type,
+                'status' => 'pending',
+            ]);
+        }
+
+        foreach ($validated['sickDays'] as $sickDay) {
+            Vacation::create([
+                'user_id' => Auth::id(),
+                'date' => $sickDay['start_date'],
+                'type' => 'sick',
+                'status' => 'pending',
+            ]);
+        }
+
+        return response()->json(['message' => 'Vacation requests saved successfully.']);
     }
 }

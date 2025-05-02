@@ -20,9 +20,12 @@ class Notification extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Define the relationship with the MessageTemplate model.
+     */
     public function messageTemplate()
     {
-        return $this->belongsTo(MessageTemplate::class);
+        return $this->belongsTo(MessageTemplate::class, 'message_template_id');
     }
 
     public function getFormattedMessageAttribute()
