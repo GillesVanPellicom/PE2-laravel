@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoices', function (Blueprint $table) {
+        Schema::create('ticket_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('users');
-            $table->decimal('discount')->default(0);
-            $table->date('expiry_date');
-            $table->boolean('is_paid')->default(0);
-            $table->date('paid_at')->nullable();
-            $table->string('reference');
+            $table->foreignId('ticket_id')->constrained('tickets')->onDelete('cascade');
+            $table->boolean('is_customer_message');
+            $table->text('message');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('invoices');
+        Schema::dropIfExists('ticket_messages');
     }
 };

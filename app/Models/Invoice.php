@@ -19,6 +19,7 @@ class Invoice extends Model
         'expiry_date',
         'is_paid',
         'paid_at',
+        'reference',
     ];
 
     /**

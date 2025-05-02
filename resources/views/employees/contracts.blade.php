@@ -28,16 +28,16 @@
                 const query = searchInput.value;
                 const active = activeSelect.value;
 
-                if (query.length == "" && active == "1") 
+                if (query.length == "" && active == "1")
                 {
                     document.querySelector('#pagination').style.display = 'block';
-                } 
+                }
                 else
                 {
                     document.querySelector('#pagination').style.display = 'none';
                 }
 
-                fetch(`{{ route('employees.searchContract') }}?query=${query}&active=${active}`, {
+                fetch(`{{ route('workspace.employees.searchContract') }}?query=${query}&active=${active}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
@@ -69,7 +69,7 @@
                                 <td class="border border-gray-300 py-2 flex justify-center">
                                     <div class="flex items-center space-x-8">
                                         ${contract.end_date == null ? `
-                                        <form action="/contracts/${contract.contract_id}" method="POST" class="flex items-center space-x-2">
+                                        <form action="/workspace/contracts/${contract.contract_id}" method="POST" class="flex items-center space-x-2">
                                             <input type="hidden" name="_token" value="${csrf_token}">
                                             <input name="end_date" type="date" value="${new Date().toISOString().split('T')[0]}" class="text-xs">
                                             <button type="submit" class="text-white bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded shadow text-xs">
@@ -141,7 +141,7 @@
                 </thead>
                 <tbody>
                     @foreach($contracts as $contract)
-                        
+
                         <tr class="even:bg-gray-50 odd:bg-white">
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->contract_id }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $contract->employee->user->first_name }} {{ $contract->employee->user->last_name }}</td>
@@ -159,7 +159,7 @@
                             <td class="border border-gray-300 py-2 flex justify-center">
                                 <div class="flex items-center space-x-8">
                                     @if(is_null($contract->end_date))
-                                        <form action="{{ route('employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST" class="flex items-center space-x-2">
+                                        <form action="{{ route('workspace.employee.contracts.updateEndDate', $contract->contract_id) }}" method="POST" class="flex items-center space-x-2">
                                             @csrf
                                             @method('POST')
                                             <input name="end_date" type="date" value="{{ date('Y-m-d') }}" class="text-xs">

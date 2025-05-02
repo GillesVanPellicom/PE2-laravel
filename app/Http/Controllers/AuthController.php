@@ -37,54 +37,73 @@ class AuthController extends Controller
     }
 
     public function update(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user instanceof User) {
-            return redirect()->back()->withErrors(['error' => 'User not found.']);
-        }
-
-        // Validate the request data
-        $validated = $request->validate([
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_number' => 'required|unique:users,phone_number,' . $user->id . '|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-            'country' => 'required|string|max:100',
-            'postal_code' => 'required|integer',
-            'city' => 'required|string|max:100',
-            'street' => 'required|string|max:100',
-            'house_number' => 'required|integer',
-            'bus_number' => 'nullable|string|max:10',
-        ]);
-
-        // Update or create the country
-        $country = Country::firstOrCreate(['country_name' => $validated['country']], ['country_name' => $validated['country']]);
-
-        // Update or create the city
-        $city = City::firstOrCreate([
-            'name' => $validated['city'],
-            'postcode' => $validated['postal_code'],
-            'country_id' => $country->id,
-        ]);
-
-        // Update or create the address
-        $address = Address::updateOrCreate(
-            ['id' => $user->address_id],
-            [
-                'street' => $validated['street'],
-                'house_number' => $validated['house_number'],
-                'cities_id' => $city->id,
-                'bus_number' => $validated['bus_number'],
-            ]
-        );
-
-        // Update the user's information
-        $user->update([
-            'email' => $validated['email'],
-            'phone_number' => $validated['phone_number'],
-            'address_id' => $address->id,
-        ]);
-
-        return redirect()->back()->with('success', 'User information updated successfully.');
+{
+    $user = Auth::user();
+    if (!$user instanceof User) {
+        return redirect()->back()->withErrors(['error' => 'User not found.']);
     }
+
+    // Base validation rules for all users
+    $rules = [
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'phone_number' => 'required|unique:users,phone_number,' . $user->id . '|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+        'country' => 'required|string|max:100',
+        'postal_code' => 'required|integer',
+        'city' => 'required|string|max:100',
+        'street' => 'required|string|max:100',
+        'house_number' => 'required|integer',
+        'bus_number' => 'nullable|string|max:10',
+    ];
+
+    // Add company-specific validation if the user is a company
+    if ($user->isCompany) {
+        $rules = array_merge($rules, [
+            'company_name' => 'required|string|max:255',
+            'vat' => 'required|string|max:50|unique:users,VAT_Number,' . $user->id, // Ensure 'vat' matches the input name in the form
+        ]);
+    }
+
+    // Validate the request data
+    $validated = $request->validate($rules);
+
+    // Update or create the country
+    $country = Country::firstOrCreate(['country_name' => $validated['country']], ['country_name' => $validated['country']]);
+
+    // Update or create the city
+    $city = City::firstOrCreate([
+        'name' => $validated['city'],
+        'postcode' => $validated['postal_code'],
+        'country_id' => $country->id,
+    ]);
+
+    // Update or create the address
+    $address = Address::updateOrCreate(
+        ['id' => $user->address_id],
+        [
+            'street' => $validated['street'],
+            'house_number' => $validated['house_number'],
+            'cities_id' => $city->id,
+            'bus_number' => $validated['bus_number'],
+        ]
+    );
+
+    // Update the user's information
+    $userData = [
+        'email' => $validated['email'],
+        'phone_number' => $validated['phone_number'],
+        'address_id' => $address->id,
+    ];
+
+    // Add company-specific updates if the user is a company
+    if ($user->isCompany) {
+        $userData['company_name'] = $validated['company_name'];
+        $userData['VAT_Number'] = $validated['vat']; // Ensure 'vat' matches the input name in the form
+    }
+
+    $user->update($userData);
+
+    return redirect()->back()->with('success', 'User information updated successfully.');
+}
 
     public function authenticate(Request $request, $route = "welcome")
     {
