@@ -34,7 +34,7 @@ namespace App\Services\Router {
 
   class Router {
 
-    private bool $debug = false;
+    private bool $debug = true;
 
     // DATASTRUCTURES
 
@@ -174,6 +174,7 @@ namespace App\Services\Router {
     /**
      * @param  Location|string  $origin
      * @param  Location|string  $destination
+     * @param  \DateTime|null  $startTime  Start time for the path (default: current time)
      * @return array|null
      * @throws InvalidCoordinateException
      * @throws InvalidRouterArgumentException
@@ -181,7 +182,10 @@ namespace App\Services\Router {
      * @throws NodeNotFoundException
      * @throws RouterException
      */
-    public function getPath(Location|string $origin, Location|string $destination): ?array {
+    public function getPath(Location|string $origin, Location|string $destination, ?\DateTime $startTime = null): ?array {
+      // If no start time is provided, use current time
+      $startTime = $startTime ?? new \DateTime();
+
       // Check type of origin and destination
       $oIsLoc = $origin instanceof Location;
       $dIsLoc = $destination instanceof Location;
@@ -233,8 +237,8 @@ namespace App\Services\Router {
         );
       }
 
-      // Generate path
-      $path = $this->aStar($origin, $destination);
+      // Generate path with time constraints
+      $path = $this->aStar($origin, $destination, $startTime);
 
       // Adjust path for Locations
       if ($oIsLoc) {
@@ -385,21 +389,50 @@ namespace App\Services\Router {
 
       // Iterate over each edge and add it to the graph
       foreach ($edges as $edge) {
-        $this->graph->addEdge($edge->origin_node, $edge->destination_node);
+        // Convert validFrom and validTo to DateTime objects
+        $validFrom = new \DateTime($edge->validFrom);
+        $validTo = new \DateTime($edge->validTo);
+
+        // Get vehicle type from the edge if available, default to 'Van'
+        $vehicleType = $edge->vehicle_type ?? 'Van';
+
+        $this->graph->addEdge(
+          $edge->origin_node, 
+          $edge->destination_node, 
+          $validFrom, 
+          $validTo, 
+          $vehicleType
+        );
       }
     }
 
 
     /**
-     * Finds the shortest path between two nodes.
+     * Defines the speed in km/h for different vehicle types.
+     * 
+     * @var array
+     */
+    private array $vehicleSpeeds = [
+        'Van' => 60, // 60 km/h
+        'Truck' => 50, // 50 km/h
+        'Airplane' => 800, // 800 km/h
+        'Train' => 120, // 120 km/h
+        'Ship' => 30, // 30 km/h
+    ];
+
+    /**
+     * Finds the shortest path between two nodes, considering time constraints.
      *
      * @param  string  $startNodeID  Start node ID
      * @param  string  $endNodeID  End node ID
+     * @param  \DateTime|null  $startTime  Start time for the path (default: current time)
      * @return array Path in hops between Node objects
      * @throws NodeNotFoundException|NoPathFoundException
      * @throws InvalidRouterArgumentException
      */
-    private function aStar(string $startNodeID, string $endNodeID): array {
+    private function aStar(string $startNodeID, string $endNodeID, ?\DateTime $startTime = null): array {
+      // If no start time is provided, use current time
+      $startTime = $startTime ?? new \DateTime();
 
       $openSet = new SplPriorityQueue();
       $openSet->setExtractFlags(SplPriorityQueue::EXTR_BOTH);
@@ -411,26 +444,28 @@ namespace App\Services\Router {
       $openSet->insert($startNodeID, -($startNode->getDistanceTo($endNode)));
 
       $cameFrom = [];
-      $gScore = [];
-      $fScore = [];
+      $gScore = []; // Distance score
+      $tScore = []; // Time score
+      $fScore = []; // Combined score for priority queue
 
-      // Initialize gScore and fScore for each node
+      // Initialize gScore, tScore, and fScore for each node
       foreach ($this->graph->getNodes() as $node) {
         $gScore[$node->getID()] = PHP_INT_MAX;
+        $tScore[$node->getID()] = PHP_INT_MAX;
         $fScore[$node->getID()] = PHP_INT_MAX;
       }
 
       $gScore[$startNodeID] = 0;
+      $tScore[$startNodeID] = 0;
       $fScore[$startNodeID] = $startNode->getDistanceTo($endNode);
 
       $epsilon = 1e-10; // Tolerance to avoid (very hard to debug) FP rounding errors.
 
       $this->debug && print "\033[1;34m=== Starting A* Search ===\033[0m\nFrom: $startNodeID | To: $endNodeID\n";
-
+      $this->debug && print "Start Time: " . $startTime->format('Y-m-d H:i:s') . "\n";
 
       // Main loop of the A* algorithm
       while (!$openSet->isEmpty()) {
-
         $extracted = $openSet->extract();
         $currentID = $extracted['data'];
         $current = $this->graph->getNode($currentID); // May throw NodeNotFoundException
@@ -440,57 +475,79 @@ namespace App\Services\Router {
         $this->debug && print "\n\033[32mProcessing Node:\n  \033[38;2;255;140;0m$currentID\033[0m ({$current->getDescription()})\n  Open Set Size: ".$openSet->count()."\n  fScore: ".sprintf("%.6f",
             $insertion_fScore)." | gScore (queue): ".sprintf("%.6f", $insertion_gScore)."\n";
 
-
         // Check if the current node's gScore is valid
         if ($gScore[$currentID] - $insertion_gScore <= $epsilon) {
           $this->debug && print "  \033[32mAction: Processing\033[0m\n";
-
         } else {
           $this->debug && print "  \033[31mAction: Skipped\033[0m | Current gScore: ".sprintf("%.6f",
               $gScore[$currentID])." > Queue gScore: ".sprintf("%.6f",
               $insertion_gScore)."\n\n";
-
           continue;
         }
 
         // Check if the current node is the goal
         if ($currentID === $endNodeID) {
           $this->debug && print "\033[1;34m>>> ROUTER DEBUG END\033[0m\n\n";
-
           return $this->reconstructPath($this->graph, $cameFrom, $currentID);
         }
 
         $this->debug && print "\n\033[1;33mNeighbors:\033[0m\n";
 
-        // Iterate over each neighbor of the current node
-        foreach ($this->graph->getNeighbors($currentID) as $neighborID => $weight) {
-          $this->debug && print "  \033[38;2;255;140;0m- $neighborID\033[0m (".sprintf("%.6f", $weight)." km)\n";
+        // Calculate the current time at this node
+        $currentTime = clone $startTime;
+        $currentTime->modify('+' . (int)($tScore[$currentID] * 60) . ' minutes'); // Convert hours to minutes
 
+        // Iterate over each neighbor of the current node, considering time constraints
+        foreach ($this->graph->getNeighbors($currentID, $currentTime) as $neighborID => $edgeData) {
+          $weight = $edgeData['weight']; // Distance in km
+          $vehicleType = $edgeData['vehicleType'];
+
+          // Get the speed for this vehicle type (default to Van if not found)
+          $speed = $this->vehicleSpeeds[$vehicleType] ?? $this->vehicleSpeeds['Van'];
+
+          // Calculate time to travel this edge in hours
+          $timeToTravel = $weight / $speed;
+
+          $this->debug && print "  \033[38;2;255;140;0m- $neighborID\033[0m (".sprintf("%.6f", $weight)." km, ".sprintf("%.6f", $timeToTravel)." hours, $vehicleType)\n";
+
+          // Calculate tentative scores
           $tentativeGScore = $gScore[$currentID] + $weight;
+          $tentativeTScore = $tScore[$currentID] + $timeToTravel;
 
           // Check if this path to the neighbor is better
           if ($tentativeGScore < $gScore[$neighborID]) {
-            $cameFrom[$neighborID] = $currentID;
-            $gScore[$neighborID] = $tentativeGScore;
-            $fScore[$neighborID] = $gScore[$neighborID] + $this->graph->getNode($neighborID)->getDistanceTo($endNode);
+            // Check if the edge will still be valid when we reach it
+            $arrivalTime = clone $startTime;
+            $arrivalTime->modify('+' . (int)($tentativeTScore * 60) . ' minutes'); // Convert hours to minutes
 
-            // Insert the neighbor into the open set with its priority
-            $openSet->insert($neighborID, -$fScore[$neighborID]);
+            if ($arrivalTime <= $edgeData['validTo']) {
+              $cameFrom[$neighborID] = $currentID;
+              $gScore[$neighborID] = $tentativeGScore;
+              $tScore[$neighborID] = $tentativeTScore;
+              $fScore[$neighborID] = $gScore[$neighborID] + $this->graph->getNode($neighborID)->getDistanceTo($endNode);
 
-            if ($this->debug) {
-              echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
-                  $tentativeGScore)." | New fScore: ".sprintf("%.6f",
-                  $fScore[$neighborID])."\n    \033[33mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
-                  $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
-                  $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
+              // Insert the neighbor into the open set with its priority
+              $openSet->insert($neighborID, -$fScore[$neighborID]);
 
-              // Check heuristic admissibility
-              $isAdmissible = $tentativeGScore <= $fScore[$neighborID];
-              $admissibilitySymbol = $isAdmissible ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
-              echo "      Heuristic Admissible: $admissibilitySymbol\n\n";
+              if ($this->debug) {
+                echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f", $tentativeGScore)." | New tScore: ".sprintf("%.6f", $tentativeTScore)." | New fScore: ".sprintf("%.6f",
+                    $fScore[$neighborID])."\n    \033[33mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
+                    $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
+                    $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
+
+                echo "      Arrival Time: " . $arrivalTime->format('Y-m-d H:i:s') . " | Valid Until: " . $edgeData['validTo']->format('Y-m-d H:i:s') . "\n";
+
+                // Check heuristic admissibility
+                $isAdmissible = $tentativeGScore <= $fScore[$neighborID];
+                $admissibilitySymbol = $isAdmissible ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
+                echo "      Heuristic Admissible: $admissibilitySymbol\n\n";
+              }
+            } else {
+              $this->debug && print "    \033[1;31mSkipped:\033[0m Edge will not be valid at arrival time ".
+                  $arrivalTime->format('Y-m-d H:i:s')." (valid until ".$edgeData['validTo']->format('Y-m-d H:i:s').")\n\n";
             }
           } else {
-            $this->debug && print  "    \033[1;35mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
+            $this->debug && print "    \033[1;35mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
                 $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
           }
         }

@@ -162,7 +162,7 @@ class RouterGraph {
    * @throws NodeNotFoundException
    * @throws EdgeAlreadyExistsException
    */
-  public function addEdge(string $startNodeID, string $endNodeID): void {
+  public function addEdge(string $startNodeID, string $endNodeID, ?\DateTime $validFrom = null, ?\DateTime $validTo = null, ?string $vehicleType = null): void {
     // Check if the start node exists
     if (!isset($this->nodes[$startNodeID])) {
       throw new NodeNotFoundException($startNodeID);
@@ -195,10 +195,27 @@ class RouterGraph {
       $endNode->getLong(CoordType::RADIAN)
     );
 
-    // Add the edge to the graph
+    // Set default values for validFrom and validTo if not provided
+    $validFrom = $validFrom ?? new \DateTime('2000-01-01');
+    $validTo = $validTo ?? new \DateTime('2100-01-01');
+
+    // Set default vehicle type if not provided
+    $vehicleType = $vehicleType ?? 'Van';
+
+    // Add the edge to the graph with metadata
     // Add both directions to the edge list to make the edge bidirectional
-    $this->edges[$startNodeID][$endNodeID] = $weight;
-    $this->edges[$endNodeID][$startNodeID] = $weight;
+    $this->edges[$startNodeID][$endNodeID] = [
+      'weight' => $weight,
+      'validFrom' => $validFrom,
+      'validTo' => $validTo,
+      'vehicleType' => $vehicleType
+    ];
+    $this->edges[$endNodeID][$startNodeID] = [
+      'weight' => $weight,
+      'validFrom' => $validFrom,
+      'validTo' => $validTo,
+      'vehicleType' => $vehicleType
+    ];
   }
 
   /**
@@ -229,15 +246,31 @@ class RouterGraph {
    * Get the neighbors of a node
    *
    * @param  string  $NodeID  ID of the node
+   * @param  \DateTime|null  $currentTime  Current time to check edge validity
    * @return array Array of neighbors
    * @throws NodeNotFoundException
    */
-  public function getNeighbors(string $NodeID): array {
+  public function getNeighbors(string $NodeID, ?\DateTime $currentTime = null): array {
     // Check if the node exists
     if (!isset($this->nodes[$NodeID])) {
       throw new NodeNotFoundException($NodeID);
     }
-    return $this->edges[$NodeID];
+
+    // If no current time is provided, return all neighbors
+    if ($currentTime === null) {
+      return $this->edges[$NodeID];
+    }
+
+    // Filter neighbors based on time validity
+    $validNeighbors = [];
+    foreach ($this->edges[$NodeID] as $neighborID => $edgeData) {
+      // Check if the edge is valid at the current time
+      if ($edgeData['validFrom'] <= $currentTime && $currentTime <= $edgeData['validTo']) {
+        $validNeighbors[$neighborID] = $edgeData;
+      }
+    }
+
+    return $validNeighbors;
   }
 
   /**
