@@ -8,6 +8,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Invoice;
 use App\Models\Package;
 use App\Models\PackageInInvoice;
+use App\Models\InvoicePayment;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
@@ -185,4 +187,109 @@ class InvoiceController extends Controller
         return view('employees.manage_invoices',compact('invoices'));
 
     }
+
+    /**
+ * Display unpaid invoices
+ *
+ * @return \Illuminate\View\View
+ */
+public function getUnpaidInvoices()
+{
+    $SelectedInvoice = request('invoice');
+    try {
+        $unpaidInvoices = Invoice::where('is_paid', false)
+            ->with('company')  // Eager load the company relationship
+            ->orderBy('expiry_date', 'asc')  // Order by expiry date
+            ->paginate(10);    // Add pagination, 10 items per page
+
+        $payments = InvoicePayment::get();
+
+                 // Calculate packages and amount for each invoice
+        foreach ($unpaidInvoices as $invoice) {
+        
+            
+    
+            // Get all packages in this invoice
+            $packages = Package::whereIn('id', function ($query) use ($invoice) {
+                $query->select('package_id')
+                      ->from('packages_in_invoice')
+                      ->where('invoice_id', $invoice->id);
+            })->get();
+    
+            // Calculate Subtotal (sum of all package prices)
+            $subtotal = $packages->sum(function ($package) { 
+                return (float)$package->weight_price + (float)$package->delivery_price; 
+            });
+    
+            // Get discount from invoice
+            $discount = (float)$invoice->discount;
+    
+            // Calculate discounted subtotal (ensure it doesn't go below 0)
+            $discountedSubtotal = max(0, $subtotal - $discount);
+    
+            // Calculate VAT (21%) on the discounted subtotal
+            $vat = $discountedSubtotal * 0.21;
+    
+            // Calculate Total (discounted subtotal + VAT)
+            $total = $discountedSubtotal + $vat;
+    
+            // Add all values to the invoice object
+            $invoice->subtotal = $subtotal;
+            $invoice->discounted_subtotal = $discountedSubtotal;
+            $invoice->total_amount = $total;
+
+            
+        }
+
+        return view('invoices.invoice-payment-overview', [
+            'invoices' => $unpaidInvoices,
+            'payments' => $payments,
+        ]);
+
+    } catch (\Exception $e) {
+        return back()
+            ->with('error', 'Failed to retrieve unpaid invoices: ' . $e->getMessage());
+    }
 }
+
+/**
+     * Mark invoice as paid
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function markAsPaid(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+    
+            $invoice = Invoice::findOrFail($request->invoice);
+            
+            if ($invoice->is_paid) {
+                return redirect()
+                    ->back()
+                    ->with('error', "Invoice #{$invoice->id} is already marked as paid.");
+            }
+    
+            $invoice->update([
+                'is_paid' => true,
+                'paid_at' => now()
+            ]);
+    
+            DB::commit();
+    
+            return redirect()
+                ->back()
+                ->with('success', "Invoice #{$invoice->id} has been marked as paid successfully.");
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()
+                ->back()
+                ->with('error', "Failed to mark invoice as paid: {$e->getMessage()}");
+        }
+    }
+}
+
+

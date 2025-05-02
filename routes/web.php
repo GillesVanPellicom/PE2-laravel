@@ -373,4 +373,9 @@ Route::post('/tokens/create', function (Request $request) {
 
 // API End
 
+// invoice start
 Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
+Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+// invoice end
+
