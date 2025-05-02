@@ -47,6 +47,24 @@ class FlightsContractSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
+            [
+                "flight_id" => 12,
+                "airline_id" => 1,
+                "max_capacity" => 100,
+                "price" => 2000,
+                "start_date" => '2024-03-01',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ],
+            [
+                "flight_id" => 13,
+                "airline_id" => 1,
+                "max_capacity" => 100,
+                "price" => 2000,
+                "start_date" => '2024-03-01',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ],
         ]);
     }
 }

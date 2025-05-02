@@ -197,7 +197,7 @@ Route::middleware(['auth','role:pickup'])->group(function () {
 // ======================= End Pick Up Point ====================== //
 
 // ======================= Start Airport ====================== //
-Route::middleware(['permission:airport.view'])->group(function () {
+Route::middleware(['auth','role:airport'])->group(function () {
     Route::get('/contract', [ContractController::class, 'contractindex'])->name('contract');
 
     Route::get('/contractcreate', [ContractController::class, 'contractcreate'])->name('contractcreate');

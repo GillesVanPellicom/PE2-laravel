@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('airport_id');
             $table->foreignId('location_id')->constrained('locations');
             $table->string('name');
+            $table->foreignId('city_id')->nullable()->constrained('cities');
             $table->timestamps();
         });
     }

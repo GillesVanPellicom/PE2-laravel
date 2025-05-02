@@ -6,16 +6,17 @@
                 <div class="mt-4 p-4 bg-red-100 text-red-800 rounded">
                     <ul>
                         @foreach($messages as $message)
-                            <li>{{ $message }}</li>
+                            <li>
+                                <a href="{{ route('flightpackages', ['flight_id' => $nextFlight->id ?? null]) }}" class="text-red-500 hover:underline">
+                                    {{ $message }}
+                                </a>
+                            </li>
                         @endforeach
                     </ul>
                 </div>
             @else
                 <p>No notifications available at the moment.</p>
             @endif
-            <a href="{{ route('airports') }}">Airports</a> <!-- Ensure this matches the route name -->
-            <br/>
-
             <!-- Next Outgoing Flight Section -->
             <div class="mt-6">
                 <h2 class="text-xl font-bold">Next Outgoing Flight</h2>

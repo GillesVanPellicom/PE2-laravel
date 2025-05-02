@@ -119,6 +119,19 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'first_name' => 'air',
+                'last_name' => 'port',
+                'phone_number' => '0983574321',
+                'birth_date' => '1990-01-01',
+                'email' => 'airport@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password123'),
+                'address_id' => 5,
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

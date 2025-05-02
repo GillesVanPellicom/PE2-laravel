@@ -21,6 +21,7 @@
                 <tr class="bg-gray-200">
                     <th class="py-2 px-4 border">Package Reference</th>
                     <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Next Movement</th>
                     <th class="py-2 px-4 border">Action</th>
                 </tr>
             </thead>
@@ -30,10 +31,13 @@
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
                     <td class="py-2 px-4 border">
-                        <button onclick="openFlightModal({{ $package->id }})" 
-                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-                            Assign to Flight
-                        </button>
+                        @php
+                            $nextMovement = $package->getNextMovement();
+                        @endphp
+                        {{ $nextMovement ? $nextMovement->getID() : 'N/A' }}
+                    </td>
+                    <td class="py-2 px-4 border">
+                        <input type="checkbox" class="package-checkbox" value="{{ $package->id }}">
                     </td>
                 </tr>
                 @empty
@@ -43,6 +47,12 @@
                 @endforelse
             </tbody>
         </table>
+        <div class="text-right mt-4">
+            <button onclick="openFlightModal()" 
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                Assign to Flight
+            </button>
+        </div>
     </div>
 
     <!-- Reassign Packages Table -->
@@ -53,16 +63,33 @@
                 <tr class="bg-gray-200">
                     <th class="py-2 px-4 border">Package Reference</th>
                     <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Currently Assigned Flight</th>
                     <th class="py-2 px-4 border">Action</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($packages->filter(fn($package) => $package->assigned_flight && !$flights->firstWhere('id', $package->assigned_flight)?->isActive) as $package)
+                @forelse($packages->filter(fn($package) => $package->assigned_flight && (!$flights->firstWhere('id', $package->assigned_flight)?->isActive || $flights->firstWhere('id', $package->assigned_flight)?->status == 'Canceled')) as $package)
                 <tr class="border-b">
-                    <td class="py-2 px-4 border">{{ $package->reference }}</td>
+                    <td class="py-2 px-4 border">
+                        <input type="checkbox" class="package-checkbox" value="{{ $package->id }}">
+                        {{ $package->reference }}
+                    </td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
                     <td class="py-2 px-4 border">
-                        <button onclick="openFlightModal({{ $package->id }})" 
+                        @php
+                            $flight = is_numeric($package->assigned_flight) 
+                                ? $flights->firstWhere('id', $package->assigned_flight) 
+                                : null;
+                        @endphp
+
+                        @if($flight)
+                            Flight {{ $flight->id }} - {{ $flight->departure_time }} to {{ $flight->arrivalAirport->name ?? 'Unknown' }}
+                        @else
+                            Flight ID: {{ $package->assigned_flight }}
+                        @endif
+                    </td>
+                    <td class="py-2 px-4 border">
+                        <button onclick="selectPackageAndOpenFlightModal({{ $package->id }})" 
                             class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700 transition">
                             Re-assign Flight
                         </button>
@@ -70,7 +97,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="3" class="py-2 px-4 border text-center text-gray-600">No packages to be reassigned.</td>
+                    <td colspan="4" class="py-2 px-4 border text-center text-gray-600">No packages to be reassigned.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -89,7 +116,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->isActive) as $package)
+                @forelse($packages->filter(fn($package) => $package->assigned_flight && $flights->firstWhere('id', $package->assigned_flight)?->isActive && $flights->firstWhere('id', $package->assigned_flight)?->status !== 'Canceled') as $package)
                 <tr class="border-b">
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
@@ -134,12 +161,14 @@
             <h2 class="text-xl font-semibold mb-4">Select a Flight</h2>
             <ul id="flightList" class="max-h-60 overflow-y-auto border p-3 rounded bg-gray-100 space-y-2">
                 @foreach($flights as $flight)
+                    @if(!isset($package) || ($package->getNextMovement() && $routerNodes->firstWhere('id', $package->getNextMovement()->getID())?->city_id === $flight->arrivalAirport?->city_id))
                     <li>
-                        <button onclick="assignFlight(selectedPackageId, {{ $flight->id }})" 
+                        <button onclick="assignFlightToSelectedPackages({{ $flight->id }})" 
                             class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
                             Flight {{ $flight->id }} - {{ $flight->departure_time }} to {{ $flight->arrivalAirport->name ?? 'Unknown' }}
                         </button>
                     </li>
+                    @endif
                 @endforeach
             </ul>
             <div class="text-right mt-4">
@@ -149,7 +178,21 @@
     </div>
 
     <script>
-    let selectedPackageId = null;
+    let selectedPackageIds = [];
+
+    function openFlightModal() {
+        selectedPackageIds = Array.from(document.querySelectorAll('.package-checkbox:checked')).map(cb => cb.value);
+        if (selectedPackageIds.length === 0) {
+            alert("Please select at least one package.");
+            return;
+        }
+        document.getElementById('flightModal').classList.remove('hidden'); // Ensure the modal is displayed
+    }
+
+    function closeFlightModal() {
+        document.getElementById('flightModal').classList.add('hidden');
+        selectedPackageIds = [];
+    }
 
     function showPackages(flightId) {
         document.getElementById('flightId').innerText = flightId;
@@ -178,38 +221,61 @@
         document.getElementById('packageModal').classList.remove("hidden");
     }
 
-    function openFlightModal(packageId) {
-        selectedPackageId = packageId;
+    function selectPackageAndOpenFlightModal(packageId) {
+        // Keep the checkbox for the selected package checked
+        const checkbox = document.querySelector(`.package-checkbox[value="${packageId}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+
+        // Pass the selected package ID to the modal
+        selectedPackageIds = [packageId];
+
+        // Open the flight modal
         document.getElementById('flightModal').classList.remove('hidden');
     }
 
-    function closeFlightModal() {
-        document.getElementById('flightModal').classList.add('hidden');
-        selectedPackageId = null;
-    }
+    function assignFlightToSelectedPackages(flightId) {
+        if (selectedPackageIds.length === 0) {
+            alert("No packages selected for assignment.");
+            return;
+        }
 
-    function assignFlight(packageId, flightId) {
+        // Calculate total weight of selected packages
+        let totalWeight = 0;
+        selectedPackageIds.forEach(packageId => {
+            const packageRow = document.querySelector(`.package-checkbox[value="${packageId}"]`).closest('tr');
+            const weightCell = packageRow.querySelector('td:nth-child(2)');
+            const weight = parseFloat(weightCell.textContent.replace(' kg', ''));
+            totalWeight += weight;
+        });
+
         fetch(`/assign-flight`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ packageId, flightId })
+            body: JSON.stringify({ packageIds: selectedPackageIds, flightId, totalWeight })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Package assigned to flight successfully!");
+                alert("Packages assigned to flight successfully!");
+
+                // Unselect all checkboxes
+                document.querySelectorAll('.package-checkbox').forEach(cb => cb.checked = false);
+
+                // Reload the page
                 location.reload();
             } else {
                 console.error("Backend error:", data); // Log backend error details
-                alert("Failed to assign package to flight: " + data.message);
+                alert("Failed to assign packages to flight: " + data.message);
             }
         })
         .catch(error => {
             console.error("Fetch error:", error); // Log fetch error details
-            alert("An unexpected error occurred while assigning the package.");
+            alert("An unexpected error occurred while assigning the packages.");
         });
     }
 
@@ -217,7 +283,6 @@
         document.getElementById('packageModal').classList.add("hidden");
     }
     </script>
-
 </body>
 </html>
 </x-sidebar-airport>

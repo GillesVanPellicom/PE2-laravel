@@ -23,13 +23,17 @@
                     <th class="py-2 px-4 border">Flight Duration (min)</th>
                     <th class="py-2 px-4 border">Estimated Arrival Time</th>
                     <th class="py-2 px-4 border">Arrival Place</th>
+                    <th class="py-2 px-4 border">Gate</th> 
                     <th class="py-2 px-4 border">Status</th>
                     <th class="py-2 px-4 border">Packages</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($flights as $flight)
-                @if($flight->arrive_location_id == 1)
+                @php
+                    $employeeLocationIds = Auth::user()->employee->contracts->pluck('location_id')->toArray();
+                @endphp
+                @if(in_array($flight->arrive_location_id, $employeeLocationIds))
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
                         <td class="py-2 px-4 border">{{$flight->departure_time}}</td>
@@ -37,6 +41,7 @@
                         <td class="py-2 px-4 border">{{$flight->time_flight_minutes}}</td>
                         <td class="py-2 px-4 border">{{$flight->arrival_time}}</td>
                         <td class="py-2 px-4 border">{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
+                        <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td> 
                         <td class="py-2 px-4 border">
                             @if($flight->status == 'On Time')
                                 {{$flight->status}}
@@ -69,13 +74,17 @@
                     <th class="py-2 px-4 border">Flight Duration (min)</th>
                     <th class="py-2 px-4 border">Estimated Arrival Time</th>
                     <th class="py-2 px-4 border">Arrival Place</th>
+                    <th class="py-2 px-4 border">Gate</th> 
                     <th class="py-2 px-4 border">Status</th>
                     <th class="py-2 px-4 border">Packages</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($flights as $flight)
-                @if($flight->depart_location_id == 1)
+                @php
+                    $employeeLocationIds = Auth::user()->employee->contracts->pluck('location_id')->toArray();
+                @endphp
+                @if(in_array($flight->depart_location_id, $employeeLocationIds))
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
                         <td class="py-2 px-4 border">{{$flight->departure_time}}</td>
@@ -83,6 +92,7 @@
                         <td class="py-2 px-4 border">{{$flight->time_flight_minutes}}</td>
                         <td class="py-2 px-4 border">{{$flight->arrival_time}}</td>
                         <td class="py-2 px-4 border">{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
+                        <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td> 
                         <td class="py-2 px-4 border">
                             @if($flight->status == 'On Time')
                                 {{$flight->status}}
