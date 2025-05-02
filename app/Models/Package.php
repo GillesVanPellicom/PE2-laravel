@@ -52,7 +52,11 @@ class Package extends Model {
     'dimension',
     'weight_price',
     'delivery_price',
-    'paid'
+    'paid',
+    'sender_firstname',
+    'sender_lastname',
+    'sender_email',
+    'sender_phone_number',
   ];
 
   protected $attributes = [

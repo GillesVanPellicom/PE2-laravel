@@ -40,7 +40,7 @@
                         @endrole
                     @endif
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
-                        {{ __('Send Package') }}
+                        {{ __('Send a parcel') }}
                     </x-nav-link>
                     @role('business_client|admin')
                         <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
@@ -173,7 +173,7 @@
                 @endrole
             @endif
             <x-responsive-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
-                {{ __('Send Package') }}
+                {{ __('Send a parcel') }}
             </x-responsive-nav-link>
                 @role('business_client|admin')
                 <x-responsive-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
