@@ -68,7 +68,8 @@ class DatabaseSeeder extends Seeder {
         EmployeeController::generateEmployeeContract($contract->contract_id);
     }
 
-    \App\Models\Vacation::factory(100)->create();
+    \App\Models\Vacation::factory(4000)->create();
+    \App\Models\Package::factory()->count(300)->create();
 
   }
 }
