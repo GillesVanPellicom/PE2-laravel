@@ -166,10 +166,21 @@ class DispatcherController extends Controller
                 ->select(
                     'packages.reference',
                     'locations.latitude',
-                    'locations.longitude'
+                    'locations.longitude',
+                    'packages.weight_id',
                 )
                 ->get()
                 ->toArray();
+
+            $pack = Package::whereIn('reference', $packageRefs)->get();
+            
+            foreach ($pack as $package) {
+                if($package->weight == NULL)
+                {
+                    $package->weight = round(mt_rand($package->weightClass->weight_min * 1000, $package->weightClass->weight_max * 1000) / 1000, 3);
+                    $package->update(['weight' => $package->weight]);
+                }
+            }
     
             // Use RouteTrace to validate total distance
             $routeTracer = new RouteTrace();

@@ -31,10 +31,7 @@ class ContractsSeeder extends Seeder
         exec("rm -rf " . escapeshellarg($directoryPath), $output, $status);
         Log::info($status === 0 ? "Directory removed" : "Failed to remove directory");
 
-        $contracts = EmployeeContract::all();
-        foreach($contracts as $contract) {
-            EmployeeController::generateEmployeeContract($contract->contract_id);
-        }
+        
 
 
     }
