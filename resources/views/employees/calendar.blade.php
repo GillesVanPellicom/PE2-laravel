@@ -1,6 +1,5 @@
 <x-app-layout>
     <x-sidebar>
-
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
     
@@ -359,6 +358,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         
+        /* Fix for day names in dark mode */
+        .dark .fc .fc-col-header-cell-cushion {
+            color: var(--dark-text-primary); /* Use primary text color for better readability */
+        }
+
         /* Enhanced Tooltip styling */
         .tooltip {
             @apply invisible absolute;
@@ -1043,92 +1047,118 @@
 
             // Fetch notifications function
             function fetchNotifications() {
-                fetch('/notifications')
-                    .then(response => response.json())
+                fetch('/workspace/notifications')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const container = notificationDropdown.querySelector('.max-h-96');
                         container.innerHTML = '';
-                        let unreadCount = 0;
 
                         if (data.length === 0) {
-                            const emptyState = document.createElement('div');
-                            emptyState.className = 'flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400';
-                            emptyState.innerHTML = `
-                                <svg class="w-16 h-16 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                                <p>No notifications</p>
-                            `;
-                            container.appendChild(emptyState);
-                        } else {
-                            data.forEach((notification, index) => {
-                                const notificationItem = document.createElement('div');
-                                notificationItem.className = 'mb-2 animate__animated animate__fadeIn';
-                                notificationItem.style.animationDelay = `${index * 0.1}s`;
-                                
-                                notificationItem.innerHTML = `
-                                    <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 hover:shadow-md transition-all">
-                                        <div class="flex items-start">
-                                            <div class="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-2 rounded-full mr-3 flex-shrink-0">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                                </svg>
-                                            </div>
-                                            <div class="flex-1">
-                                                <p class="text-gray-800 dark:text-gray-200 font-medium">${notification.message_template?.message || 'No message'}</p>
-                                                <div class="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    ${moment(notification.created_at).fromNow()}
-                                                </div>
-                                                <button class="mt-2 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-md text-xs font-medium hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors" onclick="markAsRead(${notification.id}, this.parentNode.parentNode.parentNode)">
-                                                    Mark as Read
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                                container.appendChild(notificationItem);
-                                unreadCount++;
-                            });
+                            container.innerHTML = '<div class="text-gray-500 text-sm">No notifications</div>';
+                            notificationBadge.classList.add('hidden');
+                            return;
                         }
 
-                        notificationBadge.textContent = unreadCount;
-                        notificationBadge.classList.toggle('hidden', unreadCount === 0);
+                        data.forEach(notification => {
+                            const notificationItem = document.createElement('div');
+                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600 mb-2';
+                            notificationItem.innerHTML = `
+                                <div class="flex justify-between items-center">
+                                    <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                        ${notification.message}
+                                    </p>
+                                    <button class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition" onclick="markNotificationAsRead(${notification.id})">Mark as Read</button>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    ${new Date(notification.created_at).toLocaleString()}
+                                </p>
+                            `;
+                            container.appendChild(notificationItem);
+                        });
+
+                        notificationBadge.textContent = data.length;
+                        notificationBadge.classList.remove('hidden');
+
+                        // Ensure the notification dropdown is visible if there are notifications
+                        if (data.length > 0) {
+                            notificationDropdown.classList.remove('hidden');
+                        }
                     })
-                    .catch(error => console.error("Error fetching notifications:", error));
+                    .catch(error => console.error('Error fetching notifications:', error));
             }
 
-            window.markAsRead = function(notificationId, notificationElement) {
-                fetch(`/notifications/${notificationId}/read`, {
+            function markNotificationAsRead(notificationId) {
+                fetch(`/workspace/notifications/${notificationId}/read`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 })
-                .then(response => response.json())
-                .then(() => {
-                    // Add fade out animation
-                    notificationElement.classList.add('animate__animated', 'animate__fadeOut');
-                    
-                    // Remove the notification after animation completes
-                    setTimeout(() => {
-                        notificationElement.remove();
-                        
-                        // Update the unread count
-                        let unreadCount = parseInt(notificationBadge.textContent);
-                        unreadCount = Math.max(0, unreadCount - 1);
-                        notificationBadge.textContent = unreadCount;
-                        notificationBadge.classList.toggle('hidden', unreadCount === 0);
-                        
-                        // Show success toast
-                        showToast('Notification marked as read', 'success');
-                    }, 500);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
                 })
-                .catch(error => console.error("Error marking notification as read:", error));
-            };
+                .then(() => {
+                    // Remove the notification element from the dropdown
+                    const notificationElement = document.querySelector(`[onclick="markNotificationAsRead(${notificationId})"]`).parentElement;
+                    notificationElement.remove();
+
+                    // Update the unread count
+                    let unreadCount = parseInt(notificationBadge.textContent);
+                    unreadCount = Math.max(0, unreadCount - 1);
+                    notificationBadge.textContent = unreadCount;
+                    notificationBadge.classList.toggle('hidden', unreadCount === 0);
+
+                    // Show success toast
+                    showToast('Notification marked as read', 'success');
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+            }
+
+            // Attach the function to the global window object
+            window.markNotificationAsRead = markNotificationAsRead;
+
+            function fetchHolidayStatusNotifications() {
+                fetch('/workspace/employee-notifications')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const container = document.querySelector('#notificationDropdown .max-h-96');
+                        container.innerHTML = '';
+
+                        if (data.length === 0) {
+                            container.innerHTML = '<div class="text-gray-500 text-sm">No holiday status updates</div>';
+                            return;
+                        }
+
+                        data.forEach(notification => {
+                            const notificationItem = document.createElement('div');
+                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                            notificationItem.innerHTML = `
+                                <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                    ${notification.message}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    ${new Date(notification.created_at).toLocaleString()}
+                                </p>
+                            `;
+                            container.appendChild(notificationItem);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching holiday status notifications:', error));
+            }
 
             // Show toast message with improved animation
             function showToast(message, type = 'success') {
@@ -1148,51 +1178,6 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-=======
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-    // Ensure required libraries are loaded
-    if (typeof moment === 'undefined') {
-        console.error("Moment.js is not loaded. Ensure it's included in your project.");
-        return;
-    }
-
-    // Get DOM elements safely
-    const notificationDropdown = document.getElementById('notificationDropdown');
-    const notificationBadge = document.getElementById('notificationBadge');
-    const saveRequestsBtn = document.getElementById('saveRequests');
-    const calendarEl = document.getElementById('calendar');
-    const sickDayRangePicker = document.getElementById('sickDayRangePicker');
-    const sickStartDate = document.getElementById('sickStartDate');
-    const sickEndDate = document.getElementById('sickEndDate');
-    const applySickDaysBtn = document.getElementById('applySickDaysBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const eventModal = document.getElementById('eventModal');
-
-    if (!calendarEl) {
-        console.error("Calendar element not found!");
-        return;
-    }
-
-    // Fetch notifications function
-    function fetchNotifications() {
-        fetch('/notifications')
-            .then(response => response.json())
-            .then(data => {
-                notificationDropdown.innerHTML = '';
-                let unreadCount = 0;
-
-                data.forEach(notification => {
-                    let li = document.createElement('li');
-                    li.classList.add('p-2', 'bg-gray-100', 'rounded-md', 'cursor-pointer', 'hover:bg-gray-200');
-
-                    // Include the start_date in the notification message
-                    li.innerHTML = `
-                        ${notification.message_template?.message || 'No message'} <br>
-
-                        <span class='text-sm text-gray-500'>${moment(notification.created_at).fromNow()}</span>
-
-
                     `;
                 } else if (type === 'warning') {
                     toast.className = 'fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500 bg-gradient-to-r from-yellow-500 to-amber-600 text-white max-w-xs';
@@ -1285,24 +1270,9 @@
                 });
             }
 
-
             function removeEvent(date) {
                 let event = calendar.getEventById(date);
                 if (event) event.remove();
-
-                notificationBadge.textContent = unreadCount;
-                notificationBadge.classList.toggle('hidden', unreadCount === 0);
-            })
-            .catch(error => console.error("Error fetching notifications:", error));
-    }
-
-    function markAsRead(notificationId, notificationElement) {
-        fetch(`/workspace/notifications/${notificationId}/read`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
             }
 
             function toggleEvent(date) {
@@ -1430,7 +1400,6 @@
                 }, 500);
             }
 
-
             // Create enhanced confetti effect
             function createConfetti() {
                 confettiContainer.classList.remove('hidden');
@@ -1483,70 +1452,6 @@
                         confetti.style.alignItems = 'center';
                         confetti.style.justifyContent = 'center';
                         confetti.style.background = 'transparent';
-
-            sickDaysTaken = selectedSickDays.size;
-            closeModal();
-        };
-
-        // Holiday option buttons
-        document.getElementById('wholeDayBtn').onclick = function () {
-            selectedHolidays[date] = 'Whole Day';
-            addEvent(date, "holiday", "Whole Day");
-            remainingHolidays--;
-            closeModal();
-        };
-
-        document.getElementById('firstHalfBtn').onclick = function () {
-            selectedHolidays[date] = 'First Half';
-            addEvent(date, "holiday", "First Half");
-            remainingHolidays -= 0.5;
-            closeModal();
-        };
-
-        document.getElementById('secondHalfBtn').onclick = function () {
-            selectedHolidays[date] = 'Second Half';
-            addEvent(date, "holiday", "Second Half");
-            remainingHolidays -= 0.5;
-            closeModal();
-        };
-
-        // Close the modal
-        document.getElementById('closeModalBtn').onclick = closeModal;
-
-        updateCounters();
-        localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
-        localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
-    }
-
-    function closeModal() {
-        document.getElementById('eventModal').classList.add('hidden');
-        document.getElementById('holidayOptions').classList.add('hidden'); // Hide holiday options again
-        document.getElementById('sickDayRangePicker').classList.add('hidden'); // Hide sick day range picker
-        document.getElementById('sickDayBtn').disabled = false; // Re-enable sick day button
-        sickStartDate.value = '';
-        sickEndDate.value = '';
-    }
-
-    // Fetch vacations and add them to the calendar
-    function fetchVacations() {
-        fetch('/workspace/get-vacations')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(vacation => {
-                    let color;
-                    switch (vacation.approve_status.toLowerCase()) {
-                        case 'approved':
-                            color = '#28A745'; // Green
-                            break;
-                        case 'pending':
-                            color = '#FFC107'; // Yellow
-                            break;
-                        case 'rejected':
-                            color = '#DC3545'; // Red
-                            break;
-                        default:
-                            color = '#6C757D'; // Gray for unknown status
-
                     }
                     
                     // Random color (if not already set by shape)
@@ -1578,12 +1483,15 @@
 
             // Fetch vacations and add them to the calendar
             function fetchVacations() {
-                fetch('/get-vacations')
+                fetch('/workspace/get-vacations') // Ensure the correct endpoint is used
                     .then(response => response.json())
                     .then(data => {
+                        // Clear existing events to avoid duplication
+                        calendar.getEvents().forEach(event => event.remove());
+
                         data.forEach(vacation => {
                             let backgroundColor, textColor = 'white';
-                            
+
                             switch (vacation.approve_status.toLowerCase()) {
                                 case 'approved':
                                     backgroundColor = 'var(--status-approved)';
@@ -1596,9 +1504,8 @@
                                     backgroundColor = 'var(--status-rejected)';
                                     break;
                                 default:
-                                    backgroundColor = '#6B7280';
+                                    backgroundColor = '#6B7280'; // Default gray
                             }
-
 
                             // Include day_type in the event title
                             calendar.addEvent({
@@ -1612,8 +1519,6 @@
                                 textColor: textColor,
                                 extendedProps: {
                                     status: vacation.approve_status.toLowerCase(),
-                                    type: vacation.vacation_type.toLowerCase(),
-                                    vacationId: vacation.id
                                 }
                             });
                         });
@@ -1696,74 +1601,7 @@
                     // Remove ripple after animation
                     setTimeout(() => ripple.remove(), 700);
                 }
-
-        fetch('/workspace/save-vacation', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                holidays: selectedHolidays,
-                sickDays: sickDaysArray // Send sick days as date ranges
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                alert("✅ Requests saved successfully!");
-
-                // Clear localStorage after saving requests
-                localStorage.removeItem('selectedHolidays');
-                localStorage.removeItem('selectedSickDays');
-
-                // Reset local variables
-                selectedHolidays = {};
-                selectedSickDays = new Set();
-
-                // Reload the page to refresh the calendar and counters
-                location.reload();
-            } else {
-                alert("⚠️ Something went wrong!");
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("❌ Failed to save requests. Please try again.");
-        });
-    });
-
-    fetchNotifications();
-
-    // Function to update vacation status
-    function updateVacationStatus(vacationId, newStatus) {
-        fetch(`/workspace/vacations/${vacationId}/update-status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ status: newStatus })
-        })
-        .then(response => response.json())
-        .then(updatedVacation => {
-            // Remove the pending event from the calendar
-            const event = calendar.getEventById(updatedVacation.id);
-            if (event) event.remove();
-
-            // Add the updated vacation with the new status
-            calendar.addEvent({
-                id: updatedVacation.id,
-                title: `${updatedVacation.vacation_type} (${updatedVacation.approve_status})`,
-                start: updatedVacation.start_date,
-                end: updatedVacation.end_date ? updatedVacation.end_date : updatedVacation.start_date,
-                allDay: true,
-                backgroundColor: updatedVacation.color,
-                borderColor: updatedVacation.color,
-                textColor: 'white'
-
             });
-
 
             // Add theme-reactive styles to the calendar
             function updateCalendarTheme() {
@@ -1800,17 +1638,13 @@
                 }
             }
 
-        <!-- Holiday Info and Calendar Section -->
-        <div class="flex-1">
-            <!-- Holiday Info -->
-            <div id="holidayInfo" class="bg-gray-100 p-4 rounded-md flex justify-between items-center">
-                <span class="font-semibold text-lg">Remaining Holidays: <span id="remainingHolidays" class="text-blue-600 font-bold">0</span></span>
-                <span class="font-semibold text-lg">Sick Days Taken: <span id="sickDaysTaken" class="text-red-600 font-bold">0</span></span>
-            </div>
-
-
             // Initialize calendar and load data
             calendar.render();
+            Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
+            selectedSickDays.forEach(date => addEvent(date, "sick"));
+            fetchVacations();
+            updateCounters();
+            
             Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
             selectedSickDays.forEach(date => addEvent(date, "sick"));
             fetchVacations();
@@ -1819,12 +1653,12 @@
             // Apply initial calendar theme
             setTimeout(updateCalendarTheme, 100);
 
-
             // Toggle notifications
-            window.toggleNotifications = function() {
+            window.toggleNotifications = function () {
+                const notificationDropdown = document.getElementById('notificationDropdown');
                 notificationDropdown.classList.toggle('hidden');
                 if (!notificationDropdown.classList.contains('hidden')) {
-                    fetchNotifications();
+                    fetchHolidayStatusNotifications();
                 }
             };
             
@@ -1899,78 +1733,48 @@
                 });
             });
 
-    <!-- Buttons -->
-    <div class="flex justify-between mt-6">
-        <button id="saveRequests" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Save Requests</button>
-        <a href="/workspace/manager-calendar" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">View Requests</a>
-
-    </div>
-</div>
-
-<!-- Modal Structure -->
-<div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-    <h2 class="text-xl font-semibold mb-4">Choose Event Type</h2>
-
-    <div>
-      <label class="block mb-2">Choose: Type '1' for Paid Holiday, Type '2' for Sick Day</label>
-      <button id="holidayBtn" class="block w-full bg-green-500 text-white py-2 px-4 rounded mb-2">Holiday</button>
-      <button id="sickDayBtn" class="block w-full bg-blue-500 text-white py-2 px-4 rounded">Sick Day</button>
-    </div>
-
-
             // Save vacation requests with enhanced animation
             saveRequestsBtn.addEventListener('click', function () {
-                const sickDaysArray = [...selectedSickDays].map(date => {
-                    return { start_date: date, end_date: date };
-                });
+                const sickDaysArray = [...selectedSickDays].map(date => ({
+                    start_date: date,
+                    end_date: date,
+                }));
 
-                // Apply a press effect to the button
-                this.classList.add('scale-95', 'shadow-inner');
-                setTimeout(() => {
-                    this.classList.remove('scale-95', 'shadow-inner');
-                }, 200);
-
-                fetch('/save-vacation', {
+                fetch('/workspace/save-vacation', { // Updated URL to include /workspace prefix
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                     body: JSON.stringify({
                         holidays: selectedHolidays,
-                        sickDays: sickDaysArray
+                        sickDays: sickDaysArray,
+                    }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            if (response.status === 404) {
+                                throw new Error('The requested endpoint was not found. Please check the URL.');
+                            }
+                            return response.text().then(text => {
+                                try {
+                                    const errorJson = JSON.parse(text);
+                                    throw new Error(errorJson.error || 'Failed to save requests');
+                                } catch {
+                                    throw new Error('Unexpected response from the server. Please try again.');
+                                }
+                            });
+                        }
+                        return response.json();
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        // Create enhanced confetti effect
-                        createConfetti();
-                        
-                        // Show success message
-                        showToast('Requests saved successfully!', 'success');
-
-                        // Clear localStorage
-                        localStorage.removeItem('selectedHolidays');
-                        localStorage.removeItem('selectedSickDays');
-
-                        // Reset variables
-                        selectedHolidays = {};
-                        selectedSickDays = new Set();
-
-                        // Reload page after delay
-                        setTimeout(() => {
-                            location.reload();
-                        }, 4000);
-                    } else {
-                        showToast('Something went wrong!', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Failed to save requests. Please try again.', 'error');
-                });
+                    .then(data => {
+                        alert(data.message);
+                        calendar.refetchEvents();
+                    })
+                    .catch(error => {
+                        console.error('Error saving requests:', error);
+                        alert(error.message || 'Failed to save requests. Please try again.');
+                    });
             });
             
             // Listen for theme changes to update calendar
