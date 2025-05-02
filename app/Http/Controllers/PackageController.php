@@ -15,6 +15,8 @@ use App\Mail\PackageCreatedMail;
 use App\Models\Country;
 use App\Models\City;
 use App\Models\User;
+use App\Models\Invoice;
+use App\Models\PackageInInvoice;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -1108,16 +1110,19 @@ public function storeBulkOrder(Request $request)
         $weightPrice = $weightClass->price;
         $deliveryPrice = $deliveryMethod->price;
 
-        $totalWeightPrice += $weightPrice;
-        $totalDeliveryPrice += $deliveryPrice;
+        // Ensure destination location or address is properly created
+        if ($deliveryMethod->requires_location) {
+            if (empty($packageData['destination_location_id'])) {
+                return back()->withErrors(['error' => 'A destination location is required for the selected delivery method.']);
+            }
 
-        // Verify that the delivery method and weight class are valid
-        if ($deliveryMethod->requires_location && empty($packageData['destination_location_id'])) {
-            return back()->withErrors(['error' => 'A destination location is required for the selected delivery method.']);
-        }
+            $destinationLocation = Location::findOrFail($packageData['destination_location_id']);
 
-        // Handle address-based delivery
-        if (!$deliveryMethod->requires_location) {
+            // Ensure the destination location has a valid address
+            if (!$destinationLocation->addresses_id) {
+                return back()->withErrors(['error' => 'The selected destination location does not have a valid address.']);
+            }
+        } else {
             try {
                 // Get address details from Geoapify
                 $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
@@ -1128,67 +1133,31 @@ public function storeBulkOrder(Request $request)
                 ]);
 
                 if (!$response->successful() || empty($response->json()['results'])) {
-                    return back()->withErrors(['error' => 'Could not validate address for one of the packages.']);
+                    throw new \Exception('Could not validate address for one of the packages.');
                 }
 
                 $addressData = $response->json()['results'][0];
-
-                // Extract address components
-                $street = $addressData['street'] ?? '';
-                $houseNumber = $addressData['housenumber'] ?? '';
-                $busNumber = isset($addressData['unit']) ? $addressData['unit'] : null;
-                $city = $addressData['city'] ?? '';
-                $postalCode = $addressData['postcode'] ?? '';
-                $countryName = $addressData['country'] ?? '';
-
-                // Check if country exists
-                $country = Country::firstOrCreate(['country_name' => $countryName]);
-
-                // Check if city exists
+                $country = Country::firstOrCreate(['country_name' => $addressData['country'] ?? '']);
                 $city = City::firstOrCreate([
-                    'name' => $city,
-                    'postcode' => $postalCode,
+                    'name' => $addressData['city'] ?? '',
+                    'postcode' => $addressData['postcode'] ?? '',
                     'country_id' => $country->id
                 ]);
-
-                // Check if exact address exists
-                $existingAddress = Address::where([
-                    'street' => $street,
-                    'house_number' => $houseNumber,
-                    'bus_number' => $busNumber,
+                $address = Address::firstOrCreate([
+                    'street' => $addressData['street'] ?? '',
+                    'house_number' => $addressData['housenumber'] ?? '',
+                    'bus_number' => $addressData['unit'] ?? null,
                     'cities_id' => $city->id
-                ])->first();
-
-                if ($existingAddress) {
-                    $address = $existingAddress;
-                    $destinationLocation = Location::where('addresses_id', $address->id)
-                        ->where('location_type', 'ADDRESS')
-                        ->first();
-                } else {
-                    // Create new address
-                    $address = Address::create([
-                        'street' => $street,
-                        'house_number' => $houseNumber,
-                        'bus_number' => $busNumber,
-                        'cities_id' => $city->id
-                    ]);
-                    $destinationLocation = null;
-                }
-
-                // Create destination location if it doesn't exist
-                if (!$destinationLocation) {
-                    $destinationLocation = Location::create([
-                        'addresses_id' => $address->id,
-                        'location_type' => 'ADDRESS',
-                        'description' => 'Customer Address ' . $packageData['name'] . ' ' . $packageData['lastName'],
-                        'contact_number' => $packageData['receiver_phone_number'],
-                        'latitude' => $addressData['lat'],
-                        'longitude' => $addressData['lon'],
-                        'is_active' => true
-                    ]);
-                }
-
-                $packageData['destination_location_id'] = $destinationLocation->id;
+                ]);
+                $destinationLocation = Location::firstOrCreate([
+                    'addresses_id' => $address->id,
+                    'location_type' => 'ADDRESS',
+                    'description' => 'Customer Address ' . $packageData['name'] . ' ' . $packageData['lastName'],
+                    'contact_number' => $packageData['receiver_phone_number'],
+                    'latitude' => $addressData['lat'] ?? null,
+                    'longitude' => $addressData['lon'] ?? null,
+                    'is_active' => true
+                ]);
             } catch (\Exception $e) {
                 return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
             }
@@ -1206,14 +1175,38 @@ public function storeBulkOrder(Request $request)
             'weight_id' => $packageData['weight_id'],
             'delivery_method_id' => $packageData['delivery_method_id'],
             'origin_location_id' => Auth::user()->address->id,
-            'destination_location_id' => $packageData['destination_location_id'] ?? null,
+            'current_location_id' => Auth::user()->address->id,
+            'destination_location_id' => $destinationLocation->id ?? null,
+            'addresses_id' => $destinationLocation->addresses_id ?? null, // Ensure this is set
             'weight_price' => $weightPrice,
             'delivery_price' => $deliveryPrice,
             'status' => 'pending',
         ]);
 
         $createdPackages[] = $package;
+
+        // Update total prices
+        $totalWeightPrice += $weightPrice;
+        $totalDeliveryPrice += $deliveryPrice;
     }
+
+        // Create an invoice for the bulk order
+        $invoice = Invoice::create([
+            'company_id' => $userId,
+            'discount' => 0, // Add logic for discounts if needed
+            'expiry_date' => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+            'is_paid' => false,
+            'is_paid' => false,
+            'reference' => $this->generateUniqueInvoiceReference(), // Generate a unique reference
+        ]);
+
+        // Link packages to the invoice
+        foreach ($createdPackages as $package) {
+            PackageInInvoice::create([
+                'invoice_id' => $invoice->id,
+                'package_id' => $package->id,
+            ]);
+        }
 
     session([
         'bulk_order_total_price' => $totalWeightPrice + $totalDeliveryPrice,
@@ -1290,5 +1283,28 @@ public function companyDashboard()
     $unpaidPackages = Package::where('user_id', $userId)->where('paid', false)->count();
 
     return view('Packages.company-dashboard', compact('totalPackages', 'unpaidPackages'));
+}
+private function generateUniqueInvoiceReference()
+{
+    $maxAttempts = 100;
+    $attempt = 0;
+
+    do {
+        if ($attempt >= $maxAttempts) {
+            throw new \Exception('Unable to generate unique invoice reference after ' . $maxAttempts . ' attempts');
+        }
+
+        $year = date('Y');
+        $month = date('m');
+        $random = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $reference = sprintf('INV-%s%s%s', $year, $month, $random);
+
+        $exists = Invoice::where('reference', $reference)->exists();
+
+        $attempt++;
+    } while ($exists);
+
+    return $reference;
 }
 }
