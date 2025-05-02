@@ -27,6 +27,12 @@ namespace App\Services\Router {
   use App\Services\Router\Types\NodeType;
   use App\Services\Router\Types\RouterGraph;
   use App\Services\Router\Types\Node;
+  use App\Services\Router\Types\TurnType;
+  use App\Services\Router\Types\VehicleType;
+  use App\Services\Router\NodeHandlingTimeProvider;
+  use App\Services\Router\TurnPenaltyCalculator;
+  use App\Services\Router\VehicleSpeedProvider;
+  use App\Services\Router\VehicleTypeResolver;
   use Exception;
   use Illuminate\Support\Facades\DB;
   use SplPriorityQueue;
@@ -47,9 +53,22 @@ namespace App\Services\Router {
     private KdTree $kdTreeExit;
     private KdTree $kdTreeEntryExit;
 
+    // Helper classes
+    private VehicleTypeResolver $vehicleTypeResolver;
+    private VehicleSpeedProvider $vehicleSpeedProvider;
+    private NodeHandlingTimeProvider $nodeHandlingTimeProvider;
+    private TurnPenaltyCalculator $turnPenaltyCalculator;
+
 
     public function __construct() {
       try {
+        // Initialize helper classes
+        $this->vehicleTypeResolver = new VehicleTypeResolver();
+        $this->vehicleSpeedProvider = new VehicleSpeedProvider();
+        $this->nodeHandlingTimeProvider = new NodeHandlingTimeProvider();
+        $this->turnPenaltyCalculator = new TurnPenaltyCalculator();
+
+        // Initialize graph and data structures
         $this->graph = new RouterGraph();
         $this->deserializeDb();
         $this->buildKdTrees();
@@ -175,6 +194,7 @@ namespace App\Services\Router {
      * @param  Location|string  $origin
      * @param  Location|string  $destination
      * @param  \DateTime|null  $startTime  Start time for the path (default: current time)
+     * @param  bool  $showETA  Whether to show ETA details (default: false)
      * @return array|null
      * @throws InvalidCoordinateException
      * @throws InvalidRouterArgumentException
@@ -182,7 +202,12 @@ namespace App\Services\Router {
      * @throws NodeNotFoundException
      * @throws RouterException
      */
-    public function getPath(Location|string $origin, Location|string $destination, ?\DateTime $startTime = null): ?array {
+    public function getPath(
+      Location|string $origin,
+      Location|string $destination,
+      ?\DateTime $startTime = null,
+      bool $showETA = false
+    ): ?array {
       // If no start time is provided, use current time
       $startTime = $startTime ?? new \DateTime();
 
@@ -237,6 +262,9 @@ namespace App\Services\Router {
         );
       }
 
+      // Calculate ETA details first (needed for both debug output and return)
+      $etaDetails = null;
+
       // Generate path with time constraints
       $path = $this->aStar($origin, $destination, $startTime);
 
@@ -247,6 +275,17 @@ namespace App\Services\Router {
 
       if ($dIsLoc) {
         $path[] = $dN;
+      }
+
+      // Calculate ETA details
+      $etaDetails = $this->calculateETA($path, $startTime);
+
+      // Print ETA if requested
+      if ($showETA || $this->debug) {
+        $this->printETA($etaDetails, $startTime);
+
+        // Print debug output end message after ETA details
+        $this->debug && print "\033[1;34m>>> ROUTER DEBUG END\033[0m\n\n";
       }
 
       return $path;
@@ -267,6 +306,129 @@ namespace App\Services\Router {
       // Print path with color formatting
       print "\033[1;32mShortest path: (as ID)\033[0m\n Start:\t> ".implode("\n\t> ", $ids)."\n\n";
       print "\033[1;32mShortest path: (as desc.)\033[0m\n Start:\t> ".implode("\n\t> ", $descs)."\n";
+    }
+
+    /**
+     * Calculates the estimated time of arrival (ETA) for a given path.
+     * Takes into account vehicle speed, handling time at nodes, and turn penalties.
+     *
+     * @param  array  $path  Array of node objects
+     * @param  \DateTime  $startTime  Start time for the path
+     * @return array Associative array with 'eta' (\DateTime) and 'totalTime' (float, in hours)
+     */
+    public function calculateETA(array $path, \DateTime $startTime): array {
+      if (count($path) < 2) {
+        return [
+          'eta' => clone $startTime,
+          'totalTime' => 0
+        ];
+      }
+
+      $totalTime = 0; // Total time in hours
+      $currentTime = clone $startTime;
+      $segments = [];
+      $totalSegments = count($path) - 1;
+
+      // Process each segment of the path
+      for ($i = 0; $i < $totalSegments; $i++) {
+        $currentNode = $path[$i];
+        $nextNode = $path[$i + 1];
+
+        // Calculate distance between nodes
+        $distance = $currentNode->getDistanceTo($nextNode);
+
+        // Determine vehicle type based on position in path
+        $vehicleType = $this->vehicleTypeResolver->resolveVehicleType(
+          $currentNode,
+          $nextNode,
+          $i,
+          $totalSegments
+        );
+
+        // Calculate travel time for this segment
+        $travelTime = $this->vehicleSpeedProvider->calculateTravelTime($distance, $vehicleType);
+
+        // Add handling time for the next node
+        $nodeType = $nextNode->getType();
+        $handlingTime = $this->nodeHandlingTimeProvider->getHandlingTime($nodeType);
+
+        // Calculate turn penalty if not the first segment
+        $turnPenalty = 0;
+        if ($i > 0) {
+          $previousNode = $path[$i - 1];
+
+          // Calculate the angle and turn penalty
+          $angle = $this->calculateAngleBetweenNodes($previousNode, $currentNode, $nextNode);
+          $turnPenalty = $this->turnPenaltyCalculator->calculateTurnPenalty($angle, $vehicleType, $distance);
+        }
+
+        // Add times for this segment
+        $segmentTime = $travelTime + $handlingTime + $turnPenalty;
+        $totalTime += $segmentTime;
+
+        // Update current time
+        $currentTime->modify('+'.(int) ($segmentTime * 60).' minutes');
+
+        // Store segment details for debugging
+        $segments[] = [
+          'from' => $currentNode->getID(),
+          'to' => $nextNode->getID(),
+          'distance' => $distance,
+          'vehicleType' => $vehicleType->value,
+          'travelTime' => $travelTime,
+          'handlingTime' => $handlingTime,
+          'turnPenalty' => $turnPenalty,
+          'segmentTime' => $segmentTime
+        ];
+      }
+
+      return [
+        'eta' => $currentTime,
+        'totalTime' => $totalTime,
+        'segments' => $segments
+      ];
+    }
+
+    /**
+     * Prints the estimated time of arrival (ETA) details for a given path.
+     *
+     * @param  array  $etaDetails  ETA details from calculateETA method
+     * @param  \DateTime  $startTime  Start time for the path
+     * @return void
+     */
+    public function printETA(array $etaDetails, \DateTime $startTime): void {
+      $eta = $etaDetails['eta'];
+      $totalTime = $etaDetails['totalTime'];
+      $segments = $etaDetails['segments'];
+
+      print "\n\033[1;34m=== ETA Details ===\033[0m\n";
+      print "Start Time: ".$startTime->format('Y-m-d H:i:s')."\n";
+      print "Estimated Arrival: ".$eta->format('Y-m-d H:i:s')."\n";
+      print "Total Travel Time: ".sprintf("%.2f", $totalTime)." hours (".sprintf("%.0f",
+          $totalTime * 60)." minutes)\n\n";
+
+      if (!empty($segments)) {
+        print "\033[1;33mSegment Details:\033[0m\n";
+        print "╔════════════════════╦════════════════════╦═════════════╦══════════════╦════════════╦═════════════╦════════════╦════════════╗\n";
+        print "║ \033[1mFrom\033[0m               ║ \033[1mTo\033[0m                 ║ \033[1mDistance\033[0m    ║ \033[1mVehicle\033[0m      ║ \033[1mTravel\033[0m     ║ \033[1mHandling\033[0m    ║ \033[1mTurn\033[0m       ║ \033[1mTotal\033[0m      ║\n";
+        print "╠════════════════════╬════════════════════╬═════════════╬══════════════╬════════════╬═════════════╬════════════╬════════════╣\n";
+
+        foreach ($segments as $segment) {
+          printf(
+            "║ \033[38;2;255;140;0m%-18s\033[0m ║ \033[38;2;255;140;0m%-18s\033[0m ║ %8.2f km ║ %-12s ║ %7.2f h  ║ %8.2f h  ║ %7.2f h  ║ %7.2f h  ║\n",
+            $segment['from'],
+            $segment['to'],
+            $segment['distance'],
+            $segment['vehicleType'],
+            $segment['travelTime'],
+            $segment['handlingTime'],
+            $segment['turnPenalty'],
+            $segment['segmentTime']
+          );
+        }
+
+        print "╚════════════════════╩════════════════════╩═════════════╩══════════════╩════════════╩═════════════╩════════════╩════════════╝\n";
+      }
     }
 
 
@@ -340,7 +502,8 @@ namespace App\Services\Router {
         $nodeId = $closestNode->getID();
         $nodeLat = $closestNode->getLat(CoordType::DEGREE);
         $nodeLong = $closestNode->getLong(CoordType::DEGREE);
-        echo "Closest conforming Node found:\n  \033[38;2;255;140;0m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f", $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n\n";
+        echo "Closest conforming Node found:\n  \033[38;2;255;140;0m".$nodeId."\033[0m [\033[1;35m".sprintf("%.4f",
+            $nodeLat)."\033[0m,\033[1;35m ".sprintf("%.4f", $nodeLong)."\033[0m]\n\n\n\n";
       }
 
       return $closestNode->getID();
@@ -393,32 +556,24 @@ namespace App\Services\Router {
         $validFrom = new \DateTime($edge->validFrom);
         $validTo = new \DateTime($edge->validTo);
 
-        // Get vehicle type from the edge if available, default to 'Van'
-        $vehicleType = $edge->vehicle_type ?? 'Van';
+        // Get vehicle type from the edge if available, default to 'Truck'
+        $vehicleType = $edge->vehicle_type ?? 'Truck';
 
         $this->graph->addEdge(
-          $edge->origin_node, 
-          $edge->destination_node, 
-          $validFrom, 
-          $validTo, 
+          $edge->origin_node,
+          $edge->destination_node,
+          $validFrom,
+          $validTo,
           $vehicleType
         );
       }
     }
 
 
-    /**
-     * Defines the speed in km/h for different vehicle types.
-     * 
-     * @var array
-     */
-    private array $vehicleSpeeds = [
-        'Van' => 60, // 60 km/h
-        'Truck' => 50, // 50 km/h
-        'Airplane' => 800, // 800 km/h
-        'Train' => 120, // 120 km/h
-        'Ship' => 30, // 30 km/h
-    ];
+    // These arrays are now handled by the helper classes:
+    // - VehicleSpeedProvider
+    // - NodeHandlingTimeProvider
+    // - TurnPenaltyCalculator
 
     /**
      * Finds the shortest path between two nodes, considering time constraints.
@@ -461,8 +616,9 @@ namespace App\Services\Router {
 
       $epsilon = 1e-10; // Tolerance to avoid (very hard to debug) FP rounding errors.
 
-      $this->debug && print "\033[1;34m=== Starting A* Search ===\033[0m\nFrom: $startNodeID | To: $endNodeID\n";
-      $this->debug && print "Start Time: " . $startTime->format('Y-m-d H:i:s') . "\n";
+      $this->debug && print "\033[1;34m=== Starting Routing ===\033[0m\n
+      From: $startNodeID | To: $endNodeID\n
+      Start Time: ".$startTime->format('Y-m-d H:i:s')."\n";
 
       // Main loop of the A* algorithm
       while (!$openSet->isEmpty()) {
@@ -472,8 +628,19 @@ namespace App\Services\Router {
         $insertion_fScore = -$extracted['priority'];
         $insertion_gScore = $insertion_fScore - $current->getDistanceTo($endNode);
 
-        $this->debug && print "\n\033[32mProcessing Node:\n  \033[38;2;255;140;0m$currentID\033[0m ({$current->getDescription()})\n  Open Set Size: ".$openSet->count()."\n  fScore: ".sprintf("%.6f",
-            $insertion_fScore)." | gScore (queue): ".sprintf("%.6f", $insertion_gScore)."\n";
+        $this->debug && print "\n\033[1;32mNode:\n  \033[38;2;255;140;0m$currentID\033[0m ({$current->getDescription()})\n  Open Set Size: ".$openSet->count()."\n  fScore: ".sprintf("%.6f",
+            $insertion_fScore)." km | gScore (queue): ".sprintf("%.6f",
+            $insertion_gScore)." km | tScore: ".sprintf("%.6f", $tScore[$currentID])." hours\n";
+
+
+        // Check if the current node is the goal
+        if ($currentID === $endNodeID) {
+          $this->debug && print "  \033[1;32mDestination reached\033[0m\n";
+
+          // Reconstruct the path first
+          // Debug output end will be printed in getPath after ETA details
+          return $this->reconstructPath($this->graph, $cameFrom, $currentID);
+        }
 
         // Check if the current node's gScore is valid
         if ($gScore[$currentID] - $insertion_gScore <= $epsilon) {
@@ -485,40 +652,73 @@ namespace App\Services\Router {
           continue;
         }
 
-        // Check if the current node is the goal
-        if ($currentID === $endNodeID) {
-          $this->debug && print "\033[1;34m>>> ROUTER DEBUG END\033[0m\n\n";
-          return $this->reconstructPath($this->graph, $cameFrom, $currentID);
-        }
-
         $this->debug && print "\n\033[1;33mNeighbors:\033[0m\n";
 
         // Calculate the current time at this node
         $currentTime = clone $startTime;
-        $currentTime->modify('+' . (int)($tScore[$currentID] * 60) . ' minutes'); // Convert hours to minutes
+        $currentTime->modify('+'.(int) ($tScore[$currentID] * 60).' minutes'); // Convert hours to minutes
+
+        // For A* algorithm, we don't need to determine the segment index
+        // The vehicle type will be determined based on node IDs
 
         // Iterate over each neighbor of the current node, considering time constraints
         foreach ($this->graph->getNeighbors($currentID, $currentTime) as $neighborID => $edgeData) {
           $weight = $edgeData['weight']; // Distance in km
-          $vehicleType = $edgeData['vehicleType'];
 
-          // Get the speed for this vehicle type (default to Van if not found)
-          $speed = $this->vehicleSpeeds[$vehicleType] ?? $this->vehicleSpeeds['Van'];
+          // Convert string vehicle type to enum
+          $vehicleTypeString = $edgeData['vehicleType'];
+          $vehicleType = VehicleType::from($vehicleTypeString);
 
           // Calculate time to travel this edge in hours
-          $timeToTravel = $weight / $speed;
+          $timeToTravel = $this->vehicleSpeedProvider->calculateTravelTime($weight, $vehicleType);
 
-          $this->debug && print "  \033[38;2;255;140;0m- $neighborID\033[0m (".sprintf("%.6f", $weight)." km, ".sprintf("%.6f", $timeToTravel)." hours, $vehicleType)\n";
+          $this->debug && print "  \033[38;2;255;140;0m- $neighborID\033[0m (".sprintf("%.6f",
+              $weight)." km, ".sprintf("%.6f", $timeToTravel)." hours, {$vehicleType->value})\n";
 
           // Calculate tentative scores
           $tentativeGScore = $gScore[$currentID] + $weight;
+
+          // Base travel time
           $tentativeTScore = $tScore[$currentID] + $timeToTravel;
+
+          // Add handling time based on node type
+          $neighborNode = $this->graph->getNode($neighborID);
+          $nodeType = $neighborNode->getType();
+          $handlingTime = $this->nodeHandlingTimeProvider->getHandlingTime($nodeType);
+          $tentativeTScore += $handlingTime;
+
+          // Calculate turn penalty if we have a previous node
+          if (isset($cameFrom[$currentID])) {
+            $previousID = $cameFrom[$currentID];
+            $previousNode = $this->graph->getNode($previousID);
+
+            // Calculate the angle between previous, current, and next nodes
+            $angle = $this->calculateAngleBetweenNodes($previousNode, $current, $neighborNode);
+
+            // Calculate turn penalty using the TurnPenaltyCalculator
+            $turnPenalty = $this->turnPenaltyCalculator->calculateTurnPenalty($angle, $vehicleType, $weight);
+
+            // Add turn penalty to time score
+            $tentativeTScore += $turnPenalty;
+
+            // Debug output for turn penalty
+            if ($this->debug) {
+              $turnType = $this->turnPenaltyCalculator->getTurnTypeDisplayName($angle);
+              print "    \033[36mTurn Penalty:\033[0m ".sprintf("%.6f",
+                  $turnPenalty)." hours ($turnType, ".sprintf("%.2f", $angle)." degrees)\n";
+            }
+          }
+
+          // Debug output for handling time
+          if ($this->debug && $handlingTime > 0) {
+            print "    \033[36mHandling Time:\033[0m ".sprintf("%.6f", $handlingTime)." hours ({$nodeType->value})\n";
+          }
 
           // Check if this path to the neighbor is better
           if ($tentativeGScore < $gScore[$neighborID]) {
             // Check if the edge will still be valid when we reach it
             $arrivalTime = clone $startTime;
-            $arrivalTime->modify('+' . (int)($tentativeTScore * 60) . ' minutes'); // Convert hours to minutes
+            $arrivalTime->modify('+'.(int) ($tentativeTScore * 60).' minutes'); // Convert hours to minutes
 
             if ($arrivalTime <= $edgeData['validTo']) {
               $cameFrom[$neighborID] = $currentID;
@@ -530,12 +730,14 @@ namespace App\Services\Router {
               $openSet->insert($neighborID, -$fScore[$neighborID]);
 
               if ($this->debug) {
-                echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f", $tentativeGScore)." | New tScore: ".sprintf("%.6f", $tentativeTScore)." | New fScore: ".sprintf("%.6f",
-                    $fScore[$neighborID])."\n    \033[33mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
-                    $tentativeGScore)." | Heuristic: ".sprintf("%.6f",
-                    $this->graph->getNode($neighborID)->getDistanceTo($endNode))."\n";
+                echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f",
+                    $tentativeGScore)." km | New tScore: ".sprintf("%.6f",
+                    $tentativeTScore)." hours | New fScore: ".sprintf("%.6f",
+                    $fScore[$neighborID])." km\n    \033[33mHeuristic Info:\033[0m\n      Σ Path Weight: ".sprintf("%.6f",
+                    $tentativeGScore)." km | Heuristic: ".sprintf("%.6f",
+                    $this->graph->getNode($neighborID)->getDistanceTo($endNode))." km\n";
 
-                echo "      Arrival Time: " . $arrivalTime->format('Y-m-d H:i:s') . " | Valid Until: " . $edgeData['validTo']->format('Y-m-d H:i:s') . "\n";
+                echo "      Arrival Time: ".$arrivalTime->format('Y-m-d H:i:s')." | Valid Until: ".$edgeData['validTo']->format('Y-m-d H:i:s')."\n";
 
                 // Check heuristic admissibility
                 $isAdmissible = $tentativeGScore <= $fScore[$neighborID];
@@ -544,11 +746,11 @@ namespace App\Services\Router {
               }
             } else {
               $this->debug && print "    \033[1;31mSkipped:\033[0m Edge will not be valid at arrival time ".
-                  $arrivalTime->format('Y-m-d H:i:s')." (valid until ".$edgeData['validTo']->format('Y-m-d H:i:s').")\n\n";
+                $arrivalTime->format('Y-m-d H:i:s')." (valid until ".$edgeData['validTo']->format('Y-m-d H:i:s').")\n\n";
             }
           } else {
             $this->debug && print "    \033[1;35mNot Updated:\033[0m Tentative gScore: ".sprintf("%.6f",
-                $tentativeGScore)." ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])."\n\n";
+                $tentativeGScore)." km ≥ Current gScore: ".sprintf("%.6f", $gScore[$neighborID])." km\n\n";
           }
         }
       }
@@ -648,6 +850,25 @@ namespace App\Services\Router {
       $this->kdTreeEntry = new KdTree($entryNodes);
       $this->kdTreeExit = new KdTree($exitNodes);
       $this->kdTreeEntryExit = new KdTree($entryExitNodes);
+    }
+
+    /**
+     * Calculate the angle between three nodes.
+     *
+     * @param  Node  $previousNode  The previous node
+     * @param  Node  $currentNode  The current node
+     * @param  Node  $nextNode  The next node
+     * @return float The angle in degrees
+     */
+    private function calculateAngleBetweenNodes(Node $previousNode, Node $currentNode, Node $nextNode): float {
+      return GeoMath::calculateTurnAngle(
+        $previousNode->getLat(CoordType::RADIAN),
+        $previousNode->getLong(CoordType::RADIAN),
+        $currentNode->getLat(CoordType::RADIAN),
+        $currentNode->getLong(CoordType::RADIAN),
+        $nextNode->getLat(CoordType::RADIAN),
+        $nextNode->getLong(CoordType::RADIAN)
+      );
     }
   }
 }

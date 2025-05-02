@@ -12,15 +12,19 @@ use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
 use App\Services\Router\Types\Exceptions\NodeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\SelfLoopException;
+use App\Services\Router\Types\VehicleType;
+use App\Services\Router\VehicleTypeResolver;
 use Carbon\Carbon;
 
 class RouterGraph {
   private array $nodes;
   private array $edges;
+  private VehicleTypeResolver $vehicleTypeResolver;
 
   public function __construct() {
     $this->nodes = [];
     $this->edges = [];
+    $this->vehicleTypeResolver = new VehicleTypeResolver();
   }
 
   /**
@@ -199,8 +203,10 @@ class RouterGraph {
     $validFrom = $validFrom ?? new \DateTime('2000-01-01');
     $validTo = $validTo ?? new \DateTime('2100-01-01');
 
-    // Set default vehicle type if not provided
-    $vehicleType = $vehicleType ?? 'Van';
+    // Determine vehicle type
+    $resolvedVehicleType = $vehicleType !== null 
+        ? VehicleType::from($vehicleType) 
+        : $this->vehicleTypeResolver->resolveVehicleTypeFromNodeIDs($startNodeID, $endNodeID);
 
     // Add the edge to the graph with metadata
     // Add both directions to the edge list to make the edge bidirectional
@@ -208,13 +214,13 @@ class RouterGraph {
       'weight' => $weight,
       'validFrom' => $validFrom,
       'validTo' => $validTo,
-      'vehicleType' => $vehicleType
+      'vehicleType' => $resolvedVehicleType->value
     ];
     $this->edges[$endNodeID][$startNodeID] = [
       'weight' => $weight,
       'validFrom' => $validFrom,
       'validTo' => $validTo,
-      'vehicleType' => $vehicleType
+      'vehicleType' => $resolvedVehicleType->value
     ];
   }
 
@@ -266,6 +272,8 @@ class RouterGraph {
     foreach ($this->edges[$NodeID] as $neighborID => $edgeData) {
       // Check if the edge is valid at the current time
       if ($edgeData['validFrom'] <= $currentTime && $currentTime <= $edgeData['validTo']) {
+        // Use the vehicle type from the edge data
+        // No need to override based on node IDs as this is now handled by VehicleTypeResolver
         $validNeighbors[$neighborID] = $edgeData;
       }
     }

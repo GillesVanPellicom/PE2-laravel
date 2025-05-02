@@ -101,16 +101,6 @@ class RouterEdgesSeeder extends Seeder {
       ],
       [
         'origin_node' => '@DC_GHENT',
-        'destination_node' => '@DC_BRUSSELS',
-        'weight' => 1.0,
-        'isUniDirectional' => false,
-        'validFrom' => now(),
-        'validTo' => now()->addYears(10),
-        'created_at' => now(),
-        'updated_at' => now(),
-      ],
-      [
-        'origin_node' => '@DC_GHENT',
         'destination_node' => '@DC_CHARLEROI',
         'weight' => 1.0,
         'isUniDirectional' => false,
