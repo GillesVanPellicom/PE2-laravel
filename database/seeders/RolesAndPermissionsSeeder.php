@@ -19,6 +19,8 @@ class RolesAndPermissionsSeeder extends Seeder
     // ╚════════════════════════════════════════╝
 
     private array $permissions = [
+        "*",
+
         'employee',
         'scan',
         "courier.route",
@@ -46,6 +48,9 @@ class RolesAndPermissionsSeeder extends Seeder
         /*START DC*/
         'assign.courier',
         /*END DC*/
+        /* START Business Client */
+        'business_client.view',
+        /* END Business Client */
     ];
 
 
@@ -79,6 +84,10 @@ class RolesAndPermissionsSeeder extends Seeder
         //Distribution Center
         "DCManager" => ["assign.courier"],
         //END
+
+        //Business Client
+        "business_client" => ["business_client.view"],
+        // End Business Client
     ];
 
 

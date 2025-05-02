@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->string('VAT_Number')->nullable();
             $table->string('phone_number');
-            $table->date('birth_date');
+            $table->date('birth_date')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

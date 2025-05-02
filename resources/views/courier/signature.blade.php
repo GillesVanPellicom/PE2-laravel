@@ -77,7 +77,7 @@
             }*/
         function submitSignature(packageId) {
             // Call the same deliver route as the "Deliver at Home" button
-            const deliverUrl = "{{ route('courier.deliver', ['id' => ':id']) }}".replace(':id', packageId);
+            const deliverUrl = "{{ route('workspace.courier.deliver', ['id' => ':id']) }}".replace(':id', packageId);
 
             fetch(deliverUrl, {
                 method: 'POST',
@@ -100,7 +100,7 @@
                     console.log(data.message);
                     if (data.success) {
                         alert('Package delivered successfully!');
-                        window.location.href = "{{ route('courier.route') }}"; // Redirect back to the route page
+                        window.location.href = "{{ route('workspace.courier.route') }}"; // Redirect back to the route page
                     } else {
                         alert(`Error: ${data.message}`);
                     }

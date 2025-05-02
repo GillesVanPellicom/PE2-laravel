@@ -9,7 +9,7 @@
     <title>Document</title>
 </head>
 <body>
-    <a href="{{ route('airports') }}">airports</a>
+    <a href="{{ route('workspace.airports') }}">airports</a>
     <p>wachten op hr</p>
 </body>
 </html>
