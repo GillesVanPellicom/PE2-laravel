@@ -8,9 +8,9 @@ namespace App\Services\Router\Types;
  * @package App\Services\Router\Types
  */
 enum VehicleType: string {
-    case VAN = 'Van';
-    case TRUCK = 'Truck';
-    case AIRPLANE = 'Airplane';
-    case TRAIN = 'Train';
-    case SHIP = 'Ship';
+  case VAN = 'Van';
+  case TRUCK = 'Truck';
+  case AIRPLANE = 'Airplane';
+  case TRAIN = 'Train';
+  case SHIP = 'Ship';
 }
