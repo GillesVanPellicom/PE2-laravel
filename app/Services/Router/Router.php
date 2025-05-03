@@ -358,10 +358,10 @@ class Router {
    * Displays a formatted representation of the path showing both node IDs
    * and node descriptions.
    *
-   * @param  array  $path  Array of node objects
+   * @param  array  &$path  Array of node objects
    * @return void
    */
-  public static function printPath(array $path): void {
+  public static function printPath(array &$path): void {
     // Extract IDs and descriptions from path nodes
     $ids = array_map(fn($node) => $node->getID(), $path);
     $descs = array_map(fn($node) => $node->getDescription(), $path);
@@ -379,14 +379,14 @@ class Router {
    * - Handling time at each node based on node type
    * - Turn penalties based on the angle between segments
    *
-   * @param  array  $path  Array of node objects representing the route
+   * @param  array  &$path  Array of node objects representing the route
    * @param  DateTime  $startTime  Start time for the path
    * @return array Associative array with:
    *               - 'eta' (DateTime): The estimated arrival time
    *               - 'totalTime' (float): Total travel time in hours
    *               - 'segments' (array): Detailed information about each segment
    */
-  public function calculateETA(array $path, DateTime $startTime): array {
+  public function calculateETA(array &$path, DateTime $startTime): array {
     // Handle empty or single-node paths
     if (count($path) < 2) {
       return [
@@ -467,11 +467,11 @@ class Router {
    * Displays a formatted table with the start time, estimated arrival time,
    * total travel time, and detailed information about each segment of the path.
    *
-   * @param  array  $etaDetails  ETA details from calculateETA method
+   * @param  array  &$etaDetails  ETA details from calculateETA method
    * @param  DateTime  $startTime  Start time for the path
    * @return void
    */
-  private function printETA(array $etaDetails, DateTime $startTime): void {
+  private function printETA(array &$etaDetails, DateTime $startTime): void {
     $eta = $etaDetails['eta'];
     $totalTime = $etaDetails['totalTime'];
     $segments = $etaDetails['segments'];
@@ -810,7 +810,7 @@ class Router {
    * @param  SplPriorityQueue  $openSet  Open set
    * @param  float  $insertion_fScore  F-score at insertion
    * @param  float  $insertion_gScore  G-score at insertion
-   * @param  array  $tScore  Time score array
+   * @param  array&  $tScore  Time score array
    */
   private function debugCurrentNode(
     string $currentID,
@@ -818,7 +818,7 @@ class Router {
     SplPriorityQueue $openSet,
     float $insertion_fScore,
     float $insertion_gScore,
-    array $tScore
+    array &$tScore
   ): void {
     if (!$this->debug) {
       return;
@@ -932,7 +932,7 @@ class Router {
    * @param  Node  $neighborNode  Neighbor node
    * @param  VehicleType  $vehicleType  Vehicle type
    * @param  float  $weight  Edge weight
-   * @param  array  $cameFrom  Path tracking array
+   * @param  array  &$cameFrom  Path tracking array
    * @return float Turn penalty in hours
    * @throws NodeNotFoundException
    */
@@ -942,7 +942,7 @@ class Router {
     Node $neighborNode,
     VehicleType $vehicleType,
     float $weight,
-    array $cameFrom
+    array &$cameFrom
   ): float {
     $turnPenalty = 0;
 
@@ -974,18 +974,18 @@ class Router {
    * @param  string  $neighborID  Neighbor node ID
    * @param  float  $tentativeGScore  Tentative g-score
    * @param  float  $tentativeTScore  Tentative t-score
-   * @param  array  $fScore  F-score array
+   * @param  array  &$fScore  F-score array
    * @param  DateTime  $arrivalTime  Arrival time
-   * @param  array  $edgeData  Edge data
+   * @param  array  &$edgeData  Edge data
    * @throws NodeNotFoundException
    */
   private function debugUpdatedNode(
     string $neighborID,
     float $tentativeGScore,
     float $tentativeTScore,
-    array $fScore,
+    array &$fScore,
     DateTime $arrivalTime,
-    array $edgeData
+    array &$edgeData
   ): void {
     if (!$this->debug) {
       return;
@@ -996,12 +996,12 @@ class Router {
     $destinationID = $edgeData['to'] ?? $neighborID;
     $heuristic = $neighborNode->getDistanceTo($this->graph->getNode($destinationID));
 
-    echo "    \033[33mUpdated:\033[0m New gScore (distance from start): ".sprintf("%.6f", $tentativeGScore).
-      " km | New tScore (travel time from start): ".sprintf("%.6f", $tentativeTScore).
-      " hours | New fScore (A* distance estimate): ".sprintf("%.6f", $fScore[$neighborID])." km\n".
+    echo "    \033[33mUpdated:\033[0m New gScore: ".sprintf("%.6f", $tentativeGScore).
+      " km | New tScore: ".sprintf("%.6f", $tentativeTScore).
+      " hours | New fScore: ".sprintf("%.6f", $fScore[$neighborID])." km\n".
       "    \033[33mHeuristic Info:\033[0m\n".
       "      Σ Path Weight: ".sprintf("%.6f", $tentativeGScore).
-      " km | Heuristic (estimated distance to destination): ".sprintf("%.6f", $heuristic)." km\n";
+      " km | Heuristic: ".sprintf("%.6f", $heuristic)." km\n";
 
     echo "      Arrival Time: ".$arrivalTime->format('Y-m-d H:i:s').
       " | Valid Until: ".$edgeData['validTo']->format('Y-m-d H:i:s')."\n";
@@ -1020,12 +1020,12 @@ class Router {
    * to the start node using the cameFrom array to build the complete path.
    *
    * @param  RouterGraph  $graph  RouterGraph object containing all nodes
-   * @param  array  $cameFrom  Array mapping each node to its predecessor
+   * @param  array  &$cameFrom  Array mapping each node to its predecessor
    * @param  string  $currentID  Current (destination) node ID
    * @return array  Array of Node objects representing the path from start to destination
    * @throws NodeNotFoundException  If a node in the path cannot be found
    */
-  private function reconstructPath(RouterGraph $graph, array $cameFrom, string $currentID): array {
+  private function reconstructPath(RouterGraph $graph, array& $cameFrom, string $currentID): array {
     // Start with the destination node
     $totalPath = [$graph->getNode($currentID)]; // May throw NodeNotFoundException
 
