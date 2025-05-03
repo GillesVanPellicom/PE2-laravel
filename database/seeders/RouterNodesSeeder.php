@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class RouterNodesSeeder extends Seeder {
   public function run(): void {
     DB::table('router_nodes')->insert([
-      // Airports
+      // airports
       [
         'id' => '@AIR_EBBR',
         'description' => 'Brussels Airport',
@@ -387,7 +387,7 @@ class RouterNodesSeeder extends Seeder {
         'updated_at' => now(),
       ],
 
-      // DISTRIBUTION_CENTERS
+      // distribution centers
       [
         'id' => '@DC_BRUSSELS',
         'description' => 'EU Distribution Hub Brussels',
@@ -830,7 +830,7 @@ class RouterNodesSeeder extends Seeder {
         'created_at' => now(),
         'updated_at' => now(),
       ],
-      //pickup_points
+      // pick-up points
       [
         'id' => '@PIP_0001',
         'description' => 'Pick-up Point Antwerp 1',
@@ -838,6 +838,36 @@ class RouterNodesSeeder extends Seeder {
         'latDeg' => 51.18944,
         'lonDeg' => 4.46027,
         'isEntry' => false,
+        'isExit' => true,
+        'city_id' => 1,
+        'address_id' => 1,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ],
+
+      // drop-off points
+      [
+        'id' => '@DOP_0001',
+        'description' => 'Drop-off Point Antwerp 1',
+        'location_type' => 'DROPOFF_POINT',
+        'latDeg' => 51.18944,
+        'lonDeg' => 4.46027,
+        'isEntry' => true,
+        'isExit' => false,
+        'city_id' => 1,
+        'address_id' => 1,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ],
+
+      // pick-up & drop-off hybrid points
+      [
+        'id' => '@PIDOP_0001',
+        'description' => 'Pick-up & Drop-off Point Antwerp 1',
+        'location_type' => 'PICKUP_AND_DROPOFF_POINT',
+        'latDeg' => 51.18944,
+        'lonDeg' => 4.46027,
+        'isEntry' => true,
         'isExit' => true,
         'city_id' => 1,
         'address_id' => 1,
