@@ -14,7 +14,7 @@ use App\Services\Router\Types\NodeType;
 class NodeHandlingTimeProvider {
     /**
      * Handling times in hours for different node types.
-     * This represents the average time spent at a node for loading/unloading packages.
+     * This represents the base-average time spent at a node for package handling.
      * 
      * @var array<string, float>
      */

@@ -161,17 +161,26 @@ class GeoMath {
     return fmod(rad2deg($theta) + 360, 360);
   }
 
-  /**
+/**
    * Calculates the angle between three points (previous, current, next).
    * This is useful for determining if there's a turn and how sharp it is.
    *
-   * @param float $phi1 Latitude of the previous point in radians
-   * @param float $lambda1 Longitude of the previous point in radians
-   * @param float $phi2 Latitude of the current point in radians
-   * @param float $lambda2 Longitude of the current point in radians
-   * @param float $phi3 Latitude of the next point in radians
-   * @param float $lambda3 Longitude of the next point in radians
-   * @return float Angle in degrees (0-180, where 0 = straight line, 180 = U-turn)
+   * The formula used is:
+   * - θ = |θ₂ - θ₁|, normalized to [0; 180]° range
+   *
+   * Where:
+   * - θ₁ is the bearing from the previous point to the current point
+   * - θ₂ is the bearing from the current point to the next point
+   *
+   * θ₁ and θ₂ are calculated internally, refer to GeoMath::calculateBearing for details.
+   *
+   * @param float $phi1 Latitude of the previous point in radians (φ₁)
+   * @param float $lambda1 Longitude of the previous point in radians (λ₁)
+   * @param float $phi2 Latitude of the current point in radians (φ₂)
+   * @param float $lambda2 Longitude of the current point in radians (λ₂)
+   * @param float $phi3 Latitude of the next point in radians (φ₃)
+   * @param float $lambda3 Longitude of the next point in radians (λ₃)
+   * @return float Angle in degrees (0-180, where 0 = straight line, 180 = U-turn) (θ)
    */
   public static function calculateTurnAngle(float $phi1, float $lambda1, float $phi2, float $lambda2, float $phi3, float $lambda3): float {
     // Calculate bearings for the two segments
