@@ -8,13 +8,15 @@ use App\Models\Package;
 use App\Models\PackageMovement;
 use App\Models\RouterEdges;
 use App\Models\RouterNodes;
+use App\Services\Router\Helpers\GeoMath;
+use App\Services\Router\Helpers\NodeHandlingTimeProvider;
+use App\Services\Router\Helpers\TurnPenaltyCalculator;
+use App\Services\Router\Helpers\VehicleSpeedProvider;
+use App\Services\Router\Helpers\VehicleTypeResolver;
 use App\Services\Router\Types\CoordType;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\EdgeNotFoundException;
-use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
-use App\Services\Router\Types\Exceptions\FileNotFoundException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
-use App\Services\Router\Types\Exceptions\InvalidGraphMLException;
 use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\NodeAlreadyExistsException;
@@ -23,10 +25,9 @@ use App\Services\Router\Types\Exceptions\NoPathFoundException;
 use App\Services\Router\Types\Exceptions\RouterException;
 use App\Services\Router\Types\Exceptions\SelfLoopException;
 use App\Services\Router\Types\KdTree;
+use App\Services\Router\Types\Node;
 use App\Services\Router\Types\NodeType;
 use App\Services\Router\Types\RouterGraph;
-use App\Services\Router\Types\Node;
-use App\Services\Router\Types\TurnType;
 use App\Services\Router\Types\VehicleType;
 use DateTime;
 use Exception;
@@ -165,7 +166,7 @@ class Router {
         $this->graph->removeEdge($origin, $destination);
 
         // Refresh packages that were using this edge, if this strands packages:
-        if (!$this->refresh($edge->id) && !$force) {
+        if (!$this->refresh($edge->id, $force) && !$force) {
           throw new RouterException("Failed to complete the route removal. Use force=true to remove the edge anyway.");
         }
 
@@ -272,6 +273,11 @@ class Router {
     // Simple check for Node ID validity, actual screening is done in the graph
     if ((!$oIsLoc && $origin[0] !== '@') || (!$dIsLoc && $destination[0] !== '@')) {
       throw new InvalidRouterArgumentException("ID ($origin) is not a valid Node ID.");
+    }
+
+    if ($origin == $destination) {
+
+      throw new SelfLoopException($oIsLoc ? $origin->id : $origin);
     }
 
     // Debug output of graph and k-d trees
@@ -564,6 +570,14 @@ class Router {
     $this->debugClosestNodeResult($closestNode);
 
     return $closestNode->getID();
+  }
+
+  public function setDebugMode(bool $debug): void {
+    $this->debug = $debug;
+  }
+
+  public function isDebugMode(): bool {
+    return $this->debug;
   }
 
   /**
@@ -1025,7 +1039,7 @@ class Router {
    * @return array  Array of Node objects representing the path from start to destination
    * @throws NodeNotFoundException  If a node in the path cannot be found
    */
-  private function reconstructPath(RouterGraph $graph, array& $cameFrom, string $currentID): array {
+  private function reconstructPath(RouterGraph $graph, array &$cameFrom, string $currentID): array {
     // Start with the destination node
     $totalPath = [$graph->getNode($currentID)]; // May throw NodeNotFoundException
 
@@ -1070,11 +1084,13 @@ class Router {
    * This method finds all package movements that use the specified edge and
    * attempts to reroute the associated packages to their destinations.
    * It requires the RouterEdge to still be in the database, but be removed from the graph.
+   * If force is enabled, packages that cannot be rerouted will be marked as stranded.
    *
    * @param  int  $edgeId  The ID of the RouterEdge to check
+   * @param  bool  $force  Whether to force the operation even if packages cannot be rerouted
    * @return bool  True if refresh completed without stranding packages, false otherwise
    */
-  private function refresh(int $edgeId): bool {
+  private function refresh(int $edgeId, bool $force = false): bool {
     $failedPackages = [];
 
     // Get all package movements that use this edge
@@ -1095,7 +1111,15 @@ class Router {
       }
     }
 
-    // TODO: handle packages which failed to be rerouted
+    // Handle packages which failed to be rerouted
+    if (!empty($failedPackages) && $force) {
+      foreach ($failedPackages as $package) {
+        // Mark the package as stranded
+        $package->status = 'Stranded';
+        $package->save();
+      }
+    }
+
     return empty($failedPackages); // Return success or fail
   }
 

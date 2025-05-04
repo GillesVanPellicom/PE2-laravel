@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Router;
+namespace App\Services\Router\Helpers;
 
 use App\Services\Router\Types\VehicleType;
 

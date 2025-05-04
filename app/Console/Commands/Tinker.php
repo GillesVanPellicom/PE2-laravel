@@ -38,15 +38,16 @@ class Tinker extends Command {
    * @throws NoPathFoundException
    */
   public function handle(): void {
-    //    /** @var Router $router */
+        /** @var Router $router */
     $router = App::make(Router::class);
     //    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
-    //    $router->removeRoute("@AIR_EFHK", "@AIR_LGAV", 8);
+        $router->removeRoute("@AIR_LIRF", "@AIR_LIML", false);
 
-    $package = Package::find(1);
-
-    $path = $package->getMovements();
-    dd($path);
+//    $package = Package::find(1);
+//    $package->clearMovements();
+//
+//    $path = $package->getMovements();
+//    dd($path);
   }
 
 

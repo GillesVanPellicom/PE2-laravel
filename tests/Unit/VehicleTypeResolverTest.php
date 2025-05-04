@@ -2,10 +2,9 @@
 
 namespace Tests\Unit;
 
+use App\Services\Router\Helpers\VehicleTypeResolver;
 use App\Services\Router\Types\Node;
-use App\Services\Router\Types\NodeType;
 use App\Services\Router\Types\VehicleType;
-use App\Services\Router\VehicleTypeResolver;
 use PHPUnit\Framework\TestCase;
 
 class VehicleTypeResolverTest extends TestCase

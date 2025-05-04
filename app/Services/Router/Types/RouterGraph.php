@@ -2,18 +2,16 @@
 
 namespace App\Services\Router\Types;
 
-use App\Models\Address;
-use App\Services\Router\GeoMath;
+use App\Services\Router\Helpers\GeoMath;
+use App\Services\Router\Helpers\VehicleTypeResolver;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\EdgeNotFoundException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
-use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
+use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\NodeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\SelfLoopException;
-use App\Services\Router\Types\VehicleType;
-use App\Services\Router\VehicleTypeResolver;
 use Carbon\Carbon;
 
 class RouterGraph {

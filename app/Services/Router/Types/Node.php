@@ -4,13 +4,13 @@ namespace App\Services\Router\Types;
 
 use App\Models\Address;
 use App\Models\Location;
+use App\Models\PackageMovement;
 use App\Models\RouterNodes;
-use App\Services\Router\GeoMath;
+use App\Services\Router\Helpers\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
-use RuntimeException;
-use App\Models\PackageMovement;
 use Carbon\Carbon;
+use RuntimeException;
 
 class Node {
 
