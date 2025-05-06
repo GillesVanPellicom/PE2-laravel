@@ -134,19 +134,6 @@ class LocationsSeeder extends Seeder {
         'created_at' => now(),
         'updated_at' => now(),
       ],
-      [
-          'description' => 'Pickup Point Ghent',
-          'location_type' => 'PICKUP_POINT',
-          'latitude' => 51.0543,
-          'longitude' => 3.7174,
-          'addresses_id' => 13, // placeholder
-          'contact_number' => '+32 2 123 45 67', // placeholder
-          'opening_hours' => null, // placeholder
-          'is_active' => true,
-          'created_at' => now(),
-          'updated_at' => now(),
-        ],
-
     ]);
     Location::factory()->count(100)->create();
   }

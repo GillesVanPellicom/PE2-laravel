@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Router;
+namespace App\Services\Router\Helpers;
 
 use App\Services\Router\Types\Exceptions\FailedCoordinatesFetchException;
 
@@ -129,9 +129,80 @@ class GeoMath {
     }
     return ['latDeg' => $data[0]['lat'], 'longDeg' => $data[0]['lon']];
   }
+
+  /**
+   * Calculates the bearing (direction) from one point to another on Earth.
+   *
+   * The formula used is:
+   * - θ = atan2(sin Δλ ⋅ cos φ2, cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ)
+   *
+   * Where:
+   * - φ1, φ2 are the latitudes in radians
+   * - λ1, λ2 are the longitudes in radians
+   * - Δλ is the difference in longitudes in radians
+   * - θ is the bearing in radians (0 = North, π/2 = East, π = South, 3π/2 = West)
+   *
+   * @param  float  $phi1  Latitude of the first point in radians
+   * @param  float  $lambda1  Longitude of the first point in radians
+   * @param  float  $phi2  Latitude of the second point in radians
+   * @param  float  $lambda2  Longitude of the second point in radians
+   * @return float Bearing in degrees (0-360, where 0 = North, 90 = East, 180 = South, 270 = West)
+   */
+  public static function calculateBearing(float $phi1, float $lambda1, float $phi2, float $lambda2): float {
+    // Calculate the difference in longitudes: Δλ = λ₂ - λ₁
+    $deltaLambda = $lambda2 - $lambda1;
+
+    // Calculate the bearing using the formula:
+    // θ = atan2(sin Δλ ⋅ cos φ2, cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ)
+    $y = sin($deltaLambda) * cos($phi2);
+    $x = cos($phi1) * sin($phi2) - sin($phi1) * cos($phi2) * cos($deltaLambda);
+    $theta = atan2($y, $x);
+
+    // Convert from radians to degrees and normalize to 0-360
+    return fmod(rad2deg($theta) + 360, 360);
+  }
+
+  /**
+   * Calculates the angle between three points (previous, current, next).
+   * This is useful for determining if there's a turn and how sharp it is.
+   *
+   * The formula used is:
+   * - θ = |θ₂ - θ₁|, normalized to [0; 180]° range
+   *
+   * Where:
+   * - θ₁ is the bearing from the previous point to the current point
+   * - θ₂ is the bearing from the current point to the next point
+   *
+   * θ₁ and θ₂ are calculated internally, refer to GeoMath::calculateBearing for details.
+   *
+   * @param  float  $phi1  Latitude of the previous point in radians (φ₁)
+   * @param  float  $lambda1  Longitude of the previous point in radians (λ₁)
+   * @param  float  $phi2  Latitude of the current point in radians (φ₂)
+   * @param  float  $lambda2  Longitude of the current point in radians (λ₂)
+   * @param  float  $phi3  Latitude of the next point in radians (φ₃)
+   * @param  float  $lambda3  Longitude of the next point in radians (λ₃)
+   * @return float Angle in degrees (0-180, where 0 = straight line, 180 = U-turn) (θ)
+   */
+  public static function calculateTurnAngle(
+    float $phi1,
+    float $lambda1,
+    float $phi2,
+    float $lambda2,
+    float $phi3,
+    float $lambda3
+  ): float {
+    // Calculate bearings for the two segments
+    $bearing1 = self::calculateBearing($phi1, $lambda1, $phi2, $lambda2);
+    $bearing2 = self::calculateBearing($phi2, $lambda2, $phi3, $lambda3);
+
+    // Calculate the absolute difference between the bearings
+    $angle = abs($bearing2 - $bearing1);
+
+    // Normalize to 0-180 (we only care about the sharpness of the turn, not the direction)
+    if ($angle > 180) {
+      $angle = 360 - $angle;
+    }
+
+    return $angle;
+  }
 }
-
-
-
-
-
