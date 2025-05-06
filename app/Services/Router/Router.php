@@ -1103,8 +1103,10 @@ class Router {
       if ($package) {
         try {
           // Attempt to reroute the package to its destination
-          $package->reroute($package->destinationLocation);
+          echo $package;
+          $package->reroute($package->destination_location_id);
         } catch (Exception $e) {
+          $package->clearMovements();
           // Add the package to the failed packages array if rerouting fails
           $failedPackages[] = $package;
         }

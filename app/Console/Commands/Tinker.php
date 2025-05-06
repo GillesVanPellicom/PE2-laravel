@@ -41,7 +41,7 @@ class Tinker extends Command {
         /** @var Router $router */
     $router = App::make(Router::class);
     //    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
-        $router->removeRoute("@AIR_LIRF", "@AIR_LIML", false);
+        $router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
 
 //    $package = Package::find(1);
 //    $package->clearMovements();

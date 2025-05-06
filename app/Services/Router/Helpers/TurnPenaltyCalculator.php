@@ -54,7 +54,7 @@ class TurnPenaltyCalculator {
       $penalty = $this->regularTurnPenalties[$turnType->value];
 
       // Reduce turn penalty for very short distances (< 0.01 km)
-      if ($distance < 0.01 && $vehicleType !== VehicleType::AIRPLANE) {
+      if ($distance < 0.01) {
         $penalty = min($penalty, 0.08); // Max 5 minutes for short/zero-distance legs
       }
     }
