@@ -47,7 +47,7 @@ class Router {
   /**
    * Whether to output debug information
    */
-  private bool $debug = true;
+  private bool $debug = false;
 
   // DATASTRUCTURES
 
@@ -1103,7 +1103,6 @@ class Router {
       if ($package) {
         try {
           // Attempt to reroute the package to its destination
-          echo $package;
           $package->reroute($package->destination_location_id);
         } catch (Exception $e) {
           $package->clearMovements();
