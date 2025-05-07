@@ -1307,4 +1307,22 @@ private function generateUniqueInvoiceReference()
 
     return $reference;
 }
+    public function strandedPackages() {
+        $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+            ->where('status', 'Stranded')
+            ->get();
+        $packages = Package::paginate(10);
+        return view('Packages.stranded-packages',compact("packages"));
+    }
+    public function reRouteStrandedPackages (Request $request) {
+        $packageReferences = $request->input('selected_packages');
+        $packages = Package::whereIn('reference', $packageReferences)->paginate(10);
+        return redirect()->route('workspace.stranded-packages')->with('success', 'The re-route for the selected parcels was successful');
+    }
+    public function testDeliveryAttemptOnWrongLocation (Request $request) {
+        $package = Package::with(['user', 'deliveryMethod','destinationLocation'])
+            ->where('reference', $request->id)
+            ->firstOrFail();
+        return view('Packages.testDeliveryAttemptOnWrongLocation',compact('package'));
+    }
 }

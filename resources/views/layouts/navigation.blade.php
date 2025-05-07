@@ -12,50 +12,96 @@
 
                 <!-- Navigation Links -->
                 <div id="nav" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    @if(Route::is('workspace.*'))
-                        @role('pickup|admin')
-                        <x-nav-link :href="route('workspace.pickup.dashboard')" :active="request()->routeIs('pickup.dashboard')">
-                            {{ __('Pick Up Point') }}
-                        </x-nav-link>
-                        @endrole
-                        @role('courier|admin')
-                        <x-nav-link :href="route('workspace.courier')" :active="request()->routeIs('courier')">
-                            {{ __('Courier') }}
-                        </x-nav-link>
-                        @endrole
-                        @role('HRManager|HR|admin')
-                        <x-nav-link :href="route('workspace.employees.index')" :active="request()->routeIs('employees.index')">
-                            {{ __('Employees') }}
-                        </x-nav-link>
-                        @endrole
-                        @role('airport|admin')
-                        <x-nav-link :href="route('workspace.airports')" :active="request()->routeIs('airports')">
-                            {{ __('Airport') }}
-                        </x-nav-link>
-                        @endrole
-                        @role('DCManager|admin')
-                        <x-nav-link :href="route('workspace.dispatcher.index')" :active="request()->routeIs('dispatcher.index')">
-                            {{ __('Dispatcher') }}
-                        </x-nav-link>
-                        @endrole
-                    @endif
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
                         {{ __('Send a parcel') }}
                     </x-nav-link>
-                    @role('business_client|admin')
-                        <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
-                            {{ __('Company Dashboard') }}
-                        </x-nav-link>
-                    @endrole
-                    <x-nav-link :href="route('manage-invoices')" :active="request()->routeIs('manage-invoices')">
-                        {{ __('Manage Invoices') }}
+                    <x-nav-link :href="route('track-parcel')" :active="request()->routeIs('track-parcel')">
+                        {{ __('Track a parcel') }}
                     </x-nav-link>
+
+
                 </div>
+                <!-- Existing nav links -->
+
+                <!-- Google App Launcher Button -->
+
             </div>
 
             <!-- Settings Dropdown -->
 
             <div class="hidden sm:flex sm:items-center sm:ml-6">
+                @if(Route::is('workspace.*'))
+                <div x-data="{ open: false }" class="relative ml-2">
+                    <!-- Button: Google Apps Style -->
+                    <button @click="open = !open"
+                            class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-200 focus:outline-none"
+                            aria-label="Open App Menu">
+                        <span class="material-symbols-outlined text-2xl">apps</span>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div x-show="open" @click.away="open = false" x-transition
+                         class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 z-50 p-4"
+                         style="display: none;"
+                    >
+                        <div class="grid grid-cols-3 gap-4">
+
+                                @role('pickup|admin')
+                                <a href="{{ route('workspace.pickup.dashboard') }}"
+                                   class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('pickup.dashboard') ? 'bg-blue-100' : '' }}">
+                                    <span class="material-symbols-outlined text-3xl mb-1">storefront</span>
+                                    <span class="text-xs font-medium">Pick Up Point</span>
+                                </a>
+                                @endrole
+
+                                @role('courier|admin')
+                                <a href="{{ route('workspace.courier') }}"
+                                   class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('courier') ? 'bg-blue-100' : '' }}">
+                                    <span class="material-symbols-outlined text-3xl mb-1">local_shipping</span>
+                                    <span class="text-xs font-medium">Courier</span>
+                                </a>
+                                @endrole
+
+                                @role('HRManager|HR|admin')
+                                <a href="{{ route('workspace.employees.index') }}"
+                                   class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('employees.index') ? 'bg-blue-100' : '' }}">
+                                    <span class="material-symbols-outlined text-3xl mb-1">group</span>
+                                    <span class="text-xs font-medium">Employees</span>
+                                </a>
+                                @endrole
+
+                                @role('airport|admin')
+                                <a href="{{ route('workspace.airports') }}"
+                                   class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('airports') ? 'bg-blue-100' : '' }}">
+                                    <span class="material-symbols-outlined text-3xl mb-1">flight</span>
+                                    <span class="text-xs font-medium">Airport</span>
+                                </a>
+                                @endrole
+
+                                @role('DCManager|admin')
+                                <a href="{{ route('workspace.dispatcher.index') }}"
+                                   class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('dispatcher.index') ? 'bg-blue-100' : '' }}">
+                                    <span class="material-symbols-outlined text-3xl mb-1">hub</span>
+                                    <span class="text-xs font-medium">Dispatcher</span>
+                                </a>
+                                @endrole
+                            @role('courier|DCManager|admin')
+                            <a href="{{ route('workspace.stranded-packages') }}"
+                               class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 text-gray-700 {{ request()->routeIs('packages.stranded') ? 'bg-blue-100' : '' }}">
+                                <span class="material-symbols-outlined text-3xl mb-1">inventory_2</span>
+                                <span class="text-xs font-medium">Stranded Packages</span>
+                            </a>
+                            @endrole
+                            @role('business_client|admin')
+                            <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
+                                {{ __('Company Dashboard') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('manage-invoices')" :active="request()->routeIs('manage-invoices')">
+                                {{ __('Manage Invoices') }}
+                            </x-nav-link>
+                            @endrole
+                        </div>
+                    </div>
+                </div>@endif
                 @auth()
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
