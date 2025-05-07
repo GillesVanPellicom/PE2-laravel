@@ -29,7 +29,7 @@
                 @php
                     $sortedPackages = $packages->sortBy(fn($package) => $package->getNextMovement()?->getID() ?? 'N/A');
                 @endphp
-                @forelse($sortedPackages->filter(fn($package) => !$package->assigned_flight) as $package)
+                @forelse($sortedPackages->filter(fn($package) => !$package->assigned_flight && !str_starts_with($package->getNextMovement()?->getID(), '@DC_')) as $package)
                 <tr class="border-b">
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
@@ -56,6 +56,33 @@
                 Assign to Flight
             </button>
         </div>
+    </div>
+
+    <!-- Packages to Distribution Center Table -->
+    <h2 class="text-xl font-semibold mb-2">Packages to Distribution Center</h2>
+    <div class="overflow-x-auto mb-8">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 border">Package Reference</th>
+                    <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Next Movement</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($packages->filter(fn($package) => $package->getNextMovement()?->getID() && str_starts_with($package->getNextMovement()->getID(), '@DC_')) as $package)
+                <tr class="border-b">
+                    <td class="py-2 px-4 border">{{ $package->reference }}</td>
+                    <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
+                    <td class="py-2 px-4 border">{{ $package->getNextMovement()?->getID() }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3" class="py-2 px-4 border text-center text-gray-600">No packages need to go to the distribution center.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
     <!-- Reassign Packages Table -->
@@ -383,6 +410,30 @@
 
     function closeModal() {
         document.getElementById('packageModal').classList.add("hidden");
+    }
+
+    function sendToDistributionCenter(packageId) {
+        fetch(`/send-to-distribution-center`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ packageId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Package sent to distribution center successfully!");
+                location.reload();
+            } else {
+                alert("Failed to send package to distribution center: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An unexpected error occurred.");
+        });
     }
     </script>
 </body>

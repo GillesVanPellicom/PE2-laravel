@@ -112,7 +112,17 @@ class Flightscontroller extends Controller
         $contract->end_date = $data['end_date'];
         $contract->save();
 
-        return redirect()->back()->with('success', 'End date updated successfully.');
+        // Update the validTo field of the RouterEdge connected to the same flight
+        $flight = Flight::findOrFail($id);
+        if ($flight->router_edge_id) {
+            $routerEdge = \App\Models\RouterEdges::find($flight->router_edge_id);
+            if ($routerEdge) {
+                $routerEdge->validTo = $data['end_date'];
+                $routerEdge->save();
+            }
+        }
+
+        return redirect()->back()->with('success', 'End date and router edge validTo updated successfully.');
     }
 
     public function flightPackages()

@@ -28,9 +28,11 @@ class KeithTinker extends Command
         //
         $package = \App\Models\Package::find(1);
         $package2 = \App\Models\Package::find(2);
+        $package3 = \App\Models\Package::find(3);
         for($i = 0; $i < 16; $i++) {
             $package->fakeMove();
             $package2->fakeMove();
+            $package3->fakeMove();
         }
     }
 }
