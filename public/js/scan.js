@@ -114,7 +114,7 @@ function showCheckmark() {
 
 function callAction(id, mode, callback) {
     body = { mode: mode };
-    if (id.includes("REF")) {
+    if (id.toString().includes("REF")) {
         body.reference = id;
     } else {
         body.package_id = id;
@@ -132,6 +132,7 @@ function callAction(id, mode, callback) {
             return response.json();
         })
         .then((data) => {
+            fetchLastPackages();
             if (data.success) showCheckmark();
             callback(data);
         });
@@ -162,7 +163,7 @@ function scanAction(message, mode) {
     }
 
     callAction(message, mode, (data) => {
-        let xhttp = new XMLHttpRequest();
+        /*let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 document.getElementById("lastPackages").innerHTML =
@@ -171,7 +172,7 @@ function scanAction(message, mode) {
         };
         xhttp.open("GET", getLastPackagesRoute, true);
         xhttp.setRequestHeader("X-CSRF-TOKEN", csrf);
-        xhttp.send();
+        xhttp.send();*/
 
         if (data.success) {
             if (mode == "INFO") {

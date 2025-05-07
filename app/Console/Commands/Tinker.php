@@ -43,8 +43,8 @@ class Tinker extends Command
 
     $amount = (int) $this->argument('amount') ?? 1;
     //    /** @var Router $router */
-    $router = App::make(Router::class);
-    $router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
+    //$router = App::make(Router::class);
+    //$router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
     //    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
     //    $router->removeRoute("@AIR_EFHK", "@AIR_LGAV", 8);
     
@@ -55,7 +55,6 @@ class Tinker extends Command
       for ($i = 1; $i <= $amount; $i++) {
         $package = Package::find($i);
         try {
-          $path = $package->getMovements();
           for ($j = 0; $j <= 16; $j++) {
             $package->fakeMove();
           }
