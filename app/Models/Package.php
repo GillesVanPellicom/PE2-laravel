@@ -53,8 +53,13 @@ class Package extends Model
     'delivery_method_id',
     'dimension',
     'weight_price',
+    'requires_signature',
     'delivery_price',
-    'paid'
+    'paid',
+    'sender_firstname',
+    'sender_lastname',
+    'sender_email',
+    'sender_phone_number',
   ];
 
   protected $attributes = [
@@ -179,6 +184,54 @@ class Package extends Model
 
   ### Public Methods
 
+  /**
+   * Mark the package as stranded.
+   *
+   * @return void
+   */
+  public function markAsStranded(): void {
+    StrandedPackageModel::create([
+      'package_id' => $this->id
+    ]);
+
+    $this->status = 'Stranded';
+    $this->save();
+  }
+
+  /**
+   * Mark the package as delivered and resolve its stranded status.
+   *
+   * @return void
+   */
+  public function markAsDelivered(): void {
+    $strandedPackage = StrandedPackageModel::where('package_id', $this->id)->first();
+
+    if ($strandedPackage) {
+      $strandedPackage->resolve();
+    }
+
+    $this->status = 'Delivered';
+    $this->save();
+  }
+
+  /**
+   * Check if the package is stranded.
+   *
+   * @return bool
+   */
+  public function isStranded(): bool {
+    return $this->status === 'Stranded';
+  }
+
+  /**
+   * Check if the package is delivered.
+   *
+   * @return bool
+   */
+  public function isDelivered(): bool {
+    return $this->status === 'Delivered';
+  }
+
 
   /**
    * @return void
@@ -244,6 +297,7 @@ class Package extends Model
     }
 
     // Get the path from origin to destination
+    // Exceptions bubble up
     $path = $router->getPath(
       $currentLocation,
       $destination
@@ -754,6 +808,20 @@ class Package extends Model
   }
 
   /**
+   * DEBUG METHOD
+   * Not to be used in production.
+   * @return void
+   */
+  public function clearMovements(): void {
+    DB::transaction(function () {
+      // Check if the package already has movements and remove them
+      if ($this->movements()->exists()) {
+        $this->movements()->delete();
+      }
+    });
+  }
+
+  /**
    * Set the current movement of the package.
    *
    * @param  string  $location  The ID of the location to set as current.
@@ -827,6 +895,8 @@ class Package extends Model
       }
     });
   }
+
+
 
 
   /**

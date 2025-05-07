@@ -10,6 +10,9 @@
             <button class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none" onclick="clearCanvas()">
                 Clear
             </button>
+            <a href="{{ route('courier.route') }}" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none">
+                Cancel
+            </a>
         </div>
     </div>
 
@@ -76,7 +79,6 @@
                 return str.toLowerCase().replace(/\s+/g, '').trim();
             }*/
         function submitSignature(packageId) {
-            // Call the same deliver route as the "Deliver at Home" button
             const deliverUrl = "{{ route('workspace.courier.deliver', ['id' => ':id']) }}".replace(':id', packageId);
 
             fetch(deliverUrl, {
@@ -85,19 +87,14 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    // Uncomment this when the `isSignature` field exists in the database
-                    // isSignature: true,
-                }),
             })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    return response.json(); // Parse the JSON response
+                    return response.json();
                 })
                 .then(data => {
-                    console.log(data.message);
                     if (data.success) {
                         alert('Package delivered successfully!');
                         window.location.href = "{{ route('workspace.courier.route') }}"; // Redirect back to the route page

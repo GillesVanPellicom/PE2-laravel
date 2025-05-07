@@ -13,7 +13,6 @@ class KdTree {
 
   private ?KdNode $root; // Root node
 
-
   /**
    * KdTree constructor.
    *
@@ -23,9 +22,8 @@ class KdTree {
     $this->root = $this->buildTree($nodes, 0);
   }
 
-
   /**
-   * Builds the k-d tree recursively.
+   * Builds the k-d tree recursively by choosing the axis with the largest range.
    *
    * @param  array  $nodes  Array of Node objects
    * @param  int  $depth  Current depth in the tree
@@ -36,10 +34,26 @@ class KdTree {
       return null;
     }
 
-    $k = 2; // 2D: latitude and longitude
-    $axis = $depth % $k; // Determine axis based on depth
+    // Calculate ranges for latitude and longitude
+    $lats = array_map(function ($n) { return $n->getLat(CoordType::DEGREE); }, $nodes);
+    $longs = array_map(function ($n) { return $n->getLong(CoordType::DEGREE); }, $nodes);
+    $minLat = min($lats);
+    $maxLat = max($lats);
+    $minLong = min($longs);
+    $maxLong = max($longs);
+    $rangeLat = $maxLat - $minLat;
+    $rangeLong = $maxLong - $minLong;
 
-    // Sort nodes by the current axis
+    // Choose axis with the largest range; alternate if equal
+    if ($rangeLat > $rangeLong) {
+      $axis = 0; // Latitude
+    } elseif ($rangeLong > $rangeLat) {
+      $axis = 1; // Longitude
+    } else {
+      $axis = $depth % 2; // Alternate if ranges are equal
+    }
+
+    // Sort nodes by the chosen axis
     usort($nodes, function ($a, $b) use ($axis) {
       if ($axis == 0) {
         return $a->getLat(CoordType::DEGREE) <=> $b->getLat(CoordType::DEGREE);
@@ -60,7 +74,6 @@ class KdTree {
     return $kdNode;
   }
 
-
   /**
    * Finds the nearest node to the given latitude and longitude.
    *
@@ -74,7 +87,6 @@ class KdTree {
     }
     return $this->nearest($this->root, $lat, $long, $this->root->node, PHP_FLOAT_MAX)[0];
   }
-
 
   /**
    * Recursively searches for the nearest node.
@@ -121,13 +133,15 @@ class KdTree {
     return [$best, $bestDist];
   }
 
-
+  /**
+   * Visualizes the KD-tree structure.
+   *
+   * @return void
+   */
   public function visualize(): void {
-
     $this->printTree($this->root, 0, "", true);
     echo "\n";
   }
-
 
   /**
    * Prints the KD-tree structure with color formatting for debugging.

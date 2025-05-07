@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->nullable();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained('users');
             $table->string('origin_location_id');
             $table->string('current_location_id')->nullable();
             $table->string('destination_location_id');
@@ -25,13 +25,19 @@ return new class extends Migration
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
             $table->string('weight_price')->default(0);
+            $table->boolean('requires_signature')->default(false);
             $table->float('weight')->nullable();
             $table->boolean('paid')->default(false);
             $table->string('delivery_price')->default(0);
             $table->string('name');
             $table->string('lastName');
             $table->string('receiverEmail');
-            $table->string('receiver_phone_number');
+            $table->string('receiver_phone_number')->nullable();
+            $table->string('sender_firstname')->nullable();
+            $table->string('sender_lastname')->nullable();
+            $table->string('sender_phone_number')->nullable();
+            $table->string('sender_email')->nullable();
+            $table->string('assigned_flight')->nullable();
             $table->timestamps();
         });
     }

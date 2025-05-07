@@ -12,15 +12,14 @@
     <table class="header">
         <tr>
             <td width="50%">
-                <img src="{{asset('images/logo.png')}}" alt="Company Logo" width="150"/>
-                <h2>Company Name</h2>
+                <h2>Shipping Company</h2>
             </td>
             <td width="50%" class="company-info">
                 <h3>INVOICE</h3>
                 <p>Invoice #: INV-2025001</p>
                 <p>Date: {{$invoice->created_at->format('Y-m-d')}}</p>
                 <br>
-                <p>Company Name</p>
+                <p>Shipping Company</p>
                 <p>Jan Pieter de Nayerlaan 5</p>
                 <p>2860 Sint-Katelijne-Waver</p>
                 <p>Belgium</p>
@@ -57,7 +56,6 @@
                 <th>Country</th>
                 <!-- <th>Amount</th> -->
                 <th>Price</th>
-                <th class="text-right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -75,7 +73,6 @@
                 </td>
                 <!-- <td>1</td> -->
                 <td>€{{ number_format((float)$package->weight_price + (float)$package->delivery_price, 2) }}</td>            
-                  <td class="text-right">€{{ (float)$package->weight_price + (float)$package->delivery_price }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -103,9 +100,10 @@
     </table>
 
     <div class="footer">
-        <p><strong>Payment Terms:</strong> Net 30 days</p>
+        <p><strong>Payment Terms:</strong>Payment due {{$invoice->expiry_date}}</p>
+        <p><strong>Reference:</strong> {{$invoice->reference}}</p>
         <p><strong>Payment Details:</strong> Bank Transfer to IBAN: BE12 3456 7890 1234</p>
-        <p>Thank you for choosing [Company Name] for your delivery needs!</p>
+        <p>Thank you for choosing Shipping Company for your delivery needs!</p>
     </div>
 </body>
 </html>
