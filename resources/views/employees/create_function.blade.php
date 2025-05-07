@@ -18,7 +18,7 @@
         @endif
 
         <div class="max-w-3xl mx-auto p-6 bg-white rounded shadow-lg mt-8">
-            <form action="{{ route('employees.store_function') }}" method="POST" class="space-y-6">
+            <form action="{{ route('workspace.employees.store_function') }}" method="POST" class="space-y-6">
                 @csrf
 
                 <div class="mb-4">

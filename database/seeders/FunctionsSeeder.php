@@ -83,6 +83,24 @@ class FunctionsSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'name' => 'Distribution Center Manager',
+                'role' => 'DCManager',
+                'description' => 'Manages the distribution center operations.',
+                'salary_min' => 4000.00,
+                'salary_max' => 6000.00,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'airport employee',
+                'role' => 'airport',
+                'description' => 'employee of a airport',
+                'salary_min' => 4000.00,
+                'salary_max' => 6000.00,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
     }
 }

@@ -97,8 +97,8 @@
     </div>
 
     <script>
-        const scanQrRoute = "{{ route('courier.scanQr') }}";
-        const getLastPackagesRoute = "{{ route('courier.lastPackages') }}"
+        const scanQrRoute = "{{ route('workspace.courier.scanQr') }}";
+        const getLastPackagesRoute = "{{ route('workspace.courier.lastPackages') }}"
         const csrf = "{{ csrf_token() }}";
 
         function openManualEntryModal() {

@@ -5,7 +5,7 @@
     <div class="container mx-auto p-6">
         <h1 class="text-2xl font-bold mb-2">Your Route</h1>
 
-        <!-- <a href="{{ route('courier.route') }}">View Courier Route</a> -->
+        <!-- <a href="{{ route('workspace.courier.route') }}">View Courier Route</a> -->
 
         @if (empty($route))
             <p class="text-gray-500">No packages to deliver.</p>
@@ -25,6 +25,12 @@
 
                         @if ($firstPackage['requires_signature'])
                             <div class="flex space-x-4 mt-4">
+                                <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
+                                    ✓
+                                </button>
+
+                                <a href="{{ route('workspace.courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
+                                    ✍
                                 <a href="{{ route('courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
                                     ✍ Sign
                                 </a>
@@ -103,7 +109,7 @@
 
     <script>
         const route = @json($route);
-        const deliverRoute = "{{ route('courier.deliver', ['id' => ':id']) }}";
+        const deliverRoute = "{{ route('workspace.courier.deliver', ['id' => ':id']) }}";
 
         document.addEventListener('DOMContentLoaded', function () {
             if (route.length === 0) return;
@@ -124,7 +130,7 @@
             });
 
             if (coordinates.length > 1) {
-                const osrmCoordinates = coordinates.map(coord => coord.reverse()).join(';'); 
+                const osrmCoordinates = coordinates.map(coord => coord.reverse()).join(';');
                 const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordinates}?overview=full&geometries=geojson`;
 
                 fetch(osrmUrl)

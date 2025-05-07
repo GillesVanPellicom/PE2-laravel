@@ -19,6 +19,8 @@ class RolesAndPermissionsSeeder extends Seeder
     // ╚════════════════════════════════════════╝
 
     private array $permissions = [
+        "*",
+
         'employee',
         'scan',
         "courier.route",
@@ -42,6 +44,13 @@ class RolesAndPermissionsSeeder extends Seeder
         'pickup.view',
         'pickup.edit',
         /* END Pickup */
+
+        /*START DC*/
+        'assign.courier',
+        /*END DC*/
+        /* START Business Client */
+        'business_client.view',
+        /* END Business Client */
     ];
 
 
@@ -70,8 +79,15 @@ class RolesAndPermissionsSeeder extends Seeder
         /* END Pickup */
 
         // START API
-        "api" => ["token.create"]
+        "api" => ["token.create"],
         //END API
+        //Distribution Center
+        "DCManager" => ["assign.courier"],
+        //END
+
+        //Business Client
+        "business_client" => ["business_client.view"],
+        // End Business Client
     ];
 
 
@@ -81,7 +97,7 @@ class RolesAndPermissionsSeeder extends Seeder
         /* END BASE */
 
         /* START Courier */
-        "scan" => ["courier"],
+        "scan" => ["courier","airport"],
         /* END Courier */
 
         /* START Employees */
@@ -98,7 +114,6 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         ConsoleHelper::info('Initializing roles and permissions');
-        ConsoleHelper::info('Starting transaction');
         try {
             // Place all logic in a transaction to ensure atomicity
             DB::transaction(function () {

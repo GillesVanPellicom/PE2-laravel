@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->nullable();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('origin_location_id')->constrained('locations');
+            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->string('origin_location_id');
             $table->string('current_location_id')->nullable();
-            $table->foreignId('destination_location_id')->nullable()->constrained('locations');
+            $table->string('destination_location_id');
             $table->foreignId('addresses_id')->nullable()->constrained('addresses');
             $table->string('status');
             $table->foreignId('weight_id')->constrained('weight_classes');
@@ -31,7 +31,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('lastName');
             $table->string('receiverEmail');
-            $table->string('receiver_phone_number');
+            $table->string('receiver_phone_number')->nullable();
+            $table->string('sender_firstname')->nullable();
+            $table->string('sender_lastname')->nullable();
+            $table->string('sender_phone_number')->nullable();
+            $table->string('sender_email')->nullable();
+            $table->string('assigned_flight')->nullable();
             $table->timestamps();
         });
     }
