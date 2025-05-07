@@ -13,11 +13,7 @@ class AddressFactory extends Factory
     public function definition(): array
     {
         // Gedefinieerde steden ophalen uit de database
-        $cityIds = City::whereIn('name', [
-            'Antwerp', 'Brussels', 'Amsterdam', 'Rotterdam', 'London', 'Manchester', 'Madrid',
-            'Barcelona', 'Berlin', 'Paris', 'Los Angeles', 'Munich', 'Warsaw', 'Charleroi',
-            'Tilburg', 'Bastogne', 'Ghent', 'Lille'
-        ])->pluck('id')->toArray();
+        $cityIds = City::pluck('id')->toArray();
 
         return [
             'street' => $this->faker->streetName(),

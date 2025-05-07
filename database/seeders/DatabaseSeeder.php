@@ -2,7 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models;
+use App\Models\EmployeeFunction;
+use App\Models\EmployeeContract;
+use App\Http\Controllers\EmployeeController;
+use App\Models\Airline;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
