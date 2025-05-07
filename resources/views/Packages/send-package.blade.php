@@ -197,6 +197,15 @@
                             </div>
                         </div>
 
+                        <!-- Signature Requirement -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Signature Requirement</h3>
+                            <div class="flex items-center">
+                                <input type="checkbox" name="requires_signature" value="1" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <label class="ml-3 text-sm text-gray-700">Require signature upon delivery</label>
+                            </div>
+                        </div>
+
                         <!-- Dynamic Location Section -->
                         <div id="locationSection" style="display: none;" class="bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Select a Location</h3>
