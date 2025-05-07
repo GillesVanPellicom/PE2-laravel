@@ -230,16 +230,12 @@ use App\Http\Controllers\InvoiceController;
                 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
                 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
-
-                Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
+                Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
+                Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+                Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+                Route::get('/distribution-center/courier-route/{id}', [DispatcherController::class, 'getCourierRoute'])->name('dispatcher.courier-route');
+                Route::get('/distribution-center/couriers', [DispatcherController::class, 'getCouriers'])->name('dispatcher.get-couriers');
             });
-
-
-
-            Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
-            Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
-            Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
-            Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
 
             // ======================= End CourierRouteCreator ====================== //
         });
