@@ -52,5 +52,8 @@ class AirlinesSeeder extends Seeder
                 'updated_at' => Carbon::now()
             ]
         ]);
+
+        \App\Models\Airline::factory(50)->create();
+
     }
 }
