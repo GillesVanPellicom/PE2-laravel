@@ -24,6 +24,7 @@ class Flight extends Model
         'status',
         'current_weight', 
         'gate',
+        'router_edge_id',
     ];
 
     public function departureAirport()

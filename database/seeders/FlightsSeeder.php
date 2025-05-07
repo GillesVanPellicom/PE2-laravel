@@ -22,6 +22,7 @@ class FlightsSeeder extends Seeder
             'status'=>'On Time',
             'isActive' => 1,
             'gate' => 'A1',
+            'router_edge_id' => 1,
             'created_at' => Carbon::now(), 
             'updated_at' => Carbon::now()
             ],
@@ -36,6 +37,7 @@ class FlightsSeeder extends Seeder
             'status'=>'On Time',
             'isActive' => 1,
             'gate' => 'B2',
+            'router_edge_id' => 2,
             'created_at' => Carbon::now(), 
             'updated_at' => Carbon::now()
             ],
@@ -50,6 +52,7 @@ class FlightsSeeder extends Seeder
             'status'=>'On Time',
             'isActive' => 1,
             'gate' => 'C3',
+            'router_edge_id' => 3,
             'created_at' => Carbon::now(), 
             'updated_at' => Carbon::now()
             ],
@@ -64,6 +67,7 @@ class FlightsSeeder extends Seeder
             'status' => 'On Time',
             'isActive' => 1,
             'gate' => 'D4',
+            'router_edge_id' => 4,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
             ],
@@ -78,6 +82,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'E5',
+                'router_edge_id' => 5,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -92,6 +97,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'F6',
+                'router_edge_id' => 6,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -106,6 +112,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'G7',
+                'router_edge_id' => 7,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -120,6 +127,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
+                'router_edge_id' => 8,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -134,6 +142,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'C3',
+                'router_edge_id' => 9,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
@@ -148,6 +157,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'D4',
+                'router_edge_id' => 10,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
@@ -162,6 +172,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
+                'router_edge_id' => 11,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
@@ -176,6 +187,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
+                'router_edge_id' => 50,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
@@ -190,6 +202,22 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
+                'router_edge_id' => 50,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ],
+            [
+                'airplane_id' => 8,
+                'depart_location_id' => 1,
+                'arrive_location_id' => 12, 
+                'departure_time' => Carbon::now()->addHours(6),
+                'time_flight_minutes' => 240,
+                'departure_day_of_week' => 'Friday', 
+                'departure_date' => Carbon::now()->addDays(4),
+                'status' => 'On Time',
+                'isActive' => 1,
+                'gate' => 'H8',
+                'router_edge_id' => 28,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],

@@ -18,11 +18,11 @@
             <thead>
                 <tr class="bg-gray-200">
                     <th class="py-2 px-4 border">Flight Number</th>
-                    <th class="py-2 px-4 border">Departure Time</th>
+
                     <th class="py-2 px-4 border">Departure Place</th>
                     <th class="py-2 px-4 border">Flight Duration (min)</th>
                     <th class="py-2 px-4 border">Estimated Arrival Time</th>
-                    <th class="py-2 px-4 border">Arrival Place</th>
+
                     <th class="py-2 px-4 border">Gate</th> 
                     <th class="py-2 px-4 border">Status</th>
                     <th class="py-2 px-4 border">Packages</th>
@@ -36,11 +36,11 @@
                 @if(in_array($flight->arrive_location_id, $employeeLocationIds))
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
-                        <td class="py-2 px-4 border">{{$flight->departure_time}}</td>
+
                         <td class="py-2 px-4 border">{{$flight->departureAirport->name ?? 'Unknown Departure Airport'}}</td>
                         <td class="py-2 px-4 border">{{$flight->time_flight_minutes}}</td>
                         <td class="py-2 px-4 border">{{$flight->arrival_time}}</td>
-                        <td class="py-2 px-4 border">{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
+
                         <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td> 
                         <td class="py-2 px-4 border">
                             @if($flight->status == 'On Time')
@@ -70,9 +70,9 @@
                 <tr class="bg-gray-200">
                     <th class="py-2 px-4 border">Flight Number</th>
                     <th class="py-2 px-4 border">Departure Time</th>
-                    <th class="py-2 px-4 border">Departure Place</th>
+
                     <th class="py-2 px-4 border">Flight Duration (min)</th>
-                    <th class="py-2 px-4 border">Estimated Arrival Time</th>
+
                     <th class="py-2 px-4 border">Arrival Place</th>
                     <th class="py-2 px-4 border">Gate</th> 
                     <th class="py-2 px-4 border">Status</th>
@@ -88,9 +88,9 @@
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
                         <td class="py-2 px-4 border">{{$flight->departure_time}}</td>
-                        <td class="py-2 px-4 border">{{$flight->departureAirport->name ?? 'Unknown Departure Airport'}}</td>
+
                         <td class="py-2 px-4 border">{{$flight->time_flight_minutes}}</td>
-                        <td class="py-2 px-4 border">{{$flight->arrival_time}}</td>
+
                         <td class="py-2 px-4 border">{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
                         <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td> 
                         <td class="py-2 px-4 border">

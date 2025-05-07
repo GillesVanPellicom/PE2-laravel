@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Flight;
 use App\Models\FlightContract;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class Flightscontroller extends Controller
 {
@@ -19,7 +20,7 @@ class Flightscontroller extends Controller
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 });
             })
-            ->where('departure_day_of_week', 'Friday')
+            ->where('departure_day_of_week', "Friday")
             ->get();
 
         foreach ($flights as $flight) {
@@ -114,22 +115,37 @@ class Flightscontroller extends Controller
 
     public function flightPackages()
     {
-        $employeeLocationId = '@AIR_EBBR'; // Replace with logic to get the employee's location dynamically if needed
+        $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
+
+        // Find the airport where the ID matches the employee's location ID
+        $airport = \App\Models\Airport::where('location_id', $employeeLocationId)->first();
+
+        if (!$airport) {
+            return redirect()->back()->with('error', 'No matching airport found for the employee location.');
+        }
+
+        $employeeLocationName = '@AIR_' . $airport->name;
 
         $flights = Flight::with([
             'departureAirport', 
-            'arrivalAirport', 
+            'arrivalAirport', // Ensure arrivalAirport is loaded
             'arrivalLocation.packages', 
             'departureLocation.packages'
         ])->get();
 
-        $packages = \App\Models\Package::where('current_location_id', $employeeLocationId)
+        $packages = \App\Models\Package::with('movements') // Include movements for `getNextMovement`
+            ->where('current_location_id', $employeeLocationName)
             ->where('status', 'Pending') // Filter packages by status "Pending"
             ->get();
 
-        $routerNodes = \App\Models\RouterNodes::all(); // Fetch all RouterNodes
+        // Precompute the next movement for each package
+        foreach ($packages as $package) {
+            $package->next_movement_id = optional($package->getNextMovement())->getID();
+        }
 
-        return view('airport.flightpackages', compact('flights', 'packages', 'routerNodes'));
+        $routerEdges = \App\Models\RouterEdges::all(); // Fetch all RouterEdges
+
+        return view('airport.flightpackages', compact('flights', 'packages', 'routerEdges'));
     }
 
     public function assignFlight(Request $request)
@@ -150,12 +166,14 @@ class Flightscontroller extends Controller
             }
 
             $remainingCapacity = $contract->max_capacity - $flight->current_weight;
+            $assignedPackageIds = [];
+            $totalAssignedWeight = 0;
 
             foreach ($packageIds as $packageId) {
                 $package = \App\Models\Package::findOrFail($packageId);
 
                 if (!isset($package->weight) || $package->weight <= 0) {
-                    return response()->json(['success' => false, 'message' => "Invalid weight for package ID: $packageId."]);
+                    continue; // Skip invalid packages
                 }
 
                 // If the package is already assigned to a flight, subtract its weight from the current flight's weight
@@ -167,20 +185,25 @@ class Flightscontroller extends Controller
                     }
                 }
 
-                if ($package->weight > $remainingCapacity) {
-                    return response()->json(['success' => false, 'message' => 'Package weight exceeds remaining flight capacity.']);
+                if ($package->weight <= $remainingCapacity) {
+                    $package->assigned_flight = $flightId;
+                    $package->save();
+
+                    $remainingCapacity -= $package->weight;
+                    $totalAssignedWeight += $package->weight;
+                    $assignedPackageIds[] = $package->id;
                 }
-
-                $package->assigned_flight = $flightId;
-                $package->save();
-
-                $remainingCapacity -= $package->weight;
             }
 
             $flight->current_weight = $contract->max_capacity - $remainingCapacity;
             $flight->save();
 
-            return response()->json(['success' => true, 'message' => 'Packages assigned successfully.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Packages assigned successfully.',
+                'assignedPackageIds' => $assignedPackageIds,
+                'assignedWeight' => $totalAssignedWeight
+            ]);
         } catch (\Throwable $e) {
             \Log::error('Error assigning packages to flight', [
                 'error' => $e->getMessage(),
@@ -194,18 +217,26 @@ class Flightscontroller extends Controller
 
     public function airports()
     {
-        // Dynamically get the current airport ID from the employee's contract
-        $currentAirportId = auth()->user()->employee->contracts->location_id;
+        $employeeLocationId = auth()->user()->employee->contracts->pluck('location_id')->first();
+
+        // Find the airport where the ID matches the employee's location ID
+        $airport = \App\Models\Airport::where('location_id', $employeeLocationId)->first();
+
+        if (!$airport) {
+            return redirect()->back()->with('error', 'No matching airport found for the employee location.');
+        }
+
+        $currentAirportName = '@AIR_added' . $airport->name;
 
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])->whereIn('status', ['Delayed', 'Canceled'])->get();
         $messages = [];
 
         foreach ($flights as $flight) {
             if ($flight->status === 'Delayed') {
-                if ($flight->depart_location_id == $currentAirportId) {
+                if ($flight->depart_location_id == $currentAirportName) {
                     $direction = 'to';
                     $location = $flight->arrivalAirport->name ?? 'unknown location';
-                } elseif ($flight->arrive_location_id == $currentAirportId) {
+                } elseif ($flight->arrive_location_id == $currentAirportName) {
                     $direction = 'from';
                     $location = $flight->departureAirport->name ?? 'unknown location';
                 } else {
@@ -213,10 +244,10 @@ class Flightscontroller extends Controller
                 }
                 $messages[] = "Flight {$flight->id} {$direction} {$location} is delayed, make sure the packages that need rerouting are rerouted.";
             } elseif ($flight->status === 'Canceled') {
-                if ($flight->depart_location_id == $currentAirportId) {
+                if ($flight->depart_location_id == $currentAirportName) {
                     $direction = 'to';
                     $location = $flight->arrivalAirport->name ?? 'unknown location';
-                } elseif ($flight->arrive_location_id == $currentAirportId) {
+                } elseif ($flight->arrive_location_id == $currentAirportName) {
                     $direction = 'from';
                     $location = $flight->departureAirport->name ?? 'unknown location';
                 } else {
@@ -231,7 +262,7 @@ class Flightscontroller extends Controller
         $nextFlight = Flight::with(['departureAirport', 'arrivalAirport'])
             ->where('isActive', true)
             ->where('departure_time', '>=', now())
-            ->where('depart_location_id', $currentAirportId) // Ensure it's an outgoing flight
+            ->where('depart_location_id', $currentAirportName) // Ensure it's an outgoing flight
             ->where('departure_day_of_week', $today) // Ensure the departure day matches today's day
             ->orderBy('departure_time', 'asc')
             ->first();

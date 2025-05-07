@@ -33,6 +33,7 @@ return new class extends Migration
             $table->boolean('isActive');
             $table->float('current_weight')->default(0); // Add this column to track current weight
             $table->string('gate');
+            $table->foreignId('router_edge_id')->constrained('router_edges');
             $table->timestamps();
         });
         

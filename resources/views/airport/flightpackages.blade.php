@@ -26,7 +26,10 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($packages->filter(fn($package) => !$package->assigned_flight) as $package)
+                @php
+                    $sortedPackages = $packages->sortBy(fn($package) => $package->getNextMovement()?->getID() ?? 'N/A');
+                @endphp
+                @forelse($sortedPackages->filter(fn($package) => !$package->assigned_flight) as $package)
                 <tr class="border-b">
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
@@ -160,16 +163,6 @@
             <button class="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl" onclick="closeFlightModal()">&times;</button>
             <h2 class="text-xl font-semibold mb-4">Select a Flight</h2>
             <ul id="flightList" class="max-h-60 overflow-y-auto border p-3 rounded bg-gray-100 space-y-2">
-                @foreach($flights as $flight)
-                    @if(!isset($package) || ($package->getNextMovement() && $routerNodes->firstWhere('id', $package->getNextMovement()->getID())?->city_id === $flight->arrivalAirport?->city_id))
-                    <li>
-                        <button onclick="assignFlightToSelectedPackages({{ $flight->id }})" 
-                            class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
-                            Flight {{ $flight->id }} - {{ $flight->departure_time }} to {{ $flight->arrivalAirport->name ?? 'Unknown' }}
-                        </button>
-                    </li>
-                    @endif
-                @endforeach
             </ul>
             <div class="text-right mt-4">
                 <button onclick="closeFlightModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition">Cancel</button>
@@ -182,10 +175,59 @@
 
     function openFlightModal() {
         selectedPackageIds = Array.from(document.querySelectorAll('.package-checkbox:checked')).map(cb => cb.value);
+
         if (selectedPackageIds.length === 0) {
             alert("Please select at least one package.");
             return;
         }
+
+        // Validate that all selected packages have the same next movement
+        const nextMovements = new Set();
+        selectedPackageIds.forEach(packageId => {
+            const packageRow = document.querySelector(`.package-checkbox[value="${packageId}"]`).closest('tr');
+            const nextMovementCell = packageRow.querySelector('td:nth-child(3)');
+            const nextMovement = nextMovementCell.textContent.trim();
+            nextMovements.add(nextMovement);
+        });
+
+        if (nextMovements.size > 1) {
+            alert("You cannot select packages with different next movements.");
+            return;
+        }
+
+        // Filter flights based on the selected packages
+        const filteredFlights = @json($flights).filter(flight => {
+            return selectedPackageIds.every(packageId => {
+                const package = @json($packages).find(pkg => pkg.id == packageId);
+                const currentLocation = package?.current_location_id;
+                const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
+                const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
+
+                return currentLocation && nextMovement && routerEdge &&
+                    (routerEdge.origin_node === currentLocation || routerEdge.destination_node === currentLocation) &&
+                    (routerEdge.origin_node === nextMovement || routerEdge.destination_node === nextMovement) &&
+                    flight.status !== 'Canceled';
+            });
+        });
+
+        const flightList = document.getElementById('flightList');
+        flightList.innerHTML = ''; // Clear previous list
+
+        if (filteredFlights.length === 0) {
+            flightList.innerHTML = '<li class="text-gray-600">No flights available for the selected packages.</li>';
+        } else {
+            filteredFlights.forEach(flight => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <button onclick="assignFlightToSelectedPackages(${flight.id})" 
+                        class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
+                        Flight ${flight.id} - ${flight.departure_time} to ${flight.arrivalAirport?.name ?? 'Unknown'}
+                    </button>
+                `;
+                flightList.appendChild(li);
+            });
+        }
+
         document.getElementById('flightModal').classList.remove('hidden'); // Ensure the modal is displayed
     }
 
@@ -231,6 +273,47 @@
         // Pass the selected package ID to the modal
         selectedPackageIds = [packageId];
 
+        // Validate that the selected package has a valid next movement
+        const packageRow = document.querySelector(`.package-checkbox[value="${packageId}"]`).closest('tr');
+        const nextMovementCell = packageRow.querySelector('td:nth-child(3)');
+        const nextMovement = nextMovementCell.textContent.trim();
+
+        if (!nextMovement || nextMovement === 'N/A') {
+            alert("The selected package does not have a valid next movement.");
+            return;
+        }
+
+        // Filter flights based on the selected package
+        const filteredFlights = @json($flights).filter(flight => {
+            const package = @json($packages).find(pkg => pkg.id == packageId);
+            const currentLocation = package?.current_location_id;
+            const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
+            const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
+
+            return currentLocation && nextMovement && routerEdge &&
+                (routerEdge.origin_node === currentLocation || routerEdge.destination_node === currentLocation) &&
+                (routerEdge.origin_node === nextMovement || routerEdge.destination_node === nextMovement) &&
+                flight.status !== 'Canceled';
+        });
+
+        const flightList = document.getElementById('flightList');
+        flightList.innerHTML = ''; // Clear previous list
+
+        if (filteredFlights.length === 0) {
+            flightList.innerHTML = '<li class="text-gray-600">No flights available for the selected package.</li>';
+        } else {
+            filteredFlights.forEach(flight => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <button onclick="assignFlightToSelectedPackages(${flight.id})" 
+                        class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
+                        Flight ${flight.id} - ${flight.departure_time} to ${flight.arrivalAirport?.name || 'Unknown'}
+                    </button>
+                `;
+                flightList.appendChild(li);
+            });
+        }
+
         // Open the flight modal
         document.getElementById('flightModal').classList.remove('hidden');
     }
@@ -261,12 +344,18 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Packages assigned to flight successfully!");
+                alert(`Packages assigned to flight successfully! Total weight assigned: ${data.assignedWeight} kg`);
+
+                // Remove successfully assigned packages from the table
+                data.assignedPackageIds.forEach(packageId => {
+                    const packageRow = document.querySelector(`.package-checkbox[value="${packageId}"]`).closest('tr');
+                    packageRow.remove();
+                });
 
                 // Unselect all checkboxes
                 document.querySelectorAll('.package-checkbox').forEach(cb => cb.checked = false);
 
-                // Reload the page
+                // Reload the page or update the UI as needed
                 location.reload();
             } else {
                 console.error("Backend error:", data); // Log backend error details

@@ -39,7 +39,7 @@ class PackageSeeder extends Seeder
             'user_id' => 1,
             'origin_location_id' => 6,
             'current_location_id' => 1,
-            'destination_location_id' => 7,
+            'destination_location_id' => 5,
             'addresses_id' => 4,
             'status' => 'Pending',
             'weight_id' => 1,
