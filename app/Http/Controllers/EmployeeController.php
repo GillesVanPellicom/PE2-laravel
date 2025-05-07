@@ -581,6 +581,10 @@ class EmployeeController extends Controller
             return response()->json(['error' => 'Date parameter is required.'], 400);
         }
 
+        // Fetch all employees
+        $allEmployees = Employee::with('user')->get();
+
+        // Fetch employees on holiday
         $onHoliday = Vacation::where('vacation_type', 'Holiday')
             ->where('approve_status', 'Approved')
             ->where('start_date', '<=', $date)
@@ -588,9 +592,13 @@ class EmployeeController extends Controller
             ->with('employee.user')
             ->get()
             ->map(function ($vacation) {
-                return optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name;
+                return [
+                    'id' => $vacation->employee->id,
+                    'name' => $vacation->employee->user->first_name . ' ' . $vacation->employee->user->last_name,
+                ];
             });
 
+        // Fetch sick employees
         $sick = Vacation::where('vacation_type', 'Sick Leave')
             ->where('approve_status', 'Approved')
             ->where('start_date', '<=', $date)
@@ -598,12 +606,27 @@ class EmployeeController extends Controller
             ->with('employee.user')
             ->get()
             ->map(function ($vacation) {
-                return optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name;
+                return [
+                    'id' => $vacation->employee->id,
+                    'name' => $vacation->employee->user->first_name . ' ' . $vacation->employee->user->last_name,
+                ];
             });
 
+        // Filter available employees (exclude sick and holiday employees)
+        $unavailableIds = $onHoliday->pluck('id')->merge($sick->pluck('id'))->toArray();
+        $available = $allEmployees->filter(function ($employee) use ($unavailableIds) {
+            return !in_array($employee->id, $unavailableIds);
+        })->map(function ($employee) {
+            return [
+                'id' => $employee->id,
+                'name' => $employee->user->first_name . ' ' . $employee->user->last_name,
+            ];
+        });
+
         return response()->json([
-            'onHoliday' => $onHoliday,
-            'sick' => $sick,
+            'available' => $available->values(),
+            'sick' => $sick->values(),
+            'holiday' => $onHoliday->values(),
         ]);
     }
 }

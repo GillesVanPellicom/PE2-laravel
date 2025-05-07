@@ -50,23 +50,21 @@ class CourierRouteController extends Controller
     public function deliver($id)
     {
         try {
-            // Find the package by reference
             $package = Package::where('reference', $id)->firstOrFail();
 
-            // Uncomment this when the `isSignature` field exists in the database
-            // $package->isSignature = true;
-            // $package->save();
-
-            // Use the move() method to handle the delivery
             [$success, $message] = $package->move(MoveOperationType::DELIVER);
 
             if (!$success) {
                 return response()->json(['success' => false, 'message' => $message], 400);
             }
 
-            return response()->json(['success' => true, 'message' => $message]);
+            $route = session('current_route', []);
+
+            $route = array_filter($route, fn($item) => $item['ref'] !== $id);
+            session(['current_route' => $route]);
+
+            return response()->json(['success' => true, 'message' => $message, 'route' => $route]);
         } catch (\Exception $e) {
-            // Log the exception for debugging
             \Log::error('Error in deliver method: ' . $e->getMessage());
 
             return response()->json(['success' => false, 'message' => 'An error occurred while delivering the package.'], 500);
@@ -81,14 +79,11 @@ class CourierRouteController extends Controller
                 'package_id' => 'required',
             ]);
 
-            // Save the signature (if needed)
             $signature = $request->input('signature');
             $packageId = $request->input('package_id');
 
-            // Find the package by reference
             $package = Package::where('reference', $packageId)->firstOrFail();
 
-            // Use the move() method to handle the delivery
             [$success, $message] = $package->move(MoveOperationType::DELIVER);
 
             if (!$success) {
@@ -97,7 +92,6 @@ class CourierRouteController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Signature submitted and ' . $message]);
         } catch (\Exception $e) {
-            // Log the exception for debugging
             \Log::error('Error in submitSignature: ' . $e->getMessage());
 
             return response()->json(['success' => false, 'message' => 'An error occurred while processing the request.'], 500);

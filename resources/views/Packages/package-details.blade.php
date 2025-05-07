@@ -4,16 +4,19 @@
     <body class="bg-gray-100">
         <div class="container mx-auto px-4 py-8">
             <div class="max-w-4xl mx-auto">
-                <a href="{{ route('packages.mypackages') }}" class="mb-6 flex items-center text-blue-500 hover:text-blue-600">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Back to Packages
-                </a>
-    
+                @if(Auth::check())
+                    <a href="{{ route('packages.mypackages') }}" class="mb-6 flex items-center text-blue-500 hover:text-blue-600">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Back to Packages
+                    </a>
+                @endif
+
+
                 <div class="bg-white rounded-lg shadow-md p-8">
                     <h1 class="text-3xl font-bold text-gray-800 mb-8">Package Details</h1>
-    
+
                     <!-- Package Label and QR Code Section -->
                     <div class="mb-8">
                         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -28,39 +31,65 @@
                                     <!-- QR Code Section -->
                                     <div class="bg-white rounded-lg border border-gray-200 p-6 flex flex-col items-center">
                                         <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                                            <img src="data:image/png;base64,{{ $qrCode }}" 
+                                            <img src="data:image/png;base64,{{ $qrCode }}"
                                             alt="Package QR Code"
                                             style="width: 150px; height: 150px; margin: 10px auto; display: block;">
                                         </div>
                                         <p class="text-sm text-gray-600 text-center mb-2">Show this QR code when collecting your package</p>
                                         <p class="text-sm font-medium text-gray-800 text-center">Tracking Number: {{$package->reference}}</p>
                                     </div>
-    
+
                                     <!-- Package Label Section -->
-                                    @if(Auth::user()->id === $package->user_id)
-                                    <div class="bg-white rounded-lg border border-gray-200 p-6">
-                                        <div class="flex flex-col h-full">
-                                            <div class="flex-grow">
-                                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Package Label</h3>
-                                                <div class="space-y-2 mb-6">
-                                                    <p class="text-sm text-gray-600">Download the package label for printing or reference.</p>
-                                                    <p class="text-sm text-gray-600">Available formats: PDF</p>
+                                    @if(Auth::check())
+                                        @if(Auth::user()->id === $package->user_id)
+                                            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                                <div class="flex flex-col h-full">
+                                                    <div class="flex-grow">
+                                                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Package Label</h3>
+                                                        <div class="space-y-2 mb-6">
+                                                            <p class="text-sm text-gray-600">Download the package label for printing or reference.</p>
+                                                            <p class="text-sm text-gray-600">Available formats: PDF</p>
+                                                        </div>
+                                                        <div class="space-y-3">
+                                                            <a href="{{ route('generate-package-label', $package->id) }}" class="w-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 transition-colors duration-200 py-2 px-4 rounded-md flex items-center justify-center space-x-2">
+                                                                <i class="fas fa-file-pdf text-xl"></i>
+                                                                <span class="font-medium">Download PDF Label</span>
+                                                            </a>
+                                                            <a href="{{ route('generate-package-label', $package->id) }}" class="mt-4 w-full bg-gradient-to-r from-gray-700 to-gray-800 text-white py-3 px-4 rounded-md hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center space-x-2">
+                                                                <i class="fas fa-print"></i>
+                                                                <span class="font-medium">Print Label</span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="space-y-3">
-                                                    <a href="{{ route('generate-package-label', $package->id) }}" class="w-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 transition-colors duration-200 py-2 px-4 rounded-md flex items-center justify-center space-x-2">
-                                                        <i class="fas fa-file-pdf text-xl"></i>
-                                                        <span class="font-medium">Download PDF Label</span>
-                                                    </a>
-                                                    <a href="{{ route('generate-package-label', $package->id) }}" class="mt-4 w-full bg-gradient-to-r from-gray-700 to-gray-800 text-white py-3 px-4 rounded-md hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center space-x-2">
-                                                        <i class="fas fa-print"></i>
-                                                        <span class="font-medium">Print Label</span>
-                                                    </a>
+                                            </div>
+                                        @endif
+                                    @elseif(empty($package->user_id))
+
+                                        <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                            <div class="flex flex-col h-full">
+                                                <div class="flex-grow">
+                                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Package Label</h3>
+                                                    <div class="space-y-2 mb-6">
+                                                        <p class="text-sm text-gray-600">Download the package label for printing or reference.</p>
+                                                        <p class="text-sm text-gray-600">Available formats: PDF</p>
+                                                    </div>
+                                                    <div class="space-y-3">
+                                                        <a href="{{ route('generate-package-label', $package->id) }}" class="w-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 transition-colors duration-200 py-2 px-4 rounded-md flex items-center justify-center space-x-2">
+                                                            <i class="fas fa-file-pdf text-xl"></i>
+                                                            <span class="font-medium">Download PDF Label</span>
+                                                        </a>
+                                                        <a href="{{ route('generate-package-label', $package->id) }}" class="mt-4 w-full bg-gradient-to-r from-gray-700 to-gray-800 text-white py-3 px-4 rounded-md hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center space-x-2">
+                                                            <i class="fas fa-print"></i>
+                                                            <span class="font-medium">Print Label</span>
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
                                     @endif
-                                    
+
+
                                     <!-- Return Package Button - Only visible if package is delivered and logged in user is the receiver -->
                                     @if($package->status === 'Delivered' && Auth::user()->email === $package->receiverEmail)
                                     <div class="bg-white rounded-lg border border-gray-200 p-6">
@@ -88,7 +117,7 @@
                             </div>
                         </div>
                     </div>
-    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                         <!-- Sender Information -->
                         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -105,7 +134,7 @@
                                     </div>
                                     <div class="ml-4">
                                         <p class="text-sm font-medium text-gray-500">Name</p>
-                                        <p class="text-gray-800 font-medium">{{$package->user->first_name}} {{$package->user->last_name}}</p>
+                                        <p class="text-gray-800 font-medium">{{$package->user->first_name ??$package->sender_firstname}} {{$package->user->last_name ?? $package->sender_lastname}}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center">
@@ -115,15 +144,15 @@
                                     <div class="ml-4">
                                         <p class="text-sm font-medium text-gray-500">Address</p>
                                         <p class="text-gray-800">
-                                            {{ $package->user->address->street }}
-                                            {{ $package->user->address->house_number }}
-                                            @if($package->user->address->bus_number)
-                                            - {{ $package->user->address->bus_number }},
+                                            {{ $package->originLocation->address->street }}
+                                            {{ $package->originLocation->address->house_number }}
+                                            @if($package->originLocation->address->bus_number)
+                                            - {{ $package->originLocation->address->bus_number }},
                                             @endif
                                             ,
-                                            {{ $package->user->address->city->postcode }}
-                                            {{ $package->user->address->city->name }}, 
-                                            {{ $package->user->address->city->country->country_name }}
+                                            {{ $package->originLocation->address->city->postcode }}
+                                            {{ $package->originLocation->address->city->name }},
+                                            {{ $package->originLocation->address->city->country->country_name }}
                                         </p>
                                     </div>
                                 </div>
@@ -133,7 +162,7 @@
                                     </div>
                                     <div class="ml-4">
                                         <p class="text-sm font-medium text-gray-500">Phone</p>
-                                        <p class="text-gray-800">{{$package->user->phone_number}}</p>
+                                        <p class="text-gray-800">{{$package->user->phone_number ??$package->sender_phone_number}}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center">
@@ -142,12 +171,12 @@
                                     </div>
                                     <div class="ml-4">
                                         <p class="text-sm font-medium text-gray-500">Email</p>
-                                        <p class="text-gray-800">{{$package->user->email}}</p>
+                                        <p class="text-gray-800">{{$package->user->email ?? $package->sender_email}}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-    
+
                         <!-- Receiver Information -->
                         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <div class="bg-gradient-to-r from-green-50 to-green-100 px-6 py-4 border-b border-gray-200">
@@ -182,7 +211,7 @@
                                                 @endif
                                                 ,
                                                 {{ $package->destinationLocation->address->city->postcode }}
-                                                {{ $package->destinationLocation->address->city->name }}, 
+                                                {{ $package->destinationLocation->address->city->name }},
                                                 {{ $package->destinationLocation->address->city->country->country_name }}
                                             </p>
                                         @else
@@ -194,7 +223,7 @@
                                                 @endif
                                                 ,
                                                 {{ $package->address->city->postcode }}
-                                                {{ $package->address->city->name }}, 
+                                                {{ $package->address->city->name }},
                                                 {{ $package->address->city->country->country_name }}
                                             </p>
                                         @endif
@@ -222,7 +251,7 @@
                             </div>
                         </div>
                     </div>
-    
+
                     <!-- Delivery Information -->
                     <div class="border-t pt-8">
                         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -249,7 +278,7 @@
                                             <p class="text-sm text-gray-500">Last updated: 2 hours ago</p>
                                         </div>
                                     </div>
-    
+
                                     <!-- Delivery Method Card -->
                                     <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200">
                                         <div class="flex items-center mb-3">
@@ -265,7 +294,7 @@
                                             <p class="text-sm text-gray-500">Standard Delivery</p>
                                         </div>
                                     </div>
-    
+
                                     <!-- Expected Delivery Card -->
                                     <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200">
                                         <div class="flex items-center mb-3">
@@ -281,13 +310,13 @@
                                         </div>
                                         <div class="ml-14">
                                             <p class="text-sm text-gray-500">
-                                                Between {{ Carbon\Carbon::parse($package->delivery_estimate['delivery_window']['start'])->format('H:i') }} - 
+                                                Between {{ Carbon\Carbon::parse($package->delivery_estimate['delivery_window']['start'])->format('H:i') }} -
                                                 {{ Carbon\Carbon::parse($package->delivery_estimate['delivery_window']['end'])->format('H:i') }}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-    
+
                                 <!-- Track & Trace Button -->
                                 <button class="mt-8 group relative w-full md:w-auto">
                                     <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-md filter blur opacity-75 group-hover:opacity-100 transition-opacity duration-200"></div>

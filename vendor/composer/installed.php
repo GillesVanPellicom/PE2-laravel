@@ -3,7 +3,12 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
+<<<<<<< HEAD
         'reference' => 'f38c08b66e136143f9f3216edc067189740d08a3',
+=======
+        'reference' => 'c2ab479547e97288a33adb5f7a18a38ce64e5213',
+        'reference' => '8e38248599f6c783895efcf3450cd948a1979aa2',
+>>>>>>> Development
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -460,7 +465,12 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
+<<<<<<< HEAD
             'reference' => 'f38c08b66e136143f9f3216edc067189740d08a3',
+=======
+            'reference' => 'c2ab479547e97288a33adb5f7a18a38ce64e5213',
+            'reference' => '8e38248599f6c783895efcf3450cd948a1979aa2',
+>>>>>>> Development
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -1121,6 +1131,33 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'spatie/db-dumper' => array(
+            'pretty_version' => '3.8.0',
+            'version' => '3.8.0.0',
+            'reference' => '91e1fd4dc000aefc9753cda2da37069fc996baee',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/db-dumper',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'spatie/laravel-backup' => array(
+            'pretty_version' => '9.3.2',
+            'version' => '9.3.2.0',
+            'reference' => 'c5ced5777fa1c6e89a11afb6520e37e2b98d9a47',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/laravel-backup',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'spatie/laravel-package-tools' => array(
+            'pretty_version' => '1.92.4',
+            'version' => '1.92.4.0',
+            'reference' => 'd20b1969f836d210459b78683d85c9cd5c5f508c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/laravel-package-tools',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'spatie/laravel-permission' => array(
             'pretty_version' => '6.14.0',
             'version' => '6.14.0.0',
@@ -1130,11 +1167,29 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'spatie/laravel-signal-aware-command' => array(
+            'pretty_version' => '2.1.0',
+            'version' => '2.1.0.0',
+            'reference' => '8e8a226ed7fb45302294878ef339e75ffa9a878d',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/laravel-signal-aware-command',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'spatie/once' => array(
             'dev_requirement' => false,
             'replaced' => array(
                 0 => '*',
             ),
+        ),
+        'spatie/temporary-directory' => array(
+            'pretty_version' => '2.3.0',
+            'version' => '2.3.0.0',
+            'reference' => '580eddfe9a0a41a902cac6eeb8f066b42e65a32b',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/temporary-directory',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'staabm/side-effects-detector' => array(
             'pretty_version' => '1.0.5',

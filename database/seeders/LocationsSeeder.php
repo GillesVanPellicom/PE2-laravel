@@ -134,7 +134,6 @@ class LocationsSeeder extends Seeder {
         'created_at' => now(),
         'updated_at' => now(),
       ],
-
     ]);
     Location::factory()->count(100)->create();
   }
