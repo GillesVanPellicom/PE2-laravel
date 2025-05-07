@@ -20,7 +20,7 @@ class Flightscontroller extends Controller
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 });
             })
-            ->where('departure_day_of_week', "Friday")
+            ->where('departure_day_of_week', $today)
             ->get();
 
         foreach ($flights as $flight) {
