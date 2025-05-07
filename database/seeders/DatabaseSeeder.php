@@ -6,6 +6,7 @@ use App\Models;
 use App\Models\EmployeeFunction;
 use App\Models\EmployeeContract;
 use App\Http\Controllers\EmployeeController;
+use App\Models\Airline;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -47,7 +48,11 @@ class DatabaseSeeder extends Seeder {
       TicketSeeder::class,
     ]);
 
-    \App\Models\User::factory(1000)->create();
+    \App\Models\Airline::factory(50)->create();
+    \App\Models\Airplane::factory(50)->create();
+
+
+    /*\App\Models\User::factory(1000)->create();
     \App\Models\Team::factory(50)->create();
     \Database\Factories\FunctionFactory::new()->count(50)->create();
     
@@ -69,7 +74,7 @@ class DatabaseSeeder extends Seeder {
     }
 
     \App\Models\Vacation::factory(4000)->create();
-    \App\Models\Package::factory()->count(300)->create();
+    \App\Models\Package::factory()->count(300)->create();*/
 
   }
 }
