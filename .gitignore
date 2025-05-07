@@ -32,3 +32,4 @@ vendor/composer/installed.php
 # Add your own gitignore rules below
 
 
+/vendor/
