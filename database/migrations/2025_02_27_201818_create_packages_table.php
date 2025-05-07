@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
             $table->string('weight_price')->default(0);
+            $table->boolean('requires_signature')->default(false);
             $table->float('weight')->nullable();
             $table->boolean('paid')->default(false);
             $table->string('delivery_price')->default(0);
