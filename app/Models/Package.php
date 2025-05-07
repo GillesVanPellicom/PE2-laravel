@@ -51,6 +51,7 @@ class Package extends Model {
     'delivery_method_id',
     'dimension',
     'weight_price',
+    'requires_signature',
     'delivery_price',
     'paid',
     'sender_firstname',
