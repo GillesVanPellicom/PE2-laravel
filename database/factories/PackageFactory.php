@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\User;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
+use App\Helpers\ConsoleHelper;
 
 class PackageFactory extends Factory {
   public function definition(): array {
@@ -24,6 +25,9 @@ class PackageFactory extends Factory {
 
     // Ensure all locations are unique
     $allLocations = array_unique(array_merge($validRouterNodes, $locationIds));
+
+    ConsoleHelper::task(str_pad("[Package]", 10, ' ', STR_PAD_RIGHT)." Creating package with reference: REF".$this->faker->unique()->randomNumber(8),
+      function () {});
 
     // Generate unique origin and destination IDs
     $originLocationId = $this->faker->randomElement($allLocations);
@@ -49,5 +53,6 @@ class PackageFactory extends Factory {
       "created_at" => $this->faker->dateTime(),
       "updated_at" => $this->faker->dateTime(),
     ];
+    $executionTimes[] = (microtime(true) - $contractStartTime) * 1000;
   }
 }

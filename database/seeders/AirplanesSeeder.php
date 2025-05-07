@@ -76,5 +76,8 @@ class AirplanesSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
         ]);
+
+        \App\Models\Airplane::factory(50)->create();
+
     }
 }

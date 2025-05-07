@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Helpers\ConsoleHelper;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -23,6 +24,10 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $contractStartTime = microtime(true);
+        ConsoleHelper::task(str_pad("[User]", 10, ' ', STR_PAD_RIGHT)." Creating user: ".$this->faker->firstName().' '.$this->faker->lastName(),
+            function () {});
+
         return [
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
@@ -37,6 +42,7 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'birth_date' => fake()->dateTimeBetween('-90 years', '-18 years'),
         ];
+        $executionTimes[] = (microtime(true) - $contractStartTime) * 1000;
     }
 
     /**
