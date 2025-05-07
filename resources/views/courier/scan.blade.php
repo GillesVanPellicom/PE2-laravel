@@ -24,7 +24,7 @@
 
     <div id="infoModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
         style="display: none;">
-
+        <div class="bg-red-800"></div>
     </div>
 
     <div id="actionModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
