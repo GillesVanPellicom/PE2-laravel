@@ -11,44 +11,33 @@ use Illuminate\Http\Request;
 use App\Services\Router\Types\CoordType;
 use App\Models\Location;
 use App\Services\Router\Types\MoveOperationType;
+use App\Models\PackageMovement;
 
 class CourierRouteController extends Controller
 {
     public function showRoute()
     {
-        $packages = Package::all();
-        $filteredPackages = [];
-        foreach ($packages as $package) {
-            if (!$package->movements()->exists()) {
-                continue;
-            }
+        // Haal de ingelogde courier op
+        $courierId = auth()->user()->employee->id;
 
-            $currentMovement = $package->movements()->where("current_node_id", $package->current_location_id)->first();
-            $movement = is_null($currentMovement->next_movement) ? $currentMovement : $currentMovement->nextHop;
-
-            if (is_numeric($movement->current_node_id) && $movement->node->location_type == NodeType::ADDRESS && is_null($movement->arrival_time)) {
-                $node = Node::fromLocation($movement->node);
-
-                $location = Location::with('address')->where('id', $movement->current_node_id)->first();
-
-                $filteredPackages[] = [
-                    'latitude' => $node->getLat(CoordType::DEGREE),
-                    'longitude' => $node->getLong(CoordType::DEGREE),
-                    'ref' => $package->reference,
-                    'end' => $movement->id == $currentMovement->id,
-                    'address' => $location ? [
-                        'street' => $location->address->street ?? 'N/A',
-                        'house_number' => $location->address->house_number ?? 'N/A',
-                    ] : null,
-                    'requires_signature' => $package->requires_signature,
-                ];
-            }
+        // Haal alleen de pakketten op die zijn toegewezen aan de ingelogde courier
+        $route = [];
+        $packagemovements = PackageMovement::where('handled_by_courier_id', $courierId)->where('departure_time', null)->get();
+        foreach ($packagemovements as $packagemovement) {
+            $package = Package::where('id', $packagemovement->package_id)->first();
+            $movement = ($packagemovement->next_movement == null) ? $packagemovement : $packagemovement->nextHop;
+            $location = Node::fromId($packagemovement->current_node_id);
+            $route[] = [
+                'latitude' => $location->getLat(CoordType::DEGREE),
+                'longitude' => $location->getLong(CoordType::DEGREE),
+                'ref' => $package->reference,
+                'address' => $location ? [
+                    "street" => $location->getAddress()->street,
+                    "house_number" => $location->getAddress()->house_number,
+                ] : null,
+                'end' => $movement->id == $packagemovement->id
+            ];
         }
-
-        $routeTracer = new RouteTrace();
-        $route = $routeTracer->generateRoute($filteredPackages);
-
-        session(['current_route' => $route]);
 
         return view('courier.route', compact('route'));
     }
