@@ -19,7 +19,7 @@
                         <td>{{ $flight->id }}</td>
                         <td>{{ $flight->status }}</td>
                         <td>
-                            <form method="POST" action="{{ route('flights.updateStatus', $flight->id) }}">
+                            <form method="POST" action="{{ route('workspace.flights.updateStatus', $flight->id) }}">
                                 @csrf
                                 @method('PATCH')
                                 <label for="status">Status:</label>
@@ -40,7 +40,7 @@
                         <td>{{ $flight->departureAirport->name ?? 'Unknown' }}</td>
                         <td>{{ $flight->arrivalAirport->name ?? 'Unknown' }}</td>
                         <td>
-                            <form method="POST" action="{{ route('flightContracts.updateEndDate', $flight->id) }}">
+                            <form method="POST" action="{{ route('workspace.flightContracts.updateEndDate', $flight->id) }}">
                                 @csrf
                                 @method('PATCH')
                                 <label for="end_date_{{ $flight->id }}">End Date:</label>

@@ -57,7 +57,6 @@
                 <th>Country</th>
                 <!-- <th>Amount</th> -->
                 <th>Price</th>
-                <th class="text-right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -75,7 +74,6 @@
                 </td>
                 <!-- <td>1</td> -->
                 <td>€{{ number_format((float)$package->weight_price + (float)$package->delivery_price, 2) }}</td>            
-                  <td class="text-right">€{{ (float)$package->weight_price + (float)$package->delivery_price }}</td>
             </tr>
             @endforeach
         </tbody>

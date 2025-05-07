@@ -99,7 +99,7 @@
                             @elseif($flight->status == 'Delayed')
                                 {{$flight->status}} (Delayed by {{$flight->delayed_minutes}} minutes)
                             @elseif($flight->status == 'Canceled')
-                                {{$flight->status}} (Flight has been canceled)
+                                {{$flight->status}}
                             @endif
                         </td>
                         <td class="py-2 px-4 border">

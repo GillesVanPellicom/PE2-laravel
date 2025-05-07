@@ -31,15 +31,18 @@ class DatabaseSeeder extends Seeder {
       ContractsSeeder::class,
       DeliveryMethodSeeder::class,
       WeightClassSeeder::class,
-      PackageSeeder::class,
-      VacationSeeder::class,
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
+      PackageSeeder::class,
+      VacationSeeder::class,
       FlightsSeeder::class,
       FlightsContractSeeder::class,
       UserRoleSeeder::class,
       MessageTemplatesSeeder::class,
       VehiclesSeeder::class,
+      CourierSeeder::class,
+      TicketSeeder::class,
+      PackageMovementSeeder::class,
     ]);
 
   }

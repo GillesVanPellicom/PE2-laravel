@@ -18,7 +18,7 @@
         @endif
 
         <div class="max-w-3xl mx-auto p-6 bg-white rounded shadow-lg mt-8">
-            <form action="{{ route('employees.store_team') }}" method="POST" class="space-y-6">
+            <form action="{{ route('workspace.employees.store_team') }}" method="POST" class="space-y-6">
                 @csrf
 
                 <div class="mb-4">
@@ -36,7 +36,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Select Manager</option>
                         @foreach ($employees as $employee)
-                            <option value="{{ $employee->id }}" 
+                            <option value="{{ $employee->id }}"
                                 @if(old('employee') == $employee->id) selected @endif>
                                 {{ $employee->user->first_name }} {{ $employee->user->last_name }}
                             </option>

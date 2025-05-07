@@ -12,7 +12,7 @@ class Flightscontroller extends Controller
 {
     public function flightindex()
     {
-        $today = Carbon::now()->format('l'); 
+        $today = Carbon::now()->format('l');
 
         $flights = Flight::with(['departureAirport', 'arrivalAirport', 'contract'])
             ->whereHas('contract', function ($query) {
@@ -35,6 +35,8 @@ class Flightscontroller extends Controller
             $flight->arrival_time = $arrivalTime;
             if ($flight->status == 'Canceled') {
                 $flight->arrival_time = "/";
+                $flight->departure_time = "/";
+
             }
         }
 
@@ -58,7 +60,7 @@ class Flightscontroller extends Controller
 
         flight::create($data);
 
-        return redirect(route('airport.flights'));
+        return redirect(route('workspace.airport.flights'));
     }
 
     public function flights()

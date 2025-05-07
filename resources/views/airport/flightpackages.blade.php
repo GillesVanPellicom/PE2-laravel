@@ -202,13 +202,18 @@
                 const currentLocation = package?.current_location_id;
                 const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
                 const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
-
+                console.log("Package:", package);
+                console.log("Current Location:", currentLocation);
+                console.log("Next Movement:", nextMovement);
+                console.log("Router Edge:", routerEdge);
+                console.log("Flight:", flight);
                 return currentLocation && nextMovement && routerEdge &&
                     (routerEdge.origin_node === currentLocation || routerEdge.destination_node === currentLocation) &&
                     (routerEdge.origin_node === nextMovement || routerEdge.destination_node === nextMovement) &&
                     flight.status !== 'Canceled';
             });
         });
+        console.log("Filtered Flights:", filteredFlights);
 
         const flightList = document.getElementById('flightList');
         flightList.innerHTML = ''; // Clear previous list
@@ -290,11 +295,19 @@
             const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
             const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
 
+            console.log("Package:", package);
+            console.log("Current Location:", currentLocation);
+            console.log("Next Movement:", nextMovement);
+            console.log("Router Edge:", routerEdge);
+            console.log("Flight:", flight);
+
             return currentLocation && nextMovement && routerEdge &&
                 (routerEdge.origin_node === currentLocation || routerEdge.destination_node === currentLocation) &&
                 (routerEdge.origin_node === nextMovement || routerEdge.destination_node === nextMovement) &&
                 flight.status !== 'Canceled';
         });
+
+        console.log("Filtered Flights:", filteredFlights);
 
         const flightList = document.getElementById('flightList');
         flightList.innerHTML = ''; // Clear previous list

@@ -187,7 +187,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
-                'router_edge_id' => 50,
+                'router_edge_id' => 51,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
@@ -202,7 +202,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
-                'router_edge_id' => 50,
+                'router_edge_id' => 51,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
@@ -217,7 +217,7 @@ class FlightsSeeder extends Seeder
                 'status' => 'On Time',
                 'isActive' => 1,
                 'gate' => 'H8',
-                'router_edge_id' => 28,
+                'router_edge_id' => 29,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],

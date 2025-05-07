@@ -4,13 +4,13 @@ namespace App\Services\Router\Types;
 
 use App\Models\Address;
 use App\Models\Location;
+use App\Models\PackageMovement;
 use App\Models\RouterNodes;
-use App\Services\Router\GeoMath;
+use App\Services\Router\Helpers\GeoMath;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
 use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
-use RuntimeException;
-use App\Models\PackageMovement;
 use Carbon\Carbon;
+use RuntimeException;
 
 class Node {
 
@@ -93,8 +93,8 @@ class Node {
    * @throws InvalidRouterArgumentException
    * @throws InvalidCoordinateException
    */
-  public static function fromLocation(Location $loc) {
-    return new self($loc->infrastructure_id ?: $loc->id, $loc->description, $loc->location_type, $loc->latitude,
+  public static function fromLocation(Location $loc): Node {
+    return new self($loc->id, $loc->description, $loc->location_type, $loc->latitude,
       $loc->longitude, $loc->addresses_id);
   }
 
@@ -104,7 +104,7 @@ class Node {
    * @throws InvalidRouterArgumentException
    * @throws InvalidCoordinateException
    */
-  public static function fromRouterNode(RouterNodes $node) {
+  public static function fromRouterNode(RouterNodes $node): Node {
     return new self($node->id, $node->description, $node->location_type, $node->latDeg, $node->lonDeg,
       $node->address_id, $node->isEntry, $node->isExit);
   }

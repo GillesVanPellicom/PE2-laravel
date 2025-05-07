@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Employee;
 use App\Models\Package;
 use App\Models\PackageMovement;
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Services\Router\Types\Node;
@@ -20,13 +21,14 @@ class ApiController extends Controller
         ]);
 
         $courier = User::role("courier")
-            ->join("employees", "employees.user_id", "=", "users.id")
+            ->leftJoin("employees", "employees.user_id", "=", "users.id")
             ->where("employees.id", $validated["courier"])
             ->select("employees.id as employee_id", "users.first_name", "users.last_name")
             ->first();
 
         if (!$courier)
             return response()->json(["error" => "Invalid Employee ID"], 400);
+
         // $courier = Employee::join("users", "employees.user_id", "=", "users.id")
         //     ->where("employees.id", $validated["courier"])
         //     ->select("employees.id as employee_id", "users.first_name", "users.last_name")
@@ -36,35 +38,87 @@ class ApiController extends Controller
             ->join('packages', "package_movements.package_id", "=", "packages.id")
             ->whereColumn("package_movements.current_node_id", "packages.current_location_id")
             ->leftJoin('package_movements as next_movements', 'package_movements.next_movement', '=', 'next_movements.id')
-            ->select("packages.id as package_id",
+            ->select(
+                "packages.id as package_id",
                 "packages.reference",
-                "next_movements.current_node_id as next_node_id",
+                "next_movements.current_node_id as next_node",
                 'package_movements.arrival_time'
             )
             ->get();
 
         if (!$data)
             return response()->json(["error" => "No packages found"], 400);
+        
+        foreach ($data as $package) {
+            $node = Node::fromId($package["next_node"]);
+            if (!$node)
+                continue;
 
+            $address = $node->getAddress();
+
+            $nodeData = [
+                "id" => $node->getID(),
+                "description" => $node->getDescription(),
+                "type" => $node->getType()->value,
+                "address" => [
+                    "id" => $address->id,
+                    "city" => $address->city->name,
+                    "postcode" => $address->city->postcode,
+                    "street" => $address->street,
+                    "house_number" => $address->house_number,
+                    "bus_number" => $address->bus_number,
+                    "country" => $address->city->country->country_name
+                ]
+            ];
+            $package["next_node"] = $nodeData;
+        }
         return response()->json(["courier" => $courier, "packages" => $data], 200, [], JSON_PRETTY_PRINT);
     }
 
-    public function packageInfo(Request $request){
+    public function packageInfo(Request $request)
+    {
         $validated = $request->validate([
             "package" => 'required|integer'
         ]);
 
-        $package = Package::find($validated["package"])
-            ->select("reference", "status", "dimension")
-            ->first();
+        $package = Package::find($validated["package"])->first();
 
         if (!$package)
-            return response()->json(["error"=>"Package does not exist."], 400);
+            return response()->json(["error" => "Package does not exist."], 400);
 
-        return response()->json($package, 200, [], JSON_PRETTY_PRINT);
+        try {
+            $node = $package->getNextMovement();
+        } catch (Exception $e){
+            return response()->json(["error" => "Invalid Node ID."], 400);
+        }
+
+        $address = $node->getAddress();
+
+        $nodeData = [
+            "id" => $node->getID(),
+            "description" => $node->getDescription(),
+            "type" => $node->getType()->value,
+            "address" => [
+                "id" => $address->id,
+                "city" => $address->city->name,
+                "postcode" => $address->city->postcode,
+                "street" => $address->street,
+                "house_number" => $address->house_number,
+                "bus_number" => $address->bus_number,
+                "country" => $address->city->country->country_name
+            ]
+        ];
+
+        $data = [
+            "reference" => $package->reference,
+            "next_node" => $nodeData
+        ];
+
+        return response()->json($data, 200, [], JSON_PRETTY_PRINT);
     }
 
-    public function nodeInfo(Request $request){
+    public function nodeInfo(Request $request)
+    {
         $validated = $request->validate([
             "node" => 'required'
         ]);
@@ -73,7 +127,7 @@ class ApiController extends Controller
 
         if (!$node)
             return response()->json(["error" => "Invalid Node ID."], 400);
-        
+
 
         $address = $node->getAddress();
 
@@ -95,7 +149,8 @@ class ApiController extends Controller
         return response()->json($nodeData, 200, [], JSON_PRETTY_PRINT);
     }
 
-    public function addressInfo(Request $request){
+    public function addressInfo(Request $request)
+    {
         $validated = $request->validate([
             "address" => "required|integer"
         ]);
@@ -110,6 +165,6 @@ class ApiController extends Controller
             return response()->json(["error" => "Invalid Address ID."], 400);
 
 
-        return response()->json($address, 400,  [], JSON_PRETTY_PRINT);
+        return response()->json($address, 400, [], JSON_PRETTY_PRINT);
     }
 }

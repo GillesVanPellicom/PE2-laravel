@@ -10,7 +10,16 @@
                         </div>
                     </div>
 
-                    <form id="submit-form" action="{{ route('packages.packagedetails', $package->id) }}" method="GET" class="mt-8 space-y-6">
+                    @php
+                        $isBulk = session('bulk_order_package_ids') && count(session('bulk_order_package_ids')) > 0;
+                        $packageId = $isBulk ? session('bulk_order_package_ids')[0] : $package->id;
+                        $routeName = $isBulk ? 'packages.bulk-details' : 'packages.packagedetails';
+                    @endphp
+
+                    <form id="submit-form" 
+                        action="{{ route($routeName, ['id' => $isBulk ? implode(',', session('bulk_order_package_ids')) : $package->id]) }}" 
+                        method="GET" 
+                        class="mt-8 space-y-6">
                         @csrf
                         <div class="bg-white">
                             <!-- Amount Display -->
@@ -18,7 +27,11 @@
                                 <div class="flex items-center justify-between">
                                     <span class="text-lg font-medium text-gray-900">Total Amount:</span>
                                     <span class="text-2xl font-bold text-blue-600">
-                                        ${{ $package->weight_price + $package->delivery_price }}
+                                    @if(session('bulk_order_total_price'))
+                                        €{{ number_format(session('bulk_order_weight_price', 0) + session('bulk_order_delivery_price', 0), 2) }}
+                                    @else
+                                    €{{ number_format(($package->weight_price ?? 0) + ($package->delivery_price ?? 0), 2) }}
+                                    @endif
                                     </span>
                                 </div>
                             </div>

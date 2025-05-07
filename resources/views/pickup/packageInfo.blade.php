@@ -21,7 +21,7 @@
     <x-slot name="header">
         <div class="flex flex-row max-w-2xl items-center justify-center">
             <!-- Back Button -->
-            <form action="{{route('pickup.dashboard')}}" method="get">
+            <form action="{{route('workspace.pickup.dashboard')}}" method="get">
                 <x-primary-button>
                     <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 0 32 32" width="32px" fill="currentColor">
                         <path d="M25.002,16c0,0.5522-0.4473,1-1,1H9.8672l4.9629,7.4453c0.3066,0.4595,0.1826,1.0806-0.2773,1.3867 C14.3818,25.9458,14.1895,26,13.999,26c-0.3232,0-0.6406-0.1563-0.833-0.4453L6.7959,16l6.3701-9.5547 c0.3057-0.46,0.9248-0.5845,1.3867-0.2773c0.46,0.3062,0.584,0.9272,0.2773,1.3867L9.8672,15H24.002 C24.5547,15,25.002,15.4478,25.002,16z"/>
@@ -109,7 +109,7 @@
                         <h3 class="text-lg font-bold text-gray-800">Do You want to set the package to return?</h3>
                         <div class="mt-4 flex justify-end gap-4">
                             <x-secondary-button id="cancel-btn">Cancel</x-secondary-button>
-                            <form action="{{route('pickup.dashboard.setStatusPackage',["id" => $package->id])}}" method="post">
+                            <form action="{{route('workspace.pickup.dashboard.setStatusPackage',["id" => $package->id])}}" method="post">
                                 @csrf
                                 @method('PATCH')
                                 <x-primary-button name="status"  value="To Return"  type="submit">Return Package</x-primary-button>
@@ -122,7 +122,7 @@
                         <h3 class="text-lg font-bold text-gray-800">Do You want to set the package delivered?</h3>
                         <div class="mt-4 flex justify-end gap-4">
                             <x-secondary-button id="cancel-btn1">Cancel</x-secondary-button>
-                            <form action="{{route('pickup.dashboard.setStatusPackage',["id" => $package->id])}}" method="post">
+                            <form action="{{route('workspace.pickup.dashboard.setStatusPackage',["id" => $package->id])}}" method="post">
                                 @csrf
                                 @method('PATCH')
                                 <x-primary-button name="status"  value="Delivered" type="submit">Delivered Package</x-primary-button>

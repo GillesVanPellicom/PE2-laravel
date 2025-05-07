@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('expiry_date');
             $table->boolean('is_paid')->default(0);
             $table->date('paid_at')->nullable();
+            $table->string('reference');
             $table->timestamps();
         });
     }
