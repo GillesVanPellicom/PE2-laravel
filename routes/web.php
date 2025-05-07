@@ -366,6 +366,17 @@ Route::middleware("auth")->group(function () {
 
 // Invoices
 
+// Route::middleware('auth')
+//     ->group(function () {
+//         Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])
+//         ->middleware(['permission:business_client.view'])
+//         ->name('generate-invoice');
+
+//         Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+//         ->middleware(['permission:business_client.view'])
+//         ->name('invoices.myinvoices');
+//     });
+
 Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
 
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
