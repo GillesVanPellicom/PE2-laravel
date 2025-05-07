@@ -35,6 +35,7 @@ return new class extends Migration
             $table->string('sender_lastname')->nullable();
             $table->string('sender_phone_number')->nullable();
             $table->string('sender_email')->nullable();
+            $table->string('assigned_flight')->nullable();
             $table->timestamps();
         });
     }

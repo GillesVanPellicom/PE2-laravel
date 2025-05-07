@@ -37,6 +37,17 @@
                                 <button type="submit">Update Status</button>
                             </form>
                         </td>
+                        <td>{{ $flight->departureAirport->name ?? 'Unknown' }}</td>
+                        <td>{{ $flight->arrivalAirport->name ?? 'Unknown' }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('workspace.flightContracts.updateEndDate', $flight->id) }}">
+                                @csrf
+                                @method('PATCH')
+                                <label for="end_date_{{ $flight->id }}">End Date:</label>
+                                <input type="date" name="end_date" id="end_date_{{ $flight->id }}" value="{{ $flight->contract->end_date ?? '' }}">
+                                <button type="submit">Set End Date</button>
+                            </form>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

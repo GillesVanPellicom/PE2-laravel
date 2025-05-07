@@ -240,9 +240,12 @@ use App\Http\Controllers\TicketController;
                 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
                 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
 
                 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
                 Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
+
+                Route::patch('/flightContracts/{id}/updateEndDate', [Flightscontroller::class, 'updateContractEndDate'])->name('flightContracts.updateEndDate');
 
                 Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
             });
