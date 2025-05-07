@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('destination_location_id');
             $table->foreignId('addresses_id')->nullable()->constrained('addresses');
             $table->string('status');
+            $table->integer('times_delivered')->default(0);
             $table->foreignId('weight_id')->constrained('weight_classes');
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
