@@ -42,13 +42,15 @@
                     <tr class="border-t">
                         <td class="px-4 py-2">{{ $invoice->id }}</td>
                         <td class="px-4 py-2">
+
                             @if ($invoice->is_paid)
                                 <span class="text-green-600 font-semibold">Paid</span>
-                            @elseif ($invoice->due_date < now())
+                            @elseif (!$invoice->is_paid && $invoice->due_date && $invoice->due_date < now())
                                 <span class="text-red-600 font-semibold">Overdue</span>
                             @else
                                 <span class="text-yellow-600 font-semibold">Pending</span>
                             @endif
+
                         </td>
                         <td class="px-4 py-2">€{{ $invoice->total }}</td>
                         <td class="px-4 py-2">{{ $invoice->paid_at ?? '-' }}</td>
@@ -77,6 +79,7 @@
                 </tbody>
             </table>
 
+            {{-- Pagination --}}
         </div>
     </div>
 </x-app-layout>
