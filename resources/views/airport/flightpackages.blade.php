@@ -373,7 +373,7 @@
             totalWeight += weight;
         });
 
-        fetch(`/assign-flight`, {
+        fetch(`{{ route('workspace.assign-flight') }}`, { // Use the correct route name
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -381,7 +381,12 @@
             },
             body: JSON.stringify({ packageIds: selectedPackageIds, flightId, totalWeight })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert(`Packages assigned to flight successfully! Total weight assigned: ${data.assignedWeight} kg`);
@@ -421,7 +426,12 @@
             },
             body: JSON.stringify({ packageId })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert("Package sent to distribution center successfully!");
