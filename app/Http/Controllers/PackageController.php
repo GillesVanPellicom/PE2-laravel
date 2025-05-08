@@ -487,7 +487,7 @@ class PackageController extends Controller {
                 'sender_lastname' => 'required|string|max:255',
                 'sender_email' => 'required|email|max:255|unique:users,email',
                 'sender_phone_number' => 'required|string|max:255|unique:users,phone_number',
-                'safe_location' => 'string|max:255'
+                'safe_location' => 'nullable|string|max:255'
                 //'sender_birthdate' => 'required|date',
             ];
         }
@@ -503,7 +503,7 @@ class PackageController extends Controller {
                 'dimension' => 'required|string|max:255',
                 'weight_price' => 'required|numeric|min:0',
                 'delivery_price' => 'required|numeric|min:0',
-                'safe_location' => 'string|max:255'
+                'safe_location' => 'nullable|string|max:255'
             ];
         }
 
