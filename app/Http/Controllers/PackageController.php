@@ -341,7 +341,7 @@ class PackageController extends Controller {
                         $geocodeData = $response->json();
 
                         if (empty($geocodeData['results'])) {
-                            return back()->withErrors(['error' => 'Address could not be found'])->withInput();
+                            return back()->withErrors(['error' => 'Address  could not be found : "' . $userAddress->street . ' ' . $userAddress->house_number . ' ' . $userAddress->city->name . ' ' . $userAddress->city->postcode . ' ' . $userAddress->city->country->country_name.'".'])->withInput();
                         }
                     }
 
@@ -450,7 +450,7 @@ class PackageController extends Controller {
                         return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()])->withInput();
                     }
                     if (empty($geocodeData['results'])) {
-                        return back()->withErrors(['error' => 'Address could not be found'])->withInput();
+                        return back()->withErrors(['error' => 'Address  could not be found' . $addressFromInput->street . ' ' . $addressFromInput->house_number . ' ' . $addressFromInput->city->name . ' ' . $addressFromInput->city->postcode . ' ' . $addressFromInput->city->country->country_name])->withInput();
                     }
                     $location = $geocodeData['results'][0];
                     $originLocation = Location::create([
@@ -1308,4 +1308,22 @@ private function generateUniqueInvoiceReference()
 
     return $reference;
 }
+    public function strandedPackages() {
+        $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+            ->where('status', 'Stranded')
+            ->get();
+        $packages = Package::paginate(10);
+        return view('Packages.stranded-packages',compact("packages"));
+    }
+    public function reRouteStrandedPackages (Request $request) {
+        $packageReferences = $request->input('selected_packages');
+        $packages = Package::whereIn('reference', $packageReferences)->paginate(10);
+        return redirect()->route('workspace.stranded-packages')->with('success', 'The re-route for the selected parcels was successful');
+    }
+    public function testDeliveryAttemptOnWrongLocation (Request $request) {
+        $package = Package::with(['user', 'deliveryMethod','destinationLocation'])
+            ->where('reference', $request->id)
+            ->firstOrFail();
+        return view('Packages.testDeliveryAttemptOnWrongLocation',compact('package'));
+    }
 }

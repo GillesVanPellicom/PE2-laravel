@@ -27,13 +27,13 @@ class TrackPackageController extends Controller
 
         foreach ($movements as $movement) {
             if ($movement->getID() === $currentLocation->getID()) {
-                $movement->status = 'current'; 
+                $movement->status = 'current';
             } elseif ($movement->getArrivedAt() && $movement->getCheckedOutAt()) {
-                $movement->status = 'completed'; 
+                $movement->status = 'completed';
             } elseif ($movement->getDepartedAt() && !$movement->getArrivedAt()) {
                 $movement->status = 'in_transit';
             } else {
-                $movement->status = 'upcoming'; 
+                $movement->status = 'upcoming';
             }
         }
 
@@ -49,5 +49,8 @@ class TrackPackageController extends Controller
 
         [$status, $message] = $package->move(MoveOperationType::DELIVER);
         return response()->json(["success" => $status, "message" => $message]);
+    }
+    public function trackParcel (Request $request) {
+        return view("Packages.tracking-parcel");
     }
 }

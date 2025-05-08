@@ -162,14 +162,16 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Weight Class</h3>
                             <div class="space-y-3">
                                 @foreach($weightClasses as $weightClass)
-                                    <div class="flex items-center">
+                                    <div class="flex items-center gap-2">
                                         <input type="radio" name="weight_id" value="{{$weightClass->id }}"
                                             data-price="{{ $weightClass->price }}"
                                             onchange="updatePrices()"
                                             class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                                            {{ old('weight_id') == $weightClass->id ? 'checked' : '' }}>
+
+                                               {{ $loop->first && !old('weight_id') ? 'checked' : (old('weight_id') == $weightClass->id ? 'checked' : '') }}
+
                                         <label class="ml-3 text-sm text-gray-700">
-                                            {{ $weightClass->name }} ({{ $weightClass->weight_min }} - {{ $weightClass->weight_max }} kg) - €{{ number_format($weightClass->price, 2) }}
+                                              {{$weightClass->name }} ({{ $weightClass->weight_min }} - {{ $weightClass->weight_max }} kg) - €{{ number_format($weightClass->price, 2) }}
                                         </label>
                                     </div>
                                 @endforeach

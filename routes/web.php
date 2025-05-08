@@ -34,6 +34,7 @@ use App\Http\Controllers\TicketController;
         ->group(function () {
             //Workspace Index
             Route::get('/', function () {
+
                 if (auth()->user()->hasPermissionTo('*')) {
                     return view('real-homepage');
                 } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
@@ -42,8 +43,8 @@ use App\Http\Controllers\TicketController;
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
                     return redirect()->route('workspace.pickup.dashboard');
-                } elseif (auth()->user()->hasAnyPermission(["airport.view"])) {
-                    return redirect()->route('workspace.airport.index');
+                } elseif (auth()->user()->hasPermissionTo("airport.view")) {
+                    return redirect()->route('workspace.airports');
                 } elseif (auth()->user()->hasAnyPermission(["assign.courier"])) {
                     return redirect()->route('workspace.dispatcher.index');
                 }else {
@@ -186,7 +187,7 @@ use App\Http\Controllers\TicketController;
 
             Route::get('/get-unavailable-employees', [EmployeeController::class, 'getUnavailableEmployees'])->name('unavailable.employees');
 
-            
+
             Route::get('/sick-leave-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeaveNotifications.fetch');
             Route::post('/sick-leave-notifications/{id}/mark-as-read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeaveNotifications.markAsRead');
 
@@ -229,7 +230,7 @@ use App\Http\Controllers\TicketController;
 
             });
             Route::get('testDeliveryAttemptOnWrongLocation/{id}', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
-            Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
+            Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocationHome');
             // ======================= End Pick Up Point ====================== //
 
             // ======================= Start Airport ====================== //
@@ -272,7 +273,8 @@ use App\Http\Controllers\TicketController;
 
             // ======================= End CourierRouteCreator ====================== //
 
-            
+            Route::get('/stranded-packages', [PackageController::class, 'strandedPackages'])->name('stranded-packages');
+            Route::post('/stranded-packages', [PackageController::class, 'reRouteStrandedPackages'])->name('stranded-packages.reRoute');
         });
 // ======================= End Middleware ====================== //
 
@@ -417,7 +419,7 @@ Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackage
     ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
-
+    Route::get('/track-parcel',[TrackPackageController::class, 'trackParcel'])->name('track-parcel');
 
 // API Start
 
