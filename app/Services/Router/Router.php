@@ -47,7 +47,7 @@ class Router {
   /**
    * Whether to output debug information
    */
-  private bool $debug = true;
+  private bool $debug = false;
 
   // DATASTRUCTURES
 
