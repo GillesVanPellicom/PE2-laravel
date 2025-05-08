@@ -370,6 +370,12 @@ Route::middleware("auth")->group(function () {
 
     Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
         ->name('packages.complete-bulk-payment');
+    // invoice start
+    Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+    Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
+    Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+    // invoice end
+
 });
 
 // Invoices
@@ -462,9 +468,4 @@ Route::middleware(['permission:assign.courier'])->group(function () {
 });
 
 
-// invoice start
-Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
-Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
-Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
-// invoice end
 
