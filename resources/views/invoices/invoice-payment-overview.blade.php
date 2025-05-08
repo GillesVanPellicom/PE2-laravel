@@ -3,12 +3,12 @@
 <body class="bg-gray-100 p-6">
     <div class="container mx-auto">
         <h1 class="text-2xl font-bold mb-6 text-gray-800">Invoice Management System</h1>
-        
+
         <div class="flex gap-4">
             <!-- Unpaid Invoices Column -->
             <div class="w-5/12 bg-white rounded-lg shadow-md p-4">
                 <h2 class="text-lg font-semibold mb-4 text-gray-700">Unpaid Invoices</h2>
-                
+
                 <!-- Invoice List -->
                 <div class="space-y-3">
                     <!-- Invoice Item -->
@@ -27,6 +27,7 @@
         </div>
     </a>
 @endforeach
+                    {{$invoices->appends(request()->query())->links()}}
 
                 </div>
             </div>
@@ -34,7 +35,7 @@
             <!-- Middle Section with Button -->
             <form action="{{ route('invoices.mark-as-paid') }}" method="POST" class="w-2/12 flex items-center justify-center">
                 @csrf
-                
+
                 <input type="hidden" name="invoice" value="{{ request()->query('invoice') }}">
 
                 <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md flex items-center space-x-2">
@@ -49,7 +50,7 @@
             <!-- Matching Payments Column -->
             <div class="w-5/12 bg-white rounded-lg shadow-md p-4">
                 <h2 class="text-lg font-semibold mb-4 text-gray-700">Matching Payments</h2>
-                
+
                 <!-- Payments List -->
                 <div class="space-y-3">
                     <!-- Payment Item -->
@@ -66,10 +67,15 @@
                         </div>
                     </div>
                 @endforeach
-                </div>
+
+
+
+
+                </div>{{$payments->appends(request()->query())->links()}}
             </div>
         </div>
     </div>
+
 </body>
 </x-app-layout>
 
