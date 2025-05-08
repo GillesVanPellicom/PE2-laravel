@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder {
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
       PackageSeeder::class,
+      InvoiceSeeder::class,
       VacationSeeder::class,
       FlightsSeeder::class,
       FlightsContractSeeder::class,
