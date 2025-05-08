@@ -37,11 +37,11 @@ class DatabaseSeeder extends Seeder {
       FlightsContractSeeder::class,
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
-      UserRoleSeeder::class,
       MessageTemplatesSeeder::class,
       VehiclesSeeder::class,
       CourierSeeder::class,
       TicketSeeder::class,
+      UserRoleSeeder::class,
     ]);
 
   }
