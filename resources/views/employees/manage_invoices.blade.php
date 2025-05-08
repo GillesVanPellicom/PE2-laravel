@@ -55,15 +55,6 @@
                         <td class="px-4 py-2">€{{ $invoice->total }}</td>
                         <td class="px-4 py-2">{{ $invoice->paid_at ?? '-' }}</td>
                         <td class="px-4 py-2 flex flex-wrap gap-2">
-                            @if (! $invoice->is_paid)
-                                <form method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button class="bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600">
-                                        Mark as Paid
-                                    </button>
-                                </form>
-                            @endif
                             <a href="{{ route('generate-invoice', $invoice->id) }}" target="_blank" class="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">
                                 Open PDF
                             </a>
