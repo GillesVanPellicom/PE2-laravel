@@ -240,9 +240,12 @@ use App\Http\Controllers\TicketController;
                 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
                 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
 
                 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
                 Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
+
+                Route::patch('/flightContracts/{id}/updateEndDate', [Flightscontroller::class, 'updateContractEndDate'])->name('flightContracts.updateEndDate');
 
                 Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
             });
@@ -253,16 +256,12 @@ use App\Http\Controllers\TicketController;
                 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
                 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
-
-                Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
+                Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
+                Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+                Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+                Route::get('/distribution-center/courier-route/{id}', [DispatcherController::class, 'getCourierRoute'])->name('dispatcher.courier-route');
+                Route::get('/distribution-center/couriers', [DispatcherController::class, 'getCouriers'])->name('dispatcher.get-couriers');
             });
-
-
-
-            Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
-            Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
-            Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
-            Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
 
             // ======================= End CourierRouteCreator ====================== //
 
@@ -366,6 +365,17 @@ Route::middleware("auth")->group(function () {
 
 // Invoices
 
+// Route::middleware('auth')
+//     ->group(function () {
+//         Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])
+//         ->middleware(['permission:business_client.view'])
+//         ->name('generate-invoice');
+
+//         Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+//         ->middleware(['permission:business_client.view'])
+//         ->name('invoices.myinvoices');
+//     });
+
 Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
 
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
@@ -413,3 +423,16 @@ Route::post('/tokens/create', function (Request $request) {
 // API End
 
 Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+
+
+
+
+Route::middleware(['permission:assign.courier'])->group(function () {
+    Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+
+    Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
+    Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
+    Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+    Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+    Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
+});

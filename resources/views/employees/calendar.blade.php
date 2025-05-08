@@ -1219,7 +1219,13 @@
 
             let selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
             let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-            let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+            
+            @if(auth()->user()->hasRole('admin'))
+                let remainingHolidays = 0;
+            @else
+                let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+            @endif
+            
             let sickDaysTaken = selectedSickDays.size;
             let currentDate = null;
 
@@ -1701,7 +1707,11 @@
                     // Reset variables
                     selectedHolidays = {};
                     selectedSickDays = new Set();
-                    remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+                    @if(auth()->user()->hasRole('admin'))
+                        let remainingHolidays = 0;
+                    @else
+                        let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+                    @endif
                     sickDaysTaken = 0;
                     
                     // Update localStorage

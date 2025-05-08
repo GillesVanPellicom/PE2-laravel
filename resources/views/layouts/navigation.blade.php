@@ -98,8 +98,14 @@
                                 <x-dropdown-link href="{{ route('packages.company-dashboard') }}">
                                     {{ __('Company Dashboard') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link href="{{ route('invoices.myinvoices') }}">
+                                    {{ __('My Invoices') }}
+                                </x-dropdown-link>
                             @endif
                         @endauth
+                        <x-dropdown-link href="{{route('tickets.nytickets')}}">
+                            {{ __('Support') }}
+                        </x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('auth.logout') }}">

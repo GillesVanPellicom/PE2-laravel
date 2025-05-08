@@ -39,6 +39,14 @@
                 <div id="package-content" class="flex-1 overflow-y-auto">
                     <!-- Dynamic content will be loaded here -->
                 </div>
+
+                <div id="package-list">
+                    <!-- Pakketten worden hier dynamisch geladen -->
+                </div>
+
+                <div id="pagination" class="flex justify-between items-center mt-4">
+                    <!-- Paginering wordt hier dynamisch geladen -->
+                </div>
             </div>
         </div>
 
@@ -47,22 +55,14 @@
             <h2 class="text-xl font-bold mb-4">Couriers</h2>
             <ul class="space-y-2">
                 @foreach($employees as $employee)
-                    <li class="employee-item p-2 bg-gray-100 rounded shadow flex justify-between items-center"
+                    <li class="employee-item p-2 rounded shadow flex justify-between items-center
+                        {{ $employee->employee && $employee->employee->packageMovements()->whereNull('departure_time')->exists() ? 'bg-green-100' : 'bg-gray-100' }}"
                         data-employee-id="{{ $employee->employee_id }}">
                         <span>{{ $employee->first_name }} {{ $employee->last_name }}</span>
-                        <div class="relative">
-                            <button onclick="toggleMenu(this)" class="dots-menu-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 hover:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v.01M12 12v.01M12 18v.01" />
-                                </svg>
-                            </button>
-                            <div class="dots-menu hidden absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-50">
-                                <ul class="py-1">
-                                    <li><button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onclick="viewEmployee('{{ $employee->id }}', '{{ $employee->first_name }} {{ $employee->last_name }}')">View</button></li>
-                                    <li><button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onclick="dispatchEmployee('{{ $employee->id }}', '{{ $employee->first_name }} {{ $employee->last_name }}')">Dispatch</button></li>
-                                </ul>
-                            </div>
-                        </div>
+                        <button onclick="viewEmployee('{{ $employee->employee_id }}', '{{ $employee->first_name }} {{ $employee->last_name }}')"
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded">
+                            View
+                        </button>
                     </li>
                 @endforeach
             </ul>
@@ -72,38 +72,38 @@
     <!-- Modals -->
     <div id="view_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-6 rounded shadow-lg w-1/3">
-            <h2 id="view_modal_title" class="text-xl font-bold mb-4">Employee Details</h2>
-            <p id="view_modal_content" class="text-gray-700 mb-4">Details about the employee will appear here.</p>
+            <h2 id="view_modal_title" class="text-xl font-bold mb-4">Courier Details</h2>
+            <div id="view_modal_content" class="text-gray-700 mb-4">
+                <!-- Courier details will be dynamically loaded here -->
+            </div>
             <div class="flex justify-end">
-                <button onclick="closeModal('view_modal')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                <button onclick="closeModal('view_modal')" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
                     Close
                 </button>
             </div>
         </div>
     </div>
 
-<!-- Vervang de bestaande dispatch modal met deze versie -->
-<div id="dispatch_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded shadow-lg w-1/3">
-        <h2 id="dispatch_modal_title" class="text-xl font-bold mb-4">Select Employee for Dispatch</h2>
-        <div id="dispatch_modal_content" class="text-gray-700 mb-4">
-            <!-- Employee selection will be dynamically inserted here -->
-        </div>
-        <div class="flex justify-end">
-            <button onclick="closeModal('dispatch_modal')" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2">
-                Cancel
-            </button>
-            <button onclick="confirmDispatch()"
-                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                Confirm Dispatch
-            </button>
+    <div id="dispatch_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded shadow-lg w-1/3">
+            <h2 id="dispatch_modal_title" class="text-xl font-bold mb-4">Select Employee for Dispatch</h2>
+            <div id="dispatch_modal_content" class="text-gray-700 mb-4">
+                <!-- Employee selection will be dynamically inserted here -->
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closeModal('dispatch_modal')" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2">
+                    Cancel
+                </button>
+                <button onclick="confirmDispatch()"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    Confirm Dispatch
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
     <script>
-        // Variables to store current DC info
         let currentDcId = null;
         let currentDcDescription = null;
 
@@ -123,21 +123,17 @@
 
         async function showPackages(centerId, centerDescription) {
             try {
-                console.log('Starting showPackages with:', { centerId, centerDescription });
                 currentDcId = centerId;
                 currentDcDescription = centerDescription;
                 const cityId = document.getElementById('city_filter').value;
 
-                // Update the UI to show a loading state
                 document.getElementById('package-content').innerHTML = `
                     <div class="p-4 text-center">
                         <p>Loading packages...</p>
                     </div>
                 `;
 
-                console.log('Making fetch request to:', `/distribution-center/${centerId}?city_id=${cityId}`);
-
-                const response = await fetch(`/distribution-center/${centerId}?city_id=${cityId}`, {
+                const response = await fetch(`/workspace/distribution-center/${centerId}?city_id=${cityId}`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -145,16 +141,12 @@
                     }
                 });
 
-                console.log('Response status:', response.status);
-
-                // Parse the response
                 const data = await response.json();
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to load packages');
                 }
 
-                console.log('Parsed data:', data);
                 updatePackageDisplay(data, centerDescription);
             } catch (error) {
                 console.error('Error in showPackages:', error);
@@ -166,14 +158,11 @@
             }
         }
 
-
         function updatePackageDisplay(data, centerDescription) {
-            console.log('Updating package display with:', { data, centerDescription });
             document.querySelector('.text-2xl.font-bold').textContent = centerDescription;
-            
+
             let html = `
                 <div class="space-y-6">
-                    <!-- Unassigned Packages Section -->
                     <div class="mb-6">
                         <h2 class="text-xl font-bold mb-4">Unassigned Packages</h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -223,7 +212,6 @@
                         </div>
                     </div>
 
-                    <!-- Assigned Packages Section -->
                     <div>
                         <h2 class="text-xl font-bold mb-4">Assigned Packages</h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -278,7 +266,6 @@
             
             document.getElementById('package-content').innerHTML = html;
 
-            // Add event listeners for select-all checkboxes
             document.querySelectorAll('.select-all-group').forEach(checkbox => {
                 checkbox.addEventListener('change', (e) => {
                     const city = e.target.dataset.city;
@@ -307,9 +294,8 @@
             const modal = document.getElementById('dispatch_modal');
             document.getElementById('dispatch_modal_title').textContent = 'Select Employee for Dispatch';
             
-            // Updated employee list HTML with proper radio buttons
             const employeesList = Array.from(document.querySelectorAll('.employee-item'))
-                .filter(emp => !emp.classList.contains('assigned')) // Filter out already assigned couriers
+                .filter(emp => !emp.classList.contains('assigned'))
                 .map(emp => {
                     const name = emp.querySelector('span').textContent;
                     const id = emp.dataset.employeeId;
@@ -332,7 +318,6 @@
             modal.classList.remove('hidden');
         }
 
-        // Add this new function
         async function unassignSelectedPackages(city) {
             try {
                 const selectedPackages = Array.from(
@@ -344,7 +329,7 @@
                     return;
                 }
 
-                const response = await fetch('/distribution-center/unassign-packages', {
+                const response = await fetch('/workspace/distribution-center/unassign-packages', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -362,7 +347,6 @@
 
                 await showPackages(currentDcId, currentDcDescription);
         
-                // Show previously hidden couriers that are now available
                 document.querySelectorAll('.employee-item.assigned').forEach(item => {
                     item.classList.remove('assigned');
                     item.style.display = '';
@@ -377,14 +361,14 @@
         }
 
         async function confirmDispatch() {
-            const selectedEmployee = document.querySelector('input[name="selected_employee"]:checked');
-            if (!selectedEmployee) {
-                alert('Please select an employee');
-                return;
-            }
-
             try {
-                const response = await fetch('/distribution-center/dispatch-packages', {
+                const selectedEmployee = document.querySelector('input[name="selected_employee"]:checked');
+                if (!selectedEmployee) {
+                    alert('Please select an employee');
+                    return;
+                }
+
+                const response = await fetch('/workspace/distribution-center/dispatch-packages', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -397,46 +381,111 @@
                     })
                 });
 
-                const data = await response.json();
-        
                 if (!response.ok) {
-                    throw new Error(data.message || 'Failed to dispatch packages');
+                    throw new Error('Failed to dispatch packages');
                 }
 
-                // Update UI without full page refresh
-                const employeeItem = document.querySelector(`.employee-item[data-employee-id="${selectedEmployee.value}"]`);
-                if (employeeItem) {
-                    employeeItem.classList.add('assigned');
-                    employeeItem.style.display = 'none'; // Hide assigned courier
+                const data = await response.json();
+
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Invalid JSON response');
                 }
 
+                alert(data.message || 'Packages successfully assigned');
                 closeModal('dispatch_modal');
                 await showPackages(currentDcId, currentDcDescription);
-                alert('Packages successfully assigned to courier');
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Dispatch error:', error);
                 alert(error.message);
             }
         }
 
+        async function refreshCourierList() {
+            try {
+                const response = await fetch('/workspace/distribution-center/couriers', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to refresh courier list');
+                }
+
+                const couriers = await response.json();
+            } catch (error) {
+                console.error('Error refreshing courier list:', error);
+            }
+        }
+
+        async function viewEmployee(employeeId, employeeName) {
+            const modal = document.getElementById('view_modal');
+            document.getElementById('view_modal_title').textContent = `Courier: ${employeeName}`;
+            document.getElementById('view_modal_content').innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`/workspace/distribution-center/courier-route/${employeeId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('API Error:', data);
+                    throw new Error(data.message || 'Failed to fetch courier details');
+                }
+
+                const routeDistance = data.route_distance || 0;
+                const packages = Array.isArray(data.packages) ? data.packages : [];
+                const uniquePackages = Array.from(new Map(packages.map(pkg => [pkg.reference, pkg])).values());
+                let packageList = uniquePackages.map(pkg => `
+                    <li class="p-2 border-b">
+                        <strong>Reference:</strong> ${pkg.reference} <br>
+                        <strong>Destination:</strong> ${pkg.destination_latitude && pkg.destination_longitude 
+                            ? `(${pkg.destination_latitude}, ${pkg.destination_longitude})` 
+                            : 'Unknown'}
+                    </li>
+                `).join('');
+                if (!uniquePackages.length) packageList = '<p>No packages assigned</p>';
+
+                document.getElementById('view_modal_content').innerHTML = `
+                    <p><strong>Route Distance:</strong> ${routeDistance.toFixed(2)} km</p>
+                    <p><strong>Assigned Packages:</strong></p>
+                    <ul class="overflow-y-auto max-h-60">${packageList}</ul>
+                `;
+            } catch (error) {
+                console.error('Error fetching courier details:', error);
+                document.getElementById('view_modal_content').innerHTML = '<p>Error loading details</p>';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
         function toggleMenu(button) {
+            // Sluit alle andere menu's
             document.querySelectorAll('.dots-menu').forEach(menu => menu.classList.add('hidden'));
+
+            // Toon/verberg het menu dat bij de knop hoort
             const menu = button.nextElementSibling;
             menu.classList.toggle('hidden');
             event.stopPropagation();
         }
 
         document.addEventListener('click', () => {
+            // Sluit alle menu's wanneer ergens anders wordt geklikt
             document.querySelectorAll('.dots-menu').forEach(menu => menu.classList.add('hidden'));
         });
-
-        function viewEmployee(employeeId, employeeName) {
-            const modal = document.getElementById('view_modal');
-            document.getElementById('view_modal_title').textContent = `Employee: ${employeeName}`;
-            document.getElementById('view_modal_content').textContent = `Details for Employee ID: ${employeeId}`;
-            modal.classList.remove('hidden');
-        }
 
         function dispatchEmployee(employeeId, employeeName) {
             const modal = document.getElementById('dispatch_modal');
@@ -445,8 +494,39 @@
             modal.classList.remove('hidden');
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+        async function fetchCourierPackages(courierId, page = 1) {
+            try {
+                const response = await fetch(`/workspace/distribution-center/courier-route/${courierId}?page=${page}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to fetch courier packages');
+                }
+
+                // Update de pakkettenlijst
+                updatePackageList(data.packages.data);
+
+                // Update de paginering
+                updatePagination(data.packages);
+            } catch (error) {
+                console.error('Error fetching courier packages:', error);
+            }
+        }
+
+        function updatePackageList(packages) {
+            const packageList = document.getElementById('package-list');
+            packageList.innerHTML = packages.map(pkg => `
+                <li>${pkg.reference} - ${pkg.destination_location_id}</li>
+            `).join('');
+        }
+
+        function updatePagination(pagination) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = `
+                <button ${pagination.current_page === 1 ? 'disabled' : ''} onclick="fetchCourierPackages(${pagination.current_page - 1})">Previous</button>
+                <span>Page ${pagination.current_page} of ${pagination.last_page}</span>
+                <button ${pagination.current_page === pagination.last_page ? 'disabled' : ''} onclick="fetchCourierPackages(${pagination.current_page + 1})">Next</button>
+            `;
         }
     </script>
 </x-app-layout>
