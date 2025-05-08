@@ -211,7 +211,7 @@ use App\Http\Controllers\TicketController;
 
             // Notifications
             Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('workspace.notifications');
-           
+
             Route::get('/workspace/get-pending-requests-for-day', [VacationController::class, 'getPendingRequestsForDay'])->name('workspace.getPendingRequestsForDay');
 
             Route::get('/workspace/get-pending-vacations', [VacationController::class, 'getPendingVacations']);
@@ -389,7 +389,7 @@ Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name
 
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
 ->name('invoices.myinvoices');
-
+Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
 // Tickets
 
 Route::get('/tickets', [TicketController::class, 'mytickets'])
@@ -430,9 +430,6 @@ Route::post('/tokens/create', function (Request $request) {
 })->name("tokens.create");
 
 // API End
-
-Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
-
 
 // Route for fetching pending vacations
 Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
