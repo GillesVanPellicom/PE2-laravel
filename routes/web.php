@@ -34,6 +34,7 @@ use App\Http\Controllers\TicketController;
         ->group(function () {
             //Workspace Index
             Route::get('/', function () {
+
                 if (auth()->user()->hasPermissionTo('*')) {
                     return view('real-homepage');
                 } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
@@ -42,8 +43,8 @@ use App\Http\Controllers\TicketController;
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
                     return redirect()->route('workspace.pickup.dashboard');
-                } elseif (auth()->user()->hasAnyPermission(["airport.view"])) {
-                    return redirect()->route('workspace.airport.index');
+                } elseif (auth()->user()->hasPermissionTo("airport.view")) {
+                    return redirect()->route('workspace.airports');
                 } elseif (auth()->user()->hasAnyPermission(["assign.courier"])) {
                     return redirect()->route('workspace.dispatcher.index');
                 }else {
