@@ -24,9 +24,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $contractStartTime = microtime(true);
-        ConsoleHelper::task(str_pad("[User]", 10, ' ', STR_PAD_RIGHT)." Creating user: ".$this->faker->firstName().' '.$this->faker->lastName(),
-            function () {});
+
 
         return [
             'first_name' => fake()->firstName(),
@@ -42,7 +40,6 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'birth_date' => fake()->dateTimeBetween('-90 years', '-18 years'),
         ];
-        $executionTimes[] = (microtime(true) - $contractStartTime) * 1000;
     }
 
     /**
