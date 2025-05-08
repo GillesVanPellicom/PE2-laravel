@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Mockery\Expectation;
 
 class CourierController extends Controller
 {
@@ -77,6 +78,7 @@ class CourierController extends Controller
                 //$nextMove = $package->movements()->find($currentMove->next_movement);
                 //$nextStop = is_null($currentMove->next_movement) ? LocationController::getAddressString($currentMove->node) : $currentMove;
                 return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to"))->render()]);
+
             case 'UNDO':
                 $recentSuccess = session()->get('recent_success', []);
                 if (!isset($recentSuccess[$package->id])) {
@@ -96,24 +98,43 @@ class CourierController extends Controller
                     }
                 }
                 return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => "You cannot undo a package delivery."])->render()], 400);
+
             case 'RETURN':
+                try {
+                    $package->return();
+                    return response()->json(["success" => true, "message" => "Successfully marked as returning."]);
+                } catch (Exception $e) {
+                    return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
+                }
             case 'FAILED':
-                return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => "This operation is not yet supported."])->render()], 400);
+                try {
+                    [$status, $message] = $package->failDelivery();
+                    if ($status) {
+                        return response()->json(["success" => true, "message" => $message]);
+                    }
+                    return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $message])->render()], 400);
+                
+                } catch (Exception $e) {
+                    return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
+                }            
+            case "IN":
+            case "OUT":
+                try {
+                    [$status, $message] = $package->move(MoveOperationType::from($mode));
+                    if ($status) {
+                        $successList = session()->get('recent_success', []);
+                        $successList[$package->id] = $mode;
+                        session()->put('recent_success', $successList);
+                        return response()->json(["success" => true, "message" => $message]);
+                    }
+                    return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $message])->render()], 400);
+                
+                } catch (Exception $e) {
+                    return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
+                }
+                
             default:
                 break;
-        }
-
-        try {
-            [$status, $message] = $package->move(MoveOperationType::from($mode));
-            if ($status) {
-                $successList = session()->get('recent_success', []);
-                $successList[$package->id] = $mode;
-                session()->put('recent_success', $successList);
-                return response()->json(["success" => true, "message" => $message]);
-            }
-            return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $message])->render()], 400);
-        } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
         }
     }
 

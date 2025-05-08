@@ -114,7 +114,6 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         ConsoleHelper::info('Initializing roles and permissions');
-        ConsoleHelper::info('Starting transaction');
         try {
             // Place all logic in a transaction to ensure atomicity
             DB::transaction(function () {

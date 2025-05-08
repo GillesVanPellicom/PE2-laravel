@@ -7,7 +7,7 @@ let actionText = {
     OUT: "Scan Package Out",
     DELIVER: "Deliver Package",
     RETURN: "Mark a package for return",
-    FAILED: "Mark the delivery as failed"
+    FAILED: "Mark the delivery as failed",
 };
 
 function toggleDetails(div) {
@@ -61,9 +61,18 @@ function undoAction(id) {
     });
 }
 
+function confirmAction(id) {
+    callAction(id, "RETURN", (data) => {
+        closeInfoModal();
+        if (data.success) return;
+        document.getElementById("infoModal").innerHTML = data.message;
+        openInfoModal();
+    });
+}
+
 function showCheckmark() {
     const checkmarkContainer = document.createElement("div");
-    checkmarkContainer.id = "checkmark"
+    checkmarkContainer.id = "checkmark";
     checkmarkContainer.style.position = "absolute";
     checkmarkContainer.style.top = "50%";
     checkmarkContainer.style.left = "50%";
@@ -92,13 +101,14 @@ function showCheckmark() {
     checkmarkLine2.style.transform = "rotate(45deg)";
     checkmarkLine2.style.borderRadius = "2px";
 
-
     checkmarkContainer.appendChild(checkmarkLine1);
     checkmarkContainer.appendChild(checkmarkLine2);
     document.getElementById("qr-shaded-region").appendChild(checkmarkContainer);
 
     setTimeout(() => {
-        document.getElementById("qr-shaded-region").removeChild(checkmarkContainer);
+        document
+            .getElementById("qr-shaded-region")
+            .removeChild(checkmarkContainer);
     }, 2000);
 }
 
@@ -118,8 +128,7 @@ function callAction(id, mode, callback) {
             return response.json();
         })
         .then((data) => {
-            if (data.success)
-                showCheckmark();
+            if (data.success) showCheckmark();
             callback(data);
         });
 }
@@ -140,6 +149,14 @@ function scan(message) {
                 div.style.backgroundColor = "white";
             }
         }, 500);
+        if (usedMODE == "RETURN") {
+            document.getElementById("infoModal").innerHTML =
+                '<div class="bg-white p-6 rounded-lg shadow-lg w-80 relative flex flex-col"><h2 class="text-xl font-semibold text-center mb-3"> Are you sure you want to mark this package as returned? </h2> <button class="flex flex-col items-center justify-center bg-red-800 hover:bg-red-900 text-white p-4 rounded-xl focus:outline-none" onclick="confirmAction(' +
+                message +
+                ')"> Yes </button></h2> <button class="flex flex-col items-center justify-center bg-gray-800 mt-2 hover:bg-gray-900 text-white p-4 rounded-xl focus:outline-none" onclick="closeInfoModal()"> No </button></div>';
+            openInfoModal();
+            return;
+        }
         callAction(message, usedMODE, (data) => {
             let xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {

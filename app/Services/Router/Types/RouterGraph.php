@@ -2,13 +2,13 @@
 
 namespace App\Services\Router\Types;
 
-use App\Models\Address;
-use App\Services\Router\GeoMath;
+use App\Services\Router\Helpers\GeoMath;
+use App\Services\Router\Helpers\VehicleTypeResolver;
 use App\Services\Router\Types\Exceptions\EdgeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\EdgeNotFoundException;
 use App\Services\Router\Types\Exceptions\InvalidCoordinateException;
-use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\InvalidNodeIDException;
+use App\Services\Router\Types\Exceptions\InvalidRouterArgumentException;
 use App\Services\Router\Types\Exceptions\NodeAlreadyExistsException;
 use App\Services\Router\Types\Exceptions\NodeNotFoundException;
 use App\Services\Router\Types\Exceptions\SelfLoopException;
@@ -17,10 +17,12 @@ use Carbon\Carbon;
 class RouterGraph {
   private array $nodes;
   private array $edges;
+  private VehicleTypeResolver $vehicleTypeResolver;
 
   public function __construct() {
     $this->nodes = [];
     $this->edges = [];
+    $this->vehicleTypeResolver = new VehicleTypeResolver();
   }
 
   /**
@@ -162,7 +164,13 @@ class RouterGraph {
    * @throws NodeNotFoundException
    * @throws EdgeAlreadyExistsException
    */
-  public function addEdge(string $startNodeID, string $endNodeID): void {
+  public function addEdge(
+    string $startNodeID,
+    string $endNodeID,
+    ?\DateTime $validFrom = null,
+    ?\DateTime $validTo = null,
+    ?string $vehicleType = null
+  ): void {
     // Check if the start node exists
     if (!isset($this->nodes[$startNodeID])) {
       throw new NodeNotFoundException($startNodeID);
@@ -195,10 +203,29 @@ class RouterGraph {
       $endNode->getLong(CoordType::RADIAN)
     );
 
-    // Add the edge to the graph
+    // Set default values for validFrom and validTo if not provided
+    $validFrom = $validFrom ?? new \DateTime('2000-01-01');
+    $validTo = $validTo ?? new \DateTime('2100-01-01');
+
+    // Determine vehicle type
+    $resolvedVehicleType = $vehicleType !== null
+      ? VehicleType::from($vehicleType)
+      : $this->vehicleTypeResolver->resolveVehicleTypeFromNodeIDs($startNodeID, $endNodeID);
+
+    // Add the edge to the graph with metadata
     // Add both directions to the edge list to make the edge bidirectional
-    $this->edges[$startNodeID][$endNodeID] = $weight;
-    $this->edges[$endNodeID][$startNodeID] = $weight;
+    $this->edges[$startNodeID][$endNodeID] = [
+      'weight' => $weight,
+      'validFrom' => $validFrom,
+      'validTo' => $validTo,
+      'vehicleType' => $resolvedVehicleType->value
+    ];
+    $this->edges[$endNodeID][$startNodeID] = [
+      'weight' => $weight,
+      'validFrom' => $validFrom,
+      'validTo' => $validTo,
+      'vehicleType' => $resolvedVehicleType->value
+    ];
   }
 
   /**
@@ -229,15 +256,33 @@ class RouterGraph {
    * Get the neighbors of a node
    *
    * @param  string  $NodeID  ID of the node
+   * @param  \DateTime|null  $currentTime  Current time to check edge validity
    * @return array Array of neighbors
    * @throws NodeNotFoundException
    */
-  public function getNeighbors(string $NodeID): array {
+  public function getNeighbors(string $NodeID, ?\DateTime $currentTime = null): array {
     // Check if the node exists
     if (!isset($this->nodes[$NodeID])) {
       throw new NodeNotFoundException($NodeID);
     }
-    return $this->edges[$NodeID];
+
+    // If no current time is provided, return all neighbors
+    if ($currentTime === null) {
+      return $this->edges[$NodeID];
+    }
+
+    // Filter neighbors based on time validity
+    $validNeighbors = [];
+    foreach ($this->edges[$NodeID] as $neighborID => $edgeData) {
+      // Check if the edge is valid at the current time
+      if ($edgeData['validFrom'] <= $currentTime && $currentTime <= $edgeData['validTo']) {
+        // Use the vehicle type from the edge data
+        // No need to override based on node IDs as this is now handled by VehicleTypeResolver
+        $validNeighbors[$neighborID] = $edgeData;
+      }
+    }
+
+    return $validNeighbors;
   }
 
   /**
@@ -246,90 +291,90 @@ class RouterGraph {
    * @return array
    */
 
-public function printGraph(): void {
-  echo "\033[1;34m=== Nodes ===\033[0m\n";
-  echo "╔═══════════════════════════════╦════════════════════════════════════════╦════════════╦═════════════╦══════════════════════╦═══════╦══════╗\n";
-  echo "║ \033[1mID\033[0m                            ║ \033[1mDescription\033[0m                            ║ \033[1mLatitude\033[0m   ║ \033[1mLongitude\033[0m   ║ \033[1mType\033[0m                 ║ \033[1mEntry\033[0m ║ \033[1mExit\033[0m ║\n";
-  echo "╠═══════════════════════════════╬════════════════════════════════════════╬════════════╬═════════════╬══════════════════════╬═══════╬══════╣\n";
+  public function printGraph(): void {
+    echo "\033[1;34m=== Nodes ===\033[0m\n";
+    echo "╔═══════════════════════════════╦════════════════════════════════════════╦════════════╦═════════════╦══════════════════════╦═══════╦══════╗\n";
+    echo "║ \033[1mID\033[0m                            ║ \033[1mDescription\033[0m                            ║ \033[1mLatitude\033[0m   ║ \033[1mLongitude\033[0m   ║ \033[1mType\033[0m                 ║ \033[1mEntry\033[0m ║ \033[1mExit\033[0m ║\n";
+    echo "╠═══════════════════════════════╬════════════════════════════════════════╬════════════╬═════════════╬══════════════════════╬═══════╬══════╣\n";
 
-  foreach ($this->nodes as $node) {
-    $node->printNode();
-  }
+    foreach ($this->nodes as $node) {
+      $node->printNode();
+    }
 
-  echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n\n\n\n";
+    echo "╚═══════════════════════════════╩════════════════════════════════════════╩════════════╩═════════════╩══════════════════════╩═══════╩══════╝\n\n\n\n";
 
-  echo "\033[1;34m=== Edges ===\033[0m\n";
+    echo "\033[1;34m=== Edges ===\033[0m\n";
 
-  // Collect all unique edges
-  $edges = [];
-  $printedEdges = [];
-  foreach ($this->edges as $startNodeID => $neighbors) {
-    foreach ($neighbors as $endNodeID => $weight) {
-      $edgeKey = min($startNodeID, $endNodeID).'-'.max($startNodeID, $endNodeID);
-      if (!isset($printedEdges[$edgeKey])) {
-        $edges[] = [$startNodeID, $endNodeID, $weight];
-        $printedEdges[$edgeKey] = true;
+    // Collect all unique edges
+    $edges = [];
+    $printedEdges = [];
+    foreach ($this->edges as $startNodeID => $neighbors) {
+      foreach ($neighbors as $endNodeID => $weight) {
+        $edgeKey = min($startNodeID, $endNodeID).'-'.max($startNodeID, $endNodeID);
+        if (!isset($printedEdges[$edgeKey])) {
+          $edges[] = [$startNodeID, $endNodeID, $weight];
+          $printedEdges[$edgeKey] = true;
+        }
       }
     }
+
+    // Sort edges for consistency (optional)
+    usort($edges, function ($a, $b) {
+      return strcmp($a[0].$a[1], $b[0].$b[1]);
+    });
+
+    // Calculate split point
+    $totalEdges = count($edges);
+    $midPoint = (int) ($totalEdges / 2);
+    $hasOdd = ($totalEdges % 2 != 0);
+
+    // Table borders - adjusted with correct spacing
+    $topBorder = "╔═══════════════════════════╦═════╦═══════════════════════════╦═════════════════╗";
+    $headerBorder = "╠═══════════════════════════╬═════╬═══════════════════════════╬═════════════════╣";
+    $bottomBorder = "╚═══════════════════════════╩═════╩═══════════════════════════╩═════════════════╝";
+
+    // Print first table header - with exactly 2 spaces between tables
+    echo $topBorder."  ".$topBorder."\n";
+
+    // Print column headers - correctly spaced
+    echo "║ \033[1mFrom (ID)\033[0m                 ║  \033[1mσ\033[0m  ║ \033[1mTo (ID)\033[0m                   ║ \033[1mWeight (km)\033[0m     ║  ║ \033[1mFrom (ID)\033[0m                 ║  \033[1mσ\033[0m  ║ \033[1mTo (ID)\033[0m                   ║ \033[1mWeight (km)\033[0m     ║\n";
+
+    // Print header separator
+    echo $headerBorder."  ".$headerBorder."\n";
+
+    // Print two columns side by side
+    for ($i = 0; $i < $midPoint; $i++) {
+      $edge1 = $edges[$i];
+      $edge2 = $edges[$i + $midPoint];
+
+      // Format with orange color and exactly match the header spacing
+      printf(
+        "║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║  ║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║\n",
+        $edge1[0],
+        $edge1[1],
+        $edge1[2],
+        $edge2[0],
+        $edge2[1],
+        $edge2[2]
+      );
+    }
+
+    // Handle the case if totalEdges is odd (left-align lone entry in first column)
+    if ($hasOdd) {
+      $lastEdge = $edges[$totalEdges - 1];
+
+      printf(
+        "║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║  ║ %-21s     ║  ↔  ║ %-21s     ║ %-15.4f ║\n",
+        $lastEdge[0],
+        $lastEdge[1],
+        $lastEdge[2],
+        "",
+        "",
+        0.0000
+      );
+    }
+
+    // Print table footer
+    echo $bottomBorder."  ".$bottomBorder."\n\n\n\n";
   }
-
-  // Sort edges for consistency (optional)
-  usort($edges, function ($a, $b) {
-    return strcmp($a[0].$a[1], $b[0].$b[1]);
-  });
-
-  // Calculate split point
-  $totalEdges = count($edges);
-  $midPoint = (int) ($totalEdges / 2);
-  $hasOdd = ($totalEdges % 2 != 0);
-
-  // Table borders - adjusted with correct spacing
-  $topBorder = "╔═══════════════════════════╦═════╦═══════════════════════════╦═════════════════╗";
-  $headerBorder = "╠═══════════════════════════╬═════╬═══════════════════════════╬═════════════════╣";
-  $bottomBorder = "╚═══════════════════════════╩═════╩═══════════════════════════╩═════════════════╝";
-
-  // Print first table header - with exactly 2 spaces between tables
-  echo $topBorder."  ".$topBorder."\n";
-
-  // Print column headers - correctly spaced
-  echo "║ \033[1mFrom (ID)\033[0m                 ║  \033[1mσ\033[0m  ║ \033[1mTo (ID)\033[0m                   ║ \033[1mWeight (km)\033[0m     ║  ║ \033[1mFrom (ID)\033[0m                 ║  \033[1mσ\033[0m  ║ \033[1mTo (ID)\033[0m                   ║ \033[1mWeight (km)\033[0m     ║\n";
-
-  // Print header separator
-  echo $headerBorder."  ".$headerBorder."\n";
-
-  // Print two columns side by side
-  for ($i = 0; $i < $midPoint; $i++) {
-    $edge1 = $edges[$i];
-    $edge2 = $edges[$i + $midPoint];
-
-    // Format with orange color and exactly match the header spacing
-    printf(
-      "║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║  ║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║\n",
-      $edge1[0],
-      $edge1[1],
-      $edge1[2],
-      $edge2[0],
-      $edge2[1],
-      $edge2[2]
-    );
-  }
-
-  // Handle the case if totalEdges is odd (left-align lone entry in first column)
-  if ($hasOdd) {
-    $lastEdge = $edges[$totalEdges - 1];
-
-    printf(
-      "║ \033[38;2;255;140;0m%-21s\033[0m     ║  ↔  ║ \033[38;2;255;140;0m%-21s\033[0m     ║ %-15.4f ║  ║ %-21s     ║  ↔  ║ %-21s     ║ %-15.4f ║\n",
-      $lastEdge[0],
-      $lastEdge[1],
-      $lastEdge[2],
-      "",
-      "",
-      0.0000
-    );
-  }
-
-  // Print table footer
-  echo $bottomBorder."  ".$bottomBorder."\n\n\n\n";
-}
 }

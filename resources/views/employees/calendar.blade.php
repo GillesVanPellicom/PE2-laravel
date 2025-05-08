@@ -590,34 +590,32 @@
                         
                         <!-- Notification bell -->
                         <div class="relative">
-                            <button class="p-3 rounded-full glassmorphism hover:shadow-lg transition-all" onclick="toggleNotifications()">
+                            <button id="toggleNotifications" class="p-3 rounded-full glassmorphism hover:shadow-lg transition-all">
                                 <span class="bell-pulse inline-block">
                                     <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                     </svg>
                                 </span>
-                                <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-lg animate-pulse hidden">0</span>
+                                <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-lg hidden">0</span>
                             </button>
-                            
-                            <!-- Notification dropdown -->
+
                             <div id="notificationDropdown" class="absolute right-0 mt-3 w-80 glassmorphism hidden z-50 animate__animated animate__fadeInDown">
                                 <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                                     <h3 class="font-semibold text-gray-800 dark:text-white">Notifications</h3>
-                                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="toggleNotifications()">
+                                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="document.getElementById('notificationDropdown').classList.add('hidden')">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
-                                <div class="max-h-96 overflow-y-auto p-3">
-                                    <!-- Notifications will be populated here -->
+                                <div class="space-y-3">
+                                    <!-- Notifications will be dynamically populated here -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
         
         <!-- Main content area -->
         <div class="max-w-7xl mx-auto">
@@ -783,6 +781,8 @@
                     <div id="calendar" class="min-h-[600px]"></div>
                 </div>
             </div>
+
+            
         </div>
     </div>
 
@@ -1047,58 +1047,11 @@
 
             // Fetch notifications function
             function fetchNotifications() {
-                fetch('/workspace/notifications')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const container = notificationDropdown.querySelector('.max-h-96');
-                        container.innerHTML = '';
-
-                        if (data.length === 0) {
-                            container.innerHTML = '<div class="text-gray-500 text-sm">No notifications</div>';
-                            notificationBadge.classList.add('hidden');
-                            return;
-                        }
-
-                        data.forEach(notification => {
-                            const notificationItem = document.createElement('div');
-                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600 mb-2';
-                            notificationItem.innerHTML = `
-                                <div class="flex justify-between items-center">
-                                    <p class="text-gray-800 dark:text-gray-200 font-medium">
-                                        ${notification.message}
-                                    </p>
-                                    <button class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition" onclick="markNotificationAsRead(${notification.id})">Mark as Read</button>
-                                </div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    ${new Date(notification.created_at).toLocaleString()}
-                                </p>
-                            `;
-                            container.appendChild(notificationItem);
-                        });
-
-                        notificationBadge.textContent = data.length;
-                        notificationBadge.classList.remove('hidden');
-
-                        // Ensure the notification dropdown is visible if there are notifications
-                        if (data.length > 0) {
-                            notificationDropdown.classList.remove('hidden');
-                        }
-                    })
-                    .catch(error => console.error('Error fetching notifications:', error));
-            }
-
-            function markNotificationAsRead(notificationId) {
-                fetch(`/workspace/notifications/${notificationId}/read`, {
-                    method: 'PUT',
+                fetch('/workspace/notifications', {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -1106,59 +1059,71 @@
                     }
                     return response.json();
                 })
-                .then(() => {
-                    // Remove the notification element from the dropdown
-                    const notificationElement = document.querySelector(`[onclick="markNotificationAsRead(${notificationId})"]`).parentElement;
-                    notificationElement.remove();
+                .then(data => {
+                    const notificationDropdown = document.getElementById('notificationDropdown');
+                    const notificationBadge = document.getElementById('notificationBadge');
+                    const notificationList = notificationDropdown.querySelector('.space-y-3');
 
-                    // Update the unread count
-                    let unreadCount = parseInt(notificationBadge.textContent);
-                    unreadCount = Math.max(0, unreadCount - 1);
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.classList.toggle('hidden', unreadCount === 0);
+                    notificationList.innerHTML = ''; // Clear existing notifications
 
-                    // Show success toast
-                    showToast('Notification marked as read', 'success');
+                    if (data.length === 0) {
+                        notificationList.innerHTML = '<div class="text-gray-500 text-sm">No unread notifications</div>';
+                        notificationBadge.classList.add('hidden');
+                        return;
+                    }
+
+                    notificationBadge.textContent = data.length;
+                    notificationBadge.classList.remove('hidden');
+
+                    data.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                        notificationItem.innerHTML = `
+                            <p class="text-gray-800 dark:text-gray-200 font-medium">${notification.message}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">${notification.created_at}</p>
+                            <button class="mt-2 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition" onclick="markNotificationAsRead(${notification.id})">Mark as Read</button>
+                        `;
+                        notificationList.appendChild(notificationItem);
+                    });
                 })
-                .catch(error => console.error('Error marking notification as read:', error));
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
             }
 
-            // Attach the function to the global window object
-            window.markNotificationAsRead = markNotificationAsRead;
+            // Mark a notification as read
+            window.markNotificationAsRead = function (notificationId) {
+                console.log(`Marking notification ${notificationId} as read`); // Debugging log
+                fetch(`/workspace/notifications/${notificationId}/mark-as-read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Notification marked as read:', data); // Debugging log
+                    fetchNotifications(); // Refresh the dropdown
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+            };
 
-            function fetchHolidayStatusNotifications() {
-                fetch('/workspace/employee-notifications')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const container = document.querySelector('#notificationDropdown .max-h-96');
-                        container.innerHTML = '';
+            // Fetch notifications on page load
+            fetchNotifications();
 
-                        if (data.length === 0) {
-                            container.innerHTML = '<div class="text-gray-500 text-sm">No holiday status updates</div>';
-                            return;
-                        }
-
-                        data.forEach(notification => {
-                            const notificationItem = document.createElement('div');
-                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
-                            notificationItem.innerHTML = `
-                                <p class="text-gray-800 dark:text-gray-200 font-medium">
-                                    ${notification.message}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    ${new Date(notification.created_at).toLocaleString()}
-                                </p>
-                            `;
-                            container.appendChild(notificationItem);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching holiday status notifications:', error));
-            }
+            // Toggle notification dropdown
+            document.getElementById('toggleNotifications').addEventListener('click', function () {
+                const dropdown = document.getElementById('notificationDropdown');
+                dropdown.classList.toggle('hidden');
+            });
 
             // Show toast message with improved animation
             function showToast(message, type = 'success') {
@@ -1219,7 +1184,13 @@
 
             let selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
             let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-            let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+            
+            @if(auth()->user()->hasRole('admin'))
+                let remainingHolidays = 0;
+            @else
+                let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+            @endif
+            
             let sickDaysTaken = selectedSickDays.size;
             let currentDate = null;
 
@@ -1345,35 +1316,45 @@
                 document.getElementById('wholeDayBtn').onclick = function () {
                     selectedHolidays[date] = 'Whole Day';
                     addEvent(date, "holiday", "Whole Day");
-                    remainingHolidays--;
                     closeModal();
-                    updateCounters();
-                    
+                    updateCounters(); // Do not decrement remainingHolidays here
                     showToast('Whole day holiday added', 'success');
                 };
 
                 document.getElementById('firstHalfBtn').onclick = function () {
                     selectedHolidays[date] = 'First Half';
                     addEvent(date, "holiday", "First Half");
-                    remainingHolidays -= 0.5;
                     closeModal();
-                    updateCounters();
-                    
+                    updateCounters(); // Do not decrement remainingHolidays here
                     showToast('First half holiday added', 'success');
                 };
 
                 document.getElementById('secondHalfBtn').onclick = function () {
                     selectedHolidays[date] = 'Second Half';
                     addEvent(date, "holiday", "Second Half");
-                    remainingHolidays -= 0.5;
                     closeModal();
-                    updateCounters();
-                    
+                    updateCounters(); // Do not decrement remainingHolidays here
                     showToast('Second half holiday added', 'success');
                 };
 
-                // Close the modal
-                document.getElementById('closeModalBtn').onclick = closeModal;
+                // Add a "Remove Date" button to the modal
+                const removeDateBtn = document.createElement('button');
+                removeDateBtn.className = 'btn btn-danger mt-4 w-full';
+                removeDateBtn.textContent = 'Remove Date';
+                removeDateBtn.onclick = function () {
+                    removeEvent(date);
+                    delete selectedHolidays[date];
+                    selectedSickDays.delete(date);
+                    updateCounters();
+                    closeModal();
+                    showToast('Date removed from selection', 'success');
+                };
+
+                // Append the button to the modal
+                const modalContent = eventModal.querySelector('.modal-content .p-6');
+                if (!modalContent.querySelector('.btn-danger')) {
+                    modalContent.appendChild(removeDateBtn);
+                }
 
                 localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
                 localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
@@ -1392,6 +1373,12 @@
                     sickStartDate.value = '';
                     sickEndDate.value = '';
                 }, 500);
+
+                // Remove the "Remove Date" button when closing the modal
+                const removeDateBtn = eventModal.querySelector('.btn-danger');
+                if (removeDateBtn) {
+                    removeDateBtn.remove();
+                }
             }
 
             // Create enhanced confetti effect
@@ -1652,7 +1639,7 @@
                 const notificationDropdown = document.getElementById('notificationDropdown');
                 notificationDropdown.classList.toggle('hidden');
                 if (!notificationDropdown.classList.contains('hidden')) {
-                    fetchHolidayStatusNotifications();
+                    fetchNotifications();
                 }
             };
             
@@ -1701,7 +1688,11 @@
                     // Reset variables
                     selectedHolidays = {};
                     selectedSickDays = new Set();
-                    remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+                    @if(auth()->user()->hasRole('admin'))
+                        let remainingHolidays = 0;
+                    @else
+                        let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+                    @endif
                     sickDaysTaken = 0;
                     
                     // Update localStorage
@@ -1758,12 +1749,30 @@
                         return response.json();
                     })
                     .then(data => {
-                        alert(data.message);
+                        // Deduct remaining holidays only after the request is successfully saved
+                        Object.values(selectedHolidays).forEach(dayType => {
+                            if (dayType === 'Whole Day') {
+                                remainingHolidays -= 1;
+                            } else {
+                                remainingHolidays -= 0.5;
+                            }
+                        });
+
+                        // Reset selected holidays and sick days
+                        selectedHolidays = {};
+                        selectedSickDays.clear();
+
+                        // Update localStorage and UI
+                        localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
+                        localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
+                        updateCounters();
+
+                        showToast(data.message, 'success');
                         calendar.refetchEvents();
                     })
                     .catch(error => {
                         console.error('Error saving requests:', error);
-                        alert(error.message || 'Failed to save requests. Please try again.');
+                        showToast('Failed to save requests. Please try again.', 'error');
                     });
             });
             
@@ -1774,9 +1783,10 @@
             
             // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
-                if (!event.target.closest('#notificationDropdown') && 
-                    !event.target.closest('[onclick="toggleNotifications()"]')) {
-                    notificationDropdown.classList.add('hidden');
+                const dropdown = document.getElementById('notificationDropdown');
+                const toggleButton = document.getElementById('toggleNotifications');
+                if (!dropdown.contains(event.target) && !toggleButton.contains(event.target)) {
+                    dropdown.classList.add('hidden');
                 }
             });
             
