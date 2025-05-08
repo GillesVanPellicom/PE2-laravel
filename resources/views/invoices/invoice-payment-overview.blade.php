@@ -17,8 +17,7 @@
         <div class="border border-gray-200 p-3 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
             <div class="flex justify-between items-center">
                 <div>
-                    <h3 class="font-medium">Invoice #{{ $invoice->id }}</h3>
-                    <p class="text-sm text-gray-600">Amount: €{{ number_format($invoice->total_amount, 2) }}</p>
+                    <h3 class="font-medium">Invoice #{{ $invoice->reference }}</h3>
                     <p class="text-xs text-gray-500">Due: {{ \Carbon\Carbon::parse($invoice->expiry_date)->format('Y-m-d') }}</p>
                     <p class="text-xs text-gray-500">Company: {{ $invoice->company->company_name }}</p>
                 </div>
@@ -59,9 +58,9 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <h3 class="font-medium">Payment{{$payment->reference}}</h3>
-                                <p class="text-sm text-gray-600">Amount: €1,750.00</p>
-                                <p class="text-xs text-gray-500">Received: 2025-05-18</p>
-                                <p class="text-xs text-blue-600">Ref: #1002</p>
+                                <p class="text-sm text-gray-600">{{$paymet->amount}}</p>
+                                <p class="text-xs text-gray-500">{{$paymet->created_at}}</p>
+                                <p class="text-xs text-blue-600">Ref: {{$paymet->reference}}</p>
                             </div>
                             <div class="h-4 w-4 rounded-full bg-green-500"></div>
                         </div>
