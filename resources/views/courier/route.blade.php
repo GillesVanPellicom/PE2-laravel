@@ -116,7 +116,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             if (route.length === 0) return;
 
-            const map = L.map('map').setView(start, 13);
+            const map = L.map('map').setView((start.length > 0 ? start : [route[0].latitude, route[0].longitude]), 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -124,8 +124,7 @@
             }).addTo(map);
 
             let coordinates = route.map(location => [location.latitude, location.longitude]);
-
-            if (start != [] && end != []){
+            if (start.length > 0 && end.length > 0){
                 coordinates.unshift(start);
                 coordinates.push(end);
                 L.marker(start)
@@ -150,7 +149,6 @@
                 fetch(osrmUrl)
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
                         if (data.trips && data.trips.length > 0) {
                             const routeData = data.trips[0];
                             const routeCoordinates = routeData.geometry.coordinates.map(coord => coord.reverse());
