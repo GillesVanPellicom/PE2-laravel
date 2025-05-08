@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder {
       CourierSeeder::class,
       TicketSeeder::class,
       PackageMovementSeeder::class,
+      CourierRouteSeeder::class,
     ]);
 
   }

@@ -18,7 +18,12 @@ class CourierRouteController extends Controller
     public function showRoute()
     {
         // Haal de ingelogde courier op
+        
         $courierId = auth()->user()->employee->id;
+        $courierRoute = auth()->user()->employee->courierRoute;
+        //dd($courierRoute);
+        $start = $courierRoute->currentLocation();
+        $end = $courierRoute->endLocation() ?? $courierRoute->startLocation();
 
         // Haal alleen de pakketten op die zijn toegewezen aan de ingelogde courier
         $route = [];
@@ -35,11 +40,17 @@ class CourierRouteController extends Controller
                     "street" => $location->getAddress()->street,
                     "house_number" => $location->getAddress()->house_number,
                 ] : null,
-                'end' => $movement->id == $packagemovement->id
+                'end' => $movement->id == $packagemovement->id,
+                'requires_signature' => $package->requires_signature,
             ];
         }
-
-        return view('courier.route', compact('route'));
+        $start_coords = null;
+        $end_coords = null;
+        if ($start != null && $end != null){
+            $start_coords = [$start->getLat(CoordType::DEGREE), $start->getLong(CoordType::DEGREE)];
+            $end_coords = [$end->getLat(CoordType::DEGREE), $end->getLong(CoordType::DEGREE)];
+        }
+        return view('courier.route', compact('route', 'start_coords', 'end_coords'));
     }
 
     public function signature($id)
