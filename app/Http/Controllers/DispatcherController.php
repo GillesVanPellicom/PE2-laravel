@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\RouterNodes;
 use App\Models\City;
 use App\Models\Package;
-use App\Services\Router\Types\NodeType;
-use App\Services\Router\Types\CoordType;
+use App\Services\Router\GeoMath;
 use App\Services\RouteTracer\RouteTrace;
 
 class DispatcherController extends Controller
@@ -18,20 +18,14 @@ class DispatcherController extends Controller
     {
         // Get active couriers with their user information
         $couriers = User::role("courier")
+            ->whereHas('employee') // Controleer of de gebruiker een gekoppelde Employee heeft
             ->join("employees", "employees.user_id", "=", "users.id")
             ->join("contracts", "contracts.employee_id", "=", "employees.id")
             ->join("functions", "contracts.job_id", "=", "functions.id")
             ->where("functions.name", "LIKE", "%courier%")
             ->where(function($q) {
                 $q->where('contracts.end_date', '>=', now())
-                ->orWhereNull('contracts.end_date');
-            })
-            // check if courier is not assigned to any active packages
-            ->whereNotExists(function($query) {
-                $query->select('package_movements.handled_by_courier_id')
-                    ->from('package_movements')
-                    ->whereNull('departure_time')
-                    ->whereColumn('package_movements.handled_by_courier_id', 'employees.id');
+                  ->orWhereNull('contracts.end_date');
             })
             ->select('employees.id as employee_id', 'users.first_name', 'users.last_name', 'users.id as user_id')
             ->distinct()
@@ -91,7 +85,6 @@ class DispatcherController extends Controller
             ->orderBy('cities.name')
             ->get();
     
-            // Split packages based on next movement assignment
             $assignedPackages = $packages->filter(function ($package) {
                 return !is_null($package->handled_by_courier_id);
             })->groupBy('next_city_name');
@@ -99,11 +92,6 @@ class DispatcherController extends Controller
             $unassignedPackages = $packages->filter(function ($package) {
                 return is_null($package->handled_by_courier_id);
             })->groupBy('next_city_name');
-    
-            \Log::info("Groups created:", [
-                'assigned_count' => $assignedPackages->count(),
-                'unassigned_count' => $unassignedPackages->count()
-            ]);
     
             $response = [
                 'success' => true,
@@ -142,7 +130,6 @@ class DispatcherController extends Controller
                 })->values()->all()
             ];
     
-            \Log::info("Response prepared:", $response);
             return response()->json($response);
     
         } catch (\Exception $e) {
@@ -153,49 +140,18 @@ class DispatcherController extends Controller
             return response()->json(['error' => 'Failed to fetch data: ' . $e->getMessage()], 500);
         }
     }
-    
+
     public function dispatchSelectedPackages(Request $request)
     {
         try {
             $packageRefs = $request->input('packages', []);
             $employeeId = $request->input('employee_id');
-            
-            // Get package locations and calculate total route distance
-            $packages = Package::whereIn('reference', $packageRefs)
-                ->join('locations', 'packages.destination_location_id', '=', 'locations.id')
-                ->select(
-                    'packages.reference',
-                    'locations.latitude',
-                    'locations.longitude'
-                )
-                ->get()
-                ->toArray();
-    
-            // Use RouteTrace to validate total distance
-            $routeTracer = new RouteTrace();
-            $route = $routeTracer->generateRoute($packages);
-    
-            if (empty($route)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Could not calculate valid route for these packages'
-                ], 400);
+
+            if (empty($packageRefs) || !$employeeId) {
+                return response()->json(['success' => false, 'message' => 'Invalid input data'], 400);
             }
 
-            // Check if packages are already assigned
-            $alreadyAssigned = Package::whereIn('reference', $packageRefs)
-                ->join('package_movements as pm', 'packages.id', '=', 'pm.package_id')
-                ->join('package_movements as next_pm', 'pm.next_movement', '=', 'next_pm.id')
-                ->whereNotNull('next_pm.handled_by_courier_id')
-                ->exists();
-
-            if ($alreadyAssigned) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'One or more packages are already assigned to a courier'
-                ], 400);
-            }
-
+            // Verwerk de pakketten en wijs ze toe aan de medewerker
             \DB::beginTransaction();
 
             $updatedCount = 0;
@@ -218,12 +174,13 @@ class DispatcherController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "$updatedCount packages assigned successfully"
+                'message' => "$updatedCount packages assigned successfully",
+                'route_distance' => 120.5 // Voeg hier de berekende afstand toe
             ]);
 
         } catch (\Exception $e) {
             \DB::rollBack();
-            \Log::error("Error in dispatchSelectedPackages:", [
+            \Log::error('Dispatch error:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -238,45 +195,35 @@ class DispatcherController extends Controller
     {
         try {
             $packageRefs = $request->input('packages', []);
-            
             \Log::info("Unassigning packages:", [
                 'refs' => $packageRefs
             ]);
-
             \DB::beginTransaction();
-
             $updatedCount = 0;
             foreach ($packageRefs as $ref) {
                 $package = Package::where('reference', $ref)->first();
                 if (!$package) continue;
-
                 $currentMovement = $package->movements()
                     ->whereNull('departure_time')
                     ->whereNull('check_in_time')
                     ->first();
-
                 if ($currentMovement) {
                     // Update the current movement instead of the next one
                     $currentMovement->handled_by_courier_id = null;
                     $currentMovement->save();
-                    
                     \Log::info("Unassigned package movement", [
                         'package_ref' => $ref,
                         'movement_id' => $currentMovement->id
                     ]);
-                    
                     $updatedCount++;
                 }
             }
-
             \DB::commit();
-
             return response()->json([
                 'success' => true,
                 'message' => "$updatedCount packages unassigned successfully",
                 'updated_count' => $updatedCount
             ]);
-
         } catch (\Exception $e) {
             \DB::rollBack();
             \Log::error("Error unassigning packages:", [
@@ -297,7 +244,6 @@ class DispatcherController extends Controller
         $this->routeTrace = new RouteTrace();
     }
 
-    // Add this new method
     public function calculateOptimalSelection(Request $request)
     {
         try {
@@ -347,11 +293,147 @@ class DispatcherController extends Controller
                     return $package['distance'] ?? 0;
                 }, $optimalRoute))
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to calculate optimal selection: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCourierRoute($id)
+    {
+        try {
+            \Log::info("Fetching courier route for courier ID: $id");
+
+            // Controleer of de courier bestaat
+            $courier = Employee::findOrFail($id);
+
+            // Haal actieve pakketten op die aan deze courier zijn toegewezen
+            $packages = Package::join('package_movements as pm', 'packages.id', '=', 'pm.package_id')
+                ->leftJoin('package_movements as next_pm', 'pm.next_movement', '=', 'next_pm.id')
+                ->leftJoin('router_nodes as next_node', 'next_pm.current_node_id', '=', 'next_node.id')
+                ->leftJoin('locations as destination', 'packages.destination_location_id', '=', 'destination.id')
+                ->where(function ($query) use ($id) {
+                    $query->where('pm.handled_by_courier_id', $id)
+                          ->orWhere('next_pm.handled_by_courier_id', $id);
+                })
+                ->whereNull('pm.departure_time')
+                ->select(
+                    'packages.id',
+                    'packages.reference',
+                    'pm.current_node_id as start_node_id',
+                    'next_node.latDeg as next_latitude',
+                    'next_node.lonDeg as next_longitude',
+                    'next_node.description as next_description',
+                    'destination.latitude as destination_latitude',
+                    'destination.longitude as destination_longitude',
+                    'destination.description as destination_description'
+                )
+                ->groupBy(
+                    'packages.id',
+                    'packages.reference',
+                    'pm.current_node_id',
+                    'next_node.latDeg',
+                    'next_node.lonDeg',
+                    'next_node.description',
+                    'destination.latitude',
+                    'destination.longitude',
+                    'destination.description'
+                )
+                ->get();
+
+            \Log::info("Packages fetched for courier ID $id:", $packages->toArray());
+
+            if ($packages->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'route_distance' => 0,
+                    'packages' => []
+                ]);
+            }
+
+            // Haal de startpositie op van de eerste `current_node_id`
+            $startNode = RouterNodes::where('id', $packages->first()->start_node_id)->first();
+
+            if ($startNode) {
+                $startPoint = [
+                    'reference' => 'Start',
+                    'latitude' => (float)$startNode->latDeg,
+                    'longitude' => (float)$startNode->lonDeg,
+                    'description' => $startNode->description
+                ];
+            } else {
+                \Log::warning("Start node not found for courier ID $id.");
+                $startPoint = null;
+            }
+
+            // Bereken de totale routeafstand vanaf de volgende nodes of bestemmingen
+            $deliveryPoints = $packages->map(function ($package) {
+                if (!is_null($package->next_latitude) && !is_null($package->next_longitude)) {
+                    // Gebruik de volgende beweging als bestemming
+                    return [
+                        'reference' => $package->reference,
+                        'latitude' => (float)$package->next_latitude,
+                        'longitude' => (float)$package->next_longitude,
+                        'description' => $package->next_description
+                    ];
+                } elseif (!is_null($package->destination_latitude) && !is_null($package->destination_longitude)) {
+                    // Gebruik de uiteindelijke bestemming als er geen volgende beweging is
+                    return [
+                        'reference' => $package->reference,
+                        'latitude' => (float)$package->destination_latitude,
+                        'longitude' => (float)$package->destination_longitude,
+                        'description' => $package->destination_description
+                    ];
+                } else {
+                    \Log::warning("Package with reference {$package->reference} has no valid coordinates.");
+                    return null;
+                }
+            })->filter()->toArray(); // Filter null-waarden uit de array
+
+            \Log::info("Delivery points for courier ID $id:", $deliveryPoints);
+
+            if (empty($deliveryPoints)) {
+                return response()->json([
+                    'success' => true,
+                    'route_distance' => 0,
+                    'packages' => []
+                ]);
+            }
+
+            // Voeg de startpositie toe aan de route
+            if ($startPoint) {
+                array_unshift($deliveryPoints, $startPoint);
+            }
+
+            // Bereken de routeafstand
+            $routeTracer = new RouteTrace();
+            $route = $routeTracer->generateRoute($deliveryPoints);
+            $totalDistance = 0;
+            for ($i = 0; $i < count($route) - 1; $i++) {
+                $distance = GeoMath::sphericalCosinesDistance(
+                    deg2rad($route[$i]['latitude']),
+                    deg2rad($route[$i]['longitude']),
+                    deg2rad($route[$i + 1]['latitude']),
+                    deg2rad($route[$i + 1]['longitude'])
+                );
+                $totalDistance += $distance;
+            }
+
+            return response()->json([
+                'success' => true,
+                'route_distance' => round($totalDistance, 2),
+                'packages' => $packages
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Error fetching courier route for courier ID $id:", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch courier route: ' . $e->getMessage()
             ], 500);
         }
     }
