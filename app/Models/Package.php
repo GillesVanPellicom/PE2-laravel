@@ -60,6 +60,7 @@ class Package extends Model
     'sender_lastname',
     'sender_email',
     'sender_phone_number',
+    'safe_location'
   ];
 
   protected $attributes = [
