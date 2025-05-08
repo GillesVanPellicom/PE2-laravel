@@ -58,9 +58,9 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <h3 class="font-medium">Payment{{$payment->reference}}</h3>
-                                <p class="text-sm text-gray-600">{{$paymet->amount}}</p>
-                                <p class="text-xs text-gray-500">{{$paymet->created_at}}</p>
-                                <p class="text-xs text-blue-600">Ref: {{$paymet->reference}}</p>
+                                <p class="text-sm text-gray-600">{{$payment->amount}}</p>
+                                <p class="text-xs text-gray-500">{{$payment->created_at}}</p>
+                                <p class="text-xs text-blue-600">Ref: {{$payment->reference}}</p>
                             </div>
                             <div class="h-4 w-4 rounded-full bg-green-500"></div>
                         </div>
