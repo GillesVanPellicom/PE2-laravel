@@ -107,19 +107,32 @@
 
     <script>
         const route = @json($route);
+        const start = @json($start_coords ?? []);
+        const end = @json($end_coords ?? []);
         const deliverRoute = "{{ route('workspace.courier.deliver', ['id' => ':id']) }}";
 
         document.addEventListener('DOMContentLoaded', function () {
             if (route.length === 0) return;
 
-            const map = L.map('map').setView([route[0].latitude, route[0].longitude], 13);
+            const map = L.map('map').setView((start.length > 0 ? start : [route[0].latitude, route[0].longitude]), 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap'
             }).addTo(map);
 
-            const coordinates = route.map(location => [location.latitude, location.longitude]);
+            let coordinates = route.map(location => [location.latitude, location.longitude]);
+            if (start.length > 0 && end.length > 0){
+                coordinates.unshift(start);
+                coordinates.push(end);
+                L.marker(start)
+                    .addTo(map)
+                    .bindPopup(`<strong>Current Location</strong>`)
+                    .openPopup();
+                L.marker(end)
+                    .addTo(map)
+                    .bindPopup(`<strong>Finish</strong>`);
+            }
 
             route.forEach(location => {
                 L.marker([location.latitude, location.longitude])
@@ -129,13 +142,13 @@
 
             if (coordinates.length > 1) {
                 const osrmCoordinates = coordinates.map(coord => coord.reverse()).join(';');
-                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordinates}?overview=full&geometries=geojson`;
+                const osrmUrl = `https://router.project-osrm.org/trip/v1/driving/${osrmCoordinates}?overview=full&geometries=geojson&source=first&destination=last&roundtrip=false`;
 
                 fetch(osrmUrl)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.routes && data.routes.length > 0) {
-                            const routeData = data.routes[0];
+                        if (data.trips && data.trips.length > 0) {
+                            const routeData = data.trips[0];
                             const routeCoordinates = routeData.geometry.coordinates.map(coord => coord.reverse());
                             L.polyline(routeCoordinates, { color: 'blue' }).addTo(map);
 

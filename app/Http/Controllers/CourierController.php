@@ -43,7 +43,7 @@ class CourierController extends Controller
 
         }
 
-        $package = Package::find($request->package_id); // Find the package
+        $package = $request->package_id ? Package::find($request->package_id) : Package::firstWhere("reference", $request->reference); // Find the package
         if (!$package) { // No package found
             return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => "This package does not exist."])->render()], 400);
         }

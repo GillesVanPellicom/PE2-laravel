@@ -49,8 +49,13 @@ class PackageMovementSeeder extends Seeder {
     $totalTime = ($endTime - $startTime) * 1000; // Convert to milliseconds
     $averageTime = $totalPackages > 0 ? $totalTime / $totalPackages : 0;
 
-    // Calculate geometric mean
-    $geomean = $totalPackages > 0 ? pow(array_product($executionTimes), 1 / $totalPackages) : 0;
+    // Calculate geometric mean safely
+    if ($totalPackages > 0 && !empty($executionTimes)) {
+      $logSum = array_sum(array_map('log', array_filter($executionTimes, fn($time) => $time > 0)));
+      $geomean = exp($logSum / count($executionTimes));
+    } else {
+      $geomean = 0;
+    }
 
     if ($debugAltered) {
       $router->setDebugMode(true);

@@ -100,51 +100,6 @@
         const scanQrRoute = "{{ route('workspace.courier.scanQr') }}";
         const getLastPackagesRoute = "{{ route('workspace.courier.lastPackages') }}"
         const csrf = "{{ csrf_token() }}";
-
-        function openManualEntryModal() {
-            document.getElementById('manualEntryModal').style.display = 'flex';
-        }
-
-        function closeManualEntryModal() {
-            document.getElementById('manualEntryModal').style.display = 'none';
-        }
-
-        function submitManualEntry(event) {
-            event.preventDefault();
-            const reference = document.getElementById('manualReference').value;
-
-            // Example: Send the reference to the server
-            fetch(scanQrRoute, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrf
-                    },
-                    body: JSON.stringify({
-                        reference
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Reference submitted successfully!');
-                    closeManualEntryModal();
-                    // Optionally refresh the scanned packages list
-                    fetchLastPackages();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to submit reference.');
-                });
-        }
-
-        function fetchLastPackages() {
-            fetch(getLastPackagesRoute)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('lastPackages').innerHTML = html;
-                })
-                .catch(error => console.error('Error fetching last packages:', error));
-        }
     </script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="{{ asset('js/scan.js') }}"></script>
