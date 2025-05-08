@@ -15,52 +15,56 @@ class CustomBackupRun extends Command
     {
         $customName = $this->argument('name');
 
-        // Step 1: Run the backup:run command
-        $this->info('Running the backup process...');
-        $process = Process::fromShellCommandline('php artisan backup:run');
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            $this->error('Backup process failed: ' . $process->getErrorOutput());
-            return;
-        }
-
-        $this->info('Backup process completed successfully.');
-
-        // Step 2: Rename the backup file if a custom name is provided
         if ($customName) {
-            $this->info('Renaming the backup file to the custom name...');
-
             $backupDirectory = storage_path('app/private/Laravel');
-            $this->info("Searching for backup files in: {$backupDirectory}");
 
             // Ensure the directory exists
             if (!is_dir($backupDirectory)) {
-                $this->info("Directory does not exist. Creating: {$backupDirectory}");
                 mkdir($backupDirectory, 0755, true);
             }
 
-            $allFiles = scandir($backupDirectory);
-            $this->info("Files found: " . implode(', ', $allFiles));
+            $newBackupPath = $backupDirectory . '/' . $customName . '.zip';
 
+            // Check if a file with the custom name already exists
+            if (file_exists($newBackupPath)) {
+                $this->error("A backup file with the name '{$customName}.zip' already exists. Please choose a different name.");
+                return;
+            }
+
+            // Run the backup process with the custom name
+            $this->info('Running the backup process with the custom name...');
+            $process = Process::fromShellCommandline("php artisan backup:run --only-to-disk=local");
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                $this->error('Backup process failed: ' . $process->getErrorOutput());
+                return;
+            }
+
+            // Move the generated backup file to the custom name
+            $allFiles = scandir($backupDirectory);
             $latestBackup = collect($allFiles)
                 ->filter(fn($file) => Str::endsWith($file, '.zip'))
                 ->sortByDesc(fn($file) => filemtime($backupDirectory . '/' . $file))
                 ->first();
 
-            if (!$latestBackup) {
-                $this->error('No backup file found to rename. Ensure the backup process created a file in the expected directory.');
+            if ($latestBackup) {
+                rename($backupDirectory . '/' . $latestBackup, $newBackupPath);
+                $this->info("Backup file created with the custom name: {$customName}.zip");
+            } else {
+                $this->error('No backup file found after the process.');
+            }
+        } else {
+            $this->info('No custom name provided. Running the backup process with the default naming convention...');
+            $process = Process::fromShellCommandline('php artisan backup:run');
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                $this->error('Backup process failed: ' . $process->getErrorOutput());
                 return;
             }
 
-            $this->info("Latest backup file found: {$latestBackup}");
-
-            $newBackupPath = $backupDirectory . '/' . $customName . '.zip';
-            rename($backupDirectory . '/' . $latestBackup, $newBackupPath);
-
-            $this->info("Backup file renamed to: {$customName}.zip");
-        } else {
-            $this->info('No custom name provided. Backup file retains its original name.');
+            $this->info('Backup process completed successfully.');
         }
     }
 }
