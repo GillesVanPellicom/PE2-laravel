@@ -341,7 +341,7 @@ class PackageController extends Controller {
                         $geocodeData = $response->json();
 
                         if (empty($geocodeData['results'])) {
-                            return back()->withErrors(['error' => 'Address could not be found'])->withInput();
+                            return back()->withErrors(['error' => 'Address  could not be found : "' . $userAddress->street . ' ' . $userAddress->house_number . ' ' . $userAddress->city->name . ' ' . $userAddress->city->postcode . ' ' . $userAddress->city->country->country_name.'".'])->withInput();
                         }
                     }
 
@@ -450,7 +450,7 @@ class PackageController extends Controller {
                         return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()])->withInput();
                     }
                     if (empty($geocodeData['results'])) {
-                        return back()->withErrors(['error' => 'Address could not be found'])->withInput();
+                        return back()->withErrors(['error' => 'Address  could not be found' . $addressFromInput->street . ' ' . $addressFromInput->house_number . ' ' . $addressFromInput->city->name . ' ' . $addressFromInput->city->postcode . ' ' . $addressFromInput->city->country->country_name])->withInput();
                     }
                     $location = $geocodeData['results'][0];
                     $originLocation = Location::create([
