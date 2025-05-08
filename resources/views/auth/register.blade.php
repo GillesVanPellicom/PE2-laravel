@@ -9,29 +9,84 @@
                     <x-x-icon></x-x-icon>
                 </a>
             </div>
+
+            <!-- Toggle for Individual or Company -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Account Type <span class="text-red-500">*</span></label>
+                <div class="flex items-center mt-2">
+                    <label class="mr-4">
+                    <input type="radio" name="account_type" value="individual" 
+            {{ old('account_type', 'individual') === 'individual' ? 'checked' : '' }} 
+            class="form-radio" onclick="toggleAccountType('individual')">
+                        <span class="ml-2 text-sm text-gray-700">Individual</span>
+                    </label>
+                    <label>
+                    <input type="radio" name="account_type" value="company" 
+            {{ old('account_type') === 'company' ? 'checked' : '' }} 
+            class="form-radio" onclick="toggleAccountType('company')">
+                        <span class="ml-2 text-sm text-gray-700">Company</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Individual Fields -->
+            <div id="individual-fields">
+                <div class="mb-4">
+                    <label for="first_name" class="block text-sm font-medium text-gray-700">First Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    @error('first_name')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    @error('last_name')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="birth_date" class="block text-sm font-medium text-gray-700">Birth Date <span class="text-red-500">*</span></label>
+                    <input 
+                        type="date" 
+                        id="birth_date" 
+                        name="birth_date" 
+                        value="{{ old('birth_date', \Carbon\Carbon::now()->subYears(18)->format('Y-m-d')) }}" 
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    @error('birth_date')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Company Fields -->
+            <div id="company-fields" class="hidden">
+                <div class="mb-4">
+                    <label for="company_name" class="block text-sm font-medium text-gray-700">Company Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    @error('company_name')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="VAT_Number" class="block text-sm font-medium text-gray-700">VAT Number <span class="text-red-500">*</span></label>
+                    <input type="text" id="VAT_Number" name="VAT_Number" value="{{ old('VAT_Number') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    @error('VAT_Number')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Shared Fields -->
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email address <span class="text-red-500">*</span></label>
                 <input type="email" id="email" name="email" value="{{ old('email') }}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 @error('email')
                 <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                 @enderror
-            </div>
-            <div class="flex flex-row align-items-center justify-between mb-4 w-full">
-                <div class="w-full mr-2">
-                    <label for="first_name" class="block text-sm font-medium text-gray-700">First Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    @error('first_name')
-                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="w-full ml-2">
-                    <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    @error('last_name')
-                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
             </div>
 
             <div class="mb-4">
@@ -71,13 +126,6 @@
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label for="birth_date" class="block text-sm font-medium text-gray-700">Birth Date <span class="text-red-500">*</span></label>
-                <input type="date" id="birth_date" name="birth_date" value="{{ old('birth_date') }}" max="{{ \Carbon\Carbon::now()->subYears(18)->format('Y-m-d') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                @error('birth_date')
-                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                @enderror
-            </div>
             <div class="flex flex-row justify-between mb-6">
                 <div class="w-11/12 mr-2">
                     <label for="street" class="block text-sm font-medium text-gray-700">Street <span class="text-red-500">*</span></label>
@@ -101,8 +149,8 @@
                     <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                     @enderror
                 </div>
-
             </div>
+
             <div class="flex flex-row justify-between mb-4">
                 <div class="w-full mr-2">
                     <label for="postal_code" class="block text-sm font-medium text-gray-700">Postal Code <span class="text-red-500">*</span></label>
@@ -120,7 +168,29 @@
                     @enderror
                 </div>
             </div>
+
             <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Register</button>
         </form>
     </div>
+
+    <script>
+    function toggleAccountType(type) {
+        const individualFields = document.getElementById('individual-fields');
+        const companyFields = document.getElementById('company-fields');
+
+        if (type === 'individual') {
+            individualFields.classList.remove('hidden');
+            companyFields.classList.add('hidden');
+        } else {
+            individualFields.classList.add('hidden');
+            companyFields.classList.remove('hidden');
+        }
+    }
+
+    // Check the current account type on page load and toggle fields accordingly
+    document.addEventListener('DOMContentLoaded', function () {
+    const accountType = document.querySelector('input[name="account_type"]:checked').value;
+    toggleAccountType(accountType);
+    });
+</script>
 </x-app-layout>

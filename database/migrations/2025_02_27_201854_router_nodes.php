@@ -10,7 +10,7 @@ return new class extends Migration {
       $table->string('id')->primary();
       $table->foreignId('city_id')->nullable()->constrained('cities');
       $table->string('description');
-      $table->enum('location_type', ['PICKUP_POINT', 'DISTRIBUTION_CENTER', 'AIRPORT']);
+      $table->enum('location_type', ['DISTRIBUTION_CENTER', 'PICKUP_POINT', 'DROPOFF_POINT', 'PICKUP_AND_DROPOFF_POINT', 'AIRPORT', ]);
       $table->decimal('latDeg', 12, 8)->nullable();
       $table->decimal('lonDeg', 12, 8)->nullable();
       $table->boolean('isEntry')->default(false);

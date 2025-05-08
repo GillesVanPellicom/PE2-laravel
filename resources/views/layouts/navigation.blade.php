@@ -40,7 +40,7 @@
                         @endrole
                     @endif
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
-                        {{ __('Send Package') }}
+                        {{ __('Send a parcel') }}
                     </x-nav-link>
                     @role('business_client|admin')
                         <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
@@ -62,7 +62,13 @@
                         <button
                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  bg-white  hover:text-gray-700  focus:outline-none transition ease-in-out duration-150">
 
-                                <div>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>
+                                <div>
+                                    @if(auth()->user()->isCompany)
+                                        {{ auth()->user()->company_name }}
+                                    @else
+                                        {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}
+                                    @endif
+                                </div>
 
                             <div class="ml-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -92,8 +98,14 @@
                                 <x-dropdown-link href="{{ route('packages.company-dashboard') }}">
                                     {{ __('Company Dashboard') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link href="{{ route('invoices.myinvoices') }}">
+                                    {{ __('My Invoices') }}
+                                </x-dropdown-link>
                             @endif
                         @endauth
+                        <x-dropdown-link href="{{route('tickets.nytickets')}}">
+                            {{ __('Support') }}
+                        </x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('auth.logout') }}">
@@ -167,7 +179,7 @@
                 @endrole
             @endif
             <x-responsive-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
-                {{ __('Send Package') }}
+                {{ __('Send a parcel') }}
             </x-responsive-nav-link>
                 @role('business_client|admin')
                 <x-responsive-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">

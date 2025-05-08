@@ -38,7 +38,7 @@ use App\Http\Controllers\TicketController;
                     return view('real-homepage');
                 } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
                     return redirect()->route('workspace.courier.scan');
-                } elseif (auth()->user()->hasAnyPermission(['HR.checkall',"HR.create", "HR.assign","employee"])) {
+                } elseif (auth()->user()->hasAnyPermission(['HR.checkall',"HR.create", "HR.assign"])) {
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
                     return redirect()->route('workspace.pickup.dashboard');
@@ -247,9 +247,12 @@ use App\Http\Controllers\TicketController;
                 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
                 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
+                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
 
                 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
                 Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
+
+                Route::patch('/flightContracts/{id}/updateEndDate', [Flightscontroller::class, 'updateContractEndDate'])->name('flightContracts.updateEndDate');
 
                 Route::get('/airports', [Flightscontroller::class, 'airports'])->name('airports');
             });
@@ -260,16 +263,12 @@ use App\Http\Controllers\TicketController;
                 Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
 
                 Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
-
-                Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
+                Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
+                Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+                Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+                Route::get('/distribution-center/courier-route/{id}', [DispatcherController::class, 'getCourierRoute'])->name('dispatcher.courier-route');
+                Route::get('/distribution-center/couriers', [DispatcherController::class, 'getCouriers'])->name('dispatcher.get-couriers');
             });
-
-
-
-            Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails']);
-            Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
-            Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
-            Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
 
             // ======================= End CourierRouteCreator ====================== //
 
@@ -331,8 +330,6 @@ Route::post('/email/verification-notification', function (Request $request) {
 // ======================= End Authentication ====================== //
 
 // ======================= Start Customer ====================== //
-
-Route::middleware("auth")->group(function () {
     Route::get('/send-package', [PackageController::class, 'create'])
         ->name('packages.send-package');
 
@@ -347,11 +344,14 @@ Route::middleware("auth")->group(function () {
 
     Route::get('/package-label/{id}', [PackageController::class, 'generatePackageLabel'])->name('generate-package-label');
 
-    Route::get('/my-packages', [PackageController::class, 'mypackages'])
-        ->name('packages.mypackages');
+
 
     Route::get('/package/{id}', [PackageController::class, 'packagedetails'])
         ->name('packages.packagedetails');
+
+Route::middleware("auth")->group(function () {
+    Route::get('/my-packages', [PackageController::class, 'mypackages'])
+        ->name('packages.mypackages');
 
     Route::get('/bulk-order', [PackageController::class, 'bulkOrder'])
         ->name('packages.bulk-order');
@@ -371,6 +371,17 @@ Route::middleware("auth")->group(function () {
 });
 
 // Invoices
+
+// Route::middleware('auth')
+//     ->group(function () {
+//         Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])
+//         ->middleware(['permission:business_client.view'])
+//         ->name('generate-invoice');
+
+//         Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
+//         ->middleware(['permission:business_client.view'])
+//         ->name('invoices.myinvoices');
+//     });
 
 Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name('generate-invoice');
 
@@ -398,7 +409,7 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 // ======================= Package Payment Start  ====================== //
 
 Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
-    ->middleware('auth')
+    //->middleware('auth')
     ->name('packagepayment');
 
 Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
@@ -438,3 +449,16 @@ Route::get('/workspace/end-of-year-notifications', [NotificationController::clas
 Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('workspace.notifications.read');
 
 Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
+
+
+Route::middleware(['permission:assign.courier'])->group(function () {
+    Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+
+    Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
+    Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
+    Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+    Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+    Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
+});
+

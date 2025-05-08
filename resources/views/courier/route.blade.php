@@ -19,12 +19,11 @@
 
                     <div class="ml-4 flex-1">
                         <p class="text-lg font-semibold text-green-700">Next to Deliver: {{ $firstPackage['ref'] ?? 'N/A' }}</p>
-                        <!-- <p class="text-sm text-gray-600">Coordinates: {{ $firstPackage['latitude'] }}, {{ $firstPackage['longitude'] }}</p> -->
                         <p class="text-sm text-gray-600">
                             Address: {{ $firstPackage['address']['street'] ?? 'N/A' }} {{ $firstPackage['address']['house_number'] ?? '' }}
                         </p>
 
-                        @if ($firstPackage["end"])
+                        @if ($firstPackage['requires_signature'])
                             <div class="flex space-x-4 mt-4">
                                 <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
                                     ✓
@@ -32,16 +31,16 @@
 
                                 <a href="{{ route('workspace.courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
                                     ✍
+                                <a href="{{ route('courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
+                                    ✍ Sign
                                 </a>
-
-                                <button class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none" onclick="openModal('{{ $firstPackage['ref'] }}')">
-                                    Send Back
+                            </div>
+                        @elseif ($firstPackage['end'])
+                            <div class="flex space-x-4 mt-4">
+                                <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
+                                    ✓ Deliver
                                 </button>
                             </div>
-                        @else
-                            <p class="text-red-700 mt-4 focus:outline-none" data-ref="{{ $firstPackage['ref'] }}">
-                                Package not scanned in
-                            </p>
                         @endif
                     </div>
                 </div>

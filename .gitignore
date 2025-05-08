@@ -31,4 +31,7 @@ vendor/composer/installed.php
 /public/contracts/*
 # Add your own gitignore rules below
 
-
+!storage/
+!storage/app
+!storage/app/private
+!storage/app/private/Laravel/**

@@ -27,14 +27,25 @@
                 </a>
             </div>
 
-            <!-- My Packages Link -->
-            <div class="grid grid-cols-1 gap-6">
+            <!-- My Packages and My Invoices Links -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- My Packages Link -->
                 <a href="{{ route('packages.mypackages') }}" 
                    class="block bg-blue-500 hover:bg-blue-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-box text-4xl mb-2"></i>
                         <h2 class="text-2xl font-bold">My Packages</h2>
                         <p class="mt-2 text-sm">View and manage all your packages</p>
+                    </div>
+                </a>
+
+                <!-- My Invoices Link -->
+                <a href="{{ route('invoices.myinvoices') }}" 
+                   class="block bg-purple-500 hover:bg-purple-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-file-invoice text-4xl mb-2"></i>
+                        <h2 class="text-2xl font-bold">My Invoices</h2>
+                        <p class="mt-2 text-sm">View and manage your invoices</p>
                     </div>
                 </a>
             </div>
