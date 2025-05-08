@@ -1,4 +1,9 @@
 <x-app-layout>
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+        <script src="https://unpkg.com/@popperjs/core@2"></script>
+        <script src="https://unpkg.com/tippy.js@6"></script>
+    </head>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -70,6 +75,10 @@
             @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
         }
         
+        .status-pending {
+            @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+        }
+        
         /* Calendar styles */
         .fc .fc-button-primary {
             @apply bg-blue-600 border-blue-600 hover:bg-blue-700 hover:border-blue-700;
@@ -97,7 +106,7 @@
         }
 
         /* Employee item styles */
-        .employee, .sick-employee, .holiday-employee {
+        .employee, .sick-employee, .holiday-employee, .pending-request {
             @apply p-3 my-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center;
         }
     </style>
@@ -198,6 +207,20 @@
                             <div id="holidayEmployeeList" class="space-y-2"></div>
                         </div>
                     </div>
+
+                    <!-- Pending Holiday Requests Section -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                                <span class="text-lg">📋</span> Pending Requests
+                            </h3>
+                            <span class="status-badge status-pending" id="pendingCount">0</span>
+                        </div>
+                        
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
+                            <div id="pendingHolidayRequests" class="space-y-2"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -221,16 +244,17 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-                                <!-- Holiday notifications will be populated here -->
+                            <!-- Holiday notifications will be populated here -->
+                            <div class="space-y-3">
+                                <!-- Notification items will be added dynamically -->
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Sick Leave Notifications -->
                     <div class="notification-dropdown-container relative">
                         <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-red-500 dark:hover:bg-gray-700 dark:text-red-400" onclick="toggleSickLeaveNotifications()">
-                            <span class="text-2xl">🤒</span>
+                            <span class="text-2xl">🏥</span>
                             <span id="sickLeaveNotificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white flex items-center justify-center w-5 h-5 p-0 text-xs font-bold shadow-lg animate-pulse rounded-full hidden">0</span>
                         </button>
 
@@ -243,34 +267,34 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-                                <!-- Sick leave notifications will be populated here -->
+                            <!-- Sick leave notifications will be populated here -->
+                            <div class="space-y-3">
+                                <!-- Notification items will be added dynamically -->
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chart Section -->
+                <!-- Availability Stats -->
                 <div class="dashboard-card">
                     <div class="card-header">
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                             <div class="flex items-center gap-2">
-                                <div class="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-md">
-                                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0-01-2-2z" />
+                                <div class="bg-green-100 dark:bg-green-900/30 p-1.5 rounded-md">
+                                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
                                 </div>
-                                <span>Team Availability Trends</span>
+                                <span>Team Availability Overview</span>
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <button id="7daysButton" class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-600 font-medium hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50">7 Days</button>
-                            <button id="1monthButton" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">1 Month</button>
-                            <button id="3monthsButton" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">3 Months</button>
+                            <button id="7daysButton" class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition">7 Days</button>
+                            <button id="1monthButton" class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition">1 Month</button>
+                            <button id="3monthsButton" class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition">3 Months</button>
                         </div>
                     </div>
-                    
-                    <div class="px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
                         <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
                             <div class="text-sm text-gray-600 dark:text-gray-400">Available</div>
                             <div class="text-xl font-bold text-green-600 dark:text-green-400" id="availablePercentage">0%</div>
@@ -283,7 +307,7 @@
                             </div>
                         </div>
                         <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Sick Leave</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Sick</div>
                             <div class="text-xl font-bold text-red-600 dark:text-red-400" id="sickPercentage">0%</div>
                             <div class="mt-1 flex items-center">
                                 <span class="text-xs font-medium text-red-600 dark:text-red-400">-2.3%</span>
@@ -304,6 +328,7 @@
                                 <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">vs last period</span>
                             </div>
                         </div>
+                        
                     </div>
                     
                     <div class="p-6">
@@ -342,6 +367,23 @@
                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center" id="chartDaysInfo">
                             Showing employee availability data for <span id="totalDays">0</span> days
                         </div>
+                        
+                        <!-- Chart Legend -->
+                        <div class="flex items-center justify-center mt-4 space-x-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Available</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">On Holiday</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Sick Leave</span>
+                            </div>
+                            
+                        </div>
                     </div>
                 </div>
 
@@ -377,28 +419,11 @@
                     </div>
                 </div>
 
-                <!-- Calendar Section -->
-                <div class="dashboard-card">
-                    <div class="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                        <div class="flex items-center space-x-6">
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Holiday</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Sick Leave</span>
-                            </div>
-                        </div>
-
-                        <a href="employees/calendar" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 font-medium dark:bg-blue-700 dark:hover:bg-blue-800">
-                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            View Full Calendar
-                        </a>
-                    </div>
+                <!-- End-of-Year Notifications -->
+                <div class="flex justify-end mb-4">
+                    <button id="sendEndOfYearNotification" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        Send End-of-Year Notifications
+                    </button>
                 </div>
             </div>
         </div>
@@ -406,28 +431,34 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Toggle dark mode
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'true' || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                htmlElement.classList.add('dark');
+            }
+            
+            darkModeToggle.addEventListener('click', function() {
+                htmlElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
+            });
+            
+            // Toggle notification dropdowns
             const notificationDropdown = document.getElementById('notificationDropdown');
             const sickLeaveNotificationDropdown = document.getElementById('sickLeaveNotificationDropdown');
-
-            // Fix malformed SVG path
-            const svgPaths = document.querySelectorAll('svg path');
-            svgPaths.forEach(path => {
-                if (path.getAttribute('d')?.includes('0-01-2')) {
-                    path.setAttribute('d', path.getAttribute('d').replace('0-01-2', '0 0 1-2'));
-                }
-            });
-
-            // Toggle notifications dropdown
-            window.toggleNotifications = function () {
+            
+            window.toggleNotifications = function() {
                 notificationDropdown.classList.toggle('hidden');
+                sickLeaveNotificationDropdown.classList.add('hidden');
             };
-
-            // Toggle sick leave notifications dropdown
-            window.toggleSickLeaveNotifications = function () {
+            
+            window.toggleSickLeaveNotifications = function() {
                 sickLeaveNotificationDropdown.classList.toggle('hidden');
+                notificationDropdown.classList.add('hidden');
             };
-
-            // Close dropdowns when clicking outside
+            
             document.addEventListener('click', function (event) {
                 if (!event.target.closest('#notificationDropdown') &&
                     !event.target.closest('[onclick="toggleNotifications()"]')) {
@@ -443,9 +474,11 @@
             const availableList = document.getElementById('employeeList');
             const sickList = document.getElementById('sickEmployeeList');
             const holidayList = document.getElementById('holidayEmployeeList');
+            const pendingList = document.getElementById('pendingHolidayRequests');
             const availableCount = document.getElementById('availableCount');
             const sickCount = document.getElementById('sickCount');
             const holidayCount = document.getElementById('holidayCount');
+            const pendingCount = document.getElementById('pendingCount');
             const currentDateElement = document.getElementById('currentDate');
             const chartLoading = document.getElementById('chartLoading');
             let availabilityChart;
@@ -459,6 +492,7 @@
                         availableList.innerHTML = '';
                         sickList.innerHTML = '';
                         holidayList.innerHTML = '';
+                        pendingList.innerHTML = '';
 
                         // Populate available employees
                         if (data.available && data.available.length > 0) {
@@ -499,30 +533,109 @@
                             month: 'long',
                             day: 'numeric',
                         });
+                        
+                        // After loading employee data, fetch pending requests for this day
+                        fetchPendingRequests(date);
                     })
                     .catch(error => console.error("Error fetching employee data:", error));
             }
 
-            // Update the chart with fetched data
+            // Fetch day details for the sidebar
+            function fetchDayDetails(date) {
+                fetch(`/workspace/get-day-details?date=${date}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear existing lists
+                        availableList.innerHTML = '';
+                        sickList.innerHTML = '';
+                        holidayList.innerHTML = '';
+                        pendingList.innerHTML = '';
+
+                        // Populate available employees
+                        if (data.available && data.available.length > 0) {
+                            data.available.forEach(employee => {
+                                availableList.innerHTML += `<div class="employee">${employee.user_id}</div>`;
+                            });
+                        } else {
+                            availableList.innerHTML = '<div class="text-gray-500 text-sm">No available employees</div>';
+                        }
+
+                        // Populate sick employees
+                        if (data.sick && data.sick.length > 0) {
+                            data.sick.forEach(employee => {
+                                sickList.innerHTML += `<div class="sick-employee">${employee.employee.user.first_name} ${employee.employee.user.last_name}</div>`;
+                            });
+                        } else {
+                            sickList.innerHTML = '<div class="text-gray-500 text-sm">No sick employees</div>';
+                        }
+
+                        // Populate employees on holiday
+                        if (data.holiday && data.holiday.length > 0) {
+                            data.holiday.forEach(employee => {
+                                holidayList.innerHTML += `<div class="holiday-employee">${employee.employee.user.first_name} ${employee.employee.user.last_name}</div>`;
+                            });
+                        } else {
+                            holidayList.innerHTML = '<div class="text-gray-500 text-sm">No employees on holiday</div>';
+                        }
+
+                        // Update pending requests count in the sidebar
+                        pendingCount.textContent = data.pendingCount || 0;
+                    })
+                    .catch(error => console.error("Error fetching day details:", error));
+            }
+
+            // Fetch pending requests for the selected day
+            function fetchPendingRequests(date) {
+                fetch(`/workspace/get-pending-requests-for-day?date=${date}`) // Ensure this matches the route in web.php
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const pendingList = document.getElementById('pendingHolidayRequests');
+                        pendingList.innerHTML = '';
+
+                        if (data.length > 0) {
+                            data.forEach(request => {
+                                pendingList.innerHTML += `
+                                    <div class="pending-request p-3 my-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40">
+                                        <div class="font-medium text-blue-600 dark:text-blue-400">${request.employee_name}</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">${request.vacation_type} (${request.day_type})</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">From: ${request.start_date} To: ${request.end_date}</div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            pendingList.innerHTML = '<div class="text-gray-500 text-sm">No pending requests for this day</div>';
+                        }
+                    })
+                    .catch(error => console.error('Error fetching pending requests:', error));
+            }
+
             function updateChart(data) {
                 const ctx = document.getElementById('availabilityChart').getContext('2d');
                 const labels = data.map(day => new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-                const availableData = data.map(day => day.available);
-                const onHolidayData = data.map(day => day.onHoliday);
-                const sickData = data.map(day => day.sick);
+                const availableData = data.map(day => day.available || 0);
+                const onHolidayData = data.map(day => day.onHoliday || 0);
+                const sickData = data.map(day => day.sick || 0);
+                const pendingData = data.map(day => day.pending || 0); // New column for pending requests
 
-                if (availabilityChart) {
-                    availabilityChart.destroy();
+                // Check if the chart instance exists and destroy it if necessary
+                if (window.availabilityChart && typeof window.availabilityChart.destroy === 'function') {
+                    window.availabilityChart.destroy();
                 }
 
-                availabilityChart = new Chart(ctx, {
+                // Create a new chart instance
+                window.availabilityChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels,
                         datasets: [
                             { label: 'Available', data: availableData, backgroundColor: 'rgba(34, 197, 94, 0.7)' },
                             { label: 'On Holiday', data: onHolidayData, backgroundColor: 'rgba(234, 179, 8, 0.7)' },
-                            { label: 'Sick Leave', data: sickData, backgroundColor: 'rgba(239, 68, 68, 0.7)' }
+                            { label: 'Sick Leave', data: sickData, backgroundColor: 'rgba(239, 68, 68, 0.7)' },
                         ]
                     },
                     options: {
@@ -554,6 +667,8 @@
                 fetch(`/workspace/get-availability-data?start_date=${startDate}&end_date=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
+                        console.log('Availability Data:', data); // Debugging
+
                         updateChart(data);
 
                         // Calculate percentages
@@ -561,11 +676,15 @@
                         const totalAvailable = data.reduce((sum, day) => sum + day.available, 0);
                         const totalOnHoliday = data.reduce((sum, day) => sum + day.onHoliday, 0);
                         const totalSick = data.reduce((sum, day) => sum + day.sick, 0);
-                        const totalEmployees = totalAvailable + totalOnHoliday + totalSick;
+                        const totalPending = data.reduce((sum, day) => sum + (day.pending || 0), 0); // Include pending requests
+                        const totalEmployees = totalAvailable + totalOnHoliday + totalSick + totalPending;
 
                         document.getElementById('availablePercentage').textContent = `${Math.round((totalAvailable / (totalEmployees || 1)) * 100)}%`;
                         document.getElementById('holidayPercentage').textContent = `${Math.round((totalOnHoliday / (totalEmployees || 1)) * 100)}%`;
                         document.getElementById('sickPercentage').textContent = `${Math.round((totalSick / (totalEmployees || 1)) * 100)}%`;
+                        document.getElementById('pendingPercentage').textContent = `${Math.round((totalPending / (totalEmployees || 1)) * 100)}%`; // Update pending percentage
+
+                        document.getElementById('totalDays').textContent = totalDays;
 
                         chartLoading.style.display = 'none';
                     })
@@ -573,6 +692,40 @@
                         console.error('Error fetching availability data:', error);
                         chartLoading.style.display = 'none';
                     });
+            }
+
+            // Fetch pending vacations and add them to the diagram
+            function fetchPendingVacationsForDiagram() {
+                fetch('/workspace/get-pending-vacations')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Use the 'diagram' data for the chart
+                        const pendingData = data.diagram.map(item => ({
+                            date: item.date,
+                            count: item.count,
+                        }));
+
+                        addPendingVacationsToChart(pendingData);
+                    })
+                    .catch(error => console.error('Error fetching pending vacations:', error));
+            }
+
+            // Add pending vacations to the chart
+            function addPendingVacationsToChart(pendingData) {
+                if (availabilityChart) {
+                    const pendingDataset = {
+                        label: 'Pending Vacations',
+                        data: pendingData.map(item => ({
+                            x: item.date,
+                            y: item.count,
+                        })),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue color for pending vacations
+                    };
+
+                    // Add the dataset to the chart
+                    availabilityChart.data.datasets.push(pendingDataset);
+                    availabilityChart.update();
+                }
             }
 
             // Update the date range when buttons are clicked
@@ -636,7 +789,7 @@
             setInterval(updateNotificationCounts, 30000); // Update every 30 seconds
             updateNotificationCounts(); // Initial call
 
-            // Fetch pending vacation notifications
+            // Fetch pending vacation notifications for the dropdown
             function fetchPendingVacationNotifications() {
                 fetch('/workspace/pending-vacations')
                     .then(response => response.json())
@@ -678,65 +831,49 @@
                     .catch(error => console.error('Error fetching pending vacation notifications:', error));
             }
 
-            // Make updateVacationStatus globally accessible
-            window.updateVacationStatus = function (vacationId, status) {
-                fetch(`/workspace/vacations/${vacationId}/update-status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: JSON.stringify({ status }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message || 'Vacation status updated successfully.');
-                        fetchPendingVacationNotifications(); // Refresh the notifications
-                    })
-                    .catch(error => console.error('Error updating vacation status:', error));
-            };
-
-            // Fetch sick leave notifications
+            // Fetch sick leave notifications for the dropdown
             function fetchSickLeaveNotifications() {
                 fetch('/workspace/sick-leave-notifications')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         const container = document.querySelector('#sickLeaveNotificationDropdown .space-y-3');
+                        const badge = document.getElementById('sickLeaveNotificationBadge');
                         container.innerHTML = '';
 
                         if (data.length === 0) {
-                            container.innerHTML = '<div class="text-gray-500 text-sm">No sick leave notifications</div>';
+                            container.innerHTML = '<div class="text-gray-500 text-sm">No pending sick leave requests</div>';
+                            badge.classList.add('hidden');
                             return;
                         }
 
+                        badge.textContent = data.length;
+                        badge.classList.remove('hidden');
+
                         data.forEach(notification => {
                             const notificationItem = document.createElement('div');
+                            const formattedDate = new Date(notification.created_at).toISOString().slice(0, 19).replace('T', ' ');
                             notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
                             notificationItem.innerHTML = `
-                                <p class="text-gray-800 dark:text-gray-200 font-medium">
-                                    ${notification.message}
+
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                ${notification.message}
+                            </p>
+                            
+
+                                <p class="text-sm text-gray-400 dark:text-gray-500">
+                                    Submitted: ${formattedDate}
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    Submitted: ${new Date(notification.created_at).toLocaleString()}
-                                </p>
-                                <button class="mt-2 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition" onclick="markSickLeaveAsRead(${notification.id})">Mark as Read</button>
+
+                            <button class="mt-2 px-3 py-1 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition" onclick="markSickLeaveAsRead(${notification.id})">Mark as Read</button>
+
                             `;
                             container.appendChild(notificationItem);
                         });
                     })
-                    .catch(error => {
-                        console.error('Error fetching sick leave notifications:', error);
-                        const container = document.querySelector('#sickLeaveNotificationDropdown .space-y-3');
-                        container.innerHTML = '<div class="text-red-500 text-sm">Failed to load sick leave notifications.</div>';
-                    });
+                    .catch(error => console.error('Error fetching sick leave notifications:', error));
             }
 
-            // Make markSickLeaveAsRead globally accessible
+            // Mark sick leave notification as read
             window.markSickLeaveAsRead = function (notificationId) {
                 fetch(`/workspace/sick-leave-notifications/${notificationId}/mark-as-read`, {
                     method: 'POST',
@@ -747,13 +884,13 @@
                 })
                     .then(response => response.json())
                     .then(data => {
-                        alert(data.message || 'Notification marked as read.');
-                        fetchSickLeaveNotifications(); // Refresh the notifications
+                        console.log(data.message);
+                        fetchSickLeaveNotifications(); // Refresh the dropdown
                     })
                     .catch(error => console.error('Error marking sick leave notification as read:', error));
             };
 
-            // Fetch holiday requests
+            // Fetch holiday requests for the section under the diagram
             function fetchHolidayRequests() {
                 fetch('/workspace/pending-vacations')
                     .then(response => response.json())
@@ -804,6 +941,29 @@
                     .catch(error => console.error('Error fetching holiday requests:', error));
             }
 
+            // Update vacation status and refresh both dropdown and holiday requests section
+            window.updateVacationStatus = function (vacationId, status) {
+                fetch(`/workspace/vacations/${vacationId}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify({ status }),
+                })
+                    .then(response => response.json())
+                    .then(() => {
+                        // Refresh both the dropdown and the holiday requests section dynamically
+                        fetchPendingVacationNotifications();
+                        fetchHolidayRequests();
+                        fetchSickLeaveNotifications();
+                        
+                        // Refresh availability data after status update
+                        fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
+                    })
+                    .catch(error => console.error('Error updating vacation status:', error));
+            };
+
             // Initialize the page
             const startDatePicker = document.getElementById('startDatePicker');
             const endDatePicker = document.getElementById('endDatePicker');
@@ -822,9 +982,42 @@
 
             // Fetch holiday requests on page load
             fetchHolidayRequests();
-        }); //gewoon comentaar 
+
+            // Fetch sick leave notifications on page load
+            fetchSickLeaveNotifications();
+            
+            // Initial load of employee data for today's date
+            const today = new Date().toISOString().split('T')[0];
+            fetchEmployeeData(today);
+
+            // Call fetchPendingVacationsForDiagram on page load
+            fetchPendingVacationsForDiagram();
+
+            // Send end-of-year notifications
+            document.getElementById('sendEndOfYearNotification').addEventListener('click', function () {
+                if (confirm('Are you sure you want to send end-of-year notifications to all employees?')) {
+                    fetch('/workspace/send-end-of-year-notifications', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert(data.message);
+                    })
+                    .catch(error => {
+                        console.error('Error sending notifications:', error);
+                        alert('An error occurred while sending notifications. Please check the server logs for details.');
+                    });
+                }
+            });
+        });
     </script>
 </x-app-layout>
-
-
-
