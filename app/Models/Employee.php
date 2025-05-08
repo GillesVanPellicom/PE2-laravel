@@ -44,4 +44,9 @@ class Employee extends Model
         return $this->hasMany(PackageMovement::class, 'handled_by_courier_id');
     }
 
+    public function courierRoute()
+    {
+        return $this->hasOne(CourierRoute::class, 'courier');
+    }
+
 }

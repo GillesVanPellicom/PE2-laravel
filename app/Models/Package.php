@@ -59,6 +59,7 @@ class Package extends Model {
     'sender_lastname',
     'sender_email',
     'sender_phone_number',
+    'safe_location'
   ];
 
   protected $attributes = [
@@ -413,9 +414,7 @@ class Package extends Model {
     $movements = $this->movements()->orderBy('id')->get();
 
     // If no movements exist, generate them
-    if ($movements->isEmpty()) {
-      $this->generateMovements();
-    }
+    $this->generateMovements();
 
     // Find the current movement based on the current location ID
     $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);

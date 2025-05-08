@@ -487,6 +487,7 @@ class PackageController extends Controller {
                 'sender_lastname' => 'required|string|max:255',
                 'sender_email' => 'required|email|max:255|unique:users,email',
                 'sender_phone_number' => 'required|string|max:255|unique:users,phone_number',
+                'safe_location' => 'nullable|string|max:255'
                 //'sender_birthdate' => 'required|date',
             ];
         }
@@ -501,7 +502,8 @@ class PackageController extends Controller {
                 'delivery_method_id' => 'required|exists:delivery_method,id',
                 'dimension' => 'required|string|max:255',
                 'weight_price' => 'required|numeric|min:0',
-                'delivery_price' => 'required|numeric|min:0'
+                'delivery_price' => 'required|numeric|min:0',
+                'safe_location' => 'nullable|string|max:255'
             ];
         }
 
@@ -797,9 +799,10 @@ class PackageController extends Controller {
 
     /**
  * Generate a unique tracking number for a package
- * Format: PK + YYYY + MM + XXXXXXXX (where X is random number)
- * Example: PK20250312345678
- *
+ * Format: REF + YYYY + MM + XXXXXXXX (where X is random number)
+ * Example: REF20250312345678
+ * I changed this to REF for consitency sake & it otherwise breaks my code.
+ * 
  * @return string
  * @throws \Exception if unable to generate unique number after maximum attempts
  */
@@ -819,7 +822,7 @@ private function generateUniqueTrackingNumber()
         $random = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
         $trackingNumber = sprintf(
-            'PK%s%s%s',
+            'REF%s%s%s',
             $year,
             $month,
             $random
