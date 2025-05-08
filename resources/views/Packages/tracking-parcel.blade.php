@@ -1,50 +1,45 @@
 <x-app-layout>
     <!-- Hero Section with Tracking Input -->
-    <div class="bg-gray-700 p-8 md:py-20 py-12">
+    <div class="bg-gray-50 p-8 md:py-20 py-12">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 rounded-xl shadow-2xl bg-white">
             <div class="text-left">
-                <h1 class="text-4xl font-bold text-gray-900 mb-6 tracking-tight">
+                <h1 class="text-3xl font-bold pt-3 text-gray-700 mb-6 tracking-tight">
                     {{ __('Track Your Package') }}
                 </h1>
 
-                <div class="max-w-xl mx-auto">
+                <div class="max-w-md p-3">
                     <form
                         method="GET"
                         action=""
                         onsubmit="event.preventDefault(); window.location.href='/track/' + encodeURIComponent(this.tracking_number.value);"
-                        class="bg-gray-50 rounded-lg shadow flex flex-col md:flex-row items-stretch md:items-center gap-4 p-4"
+                        class="flex items-center space-x-4"
                     >
-                        <div class="flex-1">
-                            <input
-                                type="text"
-                                name="tracking_number"
-                                class="w-full px-4 py-3 rounded-lg text-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
-                                placeholder="{{ __('Enter your tracking number') }}"
-                                required
-                            >
-                        </div>
-                        <div class="flex-1">
-                            <input
-                                type="text"
-                                name="postal_code"
-                                class="w-full px-4 py-3 rounded-lg text-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
-                                placeholder="{{ __('Enter the postal code') }}"
-                                required
-                            >
-                        </div>
+                        <input
+                            type="text"
+                            name="tracking_number"
+                            class="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:ring-0 bg-gray-50 text-base placeholder-gray-400 transition"
+                            placeholder="{{ __('Tracking number') }}"
+                            required
+                        >
+                        <input
+                            type="text"
+                            name="postal_code"
+                            class="flex-1 px-4 py-3 rounded-lg border border-gray-200  focus:ring-0 bg-gray-50 text-base placeholder-gray-400 transition"
+                            placeholder="{{ __('Postal code') }}"
+                            required
+                        >
                         <button
                             type="submit"
-                            class="flex items-center justify-center px-6 py-3 rounded-lg text-lg font-semibold text-blue-800 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow transition duration-150 ease-in-out"
+                            class="px-5 py-3 rounded-lg bg-blue-200 text-blue-900 font-semibold text-base hover:bg-blue-300 transition"
+                            aria-label="{{ __('Track') }}"
                         >
-                            <span class="material-symbols-outlined mr-2">local_shipping</span>
-                            {{ __('Track') }}
+                            <span class="material-symbols-outlined text-lg">local_shipping</span>
                         </button>
                     </form>
                     @error('tracking_number')
-                    <p class="mt-3 text-red-600 text-sm font-medium">{{ $message }}</p>
+                    <p class="mt-2 text-red-600 text-xs">{{ $message }}</p>
                     @enderror
-
-                    <div class="mt-6 text-gray-700 text-center text-sm">
+                    <div class="mt-4 text-gray-400  text-xs">
                         {{ __('You can find your tracking number in your shipping confirmation email.') }}
                     </div>
                 </div>
