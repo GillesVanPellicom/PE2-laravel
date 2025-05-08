@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\App;
 class Tinker extends Command
 {
 
-  protected $signature = 'gilles:tinker {amount=1}';
+  protected $signature = 'gilles:tinker';
 
   protected $description = "Gilles' tinker workspace";
 
@@ -47,9 +47,10 @@ class Tinker extends Command
     //$router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
     //    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
     //    $router->removeRoute("@AIR_EFHK", "@AIR_LGAV", 8);
-    
+
     if ($amount == 1) {
       $package = Package::find(1);
+      $package->clearMovements();
       $path = $package->getMovements();
     } else {
       for ($i = 1; $i <= $amount; $i++) {
@@ -65,5 +66,3 @@ class Tinker extends Command
     }
   }
 }
-
-
