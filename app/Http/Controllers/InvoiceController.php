@@ -198,8 +198,23 @@ class InvoiceController extends Controller
         $pdf = Pdf::loadView('customers.invoices.invoice-template', $data);
         return $pdf->stream('invoice.pdf');
     }
-    public function manageInvoices() {
-        $invoices = Invoice::all();
+    public function manageInvoices(Request $request) {
+        $query = Invoice::query();
+
+        // Apply filter if status is set in the GET request
+        if ($request->filled('status')) {
+            if ($request->status === 'paid') {
+                $query->where('is_paid', true);
+            } elseif ($request->status === 'pending') {
+                $query->where('is_paid', false)->where('expiry_date', '>=', now());
+            } elseif ($request->status === 'overdue') {
+                $query->where('is_paid', false)->where('expiry_date', '<', now());
+            }
+        }
+
+        // Add pagination & pass query params so links work with filters
+        $invoices = $query->paginate(15)->appends($request->query());
+
         return view('employees.manage_invoices',compact('invoices'));
 
     }
