@@ -68,9 +68,6 @@
                     </div>
                 @endforeach
 
-
-
-                    {{$payments->links()}}
                 </div>
             </div>
         </div>
