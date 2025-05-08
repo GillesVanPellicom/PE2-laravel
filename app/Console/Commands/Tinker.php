@@ -43,10 +43,11 @@ class Tinker extends Command {
     //    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
 //        $router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
 
-    $package = Package::find(1);
-    $package->clearMovements();
+    $package = Package::find(2);
+//    $package->clearMovements();
 //
-    $path = $package->getMovements();
+//    $path = $package->getMovements();
+    dd($package->getCurrentMovement());
 //    dd($path);
   }
 
