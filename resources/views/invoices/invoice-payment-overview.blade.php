@@ -70,8 +70,8 @@
 
 
 
-
-                </div>{{$payments->appends(request()->query())->links()}}
+                    {{$payments->links()}}
+                </div>
             </div>
         </div>
     </div>
