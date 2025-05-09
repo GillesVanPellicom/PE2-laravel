@@ -211,7 +211,7 @@ use App\Http\Controllers\TicketController;
 
             // Notifications
             Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('workspace.notifications');
-           
+
             Route::get('/workspace/get-pending-requests-for-day', [VacationController::class, 'getPendingRequestsForDay'])->name('workspace.getPendingRequestsForDay');
 
             Route::get('/workspace/get-pending-vacations', [VacationController::class, 'getPendingVacations']);
@@ -370,6 +370,12 @@ Route::middleware("auth")->group(function () {
 
     Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
         ->name('packages.complete-bulk-payment');
+    // invoice start
+    Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+    Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
+    Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+    // invoice end
+
 });
 
 // Invoices
@@ -389,7 +395,7 @@ Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name
 
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
 ->name('invoices.myinvoices');
-
+Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
 // Tickets
 
 Route::get('/tickets', [TicketController::class, 'mytickets'])
@@ -431,9 +437,6 @@ Route::post('/tokens/create', function (Request $request) {
 
 // API End
 
-Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
-
-
 // Route for fetching pending vacations
 Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
 
@@ -463,4 +466,6 @@ Route::middleware(['permission:assign.courier'])->group(function () {
     Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
     Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
 });
+
+
 
