@@ -112,14 +112,28 @@ function showCheckmark() {
     }, 2000);
 }
 
-function callAction(id, mode, callback) {
-    body = { mode: mode };
+function confirmFail(id) {
+    closeInfoModal();
+    callAction(
+        id,
+        "FAILED",
+        (data) => {
+            if (data.success) return;
+            document.getElementById("infoModal").innerHTML = data.message;
+            openInfoModal();
+        },
+        true
+    );
+}
+
+function callAction(id, mode, callback, confirm = false) {
+    body = { mode: mode, confirm: confirm };
     if (id.toString().includes("REF")) {
         body.reference = id;
     } else {
         body.package_id = id;
     }
-    
+
     fetch(scanQrRoute, {
         method: "POST",
         headers: {
@@ -163,17 +177,6 @@ function scanAction(message, mode) {
     }
 
     callAction(message, mode, (data) => {
-        /*let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                document.getElementById("lastPackages").innerHTML =
-                    xhttp.responseText;
-            }
-        };
-        xhttp.open("GET", getLastPackagesRoute, true);
-        xhttp.setRequestHeader("X-CSRF-TOKEN", csrf);
-        xhttp.send();*/
-
         if (data.success) {
             if (mode == "INFO") {
                 document.getElementById("infoModal").innerHTML = data.message;

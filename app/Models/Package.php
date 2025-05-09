@@ -701,6 +701,7 @@ class Package extends Model {
             }
           }
 
+        
           return [true, "Package successfully scanned ".$operation->value];
         }
         // If the operation does not match, return an error
