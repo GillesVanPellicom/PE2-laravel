@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\RouterNodes;
 use App\Models\City;
 use App\Models\Package;
+use App\Models\PackageMovement;
 use App\Services\Router\Helpers\GeoMath;
 use App\Services\RouteTracer\RouteTrace;
 
@@ -130,7 +131,9 @@ class DispatcherController extends Controller
                 })->values()->all()
             ];
     
-            return response()->json($response);
+            return response()->json($response)
+                ->header('Content-Type', 'application/json')
+                ->header('Access-Control-Allow-Origin', '*');
     
         } catch (\Exception $e) {
             \Log::error("Error in getDistributionCenterDetails:", [
@@ -198,27 +201,41 @@ class DispatcherController extends Controller
             \Log::info("Unassigning packages:", [
                 'refs' => $packageRefs
             ]);
+            
             \DB::beginTransaction();
             $updatedCount = 0;
+            
             foreach ($packageRefs as $ref) {
                 $package = Package::where('reference', $ref)->first();
                 if (!$package) continue;
+                
+                // Zoek de huidige bewegingen van het pakket
                 $currentMovement = $package->movements()
-                    ->whereNull('departure_time')
-                    ->whereNull('check_in_time')
+                    ->join('package_movements as next_pm', 'package_movements.next_movement', '=', 'next_pm.id')
+                    ->whereNotNull('next_pm.handled_by_courier_id')
+                    ->whereNull('package_movements.departure_time')
+                    ->select('next_pm.id', 'next_pm.handled_by_courier_id')
                     ->first();
+                    
                 if ($currentMovement) {
-                    // Update the current movement instead of the next one
-                    $currentMovement->handled_by_courier_id = null;
-                    $currentMovement->save();
-                    \Log::info("Unassigned package movement", [
-                        'package_ref' => $ref,
-                        'movement_id' => $currentMovement->id
-                    ]);
-                    $updatedCount++;
+                    // Update de reference naar de movement die een courier heeft toegewezen
+                    $nextMovement = PackageMovement::find($currentMovement->id);
+                    if ($nextMovement) {
+                        $nextMovement->handled_by_courier_id = null;
+                        $nextMovement->save();
+                        
+                        \Log::info("Unassigned package movement", [
+                            'package_ref' => $ref,
+                            'movement_id' => $nextMovement->id
+                        ]);
+                        
+                        $updatedCount++;
+                    }
                 }
             }
+            
             \DB::commit();
+            
             return response()->json([
                 'success' => true,
                 'message' => "$updatedCount packages unassigned successfully",
@@ -230,6 +247,7 @@ class DispatcherController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to unassign packages: ' . $e->getMessage()
@@ -237,18 +255,12 @@ class DispatcherController extends Controller
         }
     }
 
-    private $routeTrace;
-
-    public function __construct()
-    {
-        $this->routeTrace = new RouteTrace();
-    }
-
     public function calculateOptimalSelection(Request $request)
     {
         try {
-            // Get packages with their locations
-            $packages = Package::whereIn('reference', $request->input('packages', []))
+            $packages = Package::join('package_movements as pm', 'packages.id', '=', 'pm.package_id')
+                ->where('pm.current_node_id', $request->input('dc_id'))
+                ->whereNull('pm.departure_time')
                 ->join('locations', 'packages.destination_location_id', '=', 'locations.id')
                 ->select(
                     'packages.reference',
