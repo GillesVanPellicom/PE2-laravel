@@ -7,7 +7,7 @@
             <!-- Links -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 <!-- Send Package Link -->
-                <a href="{{ route('packages.send-package') }}" 
+                <a href="{{ route('packages.send-package') }}"
                    class="block bg-yellow-500 hover:bg-yellow-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-paper-plane text-4xl mb-2"></i>
@@ -17,7 +17,7 @@
                 </a>
 
                 <!-- Bulk Order Link -->
-                <a href="{{ route('packages.bulk-order') }}" 
+                <a href="{{ route('packages.bulk-order') }}"
                    class="block bg-green-500 hover:bg-green-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-truck text-4xl mb-2"></i>
@@ -30,7 +30,7 @@
             <!-- My Packages and My Invoices Links -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- My Packages Link -->
-                <a href="{{ route('packages.mypackages') }}" 
+                <a href="{{ route('packages.mypackages') }}"
                    class="block bg-blue-500 hover:bg-blue-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-box text-4xl mb-2"></i>
@@ -40,7 +40,7 @@
                 </a>
 
                 <!-- My Invoices Link -->
-                <a href="{{ route('invoices.myinvoices') }}" 
+                <a href="{{ route('manage-invoices') }}"
                    class="block bg-purple-500 hover:bg-purple-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-file-invoice text-4xl mb-2"></i>

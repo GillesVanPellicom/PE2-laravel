@@ -832,7 +832,7 @@ class Router {
     SplPriorityQueue $openSet,
     float $insertion_fScore,
     float $insertion_gScore,
-    array &$tScore
+    array $tScore
   ): void {
     if (!$this->debug) {
       return;
@@ -956,7 +956,7 @@ class Router {
     Node $neighborNode,
     VehicleType $vehicleType,
     float $weight,
-    array &$cameFrom
+    array $cameFrom
   ): float {
     $turnPenalty = 0;
 
@@ -997,9 +997,9 @@ class Router {
     string $neighborID,
     float $tentativeGScore,
     float $tentativeTScore,
-    array &$fScore,
+    array $fScore,
     DateTime $arrivalTime,
-    array &$edgeData
+    array $edgeData
   ): void {
     if (!$this->debug) {
       return;
@@ -1039,7 +1039,7 @@ class Router {
    * @return array  Array of Node objects representing the path from start to destination
    * @throws NodeNotFoundException  If a node in the path cannot be found
    */
-  private function reconstructPath(RouterGraph $graph, array &$cameFrom, string $currentID): array {
+  private function reconstructPath(RouterGraph $graph, array $cameFrom, string $currentID): array {
     // Start with the destination node
     $totalPath = [$graph->getNode($currentID)]; // May throw NodeNotFoundException
 

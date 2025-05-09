@@ -5,9 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
-class Invoice extends Model
+class InvoicePayment extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -16,19 +15,15 @@ class Invoice extends Model
      */
     use HasFactory;
     protected $fillable = [
-        'company_id',
-        'discount',
-        'expiry_date',
-        'is_paid',
-        'paid_at',
         'reference',
+        'amount'
     ];
 
     /**
-     * Get the company that owns the invoice.
+     * Get the invoice that owns the payment.
      */
-    public function company(): BelongsTo
+    public function invoice(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Invoice::class);
     }
 }
