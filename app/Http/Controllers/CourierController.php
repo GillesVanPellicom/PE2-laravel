@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Mockery\Expectation;
+use function Laravel\Prompts\confirm;
 
 class CourierController extends Controller
 {
@@ -75,9 +76,10 @@ class CourierController extends Controller
                 $dimension = $package->dimension;
                 $from = LocationController::getAddressString($package->originLocation);
                 $to = LocationController::getAddressString($package->destinationLocation);
+                $safe_location = $package->safe_location;
                 //$nextMove = $package->movements()->find($currentMove->next_movement);
                 //$nextStop = is_null($currentMove->next_movement) ? LocationController::getAddressString($currentMove->node) : $currentMove;
-                return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to"))->render()]);
+                return response()->json(["success" => true, "message" => view('components.courier-modal', compact("ref", "sender", "reciever", "phone", "weight", "dimension", "from", "to", "safe_location"))->render()]);
 
             case 'UNDO':
                 $recentSuccess = session()->get('recent_success', []);
@@ -107,6 +109,9 @@ class CourierController extends Controller
                     return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
                 }
             case 'FAILED':
+                if ($request->confirm == false && $package->safe_location != null){
+                    return response()->json(['success' => false, 'message' => view('components.courier-fail-confirm', ["title" => "Are you sure you want to mark this package as a failed delivery?", "message" => "Safe Location: " . $package->safe_location, "id" => $package->id])->render(), 400]);
+                }
                 try {
                     [$status, $message] = $package->failDelivery();
                     if ($status) {
