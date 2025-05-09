@@ -427,37 +427,44 @@
             document.getElementById('view_modal_content').innerHTML = '<p>Loading...</p>';
 
             try {
+                // Gebruik geen DC uit de huidige context, maar haal het uit de toegewezen pakketten
                 const response = await fetch(`/workspace/distribution-center/courier-route/${employeeId}`, {
                     method: 'GET',
                     headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
                     }
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
+                    if (data.message === 'No packages assigned to this courier.' || 
+                        data.message === 'No delivery points found for this courier.') {
+                        document.getElementById('view_modal_content').innerHTML = `
+                            <p>No packages currently assigned to this courier.</p>
+                            <p>Total distance: 0 km</p>
+                        `;
+                        return;
+                    }
                     console.error('API Error:', data);
-                    throw new Error(data.message || 'Failed to fetch courier details');
+                    throw new Error(data.message);
                 }
 
                 const routeDistance = data.route_distance || 0;
                 const packages = Array.isArray(data.packages) ? data.packages : [];
                 const uniquePackages = Array.from(new Map(packages.map(pkg => [pkg.reference, pkg])).values());
                 let packageList = uniquePackages.map(pkg => `
-                    <li class="p-2 border-b">
-                        <strong>Reference:</strong> ${pkg.reference} <br>
-                        <strong>Destination:</strong> ${pkg.destination_latitude && pkg.destination_longitude 
-                            ? `(${pkg.destination_latitude}, ${pkg.destination_longitude})` 
-                            : 'Unknown'}
+                    <li class="py-2 border-b">
+                        <span class="font-medium">${pkg.reference}</span>
                     </li>
                 `).join('');
+                
                 if (!uniquePackages.length) packageList = '<p>No packages assigned</p>';
 
                 document.getElementById('view_modal_content').innerHTML = `
-                    <p><strong>Route Distance:</strong> ${routeDistance.toFixed(2)} km</p>
-                    <p><strong>Assigned Packages:</strong></p>
+                    <p class="mb-4 font-bold">Total distance: ${routeDistance} km</p>
+                    <h3 class="font-bold mb-2">Assigned Packages:</h3>
                     <ul class="overflow-y-auto max-h-60">${packageList}</ul>
                 `;
             } catch (error) {

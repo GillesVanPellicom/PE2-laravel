@@ -23,14 +23,12 @@
                             Address: {{ $firstPackage['address']['street'] ?? 'N/A' }} {{ $firstPackage['address']['house_number'] ?? '' }}
                         </p>
 
-                        @if ($firstPackage['requires_signature'])
+                        @if ($firstPackage['requires_signature'] ?? false)
                             <div class="flex space-x-4 mt-4">
                                 <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none deliver-btn" data-ref="{{ $firstPackage['ref'] }}">
                                     ✓
                                 </button>
 
-                                <a href="{{ route('workspace.courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
-                                    ✍
                                 <a href="{{ route('courier.signature', ['id' => $firstPackage['ref']]) }}" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none">
                                     ✍ Sign
                                 </a>
