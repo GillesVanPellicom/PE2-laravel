@@ -9,7 +9,7 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'leave_balance', 'team_id'];
+    protected $fillable = ['user_id', 'leave_balance', 'team_id', 'sick_leave_balance'];
 
     public function contracts()
     {
