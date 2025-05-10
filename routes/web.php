@@ -218,6 +218,7 @@ use App\Http\Controllers\TicketController;
 
             Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+
             // ======================= End Employee ====================== //
 
             // ======================= Start Pick Up Point ====================== //
@@ -455,6 +456,7 @@ Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRe
 
 Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::class, 'markEmployeeAsSick'])->name('markEmployeeAsSick');
 
 
 Route::middleware(['permission:assign.courier'])->group(function () {
