@@ -1,6 +1,6 @@
 <x-app-layout>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @section("pageName", "Dispatcher")
+    @section('pageName', 'Dispatcher')
     <div class="flex h-screen">
         <!-- Left sidebar with distribution centers -->
         <div class="w-1/6 bg-white p-4 overflow-y-auto border-r">
@@ -8,17 +8,18 @@
             <div class="mb-4">
                 <label for="city_filter" class="block text-sm font-medium text-gray-700">Filter by City:</label>
                 <select id="city_filter" name="city_filter"
-                        class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    class="p-2 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="-1">All Cities</option>
-                    @foreach($cities as $city)
+                    @foreach ($cities as $city)
                         <option value="{{ $city->id }}">{{ $city->name }}</option>
                     @endforeach
                 </select>
             </div>
             <ul id="distribution_centers" class="space-y-2">
-                @foreach($distributionCenters as $center)
+                @foreach ($distributionCenters as $center)
                     <li class="p-2 bg-gray-100 rounded shadow hover:bg-gray-200 cursor-pointer"
-                        data-city-id="{{ $center->city_id ?? '' }}" onclick="showPackages('{{ $center->id }}', '{{ $center->description }}')">
+                        data-city-id="{{ $center->city_id ?? '' }}"
+                        onclick="showPackages('{{ $center->id }}', '{{ $center->description }}')">
                         {{ $center->description }}
                     </li>
                 @endforeach
@@ -28,8 +29,8 @@
         <!-- Main content area -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <div class="p-6 flex flex-col h-full">
-                <h2 class="text-2xl font-bold sticky top-0 bg-white z-10 pb-4">
-                    @if(isset($distributionCenter) && $distributionCenter)
+                <h2 class="text-2xl font-bold sticky top-0 bg-white z-10 p-2 rounded-xl">
+                    @if (isset($distributionCenter) && $distributionCenter)
                         {{ $distributionCenter->description }}
                     @else
                         Select a Distribution Center
@@ -54,13 +55,14 @@
         <div class="w-1/6 bg-white p-4 overflow-y-auto border-l">
             <h2 class="text-xl font-bold mb-4">Couriers</h2>
             <ul class="space-y-2">
-                @foreach($employees as $employee)
+                @foreach ($employees as $employee)
                     <li class="employee-item p-2 rounded shadow flex justify-between items-center
                         {{ $employee->employee && $employee->employee->packageMovements()->whereNull('departure_time')->exists() ? 'bg-green-100' : 'bg-gray-100' }}"
                         data-employee-id="{{ $employee->employee_id }}">
                         <span>{{ $employee->first_name }} {{ $employee->last_name }}</span>
-                        <button onclick="viewEmployee('{{ $employee->employee_id }}', '{{ $employee->first_name }} {{ $employee->last_name }}')"
-                                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded">
+                        <button
+                            onclick="viewEmployee('{{ $employee->employee_id }}', '{{ $employee->first_name }} {{ $employee->last_name }}')"
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded">
                             View
                         </button>
                     </li>
@@ -77,26 +79,28 @@
                 <!-- Courier details will be dynamically loaded here -->
             </div>
             <div class="flex justify-end">
-                <button onclick="closeModal('view_modal')" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                <button onclick="closeModal('view_modal')"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
                     Close
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="dispatch_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div id="dispatch_modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-6 rounded shadow-lg w-1/3">
             <h2 id="dispatch_modal_title" class="text-xl font-bold mb-4">Select Employee for Dispatch</h2>
             <div id="dispatch_modal_content" class="text-gray-700 mb-4">
                 <!-- Employee selection will be dynamically inserted here -->
             </div>
             <div class="flex justify-end">
-                <button onclick="closeModal('dispatch_modal')" 
-                        class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2">
+                <button onclick="closeModal('dispatch_modal')"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded mr-2">
                     Cancel
                 </button>
                 <button onclick="confirmDispatch()"
-                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
                     Confirm Dispatch
                 </button>
             </div>
@@ -163,48 +167,52 @@
 
             let html = `
                 <div class="space-y-6">
-                    <div class="mb-6">
-                        <h2 class="text-xl font-bold mb-4">Unassigned Packages</h2>
+                    <div class="mb-2 mt-2">
+                        <h2 class="text-xl font-bold mb-2 ml-2">Unassigned Packages</h2>
                         <div class="grid grid-cols-2 gap-4">
                             ${data.unassignedGroups.map(group => `
                                 <div class="bg-white p-4 rounded-lg shadow">
-                                    <div class="flex justify-between items-center mb-4">
+                                    <div class="flex justify-between items-center">
                                         <div class="flex items-center gap-4">
-                                            <h3 class="text-xl font-semibold">
+                                            <h3 class="text-xl font-semibold flex-col">
                                                 Going to: ${group.nextMovement}
-                                                <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                                                    ${group.packages.length} packages
-                                                </span>
                                             </h3>
+                                        </div>
+                                        <button onclick="dispatchSelectedPackages('${group.city}')" 
+                                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                                            Assign
+                                        </button>
+                                    </div>
+                                    <div class="flex justify-between relative">
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                                            ${group.packages.length} packages
+                                        </span>
+                                        <div class="absolute bottom-0 right-0">
                                             <input type="checkbox" 
                                                 id="select-all-unassigned-${group.city}" 
                                                 class="select-all-group"
                                                 data-city="${group.city}">
                                             <label for="select-all-unassigned-${group.city}">Select All</label>
                                         </div>
-                                        <button onclick="dispatchSelectedPackages('${group.city}')" 
-                                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                                            Assign to Courier
-                                        </button>
                                     </div>
-                                    <div class="overflow-y-auto max-h-[300px] border rounded-lg">
+                                    <div class="overflow-y-auto mt-2 max-h-[300px] border rounded-lg">
                                         <div class="space-y-2 p-4">
                                             ${group.packages.map(package => `
-                                                <div class="border p-4 rounded-md hover:bg-gray-50">
-                                                    <div class="flex items-center gap-4">
-                                                        <input type="checkbox" 
-                                                            name="package" 
-                                                            value="${package.ref}"
-                                                            data-city="${group.city}"
-                                                            class="h-5 w-5">
-                                                        <div class="flex-1">
-                                                            <p class="font-medium">Reference: ${package.ref}</p>
-                                                            <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
-                                                            <p class="text-sm text-gray-600">Final Destination: ${package.destination}</p>
-                                                        </div>
+                                            <div class="border p-4 rounded-md hover:bg-gray-50">
+                                                <div class="flex items-center gap-4">
+                                                    <input type="checkbox" 
+                                                        name="package" 
+                                                        value="${package.ref}"
+                                                        data-city="${group.city}"
+                                                        class="h-5 w-5">
+                                                    <div class="flex-1">
+                                                        <p class="font-medium">Reference: ${package.ref}</p>
+                                                        <p class="text-sm text-gray-600">Next Stop: ${package.next_node}</p>
+                                                        <p class="text-sm text-gray-600">Final Destination: ${package.destination}</p>
                                                     </div>
                                                 </div>
-                                            `).join('')}
+                                            </div>
+                                        `).join('')}
                                         </div>
                                     </div>
                                 </div>
@@ -213,32 +221,36 @@
                     </div>
 
                     <div>
-                        <h2 class="text-xl font-bold mb-4">Assigned Packages</h2>
+                        <h2 class="text-xl font-bold mb-2 ml-2">Assigned Packages</h2>
                         <div class="grid grid-cols-2 gap-4">
                             ${data.assignedGroups.map(group => `
-                                <div class="bg-gray-50 p-4 rounded-lg shadow">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <div class="flex items-center gap-4">
-                                            <h3 class="text-xl font-semibold">
-                                                Going to: ${group.nextMovement}
-                                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                                                    ${group.packages.length} packages
-                                                </span>
-                                            </h3>
-                                            <input type="checkbox" 
-                                                id="select-all-assigned-${group.city}" 
-                                                class="select-all-group"
-                                                data-city="${group.city}">
-                                            <label for="select-all-assigned-${group.city}">Select All</label>
+                                    <div class="bg-gray-50 p-4 rounded-lg shadow">
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center gap-4">
+                                                <h3 class="text-xl font-semibold">
+                                                    Going to: ${group.nextMovement}
+                                                </h3>
+                                            </div>
+                                            <button onclick="unassignSelectedPackages('${group.city}')"
+                                                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                                                Unassign
+                                            </button>
                                         </div>
-                                        <button onclick="unassignSelectedPackages('${group.city}')"
-                                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                                            Unassign Selected
-                                        </button>
-                                    </div>
-                                    <div class="overflow-y-auto max-h-[300px] border rounded-lg">
-                                        <div class="space-y-2 p-4">
-                                            ${group.packages.map(package => `
+                                        <div class="flex justify-between relative">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                                                ${group.packages.length} packages
+                                            </span>
+                                            <div class="absolute bottom-0 right-0">
+                                                <input type="checkbox" 
+                                                    id="select-all-assigned-${group.city}" 
+                                                    class="select-all-group"
+                                                    data-city="${group.city}">
+                                                <label for="select-all-assigned-${group.city}">Select All</label>
+                                            </div>
+                                        </div>
+                                        <div class="overflow-y-auto mt-2 max-h-[300px] border rounded-lg">
+                                            <div class="space-y-2 p-4">
+                                                ${group.packages.map(package => `
                                                 <div class="border p-4 rounded-md hover:bg-gray-50">
                                                     <div class="flex items-center gap-4">
                                                         <input type="checkbox" 
@@ -255,15 +267,15 @@
                                                     </div>
                                                 </div>
                                             `).join('')}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `).join('')}
                         </div>
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('package-content').innerHTML = html;
 
             document.querySelectorAll('.select-all-group').forEach(checkbox => {
@@ -271,9 +283,9 @@
                     const city = e.target.dataset.city;
                     const isUnassigned = e.target.id.startsWith('select-all-unassigned');
                     const checkboxes = document.querySelectorAll(
-                        isUnassigned 
-                            ? `input[name="package"][data-city="${city}"]`
-                            : `input[name="assigned_package"][data-city="${city}"]`
+                        isUnassigned ?
+                        `input[name="package"][data-city="${city}"]` :
+                        `input[name="assigned_package"][data-city="${city}"]`
                     );
                     checkboxes.forEach(cb => cb.checked = e.target.checked);
                 });
@@ -293,7 +305,7 @@
 
             const modal = document.getElementById('dispatch_modal');
             document.getElementById('dispatch_modal_title').textContent = 'Select Employee for Dispatch';
-            
+
             const employeesList = Array.from(document.querySelectorAll('.employee-item'))
                 .filter(emp => !emp.classList.contains('assigned'))
                 .map(emp => {
@@ -336,17 +348,19 @@
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
-                    body: JSON.stringify({ packages: selectedPackages })
+                    body: JSON.stringify({
+                        packages: selectedPackages
+                    })
                 });
 
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.message || 'Failed to unassign packages');
                 }
 
                 await showPackages(currentDcId, currentDcDescription);
-        
+
                 document.querySelectorAll('.employee-item.assigned').forEach(item => {
                     item.classList.remove('assigned');
                     item.style.display = '';
@@ -410,7 +424,7 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to refresh courier list');
                 }
@@ -427,37 +441,44 @@
             document.getElementById('view_modal_content').innerHTML = '<p>Loading...</p>';
 
             try {
+                // Gebruik geen DC uit de huidige context, maar haal het uit de toegewezen pakketten
                 const response = await fetch(`/workspace/distribution-center/courier-route/${employeeId}`, {
                     method: 'GET',
                     headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
                     }
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
+                    if (data.message === 'No packages assigned to this courier.' ||
+                        data.message === 'No delivery points found for this courier.') {
+                        document.getElementById('view_modal_content').innerHTML = `
+                            <p>No packages currently assigned to this courier.</p>
+                            <p>Total distance: 0 km</p>
+                        `;
+                        return;
+                    }
                     console.error('API Error:', data);
-                    throw new Error(data.message || 'Failed to fetch courier details');
+                    throw new Error(data.message);
                 }
 
                 const routeDistance = data.route_distance || 0;
                 const packages = Array.isArray(data.packages) ? data.packages : [];
                 const uniquePackages = Array.from(new Map(packages.map(pkg => [pkg.reference, pkg])).values());
                 let packageList = uniquePackages.map(pkg => `
-                    <li class="p-2 border-b">
-                        <strong>Reference:</strong> ${pkg.reference} <br>
-                        <strong>Destination:</strong> ${pkg.destination_latitude && pkg.destination_longitude 
-                            ? `(${pkg.destination_latitude}, ${pkg.destination_longitude})` 
-                            : 'Unknown'}
+                    <li class="py-2 border-b">
+                        <span class="font-medium">${pkg.reference}</span>
                     </li>
                 `).join('');
+
                 if (!uniquePackages.length) packageList = '<p>No packages assigned</p>';
 
                 document.getElementById('view_modal_content').innerHTML = `
-                    <p><strong>Route Distance:</strong> ${routeDistance.toFixed(2)} km</p>
-                    <p><strong>Assigned Packages:</strong></p>
+                    <p class="mb-4 font-bold">Total distance: ${routeDistance} km</p>
+                    <h3 class="font-bold mb-2">Assigned Packages:</h3>
                     <ul class="overflow-y-auto max-h-60">${packageList}</ul>
                 `;
             } catch (error) {
@@ -490,7 +511,8 @@
         function dispatchEmployee(employeeId, employeeName) {
             const modal = document.getElementById('dispatch_modal');
             document.getElementById('dispatch_modal_title').textContent = `Dispatch for: ${employeeName}`;
-            document.getElementById('dispatch_modal_content').textContent = `Select packages for Employee ID: ${employeeId}`;
+            document.getElementById('dispatch_modal_content').textContent =
+            `Select packages for Employee ID: ${employeeId}`;
             modal.classList.remove('hidden');
         }
 

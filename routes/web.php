@@ -34,6 +34,7 @@ use App\Http\Controllers\TicketController;
         ->group(function () {
             //Workspace Index
             Route::get('/', function () {
+
                 if (auth()->user()->hasPermissionTo('*')) {
                     return view('real-homepage');
                 } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
@@ -42,8 +43,8 @@ use App\Http\Controllers\TicketController;
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
                     return redirect()->route('workspace.pickup.dashboard');
-                } elseif (auth()->user()->hasAnyPermission(["airport.view"])) {
-                    return redirect()->route('workspace.airport.index');
+                } elseif (auth()->user()->hasPermissionTo("airport.view")) {
+                    return redirect()->route('workspace.airports');
                 } elseif (auth()->user()->hasAnyPermission(["assign.courier"])) {
                     return redirect()->route('workspace.dispatcher.index');
                 }else {
@@ -186,7 +187,7 @@ use App\Http\Controllers\TicketController;
 
             Route::get('/get-unavailable-employees', [EmployeeController::class, 'getUnavailableEmployees'])->name('unavailable.employees');
 
-            
+
             Route::get('/sick-leave-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeaveNotifications.fetch');
             Route::post('/sick-leave-notifications/{id}/mark-as-read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeaveNotifications.markAsRead');
 
@@ -210,7 +211,7 @@ use App\Http\Controllers\TicketController;
 
             // Notifications
             Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('workspace.notifications');
-           
+
             Route::get('/workspace/get-pending-requests-for-day', [VacationController::class, 'getPendingRequestsForDay'])->name('workspace.getPendingRequestsForDay');
 
             Route::get('/workspace/get-pending-vacations', [VacationController::class, 'getPendingVacations']);
@@ -230,7 +231,7 @@ use App\Http\Controllers\TicketController;
 
             });
             Route::get('testDeliveryAttemptOnWrongLocation/{id}', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
-            Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
+            Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocationHome');
             // ======================= End Pick Up Point ====================== //
 
             // ======================= Start Airport ====================== //
@@ -273,7 +274,8 @@ use App\Http\Controllers\TicketController;
 
             // ======================= End CourierRouteCreator ====================== //
 
-            
+            Route::get('/stranded-packages', [PackageController::class, 'strandedPackages'])->name('stranded-packages');
+            Route::post('/stranded-packages', [PackageController::class, 'reRouteStrandedPackages'])->name('stranded-packages.reRoute');
         });
 // ======================= End Middleware ====================== //
 
@@ -369,6 +371,12 @@ Route::middleware("auth")->group(function () {
 
     Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
         ->name('packages.complete-bulk-payment');
+    // invoice start
+    Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+    Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
+    Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+    // invoice end
+
 });
 
 // Invoices
@@ -388,7 +396,7 @@ Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name
 
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
 ->name('invoices.myinvoices');
-
+Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
 // Tickets
 
 Route::get('/tickets', [TicketController::class, 'mytickets'])
@@ -418,7 +426,7 @@ Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackage
     ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
-
+    Route::get('/track-parcel',[TrackPackageController::class, 'trackParcel'])->name('track-parcel');
 
 // API Start
 
@@ -429,9 +437,6 @@ Route::post('/tokens/create', function (Request $request) {
 })->name("tokens.create");
 
 // API End
-
-Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
-
 
 // Route for fetching pending vacations
 Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
@@ -463,4 +468,6 @@ Route::middleware(['permission:assign.courier'])->group(function () {
     Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
     Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
 });
+
+
 
