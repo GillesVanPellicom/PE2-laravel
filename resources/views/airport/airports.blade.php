@@ -19,6 +19,7 @@
             <div class="mt-6">
                 <h2 class="text-xl font-bold">Next Outgoing Flight</h2>
                 @if(isset($nextFlight) && $nextFlight)
+                    <p class="mt-2">Flight details:</p>
                     <p><strong>Flight ID:</strong> {{ $nextFlight->id }}</p>
                     <p><strong>Departure Time:</strong> {{ $nextFlight->departure_time }}</p>
                     <p><strong>Destination:</strong> {{ $nextFlight->arrivalAirport->name ?? 'Unknown' }}</p>

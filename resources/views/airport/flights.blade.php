@@ -29,11 +29,12 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($flights as $flight)
                 @php
-                    $employeeLocationIds = Auth::user()->employee->contracts->pluck('location_id')->toArray();
+                    $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
                 @endphp
-                @if(in_array($flight->arrive_location_id, $employeeLocationIds))
+                @foreach($flights as $flight)
+
+                    @if($flight->arrive_location_id == $employeeLocationId)
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
 
@@ -58,7 +59,7 @@
                             </button>
                         </td>
                     </tr>
-                @endif
+                    @endif
                 @endforeach
             </tbody>
         </table>
@@ -80,11 +81,12 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($flights as $flight)
                 @php
-                    $employeeLocationIds = Auth::user()->employee->contracts->pluck('location_id')->toArray();
+                    $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
                 @endphp
-                @if(in_array($flight->depart_location_id, $employeeLocationIds))
+                @foreach($flights as $flight)
+
+                    @if($flight->depart_location_id==$employeeLocationId)
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
                         <td class="py-2 px-4 border">{{$flight->departure_time}}</td>
@@ -109,7 +111,7 @@
                             </button>
                         </td>
                     </tr>
-                @endif
+                    @endif
                 @endforeach
             </tbody>
         </table>

@@ -7,6 +7,7 @@ use App\Models\Flight;
 use App\Models\FlightContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Flightscontroller extends Controller
 {
@@ -20,7 +21,7 @@ class Flightscontroller extends Controller
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 });
             })
-            ->where('departure_day_of_week', "Friday")
+            ->where('departure_day_of_week', $today)
             ->get();
 
         foreach ($flights as $flight) {
@@ -238,8 +239,6 @@ class Flightscontroller extends Controller
             return redirect()->back()->with('error', 'No matching airport found for the employee location.');
         }
 
-        $currentAirportName = '@AIR_added' . $airport->name;
-
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])->whereIn('status', ['Delayed', 'Canceled'])->get();
         $messages = [];
 
@@ -271,6 +270,11 @@ class Flightscontroller extends Controller
 
         $today = Carbon::now()->format('l'); // Get today's day of the week
 
+        Log::info('Flight query inputs', [
+            'employeeLocationId' => $employeeLocationId,
+            'today' => $today,
+            'now' => now()
+        ]);
         $nextFlight = Flight::with(['departureAirport', 'arrivalAirport'])
             ->where('isActive', true)
             ->where('departure_time', '>=', now())
@@ -278,6 +282,7 @@ class Flightscontroller extends Controller
             ->where('departure_day_of_week', $today) // Ensure the departure day matches today's day
             ->orderBy('departure_time', 'asc')
             ->first();
+        log::info('Next flight:', ['nextFlight' => $nextFlight]);
 
         $packages = \App\Models\Package::where('assigned_flight', $nextFlight->id ?? null)->get();
 
