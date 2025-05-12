@@ -29,11 +29,12 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($flights as $flight)
                 @php
-                    $employeeLocationIds = Auth::user()->employee->contracts->pluck('location_id')->toArray();
+                    $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
                 @endphp
-                @if(in_array($flight->arrive_location_id, $employeeLocationIds))
+                @foreach($flights as $flight)
+
+                    @if($flight->arrive_location_id == $employeeLocationId)
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
 
@@ -58,7 +59,7 @@
                             </button>
                         </td>
                     </tr>
-                @endif
+                    @endif
                 @endforeach
             </tbody>
         </table>
@@ -80,11 +81,12 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($flights as $flight)
                 @php
-                    $employeeLocationIds = Auth::user()->employee->contracts->pluck('location_id')->toArray();
+                    $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
                 @endphp
-                @if(in_array($flight->depart_location_id, $employeeLocationIds))
+                @foreach($flights as $flight)
+
+                    @if($flight->depart_location_id==$employeeLocationId)
                     <tr class="border-b">
                         <td class="py-2 px-4 border">{{$flight->id}}</td>
                         <td class="py-2 px-4 border">{{$flight->departure_time}}</td>
@@ -109,32 +111,30 @@
                             </button>
                         </td>
                     </tr>
-                @endif
+                    @endif
                 @endforeach
             </tbody>
         </table>
     </div>
 
     <script>
+    const flightPackages = @json($flights->mapWithKeys(fn($flight) => [
+        $flight->id => \App\Models\Package::where('assigned_flight', $flight->id)->get()->map(fn($pkg) => $pkg->reference)->toArray()
+    ]));
+
     function showPackages(flightId) {
         document.getElementById('flightId').innerText = flightId;
         let packageList = document.getElementById('packageList');
         packageList.innerHTML = ''; // Clear previous list
 
-        let packages = [];
-
-        @foreach($flights as $flight)
-            if ({{ $flight->id }} === flightId) {
-                packages = {!! json_encode(\App\Models\Package::where('assigned_flight', $flight->id)->get()) !!};
-            }
-        @endforeach
+        const packages = flightPackages[flightId] || [];
 
         if (packages.length === 0) {
             packageList.innerHTML = '<li class="text-gray-600">No packages assigned to this flight</li>';
         } else {
             packages.forEach(pkg => {
                 let li = document.createElement('li');
-                li.textContent = pkg.reference;
+                li.textContent = pkg;
                 li.classList.add("bg-white", "p-2", "rounded", "shadow-sm");
                 packageList.appendChild(li);
             });

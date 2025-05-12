@@ -7,6 +7,7 @@ use App\Models\Flight;
 use App\Models\FlightContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Flightscontroller extends Controller
 {
@@ -20,7 +21,7 @@ class Flightscontroller extends Controller
                     $q->whereNull('end_date')->orWhere('end_date', '>=', now());
                 });
             })
-            ->where('departure_day_of_week', "Friday")
+            ->where('departure_day_of_week', $today)
             ->get();
 
         foreach ($flights as $flight) {
@@ -112,7 +113,17 @@ class Flightscontroller extends Controller
         $contract->end_date = $data['end_date'];
         $contract->save();
 
-        return redirect()->back()->with('success', 'End date updated successfully.');
+        // Update the validTo field of the RouterEdge connected to the same flight
+        $flight = Flight::findOrFail($id);
+        if ($flight->router_edge_id) {
+            $routerEdge = \App\Models\RouterEdges::find($flight->router_edge_id);
+            if ($routerEdge) {
+                $routerEdge->validTo = $data['end_date'];
+                $routerEdge->save();
+            }
+        }
+
+        return redirect()->back()->with('success', 'End date and router edge validTo updated successfully.');
     }
 
     public function flightPackages()
@@ -228,17 +239,15 @@ class Flightscontroller extends Controller
             return redirect()->back()->with('error', 'No matching airport found for the employee location.');
         }
 
-        $currentAirportName = '@AIR_added' . $airport->name;
-
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])->whereIn('status', ['Delayed', 'Canceled'])->get();
         $messages = [];
 
         foreach ($flights as $flight) {
             if ($flight->status === 'Delayed') {
-                if ($flight->depart_location_id == $currentAirportName) {
+                if ($flight->depart_location_id == $employeeLocationId) {
                     $direction = 'to';
                     $location = $flight->arrivalAirport->name ?? 'unknown location';
-                } elseif ($flight->arrive_location_id == $currentAirportName) {
+                } elseif ($flight->arrive_location_id == $employeeLocationId) {
                     $direction = 'from';
                     $location = $flight->departureAirport->name ?? 'unknown location';
                 } else {
@@ -246,10 +255,10 @@ class Flightscontroller extends Controller
                 }
                 $messages[] = "Flight {$flight->id} {$direction} {$location} is delayed, make sure the packages that need rerouting are rerouted.";
             } elseif ($flight->status === 'Canceled') {
-                if ($flight->depart_location_id == $currentAirportName) {
+                if ($flight->depart_location_id == $employeeLocationId) {
                     $direction = 'to';
                     $location = $flight->arrivalAirport->name ?? 'unknown location';
-                } elseif ($flight->arrive_location_id == $currentAirportName) {
+                } elseif ($flight->arrive_location_id == $employeeLocationId) {
                     $direction = 'from';
                     $location = $flight->departureAirport->name ?? 'unknown location';
                 } else {
@@ -261,16 +270,22 @@ class Flightscontroller extends Controller
 
         $today = Carbon::now()->format('l'); // Get today's day of the week
 
+        Log::info('Flight query inputs', [
+            'employeeLocationId' => $employeeLocationId,
+            'today' => $today,
+            'now' => now()
+        ]);
         $nextFlight = Flight::with(['departureAirport', 'arrivalAirport'])
             ->where('isActive', true)
             ->where('departure_time', '>=', now())
-            ->where('depart_location_id', $currentAirportName) // Ensure it's an outgoing flight
+            ->where('depart_location_id', $employeeLocationId) // Ensure it's an outgoing flight
             ->where('departure_day_of_week', $today) // Ensure the departure day matches today's day
             ->orderBy('departure_time', 'asc')
             ->first();
+        log::info('Next flight:', ['nextFlight' => $nextFlight]);
 
         $packages = \App\Models\Package::where('assigned_flight', $nextFlight->id ?? null)->get();
 
-        return view('airport.airports', compact('messages'), ['nextFlight' => $nextFlight, 'packages' => $packages]);
+        return view('airport.airports', compact('messages', 'nextFlight', 'packages'));
     }
 }
