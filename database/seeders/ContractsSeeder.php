@@ -15,6 +15,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\ConsoleHelper;
 
 class ContractsSeeder extends Seeder
 {
@@ -32,11 +33,21 @@ class ContractsSeeder extends Seeder
         exec("rm -rf " . escapeshellarg($directoryPath), $output, $status);
         Log::info($status === 0 ? "Directory removed" : "Failed to remove directory");
 
-        $contracts = EmployeeContract::all();
-        foreach($contracts as $contract) {
-            EmployeeController::generateEmployeeContract($contract->contract_id);
+        // Ensure one employee cannot have two contracts at the same time
+        $contractUserIds = \App\Models\Employee::doesntHave('contracts')->pluck('id')->shuffle()->take(200);
+        foreach ($contractUserIds as $employeeId) {
+            \Database\Factories\ContractFactory::new()->create(['employee_id' => $employeeId]);
         }
 
+        $contracts = EmployeeContract::all();
+        foreach ($contracts as $contract) {
+            $contractStartTime = microtime(true);
+            ConsoleHelper::task(str_pad("[$contract->contract_id]", 7, ' ', STR_PAD_RIGHT)." Contract for: ".$contract->employee->user->first_name . ' ' .$contract->employee->user->last_name,
+                function () use ($contract) {
+                    EmployeeController::generateEmployeeContract($contract->contract_id);
+                });
+            $executionTimes[] = (microtime(true) - $contractStartTime) * 1000; // Convert to milliseconds
+        }
 
     }
 }

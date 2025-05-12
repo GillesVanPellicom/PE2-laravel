@@ -6,6 +6,7 @@
     <p class="mb-3"> Weight Class: {{ $weight ?? 'Unknown' }} </p>
     <p class="mb-3"> Dimension: {{ $dimension ?? 'Unknown' }} </p>
     <p class="mb-3"> Reciever Phone: {{ $phone ?? 'Unknown' }} </p>
+    <p class="mb-3"> Safe Location: {{ $safe_location ?? 'None' }} </p>
     <button
         class="flex flex-col items-center justify-center bg-gray-800 hover:bg-gray-900 text-white p-4 rounded-xl focus:outline-none"
         onclick="closeInfoModal()"> Close </button>

@@ -102,5 +102,8 @@ class FunctionsSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
         ]);
+
+        \Database\Factories\FunctionFactory::new()->count(50)->create();
+        
     }
 }

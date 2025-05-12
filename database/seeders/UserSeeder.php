@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('Admin'),
                 'address_id' => 1,
-                'isCompany' => false,
+                'isCompany' => true,
                 'company_name' => 'Admin Corp',
                 'VAT_Number' => 'VAT123456789',
                 'remember_token' => null,
@@ -161,5 +161,8 @@ class UserSeeder extends Seeder
             ],
 
         ]);
+
+        \App\Models\User::factory(1000)->create();
+
     }
 }

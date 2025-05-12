@@ -25,5 +25,8 @@ class VacationSeeder extends Seeder
                 'approve_status' => 'Pending',
             ],
         ]);
+
+        \App\Models\Vacation::factory(1000)->create();
+
     }
 }

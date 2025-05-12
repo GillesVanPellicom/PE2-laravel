@@ -356,6 +356,8 @@
         .fc .fc-event:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: inherit !important; /* Ensure background color remains opaque */
+            opacity: 1 !important; /* Ensure full opacity */
         }
         
         /* Fix for day names in dark mode */
@@ -590,41 +592,39 @@
                         
                         <!-- Notification bell -->
                         <div class="relative">
-                            <button class="p-3 rounded-full glassmorphism hover:shadow-lg transition-all" onclick="toggleNotifications()">
+                            <button id="toggleNotifications" class="p-3 rounded-full glassmorphism hover:shadow-lg transition-all">
                                 <span class="bell-pulse inline-block">
                                     <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                     </svg>
                                 </span>
-                                <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-lg animate-pulse hidden">0</span>
+                                <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-lg hidden">0</span>
                             </button>
-                            
-                            <!-- Notification dropdown -->
+
                             <div id="notificationDropdown" class="absolute right-0 mt-3 w-80 glassmorphism hidden z-50 animate__animated animate__fadeInDown">
                                 <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                    <h3 class="font-semibold text-gray-800 dark:text-white">Notifications</h3>
-                                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="toggleNotifications()">
+                                    <h3 class="font-semibold text-gray-800 dark:">Notifications</h3>
+                                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="document.getElementById('notificationDropdown').classList.add('hidden')">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
-                                <div class="max-h-96 overflow-y-auto p-3">
-                                    <!-- Notifications will be populated here -->
+                                <div class="space-y-3">
+                                    <!-- Notifications will be dynamically populated here -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
         
         <!-- Main content area -->
         <div class="max-w-7xl mx-auto">
             <!-- Stats row -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="dashboard-card p-6 overflow-visible">
-                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 ">
                         <h2 class="text-xl font-bold">
                             Time Off Overview
                         </h2>
@@ -659,15 +659,14 @@
                         
                         <div class="stat-card stat-card-bg-2 p-5 text-white glow">
                             <div class="stat-card-content">
-                                <div class="text-sm opacity-75">Sick Days Taken</div>
+                                <div class="text-sm opacity-75">Sick Leave taken</div>
                                 <div class="flex items-baseline mt-2">
-                                    <div class="text-4xl font-bold" id="sickDaysTaken">0</div>
+                                    <div class="text-4xl font-bold" id="sickLeaveBalance">{{ auth()->user()->employee->sick_leave_balance }}</div>
                                     <div class="text-sm ml-2 opacity-75">days</div>
                                 </div>
                                 <div class="absolute top-3 right-3 opacity-30 floating">
                                     <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172L12 12m0 0l2.828-2.828M12 12l2.828 2.828M12 12L9.172 14.828" />
                                     </svg>
                                 </div>
                                 <div class="w-full bg-white/20 h-1 rounded-full mt-4">
@@ -680,25 +679,14 @@
                 
                 <!-- Quick Actions -->
                 <div class="dashboard-card p-6">
-                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 ">
                         <h2 class="text-xl font-bold">
                             Quick Actions
                         </h2>
                     </div>
                     
                     <div class="grid grid-cols-1 gap-4">
-                        <a href="/manager-calendar" class="btn btn-success flex items-center justify-between group">
-                            <span class="flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                View Manager Dashboard
-                            </span>
-                            <svg class="w-5 h-5 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
+                        
                         
                         <button id="clearSelectionBtn" class="btn btn-danger flex items-center justify-between group">
                             <span class="flex items-center">
@@ -724,49 +712,10 @@
                 </div>
             </div>
             
-            <!-- Legend -->
-            <div class="dashboard-card mb-8 p-6 overflow-visible">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Color Legend
-                </h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--holiday-whole)"></div>
-                        <span class="text-xs text-center">Whole Day</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--holiday-first)"></div>
-                        <span class="text-xs text-center">First Half</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--holiday-second)"></div>
-                        <span class="text-xs text-center">Second Half</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--sick-leave)"></div>
-                        <span class="text-xs text-center">Sick Leave</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2 bg-green-500"></div>
-                        <span class="text-xs text-center">Approved</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2 bg-yellow-500"></div>
-                        <span class="text-xs text-center">Pending</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2 bg-red-500"></div>
-                        <span class="text-xs text-center">Rejected</span>
-                    </div>
-                </div>
-            </div>
 
             <!-- Calendar -->
             <div class="dashboard-card">
-                <div class="card-header bg-gradient-to-r from-sky-500 to-blue-500 text-white">
+                <div class="card-header bg-gradient-to-r from-sky-500 to-blue-500 ">
                     <h2 class="text-xl font-bold flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -774,7 +723,7 @@
                         Time Off Calendar
                     </h2>
                     <div>
-                        <span class="text-sm text-white/80">
+                        <span class="text-sm ">
                             Today: {{ date('F j, Y') }}
                         </span>
                     </div>
@@ -783,15 +732,17 @@
                     <div id="calendar" class="min-h-[600px]"></div>
                 </div>
             </div>
+
+            
         </div>
     </div>
 
     <!-- Event Modal -->
     <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 modal-overlay">
         <div class="glassmorphism rounded-2xl shadow-2xl max-w-md mx-4 w-full overflow-hidden modal-content">
-            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 py-6 px-6 text-white">
-                <h2 class="text-2xl font-bold">Request Time Off</h2>
-                <p class="opacity-75 text-sm mt-1">Select the type of leave you want to request</p>
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 py-6 px-6 ">
+                <h2 class="text-2xl font-bold text-white">Request Time Off</h2>
+                <p class="opacity-75 text-sm mt-1 text-white">Select the type of leave you want to request</p>
             </div>
             
             <div class="p-6 bg-white/80 dark:bg-gray-800/80">
@@ -872,7 +823,8 @@
             </div>
             
             <div class="p-4 bg-white/90 dark:bg-gray-800/90 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                <button id="closeModalBtn" class="btn btn-ghost">Cancel</button>
+                <!-- Fix modal cancel button text color -->
+                <button id="closeModalBtn" class="btn btn-ghost text-white">Cancel</button>
             </div>
         </div>
     </div>
@@ -1047,58 +999,11 @@
 
             // Fetch notifications function
             function fetchNotifications() {
-                fetch('/workspace/notifications')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const container = notificationDropdown.querySelector('.max-h-96');
-                        container.innerHTML = '';
-
-                        if (data.length === 0) {
-                            container.innerHTML = '<div class="text-gray-500 text-sm">No notifications</div>';
-                            notificationBadge.classList.add('hidden');
-                            return;
-                        }
-
-                        data.forEach(notification => {
-                            const notificationItem = document.createElement('div');
-                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600 mb-2';
-                            notificationItem.innerHTML = `
-                                <div class="flex justify-between items-center">
-                                    <p class="text-gray-800 dark:text-gray-200 font-medium">
-                                        ${notification.message}
-                                    </p>
-                                    <button class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-md hover:bg-green-600 transition" onclick="markNotificationAsRead(${notification.id})">Mark as Read</button>
-                                </div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    ${new Date(notification.created_at).toLocaleString()}
-                                </p>
-                            `;
-                            container.appendChild(notificationItem);
-                        });
-
-                        notificationBadge.textContent = data.length;
-                        notificationBadge.classList.remove('hidden');
-
-                        // Ensure the notification dropdown is visible if there are notifications
-                        if (data.length > 0) {
-                            notificationDropdown.classList.remove('hidden');
-                        }
-                    })
-                    .catch(error => console.error('Error fetching notifications:', error));
-            }
-
-            function markNotificationAsRead(notificationId) {
-                fetch(`/workspace/notifications/${notificationId}/read`, {
-                    method: 'PUT',
+                fetch('/workspace/notifications', {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -1106,59 +1011,71 @@
                     }
                     return response.json();
                 })
-                .then(() => {
-                    // Remove the notification element from the dropdown
-                    const notificationElement = document.querySelector(`[onclick="markNotificationAsRead(${notificationId})"]`).parentElement;
-                    notificationElement.remove();
+                .then(data => {
+                    const notificationDropdown = document.getElementById('notificationDropdown');
+                    const notificationBadge = document.getElementById('notificationBadge');
+                    const notificationList = notificationDropdown.querySelector('.space-y-3');
 
-                    // Update the unread count
-                    let unreadCount = parseInt(notificationBadge.textContent);
-                    unreadCount = Math.max(0, unreadCount - 1);
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.classList.toggle('hidden', unreadCount === 0);
+                    notificationList.innerHTML = ''; // Clear existing notifications
 
-                    // Show success toast
-                    showToast('Notification marked as read', 'success');
+                    if (data.length === 0) {
+                        notificationList.innerHTML = '<div class="text-gray-500 text-sm">No unread notifications</div>';
+                        notificationBadge.classList.add('hidden');
+                        return;
+                    }
+
+                    notificationBadge.textContent = data.length;
+                    notificationBadge.classList.remove('hidden');
+
+                    data.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                        notificationItem.innerHTML = `
+                            <p class="text-gray-800 dark:text-gray-200 font-medium">${notification.message}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">${notification.created_at}</p>
+                            <button class="mt-2 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition" onclick="markNotificationAsRead(${notification.id})">Mark as Read</button>
+                        `;
+                        notificationList.appendChild(notificationItem);
+                    });
                 })
-                .catch(error => console.error('Error marking notification as read:', error));
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
             }
 
-            // Attach the function to the global window object
-            window.markNotificationAsRead = markNotificationAsRead;
+            // Mark a notification as read
+            window.markNotificationAsRead = function (notificationId) {
+                console.log(`Marking notification ${notificationId} as read`); // Debugging log
+                fetch(`/workspace/notifications/${notificationId}/mark-as-read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Notification marked as read:', data); // Debugging log
+                    fetchNotifications(); // Refresh the dropdown
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+            };
 
-            function fetchHolidayStatusNotifications() {
-                fetch('/workspace/employee-notifications')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const container = document.querySelector('#notificationDropdown .max-h-96');
-                        container.innerHTML = '';
+            // Fetch notifications on page load
+            fetchNotifications();
 
-                        if (data.length === 0) {
-                            container.innerHTML = '<div class="text-gray-500 text-sm">No holiday status updates</div>';
-                            return;
-                        }
-
-                        data.forEach(notification => {
-                            const notificationItem = document.createElement('div');
-                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
-                            notificationItem.innerHTML = `
-                                <p class="text-gray-800 dark:text-gray-200 font-medium">
-                                    ${notification.message}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    ${new Date(notification.created_at).toLocaleString()}
-                                </p>
-                            `;
-                            container.appendChild(notificationItem);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching holiday status notifications:', error));
-            }
+            // Toggle notification dropdown
+            document.getElementById('toggleNotifications').addEventListener('click', function () {
+                const dropdown = document.getElementById('notificationDropdown');
+                dropdown.classList.toggle('hidden');
+            });
 
             // Show toast message with improved animation
             function showToast(message, type = 'success') {
@@ -1219,13 +1136,17 @@
 
             let selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
             let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-            let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
-            let sickDaysTaken = selectedSickDays.size;
+            
+            @if(auth()->user()->hasRole('admin'))
+                let remainingHolidays = 0;
+            @else
+                let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+            @endif
+            
             let currentDate = null;
 
             function updateCounters() {
                 document.getElementById('remainingHolidays').textContent = remainingHolidays;
-                document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
             }
 
             function addEvent(date, type, period = "Full Day") {
@@ -1334,7 +1255,6 @@
                         current.setDate(current.getDate() + 1);
                     }
 
-                    sickDaysTaken = selectedSickDays.size;
                     closeModal();
                     updateCounters();
                     
@@ -1345,35 +1265,45 @@
                 document.getElementById('wholeDayBtn').onclick = function () {
                     selectedHolidays[date] = 'Whole Day';
                     addEvent(date, "holiday", "Whole Day");
-                    remainingHolidays--;
                     closeModal();
-                    updateCounters();
-                    
+                    updateCounters(); // Do not decrement remainingHolidays here
                     showToast('Whole day holiday added', 'success');
                 };
 
                 document.getElementById('firstHalfBtn').onclick = function () {
                     selectedHolidays[date] = 'First Half';
                     addEvent(date, "holiday", "First Half");
-                    remainingHolidays -= 0.5;
                     closeModal();
-                    updateCounters();
-                    
+                    updateCounters(); // Do not decrement remainingHolidays here
                     showToast('First half holiday added', 'success');
                 };
 
                 document.getElementById('secondHalfBtn').onclick = function () {
                     selectedHolidays[date] = 'Second Half';
                     addEvent(date, "holiday", "Second Half");
-                    remainingHolidays -= 0.5;
                     closeModal();
-                    updateCounters();
-                    
+                    updateCounters(); // Do not decrement remainingHolidays here
                     showToast('Second half holiday added', 'success');
                 };
 
-                // Close the modal
-                document.getElementById('closeModalBtn').onclick = closeModal;
+                // Add a "Remove Date" button to the modal
+                const removeDateBtn = document.createElement('button');
+                removeDateBtn.className = 'btn btn-danger mt-4 w-full text-white';
+                removeDateBtn.textContent = 'Remove Date';
+                removeDateBtn.onclick = function () {
+                    removeEvent(date);
+                    delete selectedHolidays[date];
+                    selectedSickDays.delete(date);
+                    updateCounters();
+                    closeModal();
+                    showToast('Date removed from selection', 'success');
+                };
+
+                // Append the button to the modal
+                const modalContent = eventModal.querySelector('.modal-content .p-6');
+                if (!modalContent.querySelector('.btn-danger')) {
+                    modalContent.appendChild(removeDateBtn);
+                }
 
                 localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
                 localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
@@ -1392,7 +1322,16 @@
                     sickStartDate.value = '';
                     sickEndDate.value = '';
                 }, 500);
+
+                // Remove the "Remove Date" button when closing the modal
+                const removeDateBtn = eventModal.querySelector('.btn-danger');
+                if (removeDateBtn) {
+                    removeDateBtn.remove();
+                }
             }
+
+            // Fix modal cancel button functionality
+            closeModalBtn.addEventListener('click', closeModal);
 
             // Create enhanced confetti effect
             function createConfetti() {
@@ -1652,7 +1591,7 @@
                 const notificationDropdown = document.getElementById('notificationDropdown');
                 notificationDropdown.classList.toggle('hidden');
                 if (!notificationDropdown.classList.contains('hidden')) {
-                    fetchHolidayStatusNotifications();
+                    fetchNotifications();
                 }
             };
             
@@ -1676,7 +1615,7 @@
                                 <button id="confirmClearBtn" class="btn btn-danger flex-1">
                                     Yes, Clear All
                                 </button>
-                                <button id="cancelClearBtn" class="btn btn-ghost flex-1">
+                                <button id="cancelClearBtn" class="btn btn-ghost flex-1 text-white">
                                     Cancel
                                 </button>
                             </div>
@@ -1701,8 +1640,11 @@
                     // Reset variables
                     selectedHolidays = {};
                     selectedSickDays = new Set();
-                    remainingHolidays = {{ auth()->user()->employee->leave_balance }};
-                    sickDaysTaken = 0;
+                    @if(auth()->user()->hasRole('admin'))
+                        let remainingHolidays = 0;
+                    @else
+                        let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
+                    @endif
                     
                     // Update localStorage
                     localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
@@ -1758,12 +1700,33 @@
                         return response.json();
                     })
                     .then(data => {
-                        alert(data.message);
+                        // Deduct remaining holidays only after the request is successfully saved
+                        Object.values(selectedHolidays).forEach(dayType => {
+                            if (dayType === 'Whole Day') {
+                                remainingHolidays -= 1;
+                            } else {
+                                remainingHolidays -= 0.5;
+                            }
+                        });
+
+                        // Update sick leave balance on the page
+                        document.getElementById('sickLeaveBalance').textContent = data.remainingSickLeave;
+
+                        // Reset selected holidays and sick days
+                        selectedHolidays = {};
+                        selectedSickDays.clear();
+
+                        // Update localStorage and UI
+                        localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
+                        localStorage.setItem('selectedSickDays', JSON.stringify([...selectedSickDays]));
+                        updateCounters();
+
+                        showToast(data.message, 'success');
                         calendar.refetchEvents();
                     })
                     .catch(error => {
                         console.error('Error saving requests:', error);
-                        alert(error.message || 'Failed to save requests. Please try again.');
+                        showToast('Failed to save requests. Please try again.', 'error');
                     });
             });
             
@@ -1774,9 +1737,10 @@
             
             // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
-                if (!event.target.closest('#notificationDropdown') && 
-                    !event.target.closest('[onclick="toggleNotifications()"]')) {
-                    notificationDropdown.classList.add('hidden');
+                const dropdown = document.getElementById('notificationDropdown');
+                const toggleButton = document.getElementById('toggleNotifications');
+                if (!dropdown.contains(event.target) && !toggleButton.contains(event.target)) {
+                    dropdown.classList.add('hidden');
                 }
             });
             

@@ -20,10 +20,12 @@ return new class extends Migration
             $table->string('destination_location_id');
             $table->foreignId('addresses_id')->nullable()->constrained('addresses');
             $table->string('status');
+            $table->integer('times_delivered')->default(0);
             $table->foreignId('weight_id')->constrained('weight_classes');
             $table->foreignId('delivery_method_id')->constrained('delivery_method');
             $table->string('dimension');
             $table->string('weight_price')->default(0);
+            $table->boolean('requires_signature')->default(false);
             $table->float('weight')->nullable();
             $table->boolean('paid')->default(false);
             $table->string('delivery_price')->default(0);
@@ -36,6 +38,7 @@ return new class extends Migration
             $table->string('sender_phone_number')->nullable();
             $table->string('sender_email')->nullable();
             $table->string('assigned_flight')->nullable();
+            $table->string('safe_location')->nullable();
             $table->timestamps();
         });
     }
