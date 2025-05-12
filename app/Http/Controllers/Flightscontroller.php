@@ -245,10 +245,10 @@ class Flightscontroller extends Controller
 
         foreach ($flights as $flight) {
             if ($flight->status === 'Delayed') {
-                if ($flight->depart_location_id == $currentAirportName) {
+                if ($flight->depart_location_id == $employeeLocationId) {
                     $direction = 'to';
                     $location = $flight->arrivalAirport->name ?? 'unknown location';
-                } elseif ($flight->arrive_location_id == $currentAirportName) {
+                } elseif ($flight->arrive_location_id == $employeeLocationId) {
                     $direction = 'from';
                     $location = $flight->departureAirport->name ?? 'unknown location';
                 } else {
@@ -256,10 +256,10 @@ class Flightscontroller extends Controller
                 }
                 $messages[] = "Flight {$flight->id} {$direction} {$location} is delayed, make sure the packages that need rerouting are rerouted.";
             } elseif ($flight->status === 'Canceled') {
-                if ($flight->depart_location_id == $currentAirportName) {
+                if ($flight->depart_location_id == $employeeLocationId) {
                     $direction = 'to';
                     $location = $flight->arrivalAirport->name ?? 'unknown location';
-                } elseif ($flight->arrive_location_id == $currentAirportName) {
+                } elseif ($flight->arrive_location_id == $employeeLocationId) {
                     $direction = 'from';
                     $location = $flight->departureAirport->name ?? 'unknown location';
                 } else {
@@ -274,13 +274,13 @@ class Flightscontroller extends Controller
         $nextFlight = Flight::with(['departureAirport', 'arrivalAirport'])
             ->where('isActive', true)
             ->where('departure_time', '>=', now())
-            ->where('depart_location_id', $currentAirportName) // Ensure it's an outgoing flight
+            ->where('depart_location_id', $employeeLocationId) // Ensure it's an outgoing flight
             ->where('departure_day_of_week', $today) // Ensure the departure day matches today's day
             ->orderBy('departure_time', 'asc')
             ->first();
 
         $packages = \App\Models\Package::where('assigned_flight', $nextFlight->id ?? null)->get();
 
-        return view('airport.airports', compact('messages'), ['nextFlight' => $nextFlight, 'packages' => $packages]);
+        return view('airport.airports', compact('messages', 'nextFlight', 'packages'));
     }
 }

@@ -7,9 +7,7 @@
                     <ul>
                         @foreach($messages as $message)
                             <li>
-                                <a href="{{ route('flightpackages', ['flight_id' => $nextFlight->id ?? null]) }}" class="text-red-500 hover:underline">
-                                    {{ $message }}
-                                </a>
+                                {{ $message }}
                             </li>
                         @endforeach
                     </ul>

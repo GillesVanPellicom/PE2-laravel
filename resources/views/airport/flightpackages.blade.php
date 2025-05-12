@@ -321,6 +321,7 @@
             const currentLocation = package?.current_location_id;
             const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
             const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
+            const arrive = flight.arrivalAirport?.name ?? 'Unknown';
 
             console.log("Package:", package);
             console.log("Current Location:", currentLocation);
@@ -347,7 +348,7 @@
                 li.innerHTML = `
                     <button onclick="assignFlightToSelectedPackages(${flight.id})" 
                         class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
-                        Flight ${flight.id} - ${flight.departure_time} to ${flight.arrivalAirport?.name || 'Unknown'}
+                        Flight ${flight.id} - ${flight.departure_time} to ${arrive}
                     </button>
                 `;
                 flightList.appendChild(li);

@@ -374,7 +374,6 @@ class Package extends Model {
       // Handle delivery
       return $this->deliverPackage($currentMovement);
     }
-
     // If not delivery operation, handle IN or OUT operations
     return $this->performMovementOperation($currentMovement, $operation);
   }
@@ -617,6 +616,11 @@ class Package extends Model {
               $this->current_location_id = $nextMovement->current_node_id;
               $this->save();
             }
+          }
+
+          if ($timestamp === 'check_in_time') {
+            $this->assigned_flight = null;
+            $this->save();
           }
 
           return [true, "Package successfully scanned ".$operation->value];
