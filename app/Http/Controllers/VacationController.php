@@ -112,9 +112,14 @@ class VacationController extends Controller
 
         if ($employee) {
             // If the request is rejected, increment the employee's leave balance based on day_type
-            if ($request->status === 'rejected') {
+            if ($request->status === 'Rejected') {
                 $incrementValue = ($vacation->day_type === 'Whole Day') ? 1 : 0.5; // Restore full or half day
-                $employee->increment('leave_balance', $incrementValue);
+
+                if ($vacation->vacation_type === 'Holiday') {
+                    $employee->increment('leave_balance', $incrementValue);
+                } elseif ($vacation->vacation_type === 'Sick Leave') {
+                    $employee->increment('sick_leave_balance', $incrementValue);
+                }
             }
 
             // Fetch the message template based on the status
@@ -282,6 +287,22 @@ class VacationController extends Controller
                         'approve_status' => 'Approved',
                         'day_type' => 'Whole Day',
                     ]);
+                      // Create a notification for the sick leave request
+                    $template = MessageTemplate::where('key', 'sick_leave_notification')->first();
+                    if ($template) {
+                        Notification::create([
+                            'user_id' => $user->id,
+                            'message_template_id' => $template->id,
+                            'is_read' => false,
+                            'message' => str_replace(
+                                '{employee_name}',
+                                "{$user->first_name} {$user->last_name}",
+                                $template->message
+                            ),
+                        ]);
+                    }
+
+                    
 
                     $sickDaysCount++; // Increment the count of sick days added
                 }
