@@ -218,6 +218,7 @@ use App\Http\Controllers\TicketController;
 
             Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+
             // ======================= End Employee ====================== //
 
             // ======================= Start Pick Up Point ====================== //
@@ -248,7 +249,7 @@ use App\Http\Controllers\TicketController;
                 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
                 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
-                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
+                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign-flight');
 
                 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
                 Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
@@ -456,5 +457,6 @@ Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRe
 
 Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::class, 'markEmployeeAsSick'])->name('markEmployeeAsSick');
 
 

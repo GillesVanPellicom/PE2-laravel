@@ -395,7 +395,6 @@ class Package extends Model {
       // Handle delivery
       return $this->deliverPackage($currentMovement);
     }
-
     // If not delivery operation, handle IN or OUT operations
     return $this->performMovementOperation($currentMovement, $operation);
   }
@@ -701,7 +700,11 @@ class Package extends Model {
             }
           }
 
-        
+          if ($timestamp === 'check_in_time') {
+            $this->assigned_flight = null;
+            $this->save();
+          }
+
           return [true, "Package successfully scanned ".$operation->value];
         }
         // If the operation does not match, return an error

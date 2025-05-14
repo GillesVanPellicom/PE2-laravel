@@ -31,6 +31,13 @@ class Sanctum
     public static $accessTokenAuthenticationCallback;
 
     /**
+     * A placeholder to instruct Sanctum to include the current request host in the list of stateful domains.
+     *
+     * @var string;
+     */
+    public static $currentRequestHostPlaceholder = '__SANCTUM_CURRENT_REQUEST_HOST__';
+
+    /**
      * Get the current application URL from the "APP_URL" environment variable - with port.
      *
      * @return string
@@ -40,6 +47,16 @@ class Sanctum
         $appUrl = config('app.url');
 
         return $appUrl ? ','.parse_url($appUrl, PHP_URL_HOST).(parse_url($appUrl, PHP_URL_PORT) ? ':'.parse_url($appUrl, PHP_URL_PORT) : '') : '';
+    }
+
+    /**
+     * Get a fixed token instructing Sanctum to include the current request host in the list of stateful domains.
+     *
+     * @return string
+     */
+    public static function currentRequestHost()
+    {
+        return ','.static::$currentRequestHostPlaceholder;
     }
 
     /**

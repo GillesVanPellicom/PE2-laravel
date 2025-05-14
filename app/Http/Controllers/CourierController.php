@@ -121,7 +121,8 @@ class CourierController extends Controller
                 
                 } catch (Exception $e) {
                     return response()->json(['success' => false, 'message' => view('components.courier-error-modal', ["title" => "Something went wrong!", "message" => $e->getMessage()])->render()], 500);
-                }            
+                }    
+            case "DELIVER":        
             case "IN":
             case "OUT":
                 try {
