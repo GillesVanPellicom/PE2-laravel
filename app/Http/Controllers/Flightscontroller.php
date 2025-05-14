@@ -128,7 +128,9 @@ class Flightscontroller extends Controller
 
     public function flightPackages()
     {
-        $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
+        $employee = auth()->user()->employee;
+        $contract = $employee->contracts()->latest('start_date')->first(); // Get the latest contract
+        $employeeLocationId = $contract->location_id;
 
         // Find the airport where the ID matches the employee's location ID
         $airport = \App\Models\Airport::where('location_id', $employeeLocationId)->first();
@@ -158,7 +160,7 @@ class Flightscontroller extends Controller
 
         $routerEdges = \App\Models\RouterEdges::all(); // Fetch all RouterEdges
 
-        return view('airport.flightpackages', compact('flights', 'packages', 'routerEdges'));
+        return view('airport.flightpackages', compact('flights', 'packages', 'routerEdges', 'employeeLocationName'));
     }
 
     public function assignFlight(Request $request)
@@ -230,7 +232,14 @@ class Flightscontroller extends Controller
 
     public function airports()
     {
-        $employeeLocationId = auth()->user()->employee->contracts->pluck('location_id')->first();
+        $employee = auth()->user()->employee;
+        $contract = $employee->contracts()->latest('start_date')->first(); // Get the latest contract
+
+        if (!$contract) {
+            return redirect()->back()->with('error', 'No contract found for the employee.');
+        }
+
+        $employeeLocationId = $contract->location_id;
 
         // Find the airport where the ID matches the employee's location ID
         $airport = \App\Models\Airport::where('location_id', $employeeLocationId)->first();
@@ -238,6 +247,8 @@ class Flightscontroller extends Controller
         if (!$airport) {
             return redirect()->back()->with('error', 'No matching airport found for the employee location.');
         }
+
+        $currentAirportName = $airport->name;
 
         $flights = Flight::with(['departureAirport', 'arrivalAirport'])->whereIn('status', ['Delayed', 'Canceled'])->get();
         $messages = [];
@@ -286,6 +297,6 @@ class Flightscontroller extends Controller
 
         $packages = \App\Models\Package::where('assigned_flight', $nextFlight->id ?? null)->get();
 
-        return view('airport.airports', compact('messages', 'nextFlight', 'packages'));
+        return view('airport.airports', compact('messages', 'nextFlight', 'packages', 'currentAirportName'));
     }
 }

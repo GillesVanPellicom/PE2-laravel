@@ -11,7 +11,9 @@
 </head>
 <body class="bg-gray-100 p-6">
 
-    <h1 class="text-2xl font-bold mb-4">Packages at Your Location</h1>
+    <h1 class="text-2xl font-bold mb-4">
+        Packages at {{ $employeeLocationName ?? 'Your Location' }}
+    </h1>
 
     <!-- Unassigned Packages Table -->
     <h2 class="text-xl font-semibold mb-2">Unassigned Packages</h2>
@@ -321,6 +323,7 @@
             const currentLocation = package?.current_location_id;
             const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
             const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
+            // Fix: define arrive inside the filter function
             const arrive = flight.arrivalAirport?.name ?? 'Unknown';
 
             console.log("Package:", package);
@@ -344,6 +347,8 @@
             flightList.innerHTML = '<li class="text-gray-600">No flights available for the selected package.</li>';
         } else {
             filteredFlights.forEach(flight => {
+                // Fix: use arrive here, which is now defined above
+                const arrive = flight.arrivalAirport?.name ?? 'Unknown';
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <button onclick="assignFlightToSelectedPackages(${flight.id})" 

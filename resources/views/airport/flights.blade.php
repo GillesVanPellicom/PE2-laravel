@@ -30,7 +30,9 @@
             </thead>
             <tbody>
                 @php
-                    $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
+                    $employee = auth()->user()->employee;
+                    $contract = $employee->contracts()->latest('start_date')->first();
+                    $employeeLocationId = $contract ? $contract->location_id : null;
                 @endphp
                 @foreach($flights as $flight)
 
@@ -82,7 +84,9 @@
             </thead>
             <tbody>
                 @php
-                    $employeeLocationId = Auth::user()->employee->contracts->pluck('location_id')->first();
+                    $employee = auth()->user()->employee;
+                    $contract = $employee->contracts()->latest('start_date')->first();
+                    $employeeLocationId = $contract ? $contract->location_id : null;
                 @endphp
                 @foreach($flights as $flight)
 
