@@ -12,14 +12,14 @@
     <table class="header">
         <tr>
             <td width="50%">
-                <h2>Shipping Company</h2>
+                <h2>BlueSky</h2>
             </td>
             <td width="50%" class="company-info">
                 <h3>INVOICE</h3>
                 <p>Invoice #: INV-2025001</p>
                 <p>Date: {{$invoice->created_at->format('Y-m-d')}}</p>
                 <br>
-                <p>Shipping Company</p>
+                <p>BlueSky</p>
                 <p>Jan Pieter de Nayerlaan 5</p>
                 <p>2860 Sint-Katelijne-Waver</p>
                 <p>Belgium</p>
@@ -100,10 +100,9 @@
     </table>
 
     <div class="footer">
-        <p><strong>Payment Terms:</strong>Payment due {{$invoice->expiry_date}}</p>
-        <p><strong>Reference:</strong> {{$invoice->reference}}</p>
+        <p><strong>Payment Terms:</strong> Net 30 days</p>
         <p><strong>Payment Details:</strong> Bank Transfer to IBAN: BE12 3456 7890 1234</p>
-        <p>Thank you for choosing Shipping Company for your delivery needs!</p>
+        <p>Thank you for choosing BlueSky for your delivery needs!</p>
     </div>
 </body>
 </html>
