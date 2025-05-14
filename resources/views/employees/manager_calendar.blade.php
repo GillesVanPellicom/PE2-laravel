@@ -252,8 +252,8 @@
                                     </svg>
                                 </button>
                             </div>
-                            <!-- Holiday notifications will be populated here -->
-                            <div class="space-y-3">
+                            <!-- Make this section scrollable -->
+                            <div class="space-y-3 max-h-96 overflow-y-auto">
                                 <!-- Notification items will be added dynamically -->
                             </div>
                         </div>
@@ -1102,13 +1102,24 @@
                     body: JSON.stringify({ status }),
                 })
                     .then(response => response.json())
-                    .then(() => {
-                        // Refresh both the dropdown and the holiday requests section dynamically
+                    .then(data => {
+                        if (status === 'Rejected' && data.vacation_type === 'Sick Leave') {
+                            const incrementValue = data.day_type === 'Whole Day' ? 1 : 0.5;
+                            const sickLeaveBalanceElement = document.getElementById('sickLeaveBalance');
+                            if (sickLeaveBalanceElement) {
+                                const currentBalance = parseFloat(sickLeaveBalanceElement.textContent) || 0;
+                                sickLeaveBalanceElement.textContent = (currentBalance + incrementValue).toFixed(1);
+                            }
+                        }
+
+                        // Refresh the dropdowns and sections dynamically
                         fetchPendingVacationNotifications();
                         fetchHolidayRequests();
                         fetchSickLeaveNotifications();
-                        
+
                         // Refresh availability data after status update
+                        const startDatePicker = document.getElementById('startDatePicker');
+                        const endDatePicker = document.getElementById('endDatePicker');
                         fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
                     })
                     .catch(error => console.error('Error updating vacation status:', error));
