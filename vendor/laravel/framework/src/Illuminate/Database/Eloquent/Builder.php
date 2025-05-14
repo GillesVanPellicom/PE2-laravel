@@ -478,6 +478,21 @@ class Builder implements BuilderContract
     }
 
     /**
+     * Find a sole model by its primary key.
+     *
+     * @param  mixed  $id
+     * @param  array|string  $columns
+     * @return TModel
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException<TModel>
+     * @throws \Illuminate\Database\MultipleRecordsFoundException
+     */
+    public function findSole($id, $columns = ['*'])
+    {
+        return $this->whereKey($id)->sole($columns);
+    }
+
+    /**
      * Find multiple models by their primary keys.
      *
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
@@ -1003,7 +1018,7 @@ class Builder implements BuilderContract
      * @param  string  $pageName
      * @param  int|null  $page
      * @param  \Closure|int|null  $total
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return \Illuminate\Pagination\LengthAwarePaginator
      *
      * @throws \InvalidArgumentException
      */
@@ -1013,10 +1028,7 @@ class Builder implements BuilderContract
 
         $total = value($total) ?? $this->toBase()->getCountForPagination();
 
-        $perPage = ($perPage instanceof Closure
-            ? $perPage($total)
-            : $perPage
-        ) ?: $this->model->getPerPage();
+        $perPage = value($perPage, $total) ?: $this->model->getPerPage();
 
         $results = $total
             ? $this->forPage($page, $perPage)->get($columns)
