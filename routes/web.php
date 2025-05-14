@@ -268,8 +268,9 @@ use App\Http\Controllers\TicketController;
                 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
                 Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
                 Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+                Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
                 Route::get('/distribution-center/courier-route/{id}', [DispatcherController::class, 'getCourierRoute'])->name('dispatcher.courier-route');
-                Route::get('/distribution-center/couriers', [DispatcherController::class, 'getCouriers'])->name('dispatcher.get-couriers');
+                Route::get('/distribution-center/{id}/couriers', [DispatcherController::class, 'getCouriersForDC'])->name('dispatcher.couriers');
             });
 
             // ======================= End CourierRouteCreator ====================== //
@@ -457,17 +458,5 @@ Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRe
 Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
 Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::class, 'markEmployeeAsSick'])->name('markEmployeeAsSick');
-
-
-Route::middleware(['permission:assign.courier'])->group(function () {
-    Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
-
-    Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
-    Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
-    Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
-    Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
-    Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
-});
-
 
 
