@@ -54,6 +54,7 @@
         <!-- Right sidebar with employees -->
         <div class="w-1/6 bg-white p-4 overflow-y-auto border-l">
             <h2 class="text-xl font-bold mb-4">Couriers</h2>
+
             <ul class="space-y-2">
                 @foreach ($employees as $employee)
                     <li class="employee-item p-2 rounded shadow flex justify-between items-center
@@ -152,13 +153,44 @@
                 }
 
                 updatePackageDisplay(data, centerDescription);
+                
+                // Load couriers for this distribution center
+                await filterCouriers(centerId, centerDescription);
             } catch (error) {
                 console.error('Error in showPackages:', error);
                 document.getElementById('package-content').innerHTML = `
                     <div class="p-4 bg-red-100 text-red-700 rounded">
-                        Error loading packages: ${error.message}
+                        <p>Error loading packages: ${error.message}</p>
                     </div>
                 `;
+            }
+        }
+
+        async function filterCouriers(centerId, centerDescription) {
+            try {
+                // Fetch couriers for the selected distribution center
+                const response = await fetch(`/workspace/distribution-center/${centerId}/couriers`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load couriers');
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to load couriers');
+                }
+                
+                // Update the couriers list
+                updateCouriersList(data.couriers, centerDescription);
+            } catch (error) {
+                console.error('Error filtering couriers:', error);
             }
         }
 
@@ -549,6 +581,72 @@
                 <span>Page ${pagination.current_page} of ${pagination.last_page}</span>
                 <button ${pagination.current_page === pagination.last_page ? 'disabled' : ''} onclick="fetchCourierPackages(${pagination.current_page + 1})">Next</button>
             `;
+        }
+        
+        function updateCouriersList(couriers, centerDescription) {
+            // Gebruik meer specifieke en betrouwbare selectors met IDs
+            const couriersTitle = document.querySelector('.w-1\\/6.bg-white.p-4.overflow-y-auto.border-l h2');
+            const couriersList = document.querySelector('.w-1\\/6.bg-white.p-4.overflow-y-auto.border-l ul');
+            
+            // Dit is betrouwbaarder dan class-gebaseerde selectors
+            if (!couriersTitle || !couriersList) {
+                // Probeer het met een simpelere selector als de eerste niet werkt
+                const couriersSection = document.querySelectorAll('div.w-1\\/6.bg-white.p-4.overflow-y-auto.border-l');
+                if (couriersSection && couriersSection.length > 0) {
+                    // Neem de laatste w-1/6 div (de rechter sidebar)
+                    const lastSection = couriersSection[couriersSection.length - 1];
+                    const titleElement = lastSection.querySelector('h2');
+                    const listElement = lastSection.querySelector('ul');
+                    
+                    if (titleElement && listElement) {
+                        // Update titel met het geselecteerde DC
+                        titleElement.innerHTML = `Couriers <span class="text-sm font-normal text-gray-500">in ${centerDescription}</span>`;
+                        
+                        // Update courier lijst
+                        if (!couriers || couriers.length === 0) {
+                            listElement.innerHTML = '<li class="p-2">No couriers assigned to this distribution center</li>';
+                        } else {
+                            listElement.innerHTML = couriers.map(courier => `
+                                <li class="employee-item p-2 rounded shadow flex justify-between items-center
+                                    ${courier.assigned ? 'bg-green-100' : 'bg-gray-100'}"
+                                    data-employee-id="${courier.employee_id}"
+                                    data-employee-name="${courier.first_name} ${courier.last_name}">
+                                    <span>${courier.first_name} ${courier.last_name}</span>
+                                    <button onclick="viewEmployee('${courier.employee_id}', '${courier.first_name} ${courier.last_name}')"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded">
+                                        View
+                                    </button>
+                                </li>
+                            `).join('');
+                        }
+                        return;
+                    }
+                }
+                
+                // Log een fout als we de elementen niet kunnen vinden
+                console.error('Could not find courier title or list elements');
+            } else {
+                // Update titel met het geselecteerde DC
+                couriersTitle.innerHTML = `Couriers <span class="text-sm font-normal text-gray-500">in ${centerDescription}</span>`;
+                
+                // Update courier lijst
+                if (!couriers || couriers.length === 0) {
+                    couriersList.innerHTML = '<li class="p-2">No couriers assigned to this distribution center</li>';
+                } else {
+                    couriersList.innerHTML = couriers.map(courier => `
+                        <li class="employee-item p-2 rounded shadow flex justify-between items-center
+                            ${courier.assigned ? 'bg-green-100' : 'bg-gray-100'}"
+                            data-employee-id="${courier.employee_id}"
+                            data-employee-name="${courier.first_name} ${courier.last_name}">
+                            <span>${courier.first_name} ${courier.last_name}</span>
+                            <button onclick="viewEmployee('${courier.employee_id}', '${courier.first_name} ${courier.last_name}')"
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded">
+                                View
+                            </button>
+                        </li>
+                    `).join('');
+                }
+            }
         }
     </script>
 </x-app-layout>

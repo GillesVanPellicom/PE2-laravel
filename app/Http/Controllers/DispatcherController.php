@@ -15,11 +15,14 @@ use App\Services\RouteTracer\RouteTrace;
 
 class DispatcherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Get active couriers with their user information
-        $couriers = User::role("courier")
-            ->whereHas('employee') // Controleer of de gebruiker een gekoppelde Employee heeft
+        // Haal het DC ID op uit de query parameter
+        $selectedDcId = $request->input('dc_id');
+        
+        // Basisquery voor alle koeriers
+        $couriersQuery = User::role("courier")
+            ->whereHas('employee')
             ->join("employees", "employees.user_id", "=", "users.id")
             ->join("contracts", "contracts.employee_id", "=", "employees.id")
             ->join("functions", "contracts.job_id", "=", "functions.id")
@@ -27,18 +30,42 @@ class DispatcherController extends Controller
             ->where(function($q) {
                 $q->where('contracts.end_date', '>=', now())
                   ->orWhereNull('contracts.end_date');
-            })
-            ->select('employees.id as employee_id', 'users.first_name', 'users.last_name', 'users.id as user_id')
-            ->distinct()
-            ->get();
-
+            });
+    
+        // Als er een DC is geselecteerd, filter de koeriers op current_location
+        if ($selectedDcId) {
+            $couriersQuery->join('courier_routes', 'courier_routes.courier', '=', 'employees.id')
+                ->where(function($query) use ($selectedDcId) {
+                    $query->where('courier_routes.current_location', $selectedDcId)
+                        ->orWhere('courier_routes.start_location', $selectedDcId)
+                        ->orWhere('courier_routes.end_location', $selectedDcId);
+                });
+        }
+        
+        // Haal de gefilterde koeriers op
+        $couriers = $couriersQuery->select(
+            'employees.id as employee_id', 
+            'users.first_name', 
+            'users.last_name', 
+            'users.id as user_id',
+            \DB::raw('EXISTS(SELECT 1 FROM package_movements WHERE package_movements.handled_by_courier_id = employees.id AND package_movements.departure_time IS NULL) as assigned')
+        )
+        ->distinct()
+        ->get();
+        
+        // Haal alle distributiecentra op
         $distributionCenters = RouterNodes::where('location_type', 'DISTRIBUTION_CENTER')->get();
         $cities = City::all();
+        
+        // Haal het geselecteerde DC op als er één is
+        $selectedDC = $selectedDcId ? RouterNodes::find($selectedDcId) : null;
         
         return view('employees.dispatcher', [
             'employees' => $couriers,
             'distributionCenters' => $distributionCenters,
             'cities' => $cities,
+            'selectedDcId' => $selectedDcId,
+            'selectedDC' => $selectedDC
         ]);
     }
 
@@ -150,14 +177,33 @@ class DispatcherController extends Controller
             $packageRefs = $request->input('packages', []);
             $employeeId = $request->input('employee_id');
 
+            // Controleer of de huidige tijd binnen de toegestane uren valt (6:00 - 22:00)
+            $currentHour = now()->hour;
+            if ($currentHour < 6 || $currentHour >= 22) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Packages can only be assigned to couriers between 6:00 AM and 10:00 PM.'
+                ], 403);
+            }
+
             if (empty($packageRefs) || !$employeeId) {
                 return response()->json(['success' => false, 'message' => 'Invalid input data'], 400);
             }
 
             // Verwerk de pakketten en wijs ze toe aan de medewerker
             \DB::beginTransaction();
-
+            
+            // Haal koerier op
+            $courier = Employee::findOrFail($employeeId);
+            
+            // Vind of maak de courierRoute aan
+            $courierRoute = $courier->courierRoute ?? new CourierRoute(['courier' => $employeeId]);
+            
             $updatedCount = 0;
+            $endLocation = null;
+            $hasHomeDelivery = false;
+            $hasDepotDelivery = false;
+            
             foreach ($packageRefs as $ref) {
                 $package = Package::where('reference', $ref)->first();
                 if (!$package) continue;
@@ -167,10 +213,50 @@ class DispatcherController extends Controller
                     ->first();
 
                 if ($currentMovement && $currentMovement->nextHop) {
+                    // Wijs pakket toe aan de koerier
                     $currentMovement->nextHop->handled_by_courier_id = $employeeId;
                     $currentMovement->nextHop->save();
                     $updatedCount++;
+                    
+                    // Controleer het type bestemming
+                    $nextNode = RouterNodes::find($currentMovement->nextHop->current_node_id);
+                    if ($nextNode) {
+                        // Als het een thuislevering is
+                        if ($nextNode->location_type == 'ADDRESS') {
+                            $hasHomeDelivery = true;
+                        } else {
+                            // Als het naar een depot/distributiecentrum/luchthaven is
+                            $hasDepotDelivery = true;
+                            $endLocation = $currentMovement->nextHop->current_node_id;
+                        }
+                    }
                 }
+            }
+            
+            if ($updatedCount > 0) {
+                if (!$courierRoute->current_location) {
+                    $firstPackage = Package::where('reference', $packageRefs[0])->first();
+                    $firstMovement = $firstPackage->movements()
+                        ->whereNull('departure_time')
+                        ->first();
+                    
+                    if ($firstMovement) {
+                        $courierRoute->current_location = $firstMovement->current_node_id;
+                    }
+                }
+                
+                // Bepaal de start_location en end_location
+                $courierRoute->start_location = $courierRoute->current_location;
+                
+                if ($hasDepotDelivery && $endLocation) {
+                    // Als het voor levering naar een depot is
+                    $courierRoute->end_location = $endLocation;
+                } else {
+                    // Als het thuisleveringen zijn of gemengd
+                    $courierRoute->end_location = $courierRoute->current_location;
+                }
+                
+                $courierRoute->save();
             }
 
             \DB::commit();
@@ -198,12 +284,11 @@ class DispatcherController extends Controller
     {
         try {
             $packageRefs = $request->input('packages', []);
-            \Log::info("Unassigning packages:", [
-                'refs' => $packageRefs
-            ]);
+            \Log::info("Unassigning packages:", ['refs' => $packageRefs]);
             
             \DB::beginTransaction();
             $updatedCount = 0;
+            $affectedCouriers = [];
             
             foreach ($packageRefs as $ref) {
                 $package = Package::where('reference', $ref)->first();
@@ -221,6 +306,11 @@ class DispatcherController extends Controller
                     // Update de reference naar de movement die een courier heeft toegewezen
                     $nextMovement = PackageMovement::find($currentMovement->id);
                     if ($nextMovement) {
+                        // Sla de koerier ID op voordat we deze verwijderen
+                        if ($nextMovement->handled_by_courier_id) {
+                            $affectedCouriers[$nextMovement->handled_by_courier_id] = true;
+                        }
+                        
                         $nextMovement->handled_by_courier_id = null;
                         $nextMovement->save();
                         
@@ -232,6 +322,11 @@ class DispatcherController extends Controller
                         $updatedCount++;
                     }
                 }
+            }
+            
+            // Update courierRoute voor alle betrokken koeriers
+            foreach (array_keys($affectedCouriers) as $courierId) {
+                $this->updateCourierRouteAfterUnassign($courierId);
             }
             
             \DB::commit();
@@ -253,6 +348,49 @@ class DispatcherController extends Controller
                 'message' => 'Failed to unassign packages: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function updateCourierRouteAfterUnassign($courierId)
+    {
+        $courier = Employee::find($courierId);
+        if (!$courier || !$courier->courierRoute) {
+            return;
+        }
+        
+        $remainingPackages = PackageMovement::where('handled_by_courier_id', $courierId)
+            ->whereNull('departure_time')
+            ->get();
+        
+        // Als er geen pakketten meer zijn, reset de route volledig
+        if ($remainingPackages->isEmpty()) {
+            // Reset de route volledig naar null waarden
+            $courier->courierRoute->update([
+                'start_location' => null,
+                'end_location' => null
+            ]);
+            return;
+        }
+        
+        $hasDepotDelivery = false;
+        $endLocation = null;
+        
+        foreach ($remainingPackages as $movement) {
+            $nextNode = RouterNodes::find($movement->current_node_id);
+            if ($nextNode && $nextNode->location_type != 'ADDRESS') {
+                $hasDepotDelivery = true;
+                $endLocation = $movement->current_node_id;
+                break;
+            }
+        }
+        
+        // Update de courier route
+        if ($hasDepotDelivery && $endLocation) {
+            $courier->courierRoute->end_location = $endLocation;
+        } else {
+            $courier->courierRoute->end_location = $courier->courierRoute->current_location;
+        }
+        
+        $courier->courierRoute->save();
     }
 
     public function calculateOptimalSelection(Request $request)
@@ -448,5 +586,47 @@ class DispatcherController extends Controller
                 'message' => 'Failed to fetch courier route: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getCouriersForDC(Request $request, $id)
+    {
+        // Haal couriers op voor het specifieke distributiecentrum
+        $couriers = User::role("courier")
+            ->whereHas('employee')
+            ->join("employees", "employees.user_id", "=", "users.id")
+            ->join("contracts", "contracts.employee_id", "=", "employees.id")
+            ->join("functions", "contracts.job_id", "=", "functions.id")
+            ->join('courier_routes', 'courier_routes.courier', '=', 'employees.id')
+            ->where("functions.name", "LIKE", "%courier%")
+            ->where(function($q) {
+                $q->where('contracts.end_date', '>=', now())
+                  ->orWhereNull('contracts.end_date');
+            })
+            ->where(function($query) use ($id) {
+                $query->where('courier_routes.current_location', $id)
+                    ->orWhere('courier_routes.start_location', $id)
+                    ->orWhere('courier_routes.end_location', $id);
+            })
+            ->select(
+                'employees.id as employee_id', 
+                'users.first_name', 
+                'users.last_name', 
+                'users.id as user_id',
+                \DB::raw('EXISTS(SELECT 1 FROM package_movements WHERE package_movements.handled_by_courier_id = employees.id AND package_movements.departure_time IS NULL) as assigned')
+            )
+            ->distinct()
+            ->get();
+    
+        return response()->json([
+            'success' => true,
+            'couriers' => $couriers
+        ]);
+    }
+
+    // Methode uitschakelen om problemen te voorkomen
+    public function resetFilter(Request $request)
+    {
+        // Deze methode wordt niet langer gebruikt
+        return response()->json(['success' => true]);
     }
 }
