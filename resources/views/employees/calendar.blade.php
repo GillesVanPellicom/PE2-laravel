@@ -1005,12 +1005,7 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     const notificationDropdown = document.getElementById('notificationDropdown');
                     const notificationBadge = document.getElementById('notificationBadge');
@@ -1018,16 +1013,19 @@
 
                     notificationList.innerHTML = ''; // Clear existing notifications
 
-                    if (data.length === 0) {
+                    // Filter out sick leave notifications
+                    const filteredNotifications = data.filter(notification => notification.message_template_id !== 4);
+
+                    if (filteredNotifications.length === 0) {
                         notificationList.innerHTML = '<div class="text-gray-500 text-sm">No unread notifications</div>';
                         notificationBadge.classList.add('hidden');
                         return;
                     }
 
-                    notificationBadge.textContent = data.length;
+                    notificationBadge.textContent = filteredNotifications.length;
                     notificationBadge.classList.remove('hidden');
 
-                    data.forEach(notification => {
+                    filteredNotifications.forEach(notification => {
                         const notificationItem = document.createElement('div');
                         notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
                         notificationItem.innerHTML = `
