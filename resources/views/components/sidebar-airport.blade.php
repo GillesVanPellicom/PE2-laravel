@@ -19,11 +19,6 @@
                     Flight Packages
                 </a>
             </li>
-            <li>
-                <a href="{{ route('workspace.contract') }}" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
-                    Contracts
-                </a>
-            </li>
         </ul>
     </div>
     <div class="flex-1 p-6">

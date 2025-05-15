@@ -10,6 +10,7 @@ use App\Models\{User, Employee, EmployeeContract};
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Role;
 use carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -213,15 +214,21 @@ class AuthController extends Controller
             $userData['birth_date'] = $validated['birth_date'];
         } elseif ($request->account_type === 'company') {
             $userData['company_name'] = $validated['company_name'];
-            $userData['VAT_Number'] = $validated['VAT_Number']; // Ensure VAT number is saved^
+            $userData['VAT_Number'] = $validated['VAT_Number']; // Ensure VAT number is saved
             $userData['isCompany'] = 1;
 
         }
     
         // Create the user
-        Log::info($userData);
         $user = User::create($userData);
     
+        if ($user->isCompany) {
+            $businessClientRole = \Spatie\Permission\Models\Role::where('name', 'business_client')->first(); // Explicitly reference Spatie's Role
+            if ($businessClientRole) {
+                $user->assignRole($businessClientRole);
+            }
+        }
+        
         // Redirect to the login page
         return redirect('login')->with('success', 'Account created successfully. Please log in.');
     }

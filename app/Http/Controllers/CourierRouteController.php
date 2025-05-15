@@ -32,6 +32,7 @@ class CourierRouteController extends Controller
             $package = Package::where('id', $packagemovement->package_id)->first();
             $movement = ($packagemovement->next_movement == null) ? $packagemovement : $packagemovement->nextHop;
             $location = Node::fromId($packagemovement->current_node_id);
+            $at_end = ($packagemovement->next_movement == null && $location->getType() == NodeType::ADDRESS && $package->current_location_id == $packagemovement->current_node_id);
             $route[] = [
                 'latitude' => $location->getLat(CoordType::DEGREE),
                 'longitude' => $location->getLong(CoordType::DEGREE),
@@ -40,7 +41,7 @@ class CourierRouteController extends Controller
                     "street" => $location->getAddress()->street,
                     "house_number" => $location->getAddress()->house_number,
                 ] : null,
-                'end' => $movement->id == $packagemovement->id,
+                'end' => $at_end,
                 'requires_signature' => $package->requires_signature,
             ];
         }

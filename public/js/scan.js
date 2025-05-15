@@ -228,7 +228,7 @@ function submitManualEntry(event) {
     event.preventDefault();
     const reference = document.getElementById("manualReference").value;
     closeManualEntryModal();
-    scanAction("REF" + reference, MODE);
+    scanAction(reference.includes("REF") ? reference : "REF" + reference, MODE);
 }
 
 function fetchLastPackages() {

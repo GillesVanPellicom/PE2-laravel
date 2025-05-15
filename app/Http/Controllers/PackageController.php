@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Flight;
+use App\Models\Customer;
 use App\Models\FlightContract;
 
 class PackageController extends Controller {
@@ -1185,6 +1186,7 @@ public function storeBulkOrder(Request $request)
             'weight_price' => $weightPrice,
             'delivery_price' => $deliveryPrice,
             'status' => 'pending',
+            'paid' => true,
         ]);
 
         $createdPackages[] = $package;
@@ -1192,12 +1194,25 @@ public function storeBulkOrder(Request $request)
         // Update total prices
         $totalWeightPrice += $weightPrice;
         $totalDeliveryPrice += $deliveryPrice;
+
+        // Add customer to the company's customer list
+        Customer::updateOrCreate(
+            [
+                'company_id' => $userId,
+                'address' => $packageData['addressInput'], // Save the full address as a single string
+            ],
+            [
+                'first_name' => $packageData['name'], // Map to first_name
+                'last_name' => $packageData['lastName'], // Map to last_name
+                'email' => $packageData['receiverEmail'],
+                'phone' => $packageData['receiver_phone_number'],
+            ]
+        );
     }
 
-        // Create an invoice for the bulk order
         $invoice = Invoice::create([
             'company_id' => $userId,
-            'discount' => 0, // Add logic for discounts if needed
+            'discount' => 0,
             'expiry_date' => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
             'is_paid' => false,
             'is_paid' => false,
@@ -1212,19 +1227,9 @@ public function storeBulkOrder(Request $request)
             ]);
         }
 
-    session([
-        'bulk_order_total_price' => $totalWeightPrice + $totalDeliveryPrice,
-        'bulk_order_weight_price' => $totalWeightPrice,
-        'bulk_order_delivery_price' => $totalDeliveryPrice,
-        'bulk_order_package_ids' => collect($createdPackages)->pluck('id')->toArray(),
-    ]);
-
-    return redirect()->route('bulk-packagepayment', ['id' => $createdPackages[0]->id])
-    ->with('bulk_order_total_price', $totalWeightPrice + $totalDeliveryPrice)
-    ->with('bulk_order_weight_price', $totalWeightPrice)
-    ->with('bulk_order_delivery_price', $totalDeliveryPrice)
-    ->with('bulk_order_package_ids', collect($createdPackages)->pluck('id')->toArray())
-    ->with('success', 'Packages created successfully');
+    $packageIds = collect($createdPackages)->pluck('id')->implode(',');
+    return redirect()->route('packages.bulk-details', ['ids' => $packageIds])
+        ->with('success', 'Packages created successfully.');
 }
 
 public function bulkPackageDetails($ids)
@@ -1251,33 +1256,6 @@ public function bulkPackageDetails($ids)
         ->with('success', 'Payment completed successfully.');
 }
 
-public function bulkPackagePayment($packageID)
-{
-    $bulkOrderPackageIds = session('bulk_order_package_ids', []);
-
-    if (empty($bulkOrderPackageIds)) {
-        return back()->withErrors(['error' => 'No packages found for the bulk order.']);
-    }
-
-    // Update all packages in the bulk order to "paid"
-    Package::whereIn('id', $bulkOrderPackageIds)
-        ->where('user_id', Auth::user()->id)
-        ->update(['paid' => true]);
-
-    // Fetch the first package for display purposes
-    $package = Package::with(['user'])
-        ->where('user_id', Auth::user()->id)
-        ->where('id', $packageID)
-        ->first();
-
-    if (!$package) {
-        return back()->withErrors(['error' => 'Package not found.']);
-    }
-
-    return view('packagepayment', compact('package'))
-        ->with('success', 'Payment completed successfully.');
-}
-
 public function companyDashboard()
 {
     $userId = Auth::id();
@@ -1288,6 +1266,7 @@ public function companyDashboard()
 
     return view('Packages.company-dashboard', compact('totalPackages', 'unpaidPackages'));
 }
+
 private function generateUniqueInvoiceReference()
 {
     $maxAttempts = 100;
