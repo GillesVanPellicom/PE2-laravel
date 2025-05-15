@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use App\Models\Ticket;
+use App\Models\TicketMessage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Package;
@@ -60,6 +62,20 @@ class PackageController extends Controller {
     public function setStatusPackage ($id) {
         $package = Package::findOrFail($id);
         $statusToSet = request()->get('status') ?? '';
+        if ($statusToSet === 'Pending') {
+            $new_ticket = Ticket::create([
+                'user_id' => Auth::id(),
+                'subject'=> 'Package status changed',
+                'status' => "open",
+                'description' => 'The status of the package was changed to: ' . $statusToSet
+            ]);
+            TicketMessage::create([
+                'ticket_id' => $new_ticket->id,
+                "is_customer_message"=>false,
+                'message' => "The Package was not left at the pickup point by the delivery driver and was not delivered
+                to the pickup."
+            ]);
+        }
         $package->update(['status' => $statusToSet]);
         return redirect()->route('workspace.pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
     }
@@ -83,15 +99,10 @@ class PackageController extends Controller {
         $packages = Package::where('status', '!=', 'delivered')
             ->where('status', '!=', 'returned')
             ->where('status', '!=', 'cancelled')
-            ->whereHas('deliveryMethod', function ($query) {
-                $query->where('code', 'PICKUP_POINT');
-            })
+            ->where('destination_location_id', '@DOP_0001')
             ->with(['movements' => function ($query) use ($today) {
                 $query->whereDate('arrival_time', $today);
             }])
-            ->whereHas('movements', function ($query) use ($today) {
-                $query->whereDate('arrival_time', $today);
-            })
             ->paginate(10);
 
         return view('pickup.receiving-packages', compact('packages'));
@@ -803,7 +814,7 @@ class PackageController extends Controller {
  * Format: REF + YYYY + MM + XXXXXXXX (where X is random number)
  * Example: REF20250312345678
  * I changed this to REF for consitency sake & it otherwise breaks my code.
- * 
+ *
  * @return string
  * @throws \Exception if unable to generate unique number after maximum attempts
  */
