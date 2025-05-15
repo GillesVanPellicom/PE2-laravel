@@ -39,8 +39,8 @@ use App\Http\Controllers\CustomerController;
 
                 if (auth()->user()->hasPermissionTo('*')) {
                     return view('real-homepage');
-                } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
-                    return redirect()->route('workspace.courier.scan');
+                } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages"])) {
+                    return redirect()->route('workspace.courier');
                 } elseif (auth()->user()->hasAnyPermission(['HR.checkall',"HR.create", "HR.assign"])) {
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
@@ -105,7 +105,7 @@ use App\Http\Controllers\CustomerController;
 
             Route::post('/courier/submit-signature', [CourierRouteController::class, 'submitSignature'])->name('courier.submitSignature');
 
-            
+
 
 
             // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');

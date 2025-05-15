@@ -169,8 +169,8 @@ function scanAction(message, mode) {
 
     if (mode == "RETURN") {
         document.getElementById("infoModal").innerHTML =
-            '<div class="bg-white p-6 rounded-lg shadow-lg w-80 relative flex flex-col"><h2 class="text-xl font-semibold text-center mb-3"> Are you sure you want to mark this package as returned? </h2> <button class="flex flex-col items-center justify-center bg-red-800 hover:bg-red-900 text-white p-4 rounded-xl focus:outline-none" onclick="confirmAction(' +
-            message +
+            '<div class="bg-white p-6 rounded-lg shadow-lg w-80 relative flex flex-col"><h2 class="text-xl font-semibold text-center mb-3"> Are you sure you want to mark this package as returned? </h2> <button class="flex flex-col items-center justify-center bg-red-800 hover:bg-red-900 text-white p-4 rounded-xl focus:outline-none" onclick="confirmAction(' + "'" +
+             message + "'" +
             ')"> Yes </button></h2> <button class="flex flex-col items-center justify-center bg-gray-800 mt-2 hover:bg-gray-900 text-white p-4 rounded-xl focus:outline-none" onclick="closeInfoModal()"> No </button></div>';
         openInfoModal();
         return;
