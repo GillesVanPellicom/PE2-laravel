@@ -2,7 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models;
+use App\Models\EmployeeFunction;
+use App\Models\EmployeeContract;
+use App\Http\Controllers\EmployeeController;
+use App\Models\Airline;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -31,16 +35,17 @@ class DatabaseSeeder extends Seeder {
       ContractsSeeder::class,
       DeliveryMethodSeeder::class,
       WeightClassSeeder::class,
-      PackageSeeder::class,
-      FlightsSeeder::class,
-      VacationSeeder::class,
-      FlightsContractSeeder::class,
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
+      PackageSeeder::class,
+      VacationSeeder::class,
+      FlightsSeeder::class,
+      FlightsContractSeeder::class,
       MessageTemplatesSeeder::class,
       VehiclesSeeder::class,
       CourierSeeder::class,
       TicketSeeder::class,
+      PackageMovementSeeder::class,
       UserRoleSeeder::class,
     ]);
 

@@ -1,7 +1,7 @@
 # Scenario 1 of Blue Sky Unlimited Final Demo
 
 ## Required for the demo
-1. A big white screen (biemer)
+1. A big white screen (beamer)
 2. A Tv screen or something similar
 3. Cardboard box with generated QR code
 4. All SS stuff - Database server - Mail server

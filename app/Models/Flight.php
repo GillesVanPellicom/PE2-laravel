@@ -21,7 +21,10 @@ class Flight extends Model
         'arrive_location_id',
         'delayed_minutes',
         'isActive',
-        'status'
+        'status',
+        'current_weight', 
+        'gate',
+        'router_edge_id',
     ];
 
     public function departureAirport()
@@ -42,5 +45,15 @@ class Flight extends Model
     public function arrivalLocation()
     {
         return $this->belongsTo(Location::class, 'arrive_location_id', 'id');
+    }
+
+    public function contract()
+    {
+        return $this->hasOne(FlightContract::class, 'flight_id', 'id');
+    }
+
+    public function isActive()
+    {
+        return $this->isActive && $this->status !== 'Canceled';
     }
 }

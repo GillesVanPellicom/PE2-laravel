@@ -42,4 +42,7 @@ class Address extends Model
     {
         return $this->hasMany(Package::class, 'addresses_id');
     }
+    public function addressInString () {
+        return $this->street . ' ' . $this->house_number . ($this->bus_number ? ' ' . $this->bus_number : '') . ', ' . $this->city->name;
+    }
 }

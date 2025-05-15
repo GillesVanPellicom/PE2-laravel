@@ -40,7 +40,7 @@
                         @endrole
                     @endif
                     <x-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
-                        {{ __('Send Package') }}
+                        {{ __('Send a parcel') }}
                     </x-nav-link>
                     @role('business_client|admin')
                         <x-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">
@@ -98,8 +98,14 @@
                                 <x-dropdown-link href="{{ route('packages.company-dashboard') }}">
                                     {{ __('Company Dashboard') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link href="{{ route('invoices.myinvoices') }}">
+                                    {{ __('My Invoices') }}
+                                </x-dropdown-link>
                             @endif
                         @endauth
+                        <x-dropdown-link href="{{route('tickets.nytickets')}}">
+                            {{ __('Support') }}
+                        </x-dropdown-link>
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('auth.logout') }}">
@@ -173,7 +179,7 @@
                 @endrole
             @endif
             <x-responsive-nav-link :href="route('packages.send-package')" :active="request()->routeIs('packages.send-package')">
-                {{ __('Send Package') }}
+                {{ __('Send a parcel') }}
             </x-responsive-nav-link>
                 @role('business_client|admin')
                 <x-responsive-nav-link :href="route('packages.company-dashboard')" :active="request()->routeIs('packages.company-dashboard')">

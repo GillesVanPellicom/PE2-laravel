@@ -10,6 +10,7 @@ use App\Models\{User, Employee, EmployeeContract};
 use App\Models\Address;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Role;
 use carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -219,9 +220,15 @@ class AuthController extends Controller
         }
     
         // Create the user
-        Log::info($userData);
         $user = User::create($userData);
     
+        if ($user->isCompany) {
+            $businessClientRole = \Spatie\Permission\Models\Role::where('name', 'business_client')->first(); // Explicitly reference Spatie's Role
+            if ($businessClientRole) {
+                $user->assignRole($businessClientRole);
+            }
+        }
+        
         // Redirect to the login page
         return redirect('login')->with('success', 'Account created successfully. Please log in.');
     }
