@@ -1,6 +1,6 @@
 <x-courier>
     <div class="p-2 px-auto h-svh flex items-center justify-center">
-    <form action="{{ route('courier.authenticate') }}" method="POST" class="bg-white border-2 border-gray-200 p-8 rounded shadow-xl w-full max-w-md">
+    <form action="{{ route('workspace.courier.authenticate') }}" method="POST" class="bg-white border-2 border-gray-200 p-8 rounded shadow-xl w-full max-w-md">
         @csrf
         <h1 class="text-2xl font-bold mb-6">Please sign in</h1>
 

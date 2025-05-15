@@ -7,9 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <a href="{{ route('airports') }}">Airports</a>
+    <a href="{{ route('workspace.airports') }}">Airports</a>
     <h1>create contract</h1>
-    <form method='post' action='{{route('contract.store')}}'>
+    <form method='post' action='{{route('workspace.contract.store')}}'>
         @csrf
         @method('post')
         <div>

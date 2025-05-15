@@ -14,7 +14,9 @@ class MessageTemplatesSeeder extends Seeder
             ['key' => 'holiday_approved', 'message' => 'Your holiday request has been approved!'],
             ['key' => 'holiday_denied', 'message' => 'Your holiday request has been denied.'],
             ['key' => 'new_announcement', 'message' => 'A new announcement has been posted. Check it out!'],
-            ['key' => 'sick_leave_notification', 'message' => 'Employee {employee_name} has called in sick for {date}.'],
+            ['key' => 'sick_leave_notification', 'message' => 'Employee {employee_name} has called in sick.'],
+            ['key' => 'End_Of_Year', 'message' => 'Take your remaining leave days before they expire! ']
+
         ]);
     }
 }

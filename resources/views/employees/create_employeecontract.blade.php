@@ -4,11 +4,11 @@
 
 <div class="container mx-auto py-10">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4">Create Employee Contract</h1>
+            <h1 class="text-4xl font-bold mb-4">Add Employee Contract</h1>
         </div>
         <div class="max-w-3xl mx-auto p-6 bg-white rounded shadow-lg mt-8">
-        
-            <form action="{{ route('employees.store_contract') }}" method="POST" class="space-y-6">
+
+            <form action="{{ route('workspace.employees.store_contract') }}" method="POST" class="space-y-6">
                 @csrf
                 @method('POST')
 
@@ -18,7 +18,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="-1">Select an employee</option>
                         @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" 
+                            <option value="{{ $employee->id }}"
                                 @if(old('employee') == $employee->id) selected @endif>
                                 {{ $employee->user->first_name }} {{ $employee->user->last_name }}
                             </option>
@@ -36,7 +36,7 @@
                         <option value="-1">Select a function</option>
                         @foreach($functions as $function)
                             <option value="{{ $function->id }}"
-                            @if(old('function') == $function->id) selected @endif>    
+                            @if(old('function') == $function->id) selected @endif>
                             {{ $function->name }}</option>
                         @endforeach
                     </select>
@@ -52,7 +52,7 @@
                         <option value="-1">Select a location</option>
                         @foreach($locations as $location)
                             <option value="{{ $location->id }}"
-                            @if(old('location') == $location->id) selected @endif>    
+                            @if(old('location') == $location->id) selected @endif>
                             {{ $location->description }}</option>
                         @endforeach
                     </select>
@@ -82,7 +82,7 @@
                 <div>
                     <button type="submit"
                         class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
-                        Create Contract
+                        Add Contract
                     </button>
                 </div>
             </form>

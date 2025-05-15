@@ -19,10 +19,16 @@ class RolesAndPermissionsSeeder extends Seeder
     // ╚════════════════════════════════════════╝
 
     private array $permissions = [
+        "*",
+
         'employee',
         'scan',
         "courier.route",
         "scan.deliver",
+
+        // START API
+        "token.create",
+        // END API
 
         /* START Employees */
         "courier.packages",
@@ -31,10 +37,20 @@ class RolesAndPermissionsSeeder extends Seeder
         "HR.assign",
         /* END Employees */
 
+        /*START Airport*/
+        "airport.view",
+        /*END Airport*/
         /* START Pickup */
         'pickup.view',
         'pickup.edit',
         /* END Pickup */
+
+        /*START DC*/
+        'assign.courier',
+        /*END DC*/
+        /* START Business Client */
+        'business_client.view',
+        /* END Business Client */
     ];
 
 
@@ -43,8 +59,9 @@ class RolesAndPermissionsSeeder extends Seeder
         "admin" => ["*"],
         /* ADMIN */
 
-        /* START Courier */
         "employee" => ["employee"],
+
+        /* START Courier */
         "scan" => ["scan"],
         "courier" => ["courier.route", "scan.deliver", "courier.packages"],
         /* END Courier */
@@ -53,9 +70,24 @@ class RolesAndPermissionsSeeder extends Seeder
         "HRManager" => ["HR.create", "HR.assign"],
         "HR" => ["HR.checkall"],
         /* END Employees */
+
+        /* START Airport */
+        "airport" => ["airport.view"],
+        /* END Airport */
         /* START Pickup */
         "pickup" => ["pickup.view", "pickup.edit"],
         /* END Pickup */
+
+        // START API
+        "api" => ["token.create"],
+        //END API
+        //Distribution Center
+        "DCManager" => ["assign.courier"],
+        //END
+
+        //Business Client
+        "business_client" => ["business_client.view"],
+        // End Business Client
     ];
 
 
@@ -65,14 +97,12 @@ class RolesAndPermissionsSeeder extends Seeder
         /* END BASE */
 
         /* START Courier */
-        "scan" => ["courier"],
+        "scan" => ["courier","airport"],
         /* END Courier */
 
         /* START Employees */
         "HR" => ["HRManager"],
         /* END Employees */
-
-
     ];
 
 
@@ -84,7 +114,6 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         ConsoleHelper::info('Initializing roles and permissions');
-        ConsoleHelper::info('Starting transaction');
         try {
             // Place all logic in a transaction to ensure atomicity
             DB::transaction(function () {

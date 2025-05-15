@@ -9,9 +9,6 @@
                         <a href="{{ route('packages.send-package')}}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                             <i class="fas fa-plus mr-2"></i>Send Package
                         </a>
-                        <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200">
-                            <i class="fas fa-filter mr-2"></i>Filter
-                        </button>
                     </div>
                 </div>
     
@@ -103,10 +100,12 @@
                                     @endif
                                         </span>
                                     </div>
+                                    @if($package->requires_signature)
                                     <div class="flex items-center text-gray-600">
                                         <i class="fas fa-signature w-5 text-purple-500"></i>
                                         <span class="ml-2 text-sm text-purple-600 font-medium">Signature Required</span>
                                     </div>
+                                    @endif
                                 </div>
                                 <div class="mt-4">
                                     <a href="{{ route('packages.packagedetails', $package->id) }}" class="block w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-center py-2 rounded-md transition-colors duration-200">
@@ -186,10 +185,12 @@
                                         @endif
                                         </span>
                                     </div>
+                                    @if($package->requires_signature)
                                     <div class="flex items-center text-gray-600">
                                         <i class="fas fa-signature w-5 text-purple-500"></i>
                                         <span class="ml-2 text-sm text-purple-600 font-medium">Signature Required</span>
                                     </div>
+                                    @endif
                                 </div>
                                 <div class="mt-4">
                                     @if ($package->paid)

@@ -5,23 +5,18 @@
         </div>
         <ul class="mt-6 space-y-4">
             <li>
-                <a href="/airport" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
+                <a href="{{ route('workspace.airports') }}" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
                     Airport
                 </a>
             </li>
             <li>
-                <a href="/flights" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
+                <a href="{{ route('workspace.flights') }}" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
                     Flights
                 </a>
             </li>
             <li>
-                <a href="/flightpackages" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
+                <a href="{{ route('workspace.flightpackages') }}" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
                     Flight Packages
-                </a>
-            </li>
-            <li>
-                <a href="/contract" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
-                    Contracts
                 </a>
             </li>
         </ul>

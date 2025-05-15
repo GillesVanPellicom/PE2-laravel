@@ -2,7 +2,7 @@
 
 namespace App\Services\RouteTracer;
 
-use App\Services\Router\GeoMath;
+use App\Services\Router\Helpers\GeoMath;
 
 class RouteTrace
 {

@@ -9,30 +9,27 @@ use Laravel\Pail\ValueObjects\Origin\Console;
 use NunoMaduro\Collision\Adapters\Phpunit\State;
 use App\Models\Notification;
 use App\Models\MessageTemplate;
+use App\Models\Employee;
 
 class VacationController extends Controller
 {
     public function getPendingVacations()
     {
-        $vacations = Vacation::where('approve_status', 'pending')
-            ->with(['employee.user']) // Ensure employee model has a user() relationship
-            ->get();
+        $pendingVacations = Vacation::where('approve_status', 'Pending')
+            ->with('employee.user') // Ensure employee and user relationships are loaded
+            ->get()
+            ->map(function ($vacation) {
+                return [
+                    'id' => $vacation->vacation_id,
+                    'employee_name' => optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name,
+                    'start_date' => $vacation->start_date,
+                    'end_date' => $vacation->end_date,
+                    'approve_status' => $vacation->approve_status,
+                    'day_type' => $vacation->day_type,
+                ];
+            });
 
-        $vacations->transform(function ($vacation) {
-            $employee = optional($vacation->employee);
-            $user = optional($employee->user);
-
-            return [
-                'id' => $vacation->vacation_id,
-                'employee_name' => ($user->first_name ?? 'Unknown') . ' ' . ($user->last_name ?? ''),
-                'start_date' => $vacation->start_date,
-                'end_date' => $vacation->end_date,
-                'approve_status' => $vacation->approve_status,
-                'day_type' => $vacation->day_type, // Include day_type in the response
-            ];
-        });
-
-        return response()->json($vacations);
+        return response()->json($pendingVacations);
     }
 
     public function getApprovedVacations()
@@ -41,7 +38,7 @@ class VacationController extends Controller
             ->where('vacation_type', '!=', 'Sick Leave') // Exclude sick leave
             ->with(['employee.user']) // Ensure employee and user relationship is loaded
             ->get();
-    
+
         $vacationData = $vacations->map(function ($vacation) {
             return [
                 'id' => $vacation->vacation_id,
@@ -52,10 +49,10 @@ class VacationController extends Controller
                 'vacation_type' => $vacation->vacation_type, // Include vacation type
             ];
         });
-    
+
         // Debugging: Log data in Laravel (Check storage/logs/laravel.log)
         \Log::info('Approved Vacations:', $vacationData->toArray());
-    
+
         return response()->json($vacationData);
     }
 
@@ -84,14 +81,14 @@ class VacationController extends Controller
 
         return response()->json($vacations);
     }
-    
+
 
     public function showAllVacations()
     {
         $user = Auth::user();
 
         if (!$user || !$user->employee) {
-            return redirect()->route('employees.calendar')->with('error', 'You must be an employee to view holiday requests.');
+            return redirect()->route('workspace.employees.calendar')->with('error', 'You must be an employee to view holiday requests.');
         }
 
         // Exclude sick leave entries
@@ -107,7 +104,7 @@ class VacationController extends Controller
         \Log::info("Updating vacation", ['vacation_id' => $id, 'status' => $request->status]);
 
         $vacation = Vacation::where('vacation_id', $id)->firstOrFail();
-        $vacation->approve_status = $request->status;
+        $vacation->approve_status = $request->status; // Update the status based on the request
         $vacation->save();
 
         // Fetch the employee's user ID
@@ -115,25 +112,42 @@ class VacationController extends Controller
 
         if ($employee) {
             // If the request is rejected, increment the employee's leave balance based on day_type
-            if ($request->status === 'rejected') {
+            if ($request->status === 'Rejected') {
                 $incrementValue = ($vacation->day_type === 'Whole Day') ? 1 : 0.5; // Restore full or half day
-                $employee->increment('leave_balance', $incrementValue);
+
+                if ($vacation->vacation_type === 'Holiday') {
+                    $employee->increment('leave_balance', $incrementValue);
+                } elseif ($vacation->vacation_type === 'Sick Leave') {
+                    $employee->increment('sick_leave_balance', $incrementValue);
+                }
             }
 
-            // Get the appropriate message template
-            $templateKey = $request->status === 'approved' ? 'holiday_approved' : 'holiday_denied';
-            $template = MessageTemplate::where('key', $templateKey)->first();
+            // Fetch the message template based on the status
+            $templateId = $request->status === 'Approved' ? 1 : 2; // 1 for approved, 2 for rejected
+            $template = MessageTemplate::find($templateId);
 
             if ($template) {
-                // Save the notification
-                Notification::create([
-                    'user_id' => $employee->user_id,
-                    'message_template_id' => $template->id,
-                ]);
+                // Ensure the user_id is correctly set for the notification
+                $userId = $employee->user_id;
+
+                if ($userId) {
+                    // Save the notification
+                    Notification::create([
+                        'user_id' => $userId,
+                        'message_template_id' => $template->id,
+                        'is_read' => false, // Mark the notification as unread
+                    ]);
+                } else {
+                    \Log::error("Failed to create notification: user_id is missing for employee", ['employee_id' => $employee->id]);
+                }
+            } else {
+                \Log::error("Failed to fetch message template", ['template_id' => $templateId]);
             }
+        } else {
+            \Log::error("Failed to fetch employee for vacation", ['vacation_id' => $id]);
         }
 
-        // Return the updated vacation data with color for the frontend
+        // Return the updated vacation data with the message
         $statusColors = [
             'pending' => '#FFC107',  // Yellow
             'approved' => '#28A745', // Green
@@ -145,15 +159,63 @@ class VacationController extends Controller
             'start_date' => $vacation->start_date,
             'end_date' => $vacation->end_date,
             'vacation_type' => $vacation->vacation_type,
-            'approve_status' => $vacation->approve_status,
+            'approve_status' => strtolower($vacation->approve_status), // Ensure the status is lowercase
             'color' => $statusColors[strtolower($vacation->approve_status)] ?? '#6C757D', // Default to gray if status is unknown
+            'message' => $template->message ?? 'No message found', // Include the message from the template
         ]);
     }
 
     public function getManagerNotifications()
     {
-        $vacations = Vacation::where('approve_status', 'pending')->with('employee')->get();
-        return response()->json($vacations);
+        // Fetch vacations with 'pending' status and vacation_type "Holiday"
+        $vacations = Vacation::where('approve_status', 'pending')
+            ->where('vacation_type', 'Holiday')
+            ->with('employee.user') // Include employee and user relationships
+            ->get();
+
+        // Transform the data for the frontend
+        $notifications = $vacations->map(function ($vacation) {
+            return [
+                'id' => $vacation->id,
+                'employee_name' => $vacation->employee->user->first_name . ' ' . $vacation->employee->user->last_name,
+                'vacation_type' => $vacation->vacation_type,
+                'day_type' => $vacation->day_type,
+                'start_date' => $vacation->start_date,
+                'end_date' => $vacation->end_date,
+            ];
+        });
+
+        return response()->json($notifications);
+    }
+
+    public function getSickLeaveNotifications()
+    {
+        // Fetch sick leave notifications where is_read is 0
+        $notifications = Notification::whereHas('messageTemplate', function ($query) {
+                $query->where('key', 'sick_leave_notification');
+            })
+            ->where('is_read', 0)
+            ->with('user')
+            ->get()
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'employee_name' => optional($notification->user)->first_name . ' ' . optional($notification->user)->last_name,
+                    'message' => $notification->messageTemplate->content,
+                    'created_at' => $notification->created_at->format('Y-m-d H:i:s'),
+                ];
+            });
+
+        return response()->json($notifications);
+    }
+
+    public function markSickLeaveAsRead($id)
+    {
+        $notification = Notification::findOrFail($id);
+        $notification->is_read = 1;
+        $notification->save();
+
+        return response()->json(['message' => 'Notification marked as read.']);
     }
 
     public function store(Request $request)
@@ -165,6 +227,7 @@ class VacationController extends Controller
         }
 
         $leaveBalance = $user->employee->leave_balance;
+        $sickLeaveBalance = $user->employee->sick_leave_balance; // Fetch sick leave balance
         $requestedDays = 0;
 
         // Process holidays
@@ -198,50 +261,66 @@ class VacationController extends Controller
         }
 
         // Process sick days
-        foreach ($request->sickDays as $date) {
-            // Ensure the sick leave is only for today
-            if ($date !== now()->toDateString()) {
-                return response()->json(['error' => 'Sick leave can only be requested for today'], 400);
+        $sickDaysCount = 0; // Track the number of sick days added
+        foreach ($request->sickDays as $dateRange) {
+            $startDate = $dateRange['start_date'];
+            $endDate = $dateRange['end_date'];
+
+            $current = new \DateTime($startDate);
+            $end = new \DateTime($endDate);
+
+            while ($current <= $end) {
+                $formattedDate = $current->format('Y-m-d');
+
+                // Check if a sick leave already exists for the same day
+                $existingSickLeave = Vacation::where('employee_id', $user->employee->id)
+                    ->where('vacation_type', 'Sick Leave')
+                    ->where('start_date', $formattedDate)
+                    ->exists();
+
+                if (!$existingSickLeave) {
+                    Vacation::create([
+                        'employee_id' => $user->employee->id,
+                        'vacation_type' => 'Sick Leave',
+                        'start_date' => $formattedDate,
+                        'end_date' => $formattedDate,
+                        'approve_status' => 'Approved',
+                        'day_type' => 'Whole Day',
+                    ]);
+                      // Create a notification for the sick leave request
+                    $template = MessageTemplate::where('key', 'sick_leave_notification')->first();
+                    if ($template) {
+                        Notification::create([
+                            'user_id' => $user->id,
+                            'message_template_id' => $template->id,
+                            'is_read' => false,
+                            'message' => str_replace(
+                                '{employee_name}',
+                                "{$user->first_name} {$user->last_name}",
+                                $template->message
+                            ),
+                        ]);
+                    }
+
+                    
+
+                    $sickDaysCount++; // Increment the count of sick days added
+                }
+
+                $current->modify('+1 day');
             }
-
-            // Check if a sick leave already exists for the same day
-            $existingSickLeave = Vacation::where('employee_id', $user->employee->id)
-                ->where('vacation_type', 'Sick Leave')
-                ->where('start_date', $date)
-                ->exists();
-
-            if ($existingSickLeave) {
-                return response()->json(['error' => 'You have already requested a sick leave for today.'], 400);
-            }
-
-            $vacation = Vacation::create([
-                'employee_id' => $user->employee->id,
-                'vacation_type' => 'Sick Leave',
-                'start_date' => $date,
-                'end_date' => $date,
-                'approve_status' => 'Approved',
-                'day_type' => 'Whole Day',
-            ]);
-
-            // Create a notification for the employee who called in sick
-            Notification::create([
-                'user_id' => $user->id, // Notification is linked to the logged-in user
-                'message_template_id' => 4, // Message template ID for sick leave notification
-                'data' => json_encode([
-                    'vacation_id' => $vacation->id, // Link the vacation ID
-                    'employee_name' => $user->first_name . ' ' . $user->last_name,
-                    'date' => $date,
-                ]),
-                'is_read' => false,
-            ]);
         }
+
+        // Increment sick leave balance
+        $user->employee->increment('sick_leave_balance', $sickDaysCount);
 
         // Deduct holiday balance
         $user->employee->decrement('leave_balance', $requestedDays);
 
         return response()->json([
             'message' => 'Requests saved successfully',
-            'remainingHolidays' => $user->employee->leave_balance
+            'remainingHolidays' => $user->employee->leave_balance,
+            'remainingSickLeave' => $user->employee->sick_leave_balance, // Include updated sick leave balance
         ]);
     }
 
@@ -262,5 +341,185 @@ class VacationController extends Controller
             });
 
         return response()->json($sickLeaves);
+    }
+
+    public function saveVacation(Request $request)
+    {
+        $validated = $request->validate([
+            'holidays' => 'required|array',
+            'sickDays' => 'required|array',
+        ]);
+
+        foreach ($validated['holidays'] as $date => $type) {
+            Vacation::create([
+                'user_id' => Auth::id(),
+                'date' => $date,
+                'type' => $type,
+                'status' => 'pending',
+            ]);
+        }
+
+        foreach ($validated['sickDays'] as $sickDay) {
+            Vacation::create([
+                'user_id' => Auth::id(),
+                'date' => $sickDay['start_date'],
+                'type' => 'sick',
+                'status' => 'pending',
+            ]);
+        }
+
+        return response()->json(['message' => 'Vacation requests saved successfully.']);
+    }
+
+    public function getDayDetails(Request $request)
+    {
+        $date = $request->input('date');
+
+        $availableEmployees = Employee::whereDoesntHave('vacations', function ($query) use ($date) {
+            $query->where('start_date', '<=', $date)
+                  ->where('end_date', '>=', $date)
+                  ->where('approve_status', 'approved');
+        })->get(['id', 'user_id']);
+
+        $sickEmployees = Vacation::where('vacation_type', 'Sick Leave')
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->where('approve_status', 'approved')
+            ->with('employee.user')
+            ->get();
+
+        $holidayEmployees = Vacation::where('vacation_type', 'Holiday')
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->where('approve_status', 'approved')
+            ->with('employee.user')
+            ->get();
+
+        $pendingRequestsCount = Vacation::where('approve_status', 'Pending') // Count pending requests
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->count();
+
+        return response()->json([
+            'available' => $availableEmployees,
+            'sick' => $sickEmployees,
+            'holiday' => $holidayEmployees,
+            'pendingCount' => $pendingRequestsCount, // Return the count of pending requests
+        ]);
+    }
+
+    public function getPendingRequestsForDay(Request $request)
+    {
+        $date = $request->input('date');
+
+        $pendingRequests = Vacation::where('approve_status', 'Pending')
+            ->where('start_date', $date)
+            ->with('employee.user') // Include employee and user relationships
+            ->get()
+            ->map(function ($vacation) {
+                return [
+                    'id' => $vacation->vacation_id,
+                    'employee_name' => optional($vacation->employee->user)->first_name . ' ' . optional($vacation->employee->user)->last_name,
+                    'vacation_type' => $vacation->vacation_type,
+                    'day_type' => $vacation->day_type,
+                    'start_date' => $vacation->start_date,
+                    'end_date' => $vacation->end_date,
+                ];
+            });
+
+        return response()->json($pendingRequests);
+    }
+
+    public function getAvailabilityData(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $dates = collect();
+        $currentDate = new \DateTime($startDate);
+        $end = new \DateTime($endDate);
+
+        while ($currentDate <= $end) {
+            $dates->push($currentDate->format('Y-m-d'));
+            $currentDate->modify('+1 day');
+        }
+
+        $availabilityData = $dates->map(function ($date) {
+            $available = Employee::whereDoesntHave('vacations', function ($query) use ($date) {
+                $query->where('start_date', '<=', $date)
+                      ->where('end_date', '>=', $date)
+                      ->where('approve_status', 'approved');
+            })->count();
+
+            $onHoliday = Vacation::where('vacation_type', 'Holiday')
+                ->where('start_date', '<=', $date)
+                ->where('end_date', '>=', $date)
+                ->where('approve_status', 'approved')
+                ->count();
+
+            $sick = Vacation::where('vacation_type', 'Sick Leave')
+                ->where('start_date', '<=', $date)
+                ->where('end_date', '>=', $date)
+                ->where('approve_status', 'approved')
+                ->count();
+
+            $pending = Vacation::where('approve_status', 'Pending') // Fetch pending requests
+                ->where('start_date', $date)
+                ->count();
+
+            return [
+                'date' => $date,
+                'available' => $available,
+                'onHoliday' => $onHoliday,
+                'sick' => $sick,
+                'pending' => $pending, // Include pending count as a new column
+            ];
+        });
+
+        return response()->json($availabilityData);
+    }
+
+    public function sendEndOfYearNotifications()
+    {
+        $template = MessageTemplate::where('key', 'End_Of_Year')->first();
+
+        if (!$template) {
+            return response()->json(['message' => 'Message template not found.'], 404);
+        }
+
+        $employees = Employee::with('user')->get();
+
+        foreach ($employees as $employee) {
+            if ($employee->leave_balance > 0) {
+                $message = "You have {$employee->leave_balance} remaining holidays left for this year, please use them before the end of the year. test";
+
+                Notification::create([
+                    'user_id' => $employee->user_id,
+                    'message_template_id' => $template->id,
+                    'is_read' => false, // Mark the notification as unread
+                    'message' => $message, // Save the generated message
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'End-of-year notifications saved successfully.']);
+    }
+
+    public function markEmployeeAsSick($employeeId)
+    {
+        $employee = Employee::findOrFail($employeeId);
+
+        // Create a sick leave entry for today
+        $today = now()->format('Y-m-d');
+        Vacation::create([
+            'employee_id' => $employee->id,
+            'vacation_type' => 'Sick Leave',
+            'start_date' => $today,
+            'end_date' => $today,
+            'approve_status' => 'Approved',
+            'day_type' => 'Whole Day',
+        ]);
+
+        return response()->json(['message' => "{$employee->user->first_name} {$employee->user->last_name} has been marked as sick."]);
     }
 }

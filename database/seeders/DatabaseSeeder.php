@@ -2,7 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models;
+use App\Models\EmployeeFunction;
+use App\Models\EmployeeContract;
+use App\Http\Controllers\EmployeeController;
+use App\Models\Airline;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,12 +20,12 @@ class DatabaseSeeder extends Seeder {
     // Seed roles and permissions
     $this->call([
       RolesAndPermissionsSeeder::class,
-      CountriesSeeder::class,       
-      CitiesSeeder::class,          
+      CountriesSeeder::class,
+      CitiesSeeder::class,
       AddressesSeeder::class,
       LocationsSeeder::class,
       UserSeeder::class,
-      TeamsSeeder::class,       
+      TeamsSeeder::class,
       EmployeesSeeder::class,
       FunctionsSeeder::class,
       PayrollSeeder::class,
@@ -29,17 +33,22 @@ class DatabaseSeeder extends Seeder {
       AirplanesSeeder::class,
       AirportsSeeder::class,
       ContractsSeeder::class,
-      VehiclesSeeder::class,
       DeliveryMethodSeeder::class,
       WeightClassSeeder::class,
-      PackageSeeder::class,
-      FlightsSeeder::class,
-      VacationSeeder::class,
-      FlightsContractSeeder::class,
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
-      UserRoleSeeder::class,
+      PackageSeeder::class,
+      InvoiceSeeder::class,
+      VacationSeeder::class,
+      FlightsSeeder::class,
+      FlightsContractSeeder::class,
       MessageTemplatesSeeder::class,
+      VehiclesSeeder::class,
+      CourierSeeder::class,
+      TicketSeeder::class,
+      PackageMovementSeeder::class,
+      CourierRouteSeeder::class,
+      UserRoleSeeder::class,
     ]);
 
   }

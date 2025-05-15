@@ -3,85 +3,107 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use App\Models\Ticket;
+use App\Models\TicketMessage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Models\WeightClass;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
+use Illuminate\Support\Facades\Hash;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\PackageCreatedMail;
 use App\Models\Country;
 use App\Models\City;
 use App\Models\User;
+use App\Models\Invoice;
+use App\Models\InvoicePayment;
+use App\Models\PackageInInvoice;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Flight;
+use App\Models\Customer;
+use App\Models\FlightContract;
 
+class PackageController extends Controller {
 
-class PackageController extends Controller
-{
-
-    public function index()
-    {
+    public function index () {
         if (request()->has('search')) {
-            $packages = Package::where('reference', 'like', '%' . request('search','') . '%')
-                ->orWhere('name', 'like', '%' . request('search','') . '%')
-                ->orWhere('receiverEmail', 'like', '%' . request('search','') . '%')
-                ->orWhere('receiver_phone_number', 'like', '%' . request('search','') . '%')
+            $packages = Package::where('reference', 'like', '%' . request('search', '') . '%')
+                ->orWhere('name', 'like', '%' . request('search', '') . '%')
+                ->orWhere('receiverEmail', 'like', '%' . request('search', '') . '%')
+                ->orWhere('receiver_phone_number', 'like', '%' . request('search', '') . '%')
                 ->paginate(10)->withQueryString();
-        } else {
+        }
+        else {
             $packages = Package::paginate(10)->withQueryString();
         }
         return view('pickup.dashboard', compact('packages'));
     }
+
     public function show ($id) {
         try {
             $id = $id !== ' ' ? $id : request()->get('id');
             $package = Package::where('id', $id)->orWhere('reference', $id)->firstOrFail();
             return view('pickup.packageInfo', compact('package'));
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        }
+        catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             //return response()->view('errors.pickup.404', ['message' => 'The entered package not found'], 404);
-            return redirect()->route('pickup.dashboard')->with('package-not-found', 'The package "'.$id.'" does not exist');
-        } catch (\Exception $e) {
-            return redirect()->route('pickup.dashboard')->with('error' , 'An unexpected error occurred, retry again or contact your administrator');
+            return redirect()->route('workspace.pickup.dashboard')->with('package-not-found', 'The package "' . $id . '" does not exist');
+        }
+        catch (\Exception $e) {
+            return redirect()->route('workspace.pickup.dashboard')->with('error', 'An unexpected error occurred, retry again or contact your administrator');
         }
     }
+
     public function setStatusPackage ($id) {
         $package = Package::findOrFail($id);
-        $statusToSet = request()->get('status')?? '';
+        $statusToSet = request()->get('status') ?? '';
+        if ($statusToSet === 'Pending') {
+            $new_ticket = Ticket::create([
+                'user_id' => Auth::id(),
+                'subject'=> 'Package #'.$package->reference.' status changed',
+                'status' => "open",
+                'description' => 'The status of the package was changed to: ' . $statusToSet
+            ]);
+            TicketMessage::create([
+                'ticket_id' => $new_ticket->id,
+                "is_customer_message"=>false,
+                'message' => "The Package: #".$package->reference." was not left at the pickup point by the delivery driver and was not delivered
+                to the pickup."
+            ]);
+        }
         $package->update(['status' => $statusToSet]);
-        return redirect()->route('pickup.dashboard')->with('success', 'The state of the package: '.$package->reference.' was successfully updated to '.$statusToSet);
+        return redirect()->route('workspace.pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
     }
-    public function showPackagesToReturn () {
-    $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
-        ->where('status', '!=', 'Returned')
-        ->where('status', '!=', 'Cancelled')
-        ->whereHas('deliveryMethod', function ($query) {
-            $query->where('code', 'PICKUP_POINT');
-        })
-        ->where('updated_at', '<', Carbon::now()->subDays(7))
-        ->paginate(10);
 
-    return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
+    public function showPackagesToReturn () {
+        $packagesThatNeedToBeReturned = Package::where('status', '!=', 'Delivered')
+            ->where('status', '!=', 'Returned')
+            ->where('status', '!=', 'Cancelled')
+            ->whereHas('deliveryMethod', function ($query) {
+                $query->where('code', 'PICKUP_POINT');
+            })
+            ->where('updated_at', '<', Carbon::now()->subDays(7))
+            ->paginate(10);
+
+        return view('pickup.packages-to-return', compact('packagesThatNeedToBeReturned'));
     }
+
     public function showReceivingPackages () {
         $today = Carbon::today();
 
         $packages = Package::where('status', '!=', 'delivered')
             ->where('status', '!=', 'returned')
             ->where('status', '!=', 'cancelled')
-            ->whereHas('deliveryMethod', function ($query) {
-                $query->where('code', 'PICKUP_POINT');
-            })
+            ->where('destination_location_id', '@DOP_0001')
             ->with(['movements' => function ($query) use ($today) {
                 $query->whereDate('arrival_time', $today);
             }])
-            ->whereHas('movements', function ($query) use ($today) {
-                $query->whereDate('arrival_time', $today);
-            })
             ->paginate(10);
 
         return view('pickup.receiving-packages', compact('packages'));
@@ -98,17 +120,13 @@ class PackageController extends Controller
         ->where('user_id', Auth::user()->id)
         ->get();
 
-        foreach ($packages as $package) {
+        $packages = $packages->filter(function ($package) {
             if ($package->deliveryMethod->requires_location) {
-                if (!$package->destinationLocation || !$package->destinationLocation->address) {
-                    abort(404, 'Destination location address not found for this package');
-                }
+                return $package->destinationLocation && $package->destinationLocation->address;
             } else {
-                if (!$package->address) {
-                    abort(404, 'Address not found for this package');
-                }
+                return $package->address;
             }
-        }
+        });
 
         $receiving_packages = Package::with([
             'user',
@@ -121,17 +139,13 @@ class PackageController extends Controller
         ->where('paid', true)
         ->get();
 
-        foreach ($receiving_packages as $package) {
+        $receiving_packages = $receiving_packages->filter(function ($package) {
             if ($package->deliveryMethod->requires_location) {
-                if (!$package->destinationLocation || !$package->destinationLocation->address) {
-                    abort(404, 'Destination location address not found for this package');
-                }
+                return $package->destinationLocation && $package->destinationLocation->address;
             } else {
-                if (!$package->address) {
-                    abort(404, 'Address not found for this package');
-                }
+                return $package->address;
             }
-        }
+        });
 
         return view('Packages.my-packages', [
             'packages' => $packages,
@@ -147,28 +161,46 @@ class PackageController extends Controller
             'destinationLocation.address.city.country',
             'address.city.country'
         ])
-        ->where('id', $packageID)
-        ->first();
+            ->where('id', $packageID)
+            ->first();
 
         if (!$package) {
             abort(404, 'Package not found');
         }
+        if (Auth::check()) {
+            if (!empty($package->user_id)){
+                if (Auth::user()->id !== $package->user_id && Auth::user()->email !== $package->receiverEmail) {
+                    abort(403, 'You are not authorized to access this package label');
+                }
+            }
 
-        if (Auth::user()->id !== $package->user_id && Auth::user()->email !== $package->receiverEmail) {
-            abort(403, 'You are not authorized to access this package label');
+        }
+        else{
+            if (!empty($package->user_id)) {
+                abort(403, 'You are not authorized to access this package label');
+            }
         }
 
+
         // Get origin and destination addresses
-        $originAddress = $package->user->address->city->country->country_name;
-        $destinationAddress = $package->deliveryMethod->requires_location
-            ? $package->destinationLocation->address->city->country->country_name
-            : $package->address->city->country->country_name;
+        if (Auth::check() && !empty($package->user_id)) {
+            $originAddress = $package->user->address->city->country->country_name;
+            $destinationAddress = $package->deliveryMethod->requires_location
+                ? $package->destinationLocation->address->city->country->country_name
+                : $package->address->city->country->country_name;
+
+        }
+        else{
+            $originAddress = $package->originLocation->address->city->country->country_name;
+            $destinationAddress = $package->deliveryMethod->requires_location
+                ? $package->destinationLocation->address->city->country->country_name
+                : $package->address->city->country->country_name;
+        }
 
         // Calculate estimated delivery
 
-            $deliveryEstimate = $this->calculateEstimatedDelivery($originAddress, $destinationAddress);
-            $package->delivery_estimate = $deliveryEstimate;
-
+        $deliveryEstimate = $this->calculateEstimatedDelivery($originAddress, $destinationAddress);
+        $package->delivery_estimate = $deliveryEstimate;
 
         $qrCode = base64_encode(QrCode::format('png')
             ->size(150)
@@ -181,27 +213,30 @@ class PackageController extends Controller
         ]);
     }
 
-    public function create()
-    {
+    public function create () {
         $weightClasses = WeightClass::where('is_active', true)->get();
         $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
+        $countries = Country::all();
         $locations = Location::all();
 
-        return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations'));
+        return view('Packages.send-package', compact('weightClasses', 'deliveryMethods', 'locations', 'countries'));
     }
 
-    public function updatePrices(Request $request)
-    {
+    public function updatePrices (Request $request) {
         Log::info('Update Prices Request:', $request->all());
-
         $weightId = $request->input('weight_id');
         $deliveryMethodId = $request->input('delivery_method_id');
         $weightPrice = $request->input('weight_price');
         $deliveryPrice = $request->input('delivery_price');
 
         $deliveryMethod = DeliveryMethod::findOrFail($request->input('delivery_method_id'));
+        if (Auth::check()) {
+            $originLocation = Auth::user()->address->city->country->country_name;
+        }
+        else{
+            $originLocation = $request->sender_country_name;
+        }
 
-        $originLocation = Auth::user()->address->city->country->country_name;
         Log::info('Origin Location: ' . $originLocation);
 
         if ($deliveryMethod->requires_location) {
@@ -264,20 +299,117 @@ class PackageController extends Controller
 
     public function store(Request $request)
     {
-        $userId = Auth::user()->id;
-        $userAddress = Auth::user()->address;
+        $userId = null;
+        if (Auth::check()){
+            $userId = Auth::user()->id;
+            $userAddress = Auth::user()->address;
+            $originLocation = Location::where('addresses_id', $userAddress->id)->first();
+            if (!$originLocation) {
 
-        // check if a Location exists with the user's address_id
-        $originLocation = Location::where('addresses_id', $userAddress->id)->first();
+                try {
+                    $addressString = urlencode(
+                        $userAddress->street . ' ' .
+                        $userAddress->house_number . ' ' .
+                        $userAddress->city->name . ' ' .
+                        $userAddress->city->postcode . ' ' .
+                        $userAddress->city->country->country_name
+                    );
 
-        if (!$originLocation) {
-            try {
+
+                    // Make API request to Geoapify
+                    $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                        'text' => $addressString,
+                        'apiKey' => env('GEOAPIFY_API_KEY'),
+                        'format' => 'json',
+                        'limit' => 1
+                    ]);
+
+
+                    $geocodeData = $response->json();
+
+                    // If the response is not successful
+                    if (!$response->successful()) {
+                        return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()])->withInput();
+                    }
+
+                    // If no results found
+                    if (empty($geocodeData['results'])) {
+
+                        $alternativeAddress = urlencode(
+                            $userAddress->street . ' ' .
+                            $userAddress->house_number . ' ' .
+                            $userAddress->city->postcode . ' ' .
+                            $userAddress->city->name . ' ' .
+                            $userAddress->city->country->country_name
+                        );
+
+
+                        $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                            'text' => $alternativeAddress,
+                            'apiKey' => env('GEOAPIFY_API_KEY'),
+                            'format' => 'json',
+                            'limit' => 1
+                        ]);
+
+                        $geocodeData = $response->json();
+
+                        if (empty($geocodeData['results'])) {
+                            return back()->withErrors(['error' => 'Address  could not be found : "' . $userAddress->street . ' ' . $userAddress->house_number . ' ' . $userAddress->city->name . ' ' . $userAddress->city->postcode . ' ' . $userAddress->city->country->country_name.'".'])->withInput();
+                        }
+                    }
+
+                    $location = $geocodeData['results'][0];
+
+
+                    $originLocation = Location::create([
+                        'addresses_id' => $userAddress->id,
+                        'location_type' => 'ADDRESS',
+                        'description' => 'Customer Address'. ' ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
+                        'contact_number' => Auth::user()->phone_number,
+                        'latitude' => $location['lat'],
+                        'longitude' => $location['lon'],
+                        'is_active' => true
+                    ]);
+
+                } catch (\Exception $e) {
+                    return back()->withErrors(['error' => 'Error processing address location: ' . $e->getMessage()])->withInput();
+                }
+            }
+        } else {
+            $originLocation = null;
+            $countryFromInput = Country::where('country_name', $request->sender_country_name)->first();
+            if (City::where("name",$request->sender_city_name)->first()){
+                $cityFromInput = City::where('name', $request->sender_city_name)->first();
+            } else {
+                $cityFromInput = City::create([
+                    'name' => $request->sender_city_name,
+                    'postcode' => $request->sender_postal_code,
+                    'country_id' => $countryFromInput->id
+                ]);
+            }
+
+            $addressFromInput = Address::where('street', $request->sender_address_input)
+                ->where('house_number', $request->sender_house_number)
+                ->where('bus_number', $request->sender_bus_number)
+                ->where('cities_id', $cityFromInput->id)
+                ->first();
+
+            if (!$addressFromInput) {
+                $address = Address::create([
+                    'street' => $request->sender_address_input,
+                    'house_number' => $request->sender_house_number,
+                    'bus_number' => $request->sender_bus_number,
+                    'cities_id' => $cityFromInput->id
+                ]);
+                $addressFromInput = $address;
                 $addressString = urlencode(
-                    $userAddress->street . ' ' .
-                    $userAddress->house_number . ', ' .
-                    $userAddress->city->name . ', ' .
-                    $userAddress->city->country->country_name
+                    $address->street . ' ' .
+                    $address->house_number . ' ' .
+                    $address->city->name . ' ' .
+                    $address->city->postcode . ' ' .
+                    $address->city->country->country_name
                 );
+
 
                 // Make API request to Geoapify
                 $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
@@ -286,73 +418,108 @@ class PackageController extends Controller
                     'format' => 'json',
                     'limit' => 1
                 ]);
-
-
                 $geocodeData = $response->json();
 
-                // If the response is not successful
                 if (!$response->successful()) {
-                    return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()]);
+                    return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()])->withInput();
                 }
-
-                // If no results found
                 if (empty($geocodeData['results'])) {
-
-                    $alternativeAddress = urlencode(
-                        $userAddress->street . ' ' .
-                        $userAddress->house_number . ' ' .
-                        $userAddress->city->name . ' ' .
-                        $userAddress->city->country->country_name
-                    );
-
-
-                    $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
-                        'text' => $alternativeAddress,
-                        'apiKey' => env('GEOAPIFY_API_KEY'),
-                        'format' => 'json',
-                        'limit' => 1
-                    ]);
-
-                    $geocodeData = $response->json();
-
-                    if (empty($geocodeData['results'])) {
-                        return back()->withErrors(['error' => 'Address could not be found']);
-                    }
+                    return back()->withErrors(['error' => 'Address could not be found'])->withInput();
                 }
-
                 $location = $geocodeData['results'][0];
-
-
                 $originLocation = Location::create([
-                    'addresses_id' => $userAddress->id,
+                    'addresses_id' => $address->id,
                     'location_type' => 'ADDRESS',
-                    'description' => 'Customer Address'. ' ' . Auth::user()->first_name . ' ' . Auth::user()->last_name,
-                    'contact_number' => Auth::user()->phone_number,
+                    'description' => 'Customer Address'. ' ' . $request->sender_firstname . ' ' . $request->sender_lastname,
+                    'contact_number' => $request->sender_phone_number,
                     'latitude' => $location['lat'],
                     'longitude' => $location['lon'],
                     'is_active' => true
                 ]);
 
-            } catch (\Exception $e) {
-                return back()->withErrors(['error' => 'Error processing address location: ' . $e->getMessage()]);
+            } else {
+                if(Location::where('addresses_id', $addressFromInput->id)->first()){
+                   $originLocation = Location::where('addresses_id', $addressFromInput->id)
+                        ->where('location_type', 'ADDRESS')
+                        ->first();
+
+                } else {
+
+
+
+                    // Make API request to Geoapify
+                    $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                        'text' => urldecode($addressFromInput->street . ' ' .
+                            $addressFromInput->house_number . ' ' .
+                            $addressFromInput->city->name . ' ' .
+                            $addressFromInput->city->postcode . ' ' .
+                            $addressFromInput->city->country->country_name),
+                        'apiKey' => env('GEOAPIFY_API_KEY'),
+                        'format' => 'json',
+                        'limit' => 1
+                    ]);
+                    $geocodeData = $response->json();
+                    if (!$response->successful()) {
+                        return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()])->withInput();
+                    }
+                    if (empty($geocodeData['results'])) {
+                        return back()->withErrors(['error' => 'Address  could not be found' . $addressFromInput->street . ' ' . $addressFromInput->house_number . ' ' . $addressFromInput->city->name . ' ' . $addressFromInput->city->postcode . ' ' . $addressFromInput->city->country->country_name])->withInput();
+                    }
+                    $location = $geocodeData['results'][0];
+                    $originLocation = Location::create([
+                        'addresses_id' => $addressFromInput->id,
+                        'location_type' => 'ADDRESS',
+                        'description' => 'Customer Address'. ' ' . $request->sender_firstname . ' ' . $request->sender_lastname,
+                        'contact_number' => $request->sender_phone_number,
+                        'latitude' => $location['lat'],
+                        'longitude' => $location['lon'],
+                        'is_active' => true
+                    ]);
+                }
+
             }
         }
+        // check if a Location exists with the user's address_id
+
 
         $deliveryMethod = DeliveryMethod::findOrFail($request->delivery_method_id);
         $weightClass = WeightClass::findOrFail($request->weight_id);
+        if (!Auth::check()) {
+            $validationRules = [
+                'address_id' => 'exists:addresses,id',
+                'name' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'receiverEmail' => 'required|email|max:255',
+                'receiver_phone_number' => 'required|string|max:255',
+                'weight_id' => 'required|exists:weight_classes,id',
+                'delivery_method_id' => 'required|exists:delivery_method,id',
+                'dimension' => 'required|string|max:255',
+                'weight_price' => 'required|numeric|min:0',
+                'delivery_price' => 'required|numeric|min:0',
+                'sender_firstname' => 'required|string|max:255',
+                'sender_lastname' => 'required|string|max:255',
+                'sender_email' => 'required|email|max:255|unique:users,email',
+                'sender_phone_number' => 'required|string|max:255|unique:users,phone_number',
+                'safe_location' => 'nullable|string|max:255'
+                //'sender_birthdate' => 'required|date',
+            ];
+        }
+        else{
+            $validationRules = [
+                'address_id' => 'exists:addresses,id',
+                'name' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'receiverEmail' => 'required|email|max:255',
+                'receiver_phone_number' => 'required|string|max:255',
+                'weight_id' => 'required|exists:weight_classes,id',
+                'delivery_method_id' => 'required|exists:delivery_method,id',
+                'dimension' => 'required|string|max:255',
+                'weight_price' => 'required|numeric|min:0',
+                'delivery_price' => 'required|numeric|min:0',
+                'safe_location' => 'nullable|string|max:255'
+            ];
+        }
 
-        $validationRules = [
-            'address_id' => 'exists:addresses,id',
-            'name' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'receiverEmail' => 'required|email|max:255',
-            'receiver_phone_number' => 'required|string|max:255',
-            'weight_id' => 'required|exists:weight_classes,id',
-            'delivery_method_id' => 'required|exists:delivery_method,id',
-            'dimension' => 'required|string|max:255',
-            'weight_price' => 'required|numeric|min:0',
-            'delivery_price' => 'required|numeric|min:0'
-        ];
 
         if ($deliveryMethod->requires_location) {
             $validationRules['destination_location_id'] = 'required|exists:locations,id';
@@ -360,10 +527,43 @@ class PackageController extends Controller
             $validationRules['addressInput'] = 'required|string|max:255';
         }
 
+
         $validatedData = $request->validate($validationRules);
 
+
+        if (!Auth::check()) {
+            if($request->checked_on_create_account){
+                $validationRulesNewUser = [
+                    'password' => 'required|string|min:8|confirmed',
+                    'password_confirmation' => 'required|string|min:8'
+                ];
+                if ($request->validate($validationRulesNewUser)){
+                    $user = User::create(
+                        [
+                            'first_name' => $request->sender_firstname,
+                            'last_name' => $request->sender_lastname,
+                            'email' => $request->sender_email,
+                            'email_verified_at' => now(),
+                            'phone_number' => $request->sender_phone_number,
+                            'birth_date'=> $request->sender_birthdate,
+                            'password' => Hash::make($request->password),
+                            'address_id' => $originLocation->addresses_id,
+                            'remember_token' => null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]
+                    );
+                    $userId = $user->id;
+                    Auth::attempt([
+                        'email' => $request->sender_email,
+                        'password' => $request->password
+                    ]);
+                    $request->session()->regenerate();
+                }
+            }
+        }
         $validatedData['reference'] = $this->generateUniqueTrackingNumber();
-        $validatedData['user_id'] = $userId;
+        $validatedData['user_id'] = empty($userId) ?  null: $userId;
         $validatedData['status'] = 'pending';
         $validatedData['origin_location_id'] = $originLocation->id;
 
@@ -378,7 +578,7 @@ class PackageController extends Controller
                 ]);
 
                 if (!$response->successful() || empty($response->json()['results'])) {
-                    return back()->withErrors(['error' => 'Could not validate address']);
+                    return back()->withErrors(['error' => 'Could not validate address'])->withInput();
                 }
 
                 $addressData = $response->json()['results'][0];
@@ -442,32 +642,53 @@ class PackageController extends Controller
                         'is_active' => true
                     ]);
                 }
-
+                //dd($request->validate($validationRules),$originLocation,$destinationLocation);
                 // Prepare package data
+
                 $packageData = collect($validatedData)
                     ->except(['addressInput'])
                     ->merge([
                         'reference' => $this->generateUniqueTrackingNumber(),
-                        'user_id' => $userId,
+                        'user_id' => empty($userId) ?  null: $userId,
                         'status' => 'Pending',
                         'origin_location_id' => $originLocation->id,
                         'destination_location_id' => $destinationLocation->id,
-                        'addresses_id' => $address->id
+                        'addresses_id' => $address->id,
                     ])
                     ->toArray();
 
                 // Create the package
-                $package = Package::create($packageData);
 
-            } catch (\Exception $e) {
+                $package = Package::create($packageData);
+                $invoice = Invoice::create([
+                    "company_id" => $userId ?? null, // Replace with actual company ID or null
+                    "discount" => $request->input('discount') ?? 0, // Replace with actual discount or default to 0
+                    "expiry_date" => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+                    "is_paid" => false, // Default to unpaid
+                    "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
+                ]);
+                
+                $invoice_payment = InvoicePayment::create([
+                    'reference' => $invoice->reference,
+                    'amount' => $package->weight_price + $package->delivery_price,
+
+                ]);
+
+                $packageInInvoice = PackageInInvoice::create([
+                    'invoice_id' => $invoice->id,
+                    'package_id' => $package->id,
+                ]);
+            }
+            catch (\Exception $e) {
                 return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
             }
-        } else {
+        }
+        else {
             $destinationLocation = Location::findOrFail($validatedData['destination_location_id']);
             $packageData = collect($validatedData)
                 ->merge([
                     'reference' => $this->generateUniqueTrackingNumber(),
-                    'user_id' => $userId,
+                    'user_id' => empty($userId) ?  null: $userId,
                     'status' => 'pending',
                     'origin_location_id' => $originLocation->id,
                     'destination_location_id' => $destinationLocation->id,
@@ -476,12 +697,40 @@ class PackageController extends Controller
                 ->toArray();
 
             $package = Package::create($packageData);
+            $invoice = Invoice::create([
+                "company_id" => $userId ?? null, // Replace with actual company ID or null
+                "discount" => $request->input('discount') ?? 0, // Replace with actual discount or default to 0
+                "expiry_date" => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+                "is_paid" => false, // Default to unpaid
+                "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
+            ]);
+            
+            $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $package->weight_price + $package->delivery_price,
+
+            ]);
+
+            $packageInInvoice = PackageInInvoice::create([
+                'invoice_id' => $invoice->id,
+                'package_id' => $package->id,
+            ]);
         }
 
         $package->getMovements();
 
         if (!$package) {
             return back()->withErrors(['error' => 'Failed to create package']);
+        
+        }
+        if (!$invoice) {
+            return back()->withErrors(['error' => 'Failed to create invoice']);
+        }
+            if (!$invoice_payment) {
+                return back()->withErrors(['error' => 'Failed to create invoice payment']);
+            }
+        if (!$packageInInvoice) {
+            return back()->withErrors(['error' => 'Failed to create package in invoice']);
         }
 
         return redirect()->route('packagepayment',$package->id)->with('success', 'Package created successfully');
@@ -608,8 +857,9 @@ class PackageController extends Controller
 
     /**
  * Generate a unique tracking number for a package
- * Format: PK + YYYY + MM + XXXXXXXX (where X is random number)
- * Example: PK20250312345678
+ * Format: REF + YYYY + MM + XXXXXXXX (where X is random number)
+ * Example: REF20250312345678
+ * I changed this to REF for consitency sake & it otherwise breaks my code.
  *
  * @return string
  * @throws \Exception if unable to generate unique number after maximum attempts
@@ -630,7 +880,7 @@ private function generateUniqueTrackingNumber()
         $random = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
         $trackingNumber = sprintf(
-            'PK%s%s%s',
+            'REF%s%s%s',
             $year,
             $month,
             $random
@@ -658,18 +908,20 @@ private function generateUniqueTrackingNumber()
  */
 public function generatePackageLabel($packageID)
 {
-    if (!Auth::check()) {
-        abort(401, 'Unauthorized access');
-    }
-
     $package = Package::with([
         'address.city.country',
         'user.address.city.country'
     ])->findOrFail($packageID);
 
-    if (Auth::user()->id !== $package->user_id) {
-        abort(403, 'You are not authorized to access this package label');
+    if (!Auth::check() && !empty($package->user_id)) {
+        abort(401, 'Unauthorized access');
     }
+    if (Auth::check()) {
+        if (Auth::user()->id !== $package->user_id) {
+            abort(403, 'You are not authorized to access this package label');
+        }
+    }
+
 
     if ($package->deliveryMethod->requires_location) {
         if (!$package->destinationLocation || !$package->destinationLocation->address) {
@@ -690,19 +942,20 @@ public function generatePackageLabel($packageID)
         ->size(150)
         ->margin(0)
         ->generate($packageID));
+    $data = [
+        'receiver_address' => $receiverAddress,
+        'receiver_country' => $receiverCountry,
+        'customer' => !empty($package->user_id) ? $package->user: $package->sender_firstname . ' ' . $package->sender_lastname,
+        'customer_address' =>!empty($package->user_id) ? $package->user->address :$package->originLocation->address->addressInString(),
+        'customer_country' => !empty($package->user_id) ?$package->user->address->city->country : $package->originLocation->address->city->postcode . ' '.$package->originLocation->address->city->country->country_name,
+        'package' => $package,
+        'tracking_number' => $package->reference ?? '1Z 999 999 99 9999 999 9',
+        'qr_code' => $qrCode
+    ];
 
-        $data = [
-            'receiver_address' => $receiverAddress,
-            'receiver_country' => $receiverCountry,
-            'customer' => $package->user,
-            'customer_address' => $package->user->address,
-            'customer_country' => $package->user->address->city->country,
-            'package' => $package,
-            'tracking_number' => $package->reference ?? '1Z 999 999 99 9999 999 9',
-            'qr_code' => $qrCode
-        ];
 
-    $pdf = Pdf::loadView('packages.generate-package-label', $data)->setPaper('a4', 'landscape');
+
+    $pdf = Pdf::loadView('Packages.generate-package-label', $data)->setPaper('a4', 'landscape');
     return $pdf->stream('package-label.pdf');
 }
 
@@ -856,19 +1109,270 @@ public function generatePackageLabel($packageID)
 
 
 public function packagePayment($packageID) {
-    $package = Package::with([
-        'user'
-    ])
-    ->where('user_id', Auth::user()->id)
-    ->where('id', $packageID)
-    ->first();
+
+        if (!Auth::check()) {
+            $package = Package::with([
+                'user'
+            ])
+                ->where('id', $packageID)
+                ->first();
+        }
+        else{
+            $package = Package::with([
+                'user'
+            ])
+                ->where('user_id', Auth::user()->id)
+                ->where('id', $packageID)
+                ->first();
+        }
+
 
     $package->paid = true;
-    $package->save();
+    $packageInInvoice = PackageInInvoice::where('package_id', $package->id)->firstOrFail();
+    $invoice = Invoice::where('id', $packageInInvoice->invoice_id)->firstOrFail();
+    //$invoice->is_paid = true;
+    $invoice->paid_at = Carbon::now();
+
+    //$package->save();
+    $invoice->save();
 
     return view('packagepayment',compact('package'));
 }
+
+public function bulkOrder()
+{
+    $weightClasses = WeightClass::where('is_active', true)->get();
+    $deliveryMethods = DeliveryMethod::where('is_active', true)->get();
+    $locations = Location::all();
+
+    return view('Packages.bulk-order', compact('weightClasses', 'deliveryMethods', 'locations'));
 }
 
+public function storeBulkOrder(Request $request)
+{
+    $userId = Auth::user()->id;
 
+    // Validate the bulk order input
+    $validatedData = $request->validate([
+        'packages' => 'required|array|min:1',
+        'packages.*.name' => 'required|string|max:255',
+        'packages.*.lastName' => 'required|string|max:255',
+        'packages.*.receiverEmail' => 'required|email|max:255',
+        'packages.*.receiver_phone_number' => 'required|string|max:255',
+        'packages.*.dimension' => 'required|string|max:255',
+        'packages.*.weight_id' => 'required|exists:weight_classes,id',
+        'packages.*.delivery_method_id' => 'required|exists:delivery_method,id',
+        'packages.*.destination_location_id' => 'nullable|exists:locations,id',
+        'packages.*.addressInput' => 'nullable|string|max:255',
+    ]);
 
+    $createdPackages = [];
+    $totalWeightPrice = 0;
+    $totalDeliveryPrice = 0;
+
+    foreach ($validatedData['packages'] as $packageData) {
+        $deliveryMethod = DeliveryMethod::findOrFail($packageData['delivery_method_id']);
+        $weightClass = WeightClass::findOrFail($packageData['weight_id']);
+
+        // Calculate prices
+        $weightPrice = $weightClass->price;
+        $deliveryPrice = $deliveryMethod->price;
+
+        // Ensure destination location or address is properly created
+        if ($deliveryMethod->requires_location) {
+            if (empty($packageData['destination_location_id'])) {
+                return back()->withErrors(['error' => 'A destination location is required for the selected delivery method.']);
+            }
+
+            $destinationLocation = Location::findOrFail($packageData['destination_location_id']);
+
+            // Ensure the destination location has a valid address
+            if (!$destinationLocation->addresses_id) {
+                return back()->withErrors(['error' => 'The selected destination location does not have a valid address.']);
+            }
+        } else {
+            try {
+                // Get address details from Geoapify
+                $response = Http::get('https://api.geoapify.com/v1/geocode/search', [
+                    'text' => $packageData['addressInput'],
+                    'apiKey' => env('GEOAPIFY_API_KEY'),
+                    'format' => 'json',
+                    'limit' => 1
+                ]);
+
+                if (!$response->successful() || empty($response->json()['results'])) {
+                    throw new \Exception('Could not validate address for one of the packages.');
+                }
+
+                $addressData = $response->json()['results'][0];
+                $country = Country::firstOrCreate(['country_name' => $addressData['country'] ?? '']);
+                $city = City::firstOrCreate([
+                    'name' => $addressData['city'] ?? '',
+                    'postcode' => $addressData['postcode'] ?? '',
+                    'country_id' => $country->id
+                ]);
+                $address = Address::firstOrCreate([
+                    'street' => $addressData['street'] ?? '',
+                    'house_number' => $addressData['housenumber'] ?? '',
+                    'bus_number' => $addressData['unit'] ?? null,
+                    'cities_id' => $city->id
+                ]);
+                $destinationLocation = Location::firstOrCreate([
+                    'addresses_id' => $address->id,
+                    'location_type' => 'ADDRESS',
+                    'description' => 'Customer Address ' . $packageData['name'] . ' ' . $packageData['lastName'],
+                    'contact_number' => $packageData['receiver_phone_number'],
+                    'latitude' => $addressData['lat'] ?? null,
+                    'longitude' => $addressData['lon'] ?? null,
+                    'is_active' => true
+                ]);
+            } catch (\Exception $e) {
+                return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
+            }
+        }
+
+        // Create the package
+        $package = Package::create([
+            'reference' => $this->generateUniqueTrackingNumber(),
+            'user_id' => $userId,
+            'name' => $packageData['name'],
+            'lastName' => $packageData['lastName'],
+            'receiverEmail' => $packageData['receiverEmail'],
+            'receiver_phone_number' => $packageData['receiver_phone_number'],
+            'dimension' => $packageData['dimension'],
+            'weight_id' => $packageData['weight_id'],
+            'delivery_method_id' => $packageData['delivery_method_id'],
+            'origin_location_id' => Auth::user()->address->id,
+            'current_location_id' => Auth::user()->address->id,
+            'destination_location_id' => $destinationLocation->id ?? null,
+            'addresses_id' => $destinationLocation->addresses_id ?? null, // Ensure this is set
+            'weight_price' => $weightPrice,
+            'delivery_price' => $deliveryPrice,
+            'status' => 'pending',
+            'paid' => true,
+        ]);
+
+        $createdPackages[] = $package;
+
+        // Update total prices
+        $totalWeightPrice += $weightPrice;
+        $totalDeliveryPrice += $deliveryPrice;
+
+        // Add customer to the company's customer list
+        Customer::updateOrCreate(
+            [
+                'company_id' => $userId,
+                'address' => $packageData['addressInput'], // Save the full address as a single string
+            ],
+            [
+                'first_name' => $packageData['name'], // Map to first_name
+                'last_name' => $packageData['lastName'], // Map to last_name
+                'email' => $packageData['receiverEmail'],
+                'phone' => $packageData['receiver_phone_number'],
+            ]
+        );
+    }
+
+        $invoice = Invoice::create([
+            'company_id' => $userId,
+            'discount' => 0,
+            'expiry_date' => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+            'is_paid' => false,
+            'is_paid' => false,
+            'reference' => $this->generateUniqueInvoiceReference(), // Generate a unique reference
+        ]);
+         $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $package->weight_price + $package->delivery_price,
+
+        ]);
+        // Link packages to the invoice
+        foreach ($createdPackages as $package) {
+            PackageInInvoice::create([
+                'invoice_id' => $invoice->id,
+                'package_id' => $package->id,
+            ]);
+        }
+
+    $packageIds = collect($createdPackages)->pluck('id')->implode(',');
+    return redirect()->route('packages.bulk-details', ['ids' => $packageIds])
+        ->with('success', 'Packages created successfully.');
+}
+
+public function bulkPackageDetails($ids)
+{
+    $packageIds = explode(',', $ids);
+
+    $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+        ->whereIn('id', $packageIds)
+        ->get();
+
+    if ($packages->isEmpty()) {
+        return back()->withErrors(['error' => 'No packages found for the provided IDs.']);
+    }
+
+    foreach ($packages as $package) {
+        $package->qrCode = base64_encode(QrCode::format('png')
+            ->size(150)
+            ->margin(0)
+            ->generate($package->id));
+    }
+
+    // Use the correct view name
+    return view('Packages.bulk-package-details', compact('packages'))
+        ->with('success', 'Payment completed successfully.');
+}
+
+public function companyDashboard()
+{
+    $userId = Auth::id();
+
+    // Fetch total packages and unpaid packages for the current user
+    $totalPackages = Package::where('user_id', $userId)->count();
+    $unpaidPackages = Package::where('user_id', $userId)->where('paid', false)->count();
+
+    return view('Packages.company-dashboard', compact('totalPackages', 'unpaidPackages'));
+}
+
+private function generateUniqueInvoiceReference()
+{
+    $maxAttempts = 100;
+    $attempt = 0;
+
+    do {
+        if ($attempt >= $maxAttempts) {
+            throw new \Exception('Unable to generate unique invoice reference after ' . $maxAttempts . ' attempts');
+        }
+
+        $year = date('Y');
+        $month = date('m');
+        $random = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $reference = sprintf('INV-%s%s%s', $year, $month, $random);
+
+        $exists = Invoice::where('reference', $reference)->exists();
+
+        $attempt++;
+    } while ($exists);
+
+    return $reference;
+}
+    public function strandedPackages() {
+        $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+            ->where('status', 'Stranded')
+            ->get();
+        $packages = Package::paginate(10);
+        return view('Packages.stranded-packages',compact("packages"));
+    }
+    public function reRouteStrandedPackages (Request $request) {
+        $packageReferences = $request->input('selected_packages');
+        $packages = Package::whereIn('reference', $packageReferences)->paginate(10);
+        return redirect()->route('workspace.stranded-packages')->with('success', 'The re-route for the selected parcels was successful');
+    }
+    public function testDeliveryAttemptOnWrongLocation (Request $request) {
+        $package = Package::with(['user', 'deliveryMethod','destinationLocation'])
+            ->where('reference', $request->id)
+            ->firstOrFail();
+        return view('Packages.testDeliveryAttemptOnWrongLocation',compact('package'));
+    }
+}

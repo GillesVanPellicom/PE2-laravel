@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->float('leave_balance')->default(0);
-            $table->foreignId('user_id')->constrained('users');
+            $table->float('sick_leave_balance')->default(0);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('team_id')->constrained('teams');
             $table->timestamps();
+            $table->unique('user_id');
         });
     }
 

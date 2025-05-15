@@ -1,14 +1,12 @@
 ## todo
 - make router comply with start/end dates of edges
-- Router::refresh()
-- Router::addEdge()
-- Router::removeEdge()
 - Protectorate
 - Helper suite
+- Test double edges
 
 ## Formulas
-### Haversine
 
+### Haversine
 
 $$
 a = \sin^2\left(\frac{\Delta\varphi}{2}\right) + \cos\varphi_1 \cos\varphi_2 \sin^2\left(\frac{\Delta\lambda}{2}\right)
@@ -23,9 +21,9 @@ d = R \cdot c
 $$
 
 Where:
-- $\phi_1, \phi_2$ are the latitudes in radians
+- $\varphi_1, \varphi_2$ are the latitudes in radians
 - $\lambda_1, \lambda_2$ are the longitudes in radians
-- $\Delta\phi = \phi_2 - \phi_1$
+- $\Delta\varphi = \varphi_2 - \varphi_1$
 - $\Delta\lambda = \lambda_2 - \lambda_1$
 - $R$ is the Earth's radius (defined in km so result in km)
 - $a$ is the square of half the chord length between the points
@@ -44,6 +42,35 @@ Where:
 - $\Delta\lambda = \lambda_2 - \lambda_1$ is the difference in longitude,
 - $R$ is the Earth's radius (typically 6371 km),
 - $d$ is the great-circle distance between the points.
+
+### Bearing
+
+$$
+\theta = \text{atan2}\left(\sin \Delta\lambda \cdot \cos \varphi_2, \cos \varphi_1 \cdot \sin \varphi_2 - \sin \varphi_1 \cdot \cos \varphi_2 \cdot \cos \Delta\lambda\right)
+$$
+
+Where:
+- $\varphi_1, \varphi_2$ are the latitudes in radians,
+- $\lambda_1, \lambda_2$ are the longitudes in radians,
+- $\Delta\lambda = \lambda_2 - \lambda_1$ is the difference in longitude,
+- $\theta$ is the bearing in radians (0 = North, π/2 = East, π = South, 3π/2 = West).
+
+### Turn Angle
+
+$$
+\text{Angle} = |\theta_2 - \theta_1|
+$$
+
+If the result is greater than 180°, normalize it:
+
+$$
+\text{Angle} = 360° - \text{Angle}
+$$
+
+Where:
+- $\theta_1$ is the bearing from the previous point to the current point,
+- $\theta_2$ is the bearing from the current point to the next point,
+- The result is the angle in degrees (0-180°, where 0 = straight line, 180° = U-turn).
 
 
 ## Overly Strict Skipping Logic
@@ -69,5 +96,3 @@ Where:
 | `fakeMove`           | Nested conditionals, complex logic          | Use timestamp list, handle address case separately              | Simplified logic                    |
 | `getCurrentMovement` | Try-catch block, redundant checks           | Simplified with helper method, removed broad exception handling | Much more robust                    |
 
-+═══════════════════════════════+════════════════════════════════════════+════════════+═════════════+══════════════════════+═══════+══════+
-| @AIR_EBAW                     | Antwerp International Airport          |    51.1894 |      4.4603 | AIRPORT              | No    | No   |

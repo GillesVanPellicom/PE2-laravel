@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vehicles', function (Blueprint $table) {
+        Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('current_locations_id')->constrained('locations');
-            $table->string('vehicle_type');
-            $table->string('license_plate');
-            $table->integer('capacity');
-            $table->string('status');
+            $table->foreignId('company_id')->constrained('users');
+            $table->decimal('discount')->default(0);
+            $table->date('expiry_date');
+            $table->boolean('is_paid')->default(0);
+            $table->date('paid_at')->nullable();
+            $table->string('reference');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vehicles');
+        Schema::dropIfExists('invoices');
     }
 };

@@ -51,6 +51,33 @@ class AirplanesSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'airline_id' => 5, // Emirates
+                'model' => 'Boeing 777 Cargo',
+                'capacity' => 103000, // KG
+                'status' => 'Active',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'airline_id' => 5, // Qatar Airways
+                'model' => 'Airbus A350 Cargo',
+                'capacity' => 97000, // KG
+                'status' => 'Active',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'airline_id' => 5, // Turkish Airlines
+                'model' => 'Boeing 787 Cargo',
+                'capacity' => 110000, // KG
+                'status' => 'Active',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
+
+        \App\Models\Airplane::factory(50)->create();
+
     }
 }

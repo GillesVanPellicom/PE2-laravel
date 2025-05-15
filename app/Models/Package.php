@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\ConsoleHelper;
 use App\Models\Address;
 use App\Models\DeliveryMethod;
 use App\Models\Location;
@@ -42,15 +43,23 @@ class Package extends Model {
     'addresses_id',
     'status',
     'name',
+    'times_delivered',
     'lastName',
     'receiverEmail',
     'receiver_phone_number',
+    'weight',
     'weight_id',
     'delivery_method_id',
     'dimension',
     'weight_price',
+    'requires_signature',
     'delivery_price',
-    'paid'
+    'paid',
+    'sender_firstname',
+    'sender_lastname',
+    'sender_email',
+    'sender_phone_number',
+    'safe_location'
   ];
 
   protected $attributes = [
@@ -165,6 +174,54 @@ class Package extends Model {
 
   ### Public Methods
 
+  /**
+   * Mark the package as stranded.
+   *
+   * @return void
+   */
+  public function markAsStranded(): void {
+    StrandedPackageModel::create([
+      'package_id' => $this->id
+    ]);
+
+    $this->status = 'Stranded';
+    $this->save();
+  }
+
+  /**
+   * Mark the package as delivered and resolve its stranded status.
+   *
+   * @return void
+   */
+  public function markAsDelivered(): void {
+    $strandedPackage = StrandedPackageModel::where('package_id', $this->id)->first();
+
+    if ($strandedPackage) {
+      $strandedPackage->resolve();
+    }
+
+    $this->status = 'Delivered';
+    $this->save();
+  }
+
+  /**
+   * Check if the package is stranded.
+   *
+   * @return bool
+   */
+  public function isStranded(): bool {
+    return $this->status === 'Stranded';
+  }
+
+  /**
+   * Check if the package is delivered.
+   *
+   * @return bool
+   */
+  public function isDelivered(): bool {
+    return $this->status === 'Delivered';
+  }
+
 
   /**
    * @return void
@@ -198,8 +255,10 @@ class Package extends Model {
   public function reroute(Location|string $destination): void {
 
     // Check for self-rerouting
-    if (($destination == $this->current_location_id) ||
-      ($destination instanceof Location && $destination->id == $this->current_location_id)) {
+    if (
+      ($destination == $this->current_location_id) ||
+      ($destination instanceof Location && $destination->id == $this->current_location_id)
+    ) {
       throw new RerouteToSelfException($destination);
     }
 
@@ -226,6 +285,7 @@ class Package extends Model {
     }
 
     // Get the path from origin to destination
+    // Exceptions bubble up
     $path = $router->getPath(
       $currentLocation,
       $destination
@@ -235,6 +295,22 @@ class Package extends Model {
     $this->commitMovements($path);
   }
 
+
+  /**
+   * Reroutes a package based on only its ID (Location ID or Router Node ID)
+   * It is basically just a wrapper function for reroute because that function has intresting design choices.
+   *
+   * @param  string  $nodeId
+   * @return void
+   */
+  public function rerouteFromId(string $nodeId) {
+    $location = Location::find($nodeId);
+    if (!$location) {
+      $this->reroute($nodeId);
+    } else {
+      $this->reroute($location);
+    }
+  }
 
   /**
    * Get the next location for the package.
@@ -319,7 +395,6 @@ class Package extends Model {
       // Handle delivery
       return $this->deliverPackage($currentMovement);
     }
-
     // If not delivery operation, handle IN or OUT operations
     return $this->performMovementOperation($currentMovement, $operation);
   }
@@ -338,9 +413,7 @@ class Package extends Model {
     $movements = $this->movements()->orderBy('id')->get();
 
     // If no movements exist, generate them
-    if ($movements->isEmpty()) {
-      $this->generateMovements();
-    }
+    $this->generateMovements();
 
     // Find the current movement based on the current location ID
     $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
@@ -453,6 +526,7 @@ class Package extends Model {
    * @throws NoPathFoundException No possible path found. There may not exist a route.
    * @throws NodeNotFoundException Given node ID might not exist.
    * @throws RouterException General router error.
+   * @throws Exception
    */
   public function generateMovements(): void {
     // Do not regenerate if movements already exist
@@ -464,10 +538,13 @@ class Package extends Model {
     /** @var Router $router */
     $router = App::make(Router::class);
 
-    // Get the path from origin to destination
+    $o = $this->getAttribute('origin_location_id');
+    $d = $this->getAttribute('destination_location_id');
+
+    // Get the path from origin to destination, cast to Location if appropriate;
     $path = $router->getPath(
-      $this->getAttribute('originLocation'),
-      $this->getAttribute('destinationLocation')
+      is_numeric($o) ? Location::find($o) : $o,
+      is_numeric($d) ? Location::find($d) : $d,
     );
 
     // Commit the path as movements
@@ -475,6 +552,8 @@ class Package extends Model {
 
     // Set the current location to the first node in the path
     $this->setCurrentMovement($path[0]->getID());
+
+    $this->applyTimestamps();
   }
 
   ### Private Helper Methods
@@ -497,12 +576,25 @@ class Package extends Model {
     }
 
     // Get the current location
-    $location = Location::find($this->current_location_id);
-    if (!$location || $location->location_type !== NodeType::ADDRESS) {
+    if (!$this->isAtDeliveryAddress()) {
       return [
         false,
-        "This package is not fit for delivery => ".($location ? $location->location_type->value : 'Unknown')
+        "This package is not fit for delivery."
       ];
+    }
+    // $location = Location::find($this->current_location_id);
+    // if (!$location || $location->location_type !== NodeType::ADDRESS) {
+    //   return [
+    //     false,
+    //     "This package is not fit for delivery => ".($location ? $location->location_type->value : 'Unknown')
+    //   ];
+    // }
+
+    $user = auth()->user();
+    $employee = $user?->employee;
+    $route = $employee->courierRoute;
+    if ($route == null || $route->current_location != $currentMovement->current_node_id){
+      return [false, "Courier location and package destination do not match."];
     }
 
     // If arrival time is not set, set all timestamps to now
@@ -518,6 +610,60 @@ class Package extends Model {
 
     // If arrival time is already set, the package has already been delivered
     return [false, "This package has already been delivered"];
+  }
+
+  public function isAtDeliveryAddress() {
+    $node = Node::fromId($this->current_location_id);
+    return $node && $node->getType() === NodeType::ADDRESS;
+  }
+
+  /**
+   * failDeliver will reroute a delivery if a package was failed to be delivered to a customer or disitribution center for whatever reason.
+   * @return array<bool|string> [status, message]
+   */
+  public function failDelivery() {
+    if ($this->isAtDeliveryAddress()) {
+      $this->times_delivered++;
+      $this->save();
+    }
+    if ($this->times_delivered > 3) {
+      $this->return();
+      return [true, "Package Cast for returnal"];
+    }
+
+    $movements = $this->movements()->orderBy('id')->get();
+
+    // If no movements exist, generate them
+    if ($movements->isEmpty()) {
+      return [false, "No Movements Found"];
+    }
+
+    // Find the current movement based on the current location ID
+    $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
+    if (!$currentMovement) {
+      return [false, "This package does not have a valid package movement."];
+    } elseif ($currentMovement->arrival_time != null) {
+      return [false, "This package is not currently is a vehicle so it can not failed to be delivered."];
+    }
+
+    $previousMovement = $movements->firstWhere("next_movement", $currentMovement->id);
+    if (!$previousMovement) {
+      return [false, "This package Has no previous package movement."];
+    }
+    // Set the package ID to be the previous place because it gets brought back there by the courier
+    $this->current_location_id = $previousMovement->current_node_id;
+    $this->save();
+
+    //Reroute the package
+    $this->rerouteFromId($this->destination_location_id);
+
+    // Package still has to be scanned in when it get brought back to a distribution center.
+    $movements = $this->movements()->orderBy('id')->get();
+    $currentMovement = $movements->firstWhere('current_node_id', $this->current_location_id);
+    $currentMovement->check_in_time = null;
+    $currentMovement->save();
+
+    return [true, "Rerouted successfully"];
   }
 
 
@@ -561,6 +707,11 @@ class Package extends Model {
             }
           }
 
+          if ($timestamp === 'check_in_time') {
+            $this->assigned_flight = null;
+            $this->save();
+          }
+
           return [true, "Package successfully scanned ".$operation->value];
         }
         // If the operation does not match, return an error
@@ -580,7 +731,14 @@ class Package extends Model {
     throw new RouterException('All timestamps are already set for the current movement.');
   }
 
-  public function undoMove(MoveOperationType $operation){
+  /**
+   * @throws RouterException
+   * @throws InvalidRouterArgumentException
+   * @throws NodeNotFoundException
+   * @throws InvalidCoordinateException
+   * @throws NoPathFoundException
+   */
+  public function undoMove(MoveOperationType $operation): array {
     $timestamps = [
       'arrival_time' => MoveOperationType::OUT,
       'check_in_time' => MoveOperationType::IN,
@@ -601,28 +759,55 @@ class Package extends Model {
       return [false, "This package does not have a valid package movement."];
     }
 
-    if ($currentMovement->arrival_time == null){
-      if ($operation == MoveOperationType::OUT) return [false, "Move operations do not match."];
+    if ($currentMovement->arrival_time == null) {
+      if ($operation == MoveOperationType::OUT) {
+        return [false, "Move operations do not match."];
+      }
       $previousMovement = $this->movements()->where("next_movement", $currentMovement->id)->first();
-      if (!$previousMovement)
+      if (!$previousMovement) {
         return [false, "No previous movement found, cannot undo action."];
+      }
       $previousMovement->departure_time = null;
       $previousMovement->save();
       $this->current_location_id = $previousMovement->current_node_id;
       $this->save();
-    } else if ($currentMovement->check_in_time == null){
-      if ($operation == MoveOperationType::IN) return [false, "Move operations do not match."];
-      $currentMovement->arrival_time = null;
-    } else if ($currentMovement->check_out_time == null) {
-      if ($operation == MoveOperationType::OUT) return [false, "Move operations do not match."];
-      $currentMovement->check_in_time = null;
-    }else if ($currentMovement->departure_time == null) {
-      if ($operation == MoveOperationType::IN) return [false, "Move operations do not match."];
-      $currentMovement->check_out_time = null;
+    } else {
+      if ($currentMovement->check_in_time == null) {
+        if ($operation == MoveOperationType::IN) {
+          return [false, "Move operations do not match."];
+        }
+        $currentMovement->arrival_time = null;
+      } elseif ($currentMovement->check_out_time == null) {
+        if ($operation == MoveOperationType::OUT) {
+          return [false, "Move operations do not match."];
+        }
+        $currentMovement->check_in_time = null;
+      } elseif ($currentMovement->departure_time == null) {
+        if ($operation == MoveOperationType::IN) {
+          return [false, "Move operations do not match."];
+        }
+        $currentMovement->check_out_time = null;
+      }
+
+
     }
     $currentMovement->save();
     return [true, "Action succesfully undone."];
 
+  }
+
+  /**
+   * DEBUG METHOD
+   * Not to be used in production.
+   * @return void
+   */
+  public function clearMovements(): void {
+    DB::transaction(function () {
+      // Check if the package already has movements and remove them
+      if ($this->movements()->exists()) {
+        $this->movements()->delete();
+      }
+    });
   }
 
   /**
@@ -633,6 +818,24 @@ class Package extends Model {
   private function setCurrentMovement(string $location): void {
     $this->current_location_id = $location;
     $this->save();
+  }
+
+  /**
+   * @throws Exception
+   */
+  private function applyTimestamps(): void {
+    // Check if the current_node_id is numeric and run fakeMove() accordingly
+    $timestampCount = 2; // By default 2
+
+    // If the start node is a Location, set 5 timestamps
+    if (is_numeric($this->current_location_id)) {
+      $timestampCount = 5;
+    }
+
+    // Apply initial timestamps
+    for ($i = 0; $i < $timestampCount; $i++) {
+      $this->fakeMove();
+    }
   }
 
 
@@ -660,8 +863,8 @@ class Package extends Model {
           'handled_by_courier_id' => null,
           'vehicle_id' => null,
           'departure_time' => null,
-          'arrival_time' => $i === 0 ? now() : null,
-          'check_in_time' => $i === 0 ? now() : null,
+          'arrival_time' => null,
+          'check_in_time' => null,
           'check_out_time' => null,
           'current_node_id' => $node->getID(),
           'next_movement' => null,

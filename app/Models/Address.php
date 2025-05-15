@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Address extends Model
 {
     use HasFactory;
-protected $fillable = ['street', 'house_number', 'bus_number', 'cities_id'];
+    protected $fillable = ['street', 'house_number', 'bus_number', 'cities_id'];
     public function parcels(): HasMany
     {
         return $this->hasMany(Package::class, 'addresses_id');
@@ -37,8 +37,12 @@ protected $fillable = ['street', 'house_number', 'bus_number', 'cities_id'];
     {
         return $this->hasMany(Employee::class, 'address_id');
     }
-    
-    public function packages () {
+
+    public function packages()
+    {
         return $this->hasMany(Package::class, 'addresses_id');
+    }
+    public function addressInString () {
+        return $this->street . ' ' . $this->house_number . ($this->bus_number ? ' ' . $this->bus_number : '') . ', ' . $this->city->name;
     }
 }
