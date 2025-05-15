@@ -159,7 +159,7 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-                        [
+            [
                 'first_name' => 'antwerp',
                 'last_name' => 'air',
                 'phone_number' => '0983574321',
@@ -175,7 +175,7 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-                        [
+            [
                 'first_name' => 'la',
                 'last_name' => 'air',
                 'phone_number' => '0983574321',
@@ -206,7 +206,23 @@ class UserSeeder extends Seeder
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
+            [
+                'first_name' => null,
+                'last_name' => null,
+                'phone_number' => '0984274111',
+                'birth_date' => null,
+                'email' => 'company@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password123'),
+                'address_id' => 7,
+                'isCompany' => true,
+                'company_name' => 'Tech Company',
+                'VAT_Number' => 'VAT248471856',
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
         \App\Models\User::factory(1000)->create();

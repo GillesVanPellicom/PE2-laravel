@@ -2,50 +2,51 @@
     <div class="bg-gray-100 min-h-screen py-12">
         <div class="container mx-auto px-4">
             <!-- Title -->
-            <h1 class="text-4xl font-bold text-center text-gray-800 mb-16">Company Dashboard</h1>
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-12">Company Dashboard</h1>
 
-            <!-- Links -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                <!-- Send Package Link -->
-                <a href="{{ route('packages.send-package') }}"
-                   class="block bg-yellow-500 hover:bg-yellow-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
+            <!-- Links Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+
+                <!-- Bulk Order Link -->
+                <a href="{{ route('packages.bulk-order') }}" 
+                   class="block bg-green-500 hover:bg-green-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
-                        <i class="fas fa-paper-plane text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold">Send Package</h2>
-                        <p class="mt-2 text-sm">Send a single package</p>
+                        <i class="fas fa-truck text-2xl mb-2"></i>
+                        <h2 class="text-lg font-bold">Bulk Order Packages</h2>
+                        <p class="mt-1 text-sm">Send multiple packages</p>
                     </div>
                 </a>
 
-                <!-- Bulk Order Link -->
-                <a href="{{ route('packages.bulk-order') }}"
-                   class="block bg-green-500 hover:bg-green-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
+                <!-- Customer List Link -->
+                <a href="{{ route('customers.index') }}" 
+                   class="block bg-red-500 hover:bg-red-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
-                        <i class="fas fa-truck text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold">Bulk Order Packages</h2>
-                        <p class="mt-2 text-sm">Send multiple packages</p>
+                        <i class="fas fa-users text-2xl mb-2"></i>
+                        <h2 class="text-lg font-bold">Customer List</h2>
+                        <p class="mt-1 text-sm">View and manage your customers</p>
                     </div>
                 </a>
             </div>
 
             <!-- My Packages and My Invoices Links -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- My Packages Link -->
-                <a href="{{ route('packages.mypackages') }}"
-                   class="block bg-blue-500 hover:bg-blue-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
+                <a href="{{ route('packages.mypackages') }}" 
+                   class="block bg-blue-500 hover:bg-blue-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
-                        <i class="fas fa-box text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold">My Packages</h2>
-                        <p class="mt-2 text-sm">View and manage all your packages</p>
+                        <i class="fas fa-box text-2xl mb-2"></i>
+                        <h2 class="text-lg font-bold">My Packages</h2>
+                        <p class="mt-1 text-sm">View and manage all your packages</p>
                     </div>
                 </a>
 
                 <!-- My Invoices Link -->
-                <a href="{{ route('manage-invoices') }}"
-                   class="block bg-purple-500 hover:bg-purple-600 text-white text-center py-12 rounded-lg shadow-lg transition duration-300">
+                <a href="{{ route('invoices.myinvoices') }}" 
+                   class="block bg-purple-500 hover:bg-purple-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
-                        <i class="fas fa-file-invoice text-4xl mb-2"></i>
-                        <h2 class="text-2xl font-bold">My Invoices</h2>
-                        <p class="mt-2 text-sm">View and manage your invoices</p>
+                        <i class="fas fa-file-invoice text-2xl mb-2"></i>
+                        <h2 class="text-lg font-bold">My Invoices</h2>
+                        <p class="mt-1 text-sm">View and manage your invoices</p>
                     </div>
                 </a>
             </div>
