@@ -380,6 +380,11 @@ Route::middleware("auth")->group(function () {
     Route::get('/customers', [CustomerController::class, 'index'])
         ->middleware(['permission:business_client.view'])
         ->name('customers.index');
+        // invoice start
+        Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+        Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
+        Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+        // invoice end
 });
 
 // Invoices
