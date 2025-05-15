@@ -27,6 +27,7 @@ use App\Http\Controllers\CourierRouteController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
 use App\Models\Employee;
+use App\Http\Controllers\CustomerController;
 
 // ======================= Start Middleware ====================== //
     Route::middleware('auth')
@@ -366,7 +367,7 @@ Route::middleware("auth")->group(function () {
     Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
         ->name('packages.bulk-order.store');
 
-    Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
+    Route::get('/packages/bulk-details/{ids}', [PackageController::class, 'bulkPackageDetails'])
         ->name('packages.bulk-details');
 
     Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
@@ -375,12 +376,10 @@ Route::middleware("auth")->group(function () {
 
     Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
         ->name('packages.complete-bulk-payment');
-    // invoice start
-    Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
-    Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
-    Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
-    // invoice end
 
+    Route::get('/customers', [CustomerController::class, 'index'])
+        ->middleware(['permission:business_client.view'])
+        ->name('customers.index');
 });
 
 // Invoices
@@ -424,10 +423,6 @@ Route::get('/track/{reference}', [TrackPackageController::class, 'track'])->name
 Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment'])
     //->middleware('auth')
     ->name('packagepayment');
-
-Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
-    ->middleware('auth')
-    ->name('bulk-packagepayment');
 
 // ======================= Package Payment End  ====================== //
     Route::get('/track-parcel',[TrackPackageController::class, 'trackParcel'])->name('track-parcel');

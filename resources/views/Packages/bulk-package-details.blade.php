@@ -68,7 +68,11 @@
                                         </div>
                                     </div>
                                     <div class="p-6 space-y-4">
-                                        <p class="text-sm font-medium text-gray-500">Name: {{ $package->user->first_name }} {{ $package->user->last_name }}</p>
+                                        @if($package->user->isCompany)
+                                            <p class="text-sm font-medium text-gray-500">Company Name: {{ $package->user->company_name }}</p>
+                                        @else
+                                            <p class="text-sm font-medium text-gray-500">Name: {{ $package->user->first_name }} {{ $package->user->last_name }}</p>
+                                        @endif
                                         <p class="text-sm font-medium text-gray-500">Email: {{ $package->user->email }}</p>
                                         <p class="text-sm font-medium text-gray-500">Phone: {{ $package->user->phone_number }}</p>
                                     </div>

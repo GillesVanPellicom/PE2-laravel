@@ -20,7 +20,8 @@ class TicketSeeder extends Seeder
             [
                 'subject' => 'Login issue with my account',
                 'status' => 'open',
-                'user_id' => $users->random()->id,
+                'user_id' => 1,
+             // 'user_id' => $users->random()->id,
                 'created_at' => now()->subDays(2),
                 'updated_at' => now()->subHours(2),
                 'messages' => [
@@ -41,7 +42,7 @@ class TicketSeeder extends Seeder
             [
                 'subject' => 'Payment not processed',
                 'status' => 'open',
-                'user_id' => $users->random()->id,
+                'user_id' => 1,
                 'created_at' => now()->subDays(3),
                 'updated_at' => now()->subHours(5),
                 'messages' => [
@@ -58,7 +59,7 @@ class TicketSeeder extends Seeder
             [
                 'subject' => 'Feature request: dark mode',
                 'status' => 'closed',
-                'user_id' => $users->random()->id,
+                'user_id' => 1,
                 'created_at' => now()->subDays(5),
                 'updated_at' => now()->subDays(1),
                 'messages' => [
@@ -87,7 +88,7 @@ class TicketSeeder extends Seeder
             [
                 'subject' => 'Cannot access my previous orders',
                 'status' => 'resolved',
-                'user_id' => $users->random()->id,
+                'user_id' => 1,
                 'created_at' => now()->subDays(4),
                 'updated_at' => now()->subHours(12),
                 'messages' => [
