@@ -44,11 +44,12 @@ class DatabaseSeeder extends Seeder {
       FlightsContractSeeder::class,
       MessageTemplatesSeeder::class,
       VehiclesSeeder::class,
+      UserRoleSeeder::class,
       CourierSeeder::class,
       TicketSeeder::class,
       PackageMovementSeeder::class,
       CourierRouteSeeder::class,
-      UserRoleSeeder::class,
+
     ]);
 
   }
