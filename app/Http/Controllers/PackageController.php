@@ -342,7 +342,7 @@ class PackageController extends Controller {
                         $geocodeData = $response->json();
 
                         if (empty($geocodeData['results'])) {
-                            return back()->withErrors(['error' => 'Address could not be found'])->withInput();
+                            return back()->withErrors(['error' => 'Address  could not be found : "' . $userAddress->street . ' ' . $userAddress->house_number . ' ' . $userAddress->city->name . ' ' . $userAddress->city->postcode . ' ' . $userAddress->city->country->country_name.'".'])->withInput();
                         }
                     }
 
@@ -451,7 +451,7 @@ class PackageController extends Controller {
                         return back()->withErrors(['error' => 'Geocoding service error: ' . $response->status()])->withInput();
                     }
                     if (empty($geocodeData['results'])) {
-                        return back()->withErrors(['error' => 'Address could not be found'])->withInput();
+                        return back()->withErrors(['error' => 'Address  could not be found' . $addressFromInput->street . ' ' . $addressFromInput->house_number . ' ' . $addressFromInput->city->name . ' ' . $addressFromInput->city->postcode . ' ' . $addressFromInput->city->country->country_name])->withInput();
                     }
                     $location = $geocodeData['results'][0];
                     $originLocation = Location::create([
@@ -488,6 +488,7 @@ class PackageController extends Controller {
                 'sender_lastname' => 'required|string|max:255',
                 'sender_email' => 'required|email|max:255|unique:users,email',
                 'sender_phone_number' => 'required|string|max:255|unique:users,phone_number',
+                'safe_location' => 'nullable|string|max:255'
                 //'sender_birthdate' => 'required|date',
             ];
         }
@@ -502,7 +503,8 @@ class PackageController extends Controller {
                 'delivery_method_id' => 'required|exists:delivery_method,id',
                 'dimension' => 'required|string|max:255',
                 'weight_price' => 'required|numeric|min:0',
-                'delivery_price' => 'required|numeric|min:0'
+                'delivery_price' => 'required|numeric|min:0',
+                'safe_location' => 'nullable|string|max:255'
             ];
         }
 
@@ -798,9 +800,10 @@ class PackageController extends Controller {
 
     /**
  * Generate a unique tracking number for a package
- * Format: PK + YYYY + MM + XXXXXXXX (where X is random number)
- * Example: PK20250312345678
- *
+ * Format: REF + YYYY + MM + XXXXXXXX (where X is random number)
+ * Example: REF20250312345678
+ * I changed this to REF for consitency sake & it otherwise breaks my code.
+ * 
  * @return string
  * @throws \Exception if unable to generate unique number after maximum attempts
  */
@@ -820,7 +823,7 @@ private function generateUniqueTrackingNumber()
         $random = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
         $trackingNumber = sprintf(
-            'PK%s%s%s',
+            'REF%s%s%s',
             $year,
             $month,
             $random
@@ -1287,4 +1290,22 @@ private function generateUniqueInvoiceReference()
 
     return $reference;
 }
+    public function strandedPackages() {
+        $packages = Package::with(['user', 'deliveryMethod', 'destinationLocation.address.city.country', 'address.city.country'])
+            ->where('status', 'Stranded')
+            ->get();
+        $packages = Package::paginate(10);
+        return view('Packages.stranded-packages',compact("packages"));
+    }
+    public function reRouteStrandedPackages (Request $request) {
+        $packageReferences = $request->input('selected_packages');
+        $packages = Package::whereIn('reference', $packageReferences)->paginate(10);
+        return redirect()->route('workspace.stranded-packages')->with('success', 'The re-route for the selected parcels was successful');
+    }
+    public function testDeliveryAttemptOnWrongLocation (Request $request) {
+        $package = Package::with(['user', 'deliveryMethod','destinationLocation'])
+            ->where('reference', $request->id)
+            ->firstOrFail();
+        return view('Packages.testDeliveryAttemptOnWrongLocation',compact('package'));
+    }
 }

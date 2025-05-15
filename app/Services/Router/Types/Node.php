@@ -119,7 +119,7 @@ class Node {
    * @throws InvalidRouterArgumentException If the node ID is empty
    * @throws InvalidCoordinateException If the node ID is empty
    */
-  public static function fromId(string $id): ?Node {
+  public static function fromId(string|null $id): ?Node {
     $nodeData = RouterNodes::find($id) ?? Location::find($id);
 
     if (!$nodeData) {

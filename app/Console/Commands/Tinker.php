@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\App;
 class Tinker extends Command
 {
 
-  protected $signature = 'gilles:tinker {amount=1}';
+  protected $signature = 'gilles:tinker';
 
   protected $description = "Gilles' tinker workspace";
 
@@ -41,21 +41,21 @@ class Tinker extends Command
   public function handle(): void
   {
 
-    $amount = (int) $this->argument('amount') ?? 1;
+    //$amount = (int) $this->argument('amount') ?? 1;
     //    /** @var Router $router */
-    $router = App::make(Router::class);
-    $router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
+    //$router = App::make(Router::class);
+    //$router->removeRoute("@AIR_LIRF", "@AIR_LIML", true);
     //    $router->addRoute("@AIR_EFHK", "@AIR_LGAV", 8);
     //    $router->removeRoute("@AIR_EFHK", "@AIR_LGAV", 8);
-    
-    if ($amount == 1) {
-      $package = Package::find(1);
-      $path = $package->getMovements();
-    } else {
+
+    //if ($amount == 1) {
+    $package = Package::find(1);
+    $package->clearMovements();
+    $path = $package->getMovements();
+    /*} else {
       for ($i = 1; $i <= $amount; $i++) {
         $package = Package::find($i);
         try {
-          $path = $package->getMovements();
           for ($j = 0; $j <= 16; $j++) {
             $package->fakeMove();
           }
@@ -63,8 +63,6 @@ class Tinker extends Command
           ConsoleHelper::error($e->getMessage());
         }
       }
-    }
+    }*/
   }
 }
-
-

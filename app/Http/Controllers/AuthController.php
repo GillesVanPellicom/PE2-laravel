@@ -214,7 +214,7 @@ class AuthController extends Controller
             $userData['birth_date'] = $validated['birth_date'];
         } elseif ($request->account_type === 'company') {
             $userData['company_name'] = $validated['company_name'];
-            $userData['VAT_Number'] = $validated['VAT_Number']; // Ensure VAT number is saved^
+            $userData['VAT_Number'] = $validated['VAT_Number']; // Ensure VAT number is saved
             $userData['isCompany'] = 1;
 
         }

@@ -109,12 +109,11 @@
 <body>
     <div class="label-container">
         <div class="tags-container">
-            {{-- <div class="priority-tag">
-                Priority Shipping
-            </div> --}}
+        @if($package->requires_signature)
             <div class="signature-required">
                 Signature Required
             </div>
+        @endif
         </div>
 
         <div class="address-section">

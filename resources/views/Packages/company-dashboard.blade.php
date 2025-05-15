@@ -5,16 +5,7 @@
             <h1 class="text-4xl font-bold text-center text-gray-800 mb-12">Company Dashboard</h1>
 
             <!-- Links Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-                <!-- Send Package Link -->
-                <a href="{{ route('packages.send-package') }}" 
-                   class="block bg-yellow-500 hover:bg-yellow-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
-                    <div class="flex flex-col items-center">
-                        <i class="fas fa-paper-plane text-2xl mb-2"></i>
-                        <h2 class="text-lg font-bold">Send Package</h2>
-                        <p class="mt-1 text-sm">Send a single package</p>
-                    </div>
-                </a>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
 
                 <!-- Bulk Order Link -->
                 <a href="{{ route('packages.bulk-order') }}" 

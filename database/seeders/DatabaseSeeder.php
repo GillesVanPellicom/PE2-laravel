@@ -20,12 +20,12 @@ class DatabaseSeeder extends Seeder {
     // Seed roles and permissions
     $this->call([
       RolesAndPermissionsSeeder::class,
-      CountriesSeeder::class,       
-      CitiesSeeder::class,          
+      CountriesSeeder::class,
+      CitiesSeeder::class,
       AddressesSeeder::class,
       LocationsSeeder::class,
       UserSeeder::class,
-      TeamsSeeder::class,       
+      TeamsSeeder::class,
       EmployeesSeeder::class,
       FunctionsSeeder::class,
       PayrollSeeder::class,
@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder {
       RouterNodesSeeder::class,
       RouterEdgesSeeder::class,
       PackageSeeder::class,
+      InvoiceSeeder::class,
       VacationSeeder::class,
       FlightsSeeder::class,
       FlightsContractSeeder::class,
@@ -46,6 +47,7 @@ class DatabaseSeeder extends Seeder {
       CourierSeeder::class,
       TicketSeeder::class,
       PackageMovementSeeder::class,
+      CourierRouteSeeder::class,
       UserRoleSeeder::class,
     ]);
 

@@ -18,7 +18,12 @@ class CourierRouteController extends Controller
     public function showRoute()
     {
         // Haal de ingelogde courier op
+        
         $courierId = auth()->user()->employee->id;
+        $courierRoute = auth()->user()->employee->courierRoute;
+        //dd($courierRoute);
+        $start = $courierRoute->currentLocation();
+        $end = $courierRoute->endLocation() ?? $courierRoute->startLocation();
 
         // Haal alleen de pakketten op die zijn toegewezen aan de ingelogde courier
         $route = [];
@@ -27,6 +32,7 @@ class CourierRouteController extends Controller
             $package = Package::where('id', $packagemovement->package_id)->first();
             $movement = ($packagemovement->next_movement == null) ? $packagemovement : $packagemovement->nextHop;
             $location = Node::fromId($packagemovement->current_node_id);
+            $at_end = ($packagemovement->next_movement == null && $location->getType() == NodeType::ADDRESS && $package->current_location_id == $packagemovement->current_node_id);
             $route[] = [
                 'latitude' => $location->getLat(CoordType::DEGREE),
                 'longitude' => $location->getLong(CoordType::DEGREE),
@@ -35,11 +41,17 @@ class CourierRouteController extends Controller
                     "street" => $location->getAddress()->street,
                     "house_number" => $location->getAddress()->house_number,
                 ] : null,
-                'end' => $movement->id == $packagemovement->id
+                'end' => $at_end,
+                'requires_signature' => $package->requires_signature,
             ];
         }
-
-        return view('courier.route', compact('route'));
+        $start_coords = null;
+        $end_coords = null;
+        if ($start != null && $end != null){
+            $start_coords = [$start->getLat(CoordType::DEGREE), $start->getLong(CoordType::DEGREE)];
+            $end_coords = [$end->getLat(CoordType::DEGREE), $end->getLong(CoordType::DEGREE)];
+        }
+        return view('courier.route', compact('route', 'start_coords', 'end_coords'));
     }
 
     public function signature($id)

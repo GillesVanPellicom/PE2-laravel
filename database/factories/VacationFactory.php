@@ -28,10 +28,7 @@ class VacationFactory extends Factory
 
         $startDate = $this->faker->dateTimeBetween('-1 month', '+1 month');
         $startDateFormatted = $startDate->format('Y-m-d');
-        $contractStartTime = microtime(true);
-
-        ConsoleHelper::task(str_pad("[Vacation]", 10, ' ', STR_PAD_RIGHT)." Creating vacation for: ".$employee->user->first_name.' '.$employee->user->last_name." (Type: $type)",
-            function () {});
+        
 
         return [
             'employee_id' => $employee->id,
@@ -45,6 +42,5 @@ class VacationFactory extends Factory
             )),
         ];
 
-        $executionTimes[] = (microtime(true) - $contractStartTime) * 1000;
     }
 }

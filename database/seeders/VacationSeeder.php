@@ -26,7 +26,7 @@ class VacationSeeder extends Seeder
             ],
         ]);
 
-        \App\Models\Vacation::factory(3000)->create();
+        \App\Models\Vacation::factory(1000)->create();
 
     }
 }

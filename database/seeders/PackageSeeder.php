@@ -19,7 +19,7 @@ class PackageSeeder extends Seeder
         DB::table('packages')->insert([
             'reference' => 'REF125496',
             'user_id' => 1,
-            'origin_location_id' => 6,
+            'origin_location_id' => '@DOP_0001',
             'current_location_id' => 1,
             'destination_location_id' => 7,
             'addresses_id' => 4,
@@ -59,7 +59,7 @@ class PackageSeeder extends Seeder
             'user_id' => 1,
             'origin_location_id' => 6,
             'current_location_id' => 1,
-            'destination_location_id' => 7,
+            'destination_location_id' => 3,
             'addresses_id' => 4,
             'status' => 'Pending',
             'weight_id' => 1,

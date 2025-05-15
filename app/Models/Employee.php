@@ -9,7 +9,7 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'leave_balance', 'team_id'];
+    protected $fillable = ['user_id', 'leave_balance', 'team_id', 'sick_leave_balance'];
 
     public function contracts()
     {
@@ -42,6 +42,11 @@ class Employee extends Model
 
     public function packageMovements () {
         return $this->hasMany(PackageMovement::class, 'handled_by_courier_id');
+    }
+
+    public function courierRoute()
+    {
+        return $this->hasOne(CourierRoute::class, 'courier');
     }
 
 }

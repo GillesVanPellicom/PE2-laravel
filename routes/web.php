@@ -26,6 +26,7 @@ use App\Http\Controllers\DispatcherController;
 use App\Http\Controllers\CourierRouteController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
+use App\Models\Employee;
 use App\Http\Controllers\CustomerController;
 
 // ======================= Start Middleware ====================== //
@@ -35,6 +36,7 @@ use App\Http\Controllers\CustomerController;
         ->group(function () {
             //Workspace Index
             Route::get('/', function () {
+
                 if (auth()->user()->hasPermissionTo('*')) {
                     return view('real-homepage');
                 } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
@@ -43,8 +45,8 @@ use App\Http\Controllers\CustomerController;
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
                     return redirect()->route('workspace.pickup.dashboard');
-                } elseif (auth()->user()->hasAnyPermission(["airport.view"])) {
-                    return redirect()->route('workspace.airport.index');
+                } elseif (auth()->user()->hasPermissionTo("airport.view")) {
+                    return redirect()->route('workspace.airports');
                 } elseif (auth()->user()->hasAnyPermission(["assign.courier"])) {
                     return redirect()->route('workspace.dispatcher.index');
                 }else {
@@ -102,6 +104,8 @@ use App\Http\Controllers\CustomerController;
             Route::get('/courier/signature/{id}', [CourierRouteController::class, 'signature'])->name('courier.signature');
 
             Route::post('/courier/submit-signature', [CourierRouteController::class, 'submitSignature'])->name('courier.submitSignature');
+
+            
 
 
             // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
@@ -187,9 +191,12 @@ use App\Http\Controllers\CustomerController;
 
             Route::get('/get-unavailable-employees', [EmployeeController::class, 'getUnavailableEmployees'])->name('unavailable.employees');
 
-            
+
             Route::get('/sick-leave-notifications', [NotificationController::class, 'fetchSickDayNotifications'])->name('sickLeaveNotifications.fetch');
             Route::post('/sick-leave-notifications/{id}/mark-as-read', [NotificationController::class, 'markSickLeaveAsRead'])->name('sickLeaveNotifications.markAsRead');
+
+            Route::get('/workspace/sick-leave-notifications', [VacationController::class, 'getSickLeaveNotifications']);
+            Route::post('/workspace/sick-leave-notifications/{id}/mark-as-read', [VacationController::class, 'markSickLeaveAsRead']);
 
             // contract PDF
             Route::get('/contract/{id}', [EmployeeController::class, 'generateEmployeeContract'])->name('employees-contract-template');
@@ -208,7 +215,12 @@ use App\Http\Controllers\CustomerController;
 
             // Notifications
             Route::get('/notifications', [NotificationController::class, 'fetchNotifications'])->name('workspace.notifications');
-            Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('workspace.notifications.read');
+
+            Route::get('/workspace/get-pending-requests-for-day', [VacationController::class, 'getPendingRequestsForDay'])->name('workspace.getPendingRequestsForDay');
+
+            Route::get('/workspace/get-pending-vacations', [VacationController::class, 'getPendingVacations']);
+
+            Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
 
             // ======================= End Employee ====================== //
@@ -223,7 +235,7 @@ use App\Http\Controllers\CustomerController;
 
             });
             Route::get('testDeliveryAttemptOnWrongLocation/{id}', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
-            Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocation');
+            Route::get('testDeliveryAttemptOnWrongLocation', [PackageController::class,'testDeliveryAttemptOnWrongLocation'])->name('testDeliveryAttemptOnWrongLocationHome');
             // ======================= End Pick Up Point ====================== //
 
             // ======================= Start Airport ====================== //
@@ -241,7 +253,7 @@ use App\Http\Controllers\CustomerController;
                 Route::post('/flights', [Flightscontroller::class, 'store'])->name('flight.store');
 
                 Route::patch('/flights/{id}/update-status', [Flightscontroller::class, 'updateStatus'])->name('flights.updateStatus');
-                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign.flight');
+                Route::post('/assign-flight', [Flightscontroller::class, 'assignFlight'])->name('assign-flight');
 
                 Route::get('/flightpackages', [FlightsController::class, 'flightPackages'])->name('flightpackages');
                 Route::get('/airlines', [Flightscontroller::class, 'flights'])->name('airlines.flights');
@@ -260,13 +272,15 @@ use App\Http\Controllers\CustomerController;
                 Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
                 Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
                 Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+                Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
                 Route::get('/distribution-center/courier-route/{id}', [DispatcherController::class, 'getCourierRoute'])->name('dispatcher.courier-route');
-                Route::get('/distribution-center/couriers', [DispatcherController::class, 'getCouriers'])->name('dispatcher.get-couriers');
+                Route::get('/distribution-center/{id}/couriers', [DispatcherController::class, 'getCouriersForDC'])->name('dispatcher.couriers');
             });
 
             // ======================= End CourierRouteCreator ====================== //
 
-            
+            Route::get('/stranded-packages', [PackageController::class, 'strandedPackages'])->name('stranded-packages');
+            Route::post('/stranded-packages', [PackageController::class, 'reRouteStrandedPackages'])->name('stranded-packages.reRoute');
         });
 // ======================= End Middleware ====================== //
 
@@ -385,7 +399,7 @@ Route::get('/invoice/{id}', [InvoiceController::class, 'generateInvoice'])->name
 
 Route::get('/my-invoices', [InvoiceController::class, 'myinvoices'])
 ->name('invoices.myinvoices');
-
+Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
 // Tickets
 
 Route::get('/tickets', [TicketController::class, 'mytickets'])
@@ -411,7 +425,7 @@ Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment']
     ->name('packagepayment');
 
 // ======================= Package Payment End  ====================== //
-
+    Route::get('/track-parcel',[TrackPackageController::class, 'trackParcel'])->name('track-parcel');
 
 // API Start
 
@@ -423,17 +437,31 @@ Route::post('/tokens/create', function (Request $request) {
 
 // API End
 
-Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+// Route for fetching pending vacations
+Route::get('/pending-vacations', [VacationController::class, 'getPendingVacations']);
 
+// Route for fetching pending requests for a specific day
+Route::get('/workspace/get-pending-requests-for-day', [VacationController::class, 'getPendingRequestsForDay']);
 
+Route::post('/workspace/send-end-of-year-notifications', [NotificationController::class, 'sendEndOfYearNotifications'])
+->middleware('auth')
+->name('workspace.sendEndOfYearNotifications');
 
+Route::get('/workspace/end-of-year-notifications', [NotificationController::class, 'fetchEndOfYearNotifications'])
+->middleware('auth')
+->name('workspace.endOfYearNotifications');
 
-Route::middleware(['permission:assign.courier'])->group(function () {
-    Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('workspace.notifications.read');
 
-    Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
-    Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
-    Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
-    Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
-    Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
-});
+Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
+Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::class, 'markEmployeeAsSick'])->name('markEmployeeAsSick');
+
+Route::view('/courier-location', 'courierlocationchange')->name('courier.location-change');
+
+Route::post("/courier/update-location", function (Request $request){
+    $employee = Employee::find($request->employee);
+    $employee->courierRoute->current_location = $request->location;
+    $employee->courierRoute->save();
+    return redirect()->route('courier.location-change');
+})->name("courier.update.location");
