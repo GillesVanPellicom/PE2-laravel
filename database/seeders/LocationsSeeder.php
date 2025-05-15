@@ -43,7 +43,7 @@ class LocationsSeeder extends Seeder {
         'location_type' => 'ADDRESS',
         'latitude' => 50.84927,
         'longitude' => 4.41279,
-        'addresses_id' => 1, // placeholder
+        'addresses_id' => 2, // placeholder
         'contact_number' => '+32 2 123 45 67', // placeholder
         'opening_hours' => null, // placeholder
         'is_active' => true,
@@ -67,7 +67,7 @@ class LocationsSeeder extends Seeder {
         'location_type' => 'ADDRESS',
         'latitude' => 40.4644,
         'longitude' => -3.5882,
-        'addresses_id' => 1, // placeholder
+        'addresses_id' => 3, // placeholder
         'contact_number' => '+32 2 123 45 67', // placeholder
         'opening_hours' => null, // placeholder
         'is_active' => true,
