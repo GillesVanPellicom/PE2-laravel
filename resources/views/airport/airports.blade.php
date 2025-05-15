@@ -1,15 +1,16 @@
 <x-app-layout>
     <x-sidebar-airport>
         <div class="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
+            <h1 class="text-2xl font-bold mb-4">
+                Airport: {{ $currentAirportName ?? 'Unknown' }}
+            </h1>
             <p>Notifications</p>
             @if(isset($messages) && count($messages) > 0)
                 <div class="mt-4 p-4 bg-red-100 text-red-800 rounded">
                     <ul>
                         @foreach($messages as $message)
                             <li>
-                                <a href="{{ route('flightpackages', ['flight_id' => $nextFlight->id ?? null]) }}" class="text-red-500 hover:underline">
-                                    {{ $message }}
-                                </a>
+                                {{ $message }}
                             </li>
                         @endforeach
                     </ul>
@@ -21,6 +22,7 @@
             <div class="mt-6">
                 <h2 class="text-xl font-bold">Next Outgoing Flight</h2>
                 @if(isset($nextFlight) && $nextFlight)
+                    <p class="mt-2">Flight details:</p>
                     <p><strong>Flight ID:</strong> {{ $nextFlight->id }}</p>
                     <p><strong>Departure Time:</strong> {{ $nextFlight->departure_time }}</p>
                     <p><strong>Destination:</strong> {{ $nextFlight->arrivalAirport->name ?? 'Unknown' }}</p>

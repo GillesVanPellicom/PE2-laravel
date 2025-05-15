@@ -25,8 +25,6 @@
                         <th class="border border-gray-300 px-4 py-2">ID</th>
                         <th class="border border-gray-300 px-4 py-2">Department</th>
                         <th class="border border-gray-300 px-4 py-2">Team Leader</th>
-                        <th class="border border-gray-300 px-4 py-2">Created At</th>
-                        <th class="border border-gray-300 px-4 py-2">Updated At</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,12 +38,6 @@
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ $team->manager->user->first_name }} {{ $team->manager->user->last_name }}
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                {{ $team->created_at }}
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                {{ $team->updated_at }}
                             </td>
                         </tr>
                     @endforeach

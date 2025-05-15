@@ -112,9 +112,14 @@ class VacationController extends Controller
 
         if ($employee) {
             // If the request is rejected, increment the employee's leave balance based on day_type
-            if ($request->status === 'rejected') {
+            if ($request->status === 'Rejected') {
                 $incrementValue = ($vacation->day_type === 'Whole Day') ? 1 : 0.5; // Restore full or half day
-                $employee->increment('leave_balance', $incrementValue);
+
+                if ($vacation->vacation_type === 'Holiday') {
+                    $employee->increment('leave_balance', $incrementValue);
+                } elseif ($vacation->vacation_type === 'Sick Leave') {
+                    $employee->increment('sick_leave_balance', $incrementValue);
+                }
             }
 
             // Fetch the message template based on the status
@@ -222,6 +227,7 @@ class VacationController extends Controller
         }
 
         $leaveBalance = $user->employee->leave_balance;
+        $sickLeaveBalance = $user->employee->sick_leave_balance; // Fetch sick leave balance
         $requestedDays = 0;
 
         // Process holidays
@@ -255,6 +261,7 @@ class VacationController extends Controller
         }
 
         // Process sick days
+        $sickDaysCount = 0; // Track the number of sick days added
         foreach ($request->sickDays as $dateRange) {
             $startDate = $dateRange['start_date'];
             $endDate = $dateRange['end_date'];
@@ -280,37 +287,40 @@ class VacationController extends Controller
                         'approve_status' => 'Approved',
                         'day_type' => 'Whole Day',
                     ]);
-
-                    // Create a notification for the sick leave
+                      // Create a notification for the sick leave request
                     $template = MessageTemplate::where('key', 'sick_leave_notification')->first();
                     if ($template) {
                         Notification::create([
                             'user_id' => $user->id,
                             'message_template_id' => $template->id,
                             'is_read' => false,
+                            'message' => str_replace(
+                                '{employee_name}',
+                                "{$user->first_name} {$user->last_name}",
+                                $template->message
+                            ),
                         ]);
-
-                        // Log notification creation
-                        \Log::info('Sick leave notification created', [
-                            'user_id' => $user->id,
-                            'message_template_id' => $template->id,
-                        ]);
-                    } else {
-                        // Log missing template
-                        \Log::warning('Sick leave notification template not found');
                     }
+
+                    
+
+                    $sickDaysCount++; // Increment the count of sick days added
                 }
 
                 $current->modify('+1 day');
             }
         }
 
+        // Increment sick leave balance
+        $user->employee->increment('sick_leave_balance', $sickDaysCount);
+
         // Deduct holiday balance
         $user->employee->decrement('leave_balance', $requestedDays);
 
         return response()->json([
             'message' => 'Requests saved successfully',
-            'remainingHolidays' => $user->employee->leave_balance
+            'remainingHolidays' => $user->employee->leave_balance,
+            'remainingSickLeave' => $user->employee->sick_leave_balance, // Include updated sick leave balance
         ]);
     }
 
@@ -493,5 +503,23 @@ class VacationController extends Controller
         }
 
         return response()->json(['message' => 'End-of-year notifications saved successfully.']);
+    }
+
+    public function markEmployeeAsSick($employeeId)
+    {
+        $employee = Employee::findOrFail($employeeId);
+
+        // Create a sick leave entry for today
+        $today = now()->format('Y-m-d');
+        Vacation::create([
+            'employee_id' => $employee->id,
+            'vacation_type' => 'Sick Leave',
+            'start_date' => $today,
+            'end_date' => $today,
+            'approve_status' => 'Approved',
+            'day_type' => 'Whole Day',
+        ]);
+
+        return response()->json(['message' => "{$employee->user->first_name} {$employee->user->last_name} has been marked as sick."]);
     }
 }

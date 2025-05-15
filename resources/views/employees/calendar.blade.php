@@ -356,6 +356,8 @@
         .fc .fc-event:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: inherit !important; /* Ensure background color remains opaque */
+            opacity: 1 !important; /* Ensure full opacity */
         }
         
         /* Fix for day names in dark mode */
@@ -601,7 +603,7 @@
 
                             <div id="notificationDropdown" class="absolute right-0 mt-3 w-80 glassmorphism hidden z-50 animate__animated animate__fadeInDown">
                                 <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                    <h3 class="font-semibold text-gray-800 dark:text-white">Notifications</h3>
+                                    <h3 class="font-semibold text-gray-800 dark:">Notifications</h3>
                                     <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="document.getElementById('notificationDropdown').classList.add('hidden')">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -622,7 +624,7 @@
             <!-- Stats row -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="dashboard-card p-6 overflow-visible">
-                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 ">
                         <h2 class="text-xl font-bold">
                             Time Off Overview
                         </h2>
@@ -657,15 +659,14 @@
                         
                         <div class="stat-card stat-card-bg-2 p-5 text-white glow">
                             <div class="stat-card-content">
-                                <div class="text-sm opacity-75">Sick Days Taken</div>
+                                <div class="text-sm opacity-75">Sick Leave taken</div>
                                 <div class="flex items-baseline mt-2">
-                                    <div class="text-4xl font-bold" id="sickDaysTaken">0</div>
+                                    <div class="text-4xl font-bold" id="sickLeaveBalance">{{ auth()->user()->employee->sick_leave_balance }}</div>
                                     <div class="text-sm ml-2 opacity-75">days</div>
                                 </div>
                                 <div class="absolute top-3 right-3 opacity-30 floating">
                                     <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172L12 12m0 0l2.828-2.828M12 12l2.828 2.828M12 12L9.172 14.828" />
                                     </svg>
                                 </div>
                                 <div class="w-full bg-white/20 h-1 rounded-full mt-4">
@@ -678,25 +679,14 @@
                 
                 <!-- Quick Actions -->
                 <div class="dashboard-card p-6">
-                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+                    <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 ">
                         <h2 class="text-xl font-bold">
                             Quick Actions
                         </h2>
                     </div>
                     
                     <div class="grid grid-cols-1 gap-4">
-                        <a href="/manager-calendar" class="btn btn-success flex items-center justify-between group">
-                            <span class="flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                View Manager Dashboard
-                            </span>
-                            <svg class="w-5 h-5 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
+                        
                         
                         <button id="clearSelectionBtn" class="btn btn-danger flex items-center justify-between group">
                             <span class="flex items-center">
@@ -722,49 +712,10 @@
                 </div>
             </div>
             
-            <!-- Legend -->
-            <div class="dashboard-card mb-8 p-6 overflow-visible">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Color Legend
-                </h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4">
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--holiday-whole)"></div>
-                        <span class="text-xs text-center">Whole Day</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--holiday-first)"></div>
-                        <span class="text-xs text-center">First Half</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--holiday-second)"></div>
-                        <span class="text-xs text-center">Second Half</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2" style="background: var(--sick-leave)"></div>
-                        <span class="text-xs text-center">Sick Leave</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2 bg-green-500"></div>
-                        <span class="text-xs text-center">Approved</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2 bg-yellow-500"></div>
-                        <span class="text-xs text-center">Pending</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full mb-2 bg-red-500"></div>
-                        <span class="text-xs text-center">Rejected</span>
-                    </div>
-                </div>
-            </div>
 
             <!-- Calendar -->
             <div class="dashboard-card">
-                <div class="card-header bg-gradient-to-r from-sky-500 to-blue-500 text-white">
+                <div class="card-header bg-gradient-to-r from-sky-500 to-blue-500 ">
                     <h2 class="text-xl font-bold flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -772,7 +723,7 @@
                         Time Off Calendar
                     </h2>
                     <div>
-                        <span class="text-sm text-white/80">
+                        <span class="text-sm ">
                             Today: {{ date('F j, Y') }}
                         </span>
                     </div>
@@ -789,9 +740,9 @@
     <!-- Event Modal -->
     <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 modal-overlay">
         <div class="glassmorphism rounded-2xl shadow-2xl max-w-md mx-4 w-full overflow-hidden modal-content">
-            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 py-6 px-6 text-white">
-                <h2 class="text-2xl font-bold">Request Time Off</h2>
-                <p class="opacity-75 text-sm mt-1">Select the type of leave you want to request</p>
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 py-6 px-6 ">
+                <h2 class="text-2xl font-bold text-white">Request Time Off</h2>
+                <p class="opacity-75 text-sm mt-1 text-white">Select the type of leave you want to request</p>
             </div>
             
             <div class="p-6 bg-white/80 dark:bg-gray-800/80">
@@ -872,7 +823,8 @@
             </div>
             
             <div class="p-4 bg-white/90 dark:bg-gray-800/90 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                <button id="closeModalBtn" class="btn btn-ghost">Cancel</button>
+                <!-- Fix modal cancel button text color -->
+                <button id="closeModalBtn" class="btn btn-ghost text-white">Cancel</button>
             </div>
         </div>
     </div>
@@ -1053,12 +1005,7 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     const notificationDropdown = document.getElementById('notificationDropdown');
                     const notificationBadge = document.getElementById('notificationBadge');
@@ -1066,16 +1013,19 @@
 
                     notificationList.innerHTML = ''; // Clear existing notifications
 
-                    if (data.length === 0) {
+                    // Filter out sick leave notifications
+                    const filteredNotifications = data.filter(notification => notification.message_template_id !== 4);
+
+                    if (filteredNotifications.length === 0) {
                         notificationList.innerHTML = '<div class="text-gray-500 text-sm">No unread notifications</div>';
                         notificationBadge.classList.add('hidden');
                         return;
                     }
 
-                    notificationBadge.textContent = data.length;
+                    notificationBadge.textContent = filteredNotifications.length;
                     notificationBadge.classList.remove('hidden');
 
-                    data.forEach(notification => {
+                    filteredNotifications.forEach(notification => {
                         const notificationItem = document.createElement('div');
                         notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
                         notificationItem.innerHTML = `
@@ -1191,12 +1141,10 @@
                 let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
             @endif
             
-            let sickDaysTaken = selectedSickDays.size;
             let currentDate = null;
 
             function updateCounters() {
                 document.getElementById('remainingHolidays').textContent = remainingHolidays;
-                document.getElementById('sickDaysTaken').textContent = sickDaysTaken;
             }
 
             function addEvent(date, type, period = "Full Day") {
@@ -1305,7 +1253,6 @@
                         current.setDate(current.getDate() + 1);
                     }
 
-                    sickDaysTaken = selectedSickDays.size;
                     closeModal();
                     updateCounters();
                     
@@ -1339,7 +1286,7 @@
 
                 // Add a "Remove Date" button to the modal
                 const removeDateBtn = document.createElement('button');
-                removeDateBtn.className = 'btn btn-danger mt-4 w-full';
+                removeDateBtn.className = 'btn btn-danger mt-4 w-full text-white';
                 removeDateBtn.textContent = 'Remove Date';
                 removeDateBtn.onclick = function () {
                     removeEvent(date);
@@ -1380,6 +1327,9 @@
                     removeDateBtn.remove();
                 }
             }
+
+            // Fix modal cancel button functionality
+            closeModalBtn.addEventListener('click', closeModal);
 
             // Create enhanced confetti effect
             function createConfetti() {
@@ -1663,7 +1613,7 @@
                                 <button id="confirmClearBtn" class="btn btn-danger flex-1">
                                     Yes, Clear All
                                 </button>
-                                <button id="cancelClearBtn" class="btn btn-ghost flex-1">
+                                <button id="cancelClearBtn" class="btn btn-ghost flex-1 text-white">
                                     Cancel
                                 </button>
                             </div>
@@ -1693,7 +1643,6 @@
                     @else
                         let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
                     @endif
-                    sickDaysTaken = 0;
                     
                     // Update localStorage
                     localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
@@ -1757,6 +1706,9 @@
                                 remainingHolidays -= 0.5;
                             }
                         });
+
+                        // Update sick leave balance on the page
+                        document.getElementById('sickLeaveBalance').textContent = data.remainingSickLeave;
 
                         // Reset selected holidays and sick days
                         selectedHolidays = {};

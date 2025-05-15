@@ -109,12 +109,11 @@
 <body>
     <div class="label-container">
         <div class="tags-container">
-            {{-- <div class="priority-tag">
-                Priority Shipping
-            </div> --}}
+        @if($package->requires_signature)
             <div class="signature-required">
                 Signature Required
             </div>
+        @endif
         </div>
 
         <div class="address-section">
@@ -123,7 +122,11 @@
                 <div class="section-title">From:</div>
                 <div class="address">
                     @if(Auth::check())
-                        {{ $customer->first_name }} {{ $customer->last_name }}<br>
+                        @if($customer->isCompany)
+                            {{ $customer->company_name }}<br>
+                        @else
+                            {{ $customer->first_name }} {{ $customer->last_name }}<br>
+                    @endif
                         {{ $customer_address->street }} {{ $customer_address->house_number }}<br>
                         {{ $customer_address->city->postcode }} {{ $customer_address->city->name }}<br>
                         {{ $customer_country->country_name }}

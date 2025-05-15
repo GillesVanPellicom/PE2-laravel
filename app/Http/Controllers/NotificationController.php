@@ -15,6 +15,7 @@ class NotificationController extends Controller
     {
         $notifications = Notification::where('user_id', auth()->id())
             ->where('is_read', 0) // Fetch only unread notifications
+            ->where('message_template_id', '!=', 4) // Exclude sick leave notifications
             ->with('messageTemplate') // Include related message template
             ->get();
 
@@ -62,6 +63,7 @@ class NotificationController extends Controller
 
     public function fetchSickDayNotifications()
     {
+        
         $notifications = Notification::where('message_template_id', 4) // Ensure correct message_template_id
             ->where('is_read', 0) // Fetch only unread notifications
             ->with(['messageTemplate', 'user']) // Include related message template and user

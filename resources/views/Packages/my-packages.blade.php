@@ -100,10 +100,12 @@
                                     @endif
                                         </span>
                                     </div>
+                                    @if($package->requires_signature)
                                     <div class="flex items-center text-gray-600">
                                         <i class="fas fa-signature w-5 text-purple-500"></i>
                                         <span class="ml-2 text-sm text-purple-600 font-medium">Signature Required</span>
                                     </div>
+                                    @endif
                                 </div>
                                 <div class="mt-4">
                                     <a href="{{ route('packages.packagedetails', $package->id) }}" class="block w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-center py-2 rounded-md transition-colors duration-200">
@@ -183,10 +185,12 @@
                                         @endif
                                         </span>
                                     </div>
+                                    @if($package->requires_signature)
                                     <div class="flex items-center text-gray-600">
                                         <i class="fas fa-signature w-5 text-purple-500"></i>
                                         <span class="ml-2 text-sm text-purple-600 font-medium">Signature Required</span>
                                     </div>
+                                    @endif
                                 </div>
                                 <div class="mt-4">
                                     @if ($package->paid)

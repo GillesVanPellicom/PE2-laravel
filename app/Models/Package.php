@@ -395,7 +395,6 @@ class Package extends Model {
       // Handle delivery
       return $this->deliverPackage($currentMovement);
     }
-
     // If not delivery operation, handle IN or OUT operations
     return $this->performMovementOperation($currentMovement, $operation);
   }
@@ -591,6 +590,13 @@ class Package extends Model {
     //   ];
     // }
 
+    $user = auth()->user();
+    $employee = $user?->employee;
+    $route = $employee->courierRoute;
+    if ($route == null || $route->current_location != $currentMovement->current_node_id){
+      return [false, "Courier location and package destination do not match."];
+    }
+
     // If arrival time is not set, set all timestamps to now
     if (is_null($currentMovement->arrival_time)) {
       $now = now();
@@ -701,7 +707,11 @@ class Package extends Model {
             }
           }
 
-        
+          if ($timestamp === 'check_in_time') {
+            $this->assigned_flight = null;
+            $this->save();
+          }
+
           return [true, "Package successfully scanned ".$operation->value];
         }
         // If the operation does not match, return an error

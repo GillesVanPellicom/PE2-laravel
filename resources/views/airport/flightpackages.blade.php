@@ -11,7 +11,9 @@
 </head>
 <body class="bg-gray-100 p-6">
 
-    <h1 class="text-2xl font-bold mb-4">Packages at Your Location</h1>
+    <h1 class="text-2xl font-bold mb-4">
+        Packages at {{ $employeeLocationName ?? 'Your Location' }}
+    </h1>
 
     <!-- Unassigned Packages Table -->
     <h2 class="text-xl font-semibold mb-2">Unassigned Packages</h2>
@@ -29,7 +31,7 @@
                 @php
                     $sortedPackages = $packages->sortBy(fn($package) => $package->getNextMovement()?->getID() ?? 'N/A');
                 @endphp
-                @forelse($sortedPackages->filter(fn($package) => !$package->assigned_flight) as $package)
+                @forelse($sortedPackages->filter(fn($package) => !$package->assigned_flight && !str_starts_with($package->getNextMovement()?->getID(), '@DC_')) as $package)
                 <tr class="border-b">
                     <td class="py-2 px-4 border">{{ $package->reference }}</td>
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
@@ -56,6 +58,33 @@
                 Assign to Flight
             </button>
         </div>
+    </div>
+
+    <!-- Packages to Distribution Center Table -->
+    <h2 class="text-xl font-semibold mb-2">Packages to Distribution Center</h2>
+    <div class="overflow-x-auto mb-8">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 border">Package Reference</th>
+                    <th class="py-2 px-4 border">Weight</th>
+                    <th class="py-2 px-4 border">Next Movement</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($packages->filter(fn($package) => $package->getNextMovement()?->getID() && str_starts_with($package->getNextMovement()->getID(), '@DC_')) as $package)
+                <tr class="border-b">
+                    <td class="py-2 px-4 border">{{ $package->reference }}</td>
+                    <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
+                    <td class="py-2 px-4 border">{{ $package->getNextMovement()?->getID() }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3" class="py-2 px-4 border text-center text-gray-600">No packages need to go to the distribution center.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
     <!-- Reassign Packages Table -->
@@ -294,6 +323,8 @@
             const currentLocation = package?.current_location_id;
             const nextMovement = package?.next_movement_id; // Use precomputed next movement ID
             const routerEdge = @json($routerEdges).find(edge => edge.id == flight.router_edge_id);
+            // Fix: define arrive inside the filter function
+            const arrive = flight.arrivalAirport?.name ?? 'Unknown';
 
             console.log("Package:", package);
             console.log("Current Location:", currentLocation);
@@ -316,11 +347,13 @@
             flightList.innerHTML = '<li class="text-gray-600">No flights available for the selected package.</li>';
         } else {
             filteredFlights.forEach(flight => {
+                // Fix: use arrive here, which is now defined above
+                const arrive = flight.arrivalAirport?.name ?? 'Unknown';
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <button onclick="assignFlightToSelectedPackages(${flight.id})" 
                         class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
-                        Flight ${flight.id} - ${flight.departure_time} to ${flight.arrivalAirport?.name || 'Unknown'}
+                        Flight ${flight.id} - ${flight.departure_time} to ${arrive}
                     </button>
                 `;
                 flightList.appendChild(li);
@@ -346,7 +379,7 @@
             totalWeight += weight;
         });
 
-        fetch(`/assign-flight`, {
+        fetch(`{{ route('workspace.assign-flight') }}`, { // Use the correct route name
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -354,7 +387,12 @@
             },
             body: JSON.stringify({ packageIds: selectedPackageIds, flightId, totalWeight })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert(`Packages assigned to flight successfully! Total weight assigned: ${data.assignedWeight} kg`);
@@ -383,6 +421,35 @@
 
     function closeModal() {
         document.getElementById('packageModal').classList.add("hidden");
+    }
+
+    function sendToDistributionCenter(packageId) {
+        fetch(`/send-to-distribution-center`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ packageId })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert("Package sent to distribution center successfully!");
+                location.reload();
+            } else {
+                alert("Failed to send package to distribution center: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An unexpected error occurred.");
+        });
     }
     </script>
 </body>

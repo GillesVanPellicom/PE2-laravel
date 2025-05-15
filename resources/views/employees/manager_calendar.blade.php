@@ -11,7 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -45,17 +44,13 @@
             transition: background-color 0.3s, color 0.3s;
         }
         
-        .dark {
-            color-scheme: dark;
-        }
-        
         /* Custom Card Styles */
         .dashboard-card {
-            @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all hover:shadow-xl;
+            @apply bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all hover:shadow-xl;
         }
         
         .card-header {
-            @apply p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between;
+            @apply p-5 border-b border-gray-100 flex items-center justify-between;
         }
         
         /* Status Indicators */
@@ -64,19 +59,19 @@
         }
         
         .status-available {
-            @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+            @apply bg-green-100 text-green-800;
         }
         
         .status-unavailable {
-            @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+            @apply bg-red-100 text-red-800;
         }
         
         .status-holiday {
-            @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+            @apply bg-yellow-100 text-yellow-800;
         }
         
         .status-pending {
-            @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+            @apply bg-blue-100 text-blue-800;
         }
         
         /* Calendar styles */
@@ -90,12 +85,12 @@
         }
         
         .fc .fc-daygrid-day.fc-day-today {
-            @apply bg-blue-50 dark:bg-blue-900/20;
+            @apply bg-blue-50;
         }
         
         .fc .fc-col-header-cell-cushion,
         .fc .fc-daygrid-day-number {
-            @apply text-gray-700 dark:text-gray-300;
+            @apply text-gray-700;
         }
         
         /* Custom tooltip */
@@ -107,7 +102,19 @@
 
         /* Employee item styles */
         .employee, .sick-employee, .holiday-employee, .pending-request {
-            @apply p-3 my-1 bg-white/70 dark:bg-gray-800/70 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40 flex items-center;
+            @apply p-3 my-1 bg-white/70 rounded-lg shadow-sm border border-gray-100 flex items-center;
+        }
+
+        /* Scrollable container for employee lists */
+        .scrollable-list {
+            max-height: 200px; /* Adjust height as needed */
+            overflow-y: auto;
+        }
+
+        /* Scrollable container for requests under the chart */
+        .scrollable-requests {
+            max-height: 300px; /* Adjust height as needed */
+            overflow-y: auto;
         }
     </style>
 
@@ -126,16 +133,6 @@
                     <span class="text-blue-600">Employee</span> Manager
                 </h1>
             </div>
-
-            <!-- Right side controls -->
-            <div class="flex items-center space-x-4">
-                <!-- Dark mode toggle -->
-                <button id="darkModeToggle" class="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none" aria-label="Toggle dark mode">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                </button>
-            </div>
         </div>
     </header>
 
@@ -144,10 +141,10 @@
             <!-- Sidebar -->
             <div class="w-full lg:w-1/4 dashboard-card">
                 <div class="card-header">
-                    <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                    <div class="text-lg font-semibold text-gray-800">
                         <div class="flex items-center gap-2">
-                            <div class="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-md">
-                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="bg-blue-100 p-1.5 rounded-md">
+                                <svg class="w-5 h-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
                             </div>
@@ -156,11 +153,11 @@
                     </div>
                 </div>
                 
-                <div class="px-5 py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
-                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <div class="px-5 py-2 border-b border-gray-100 bg-gray-50">
+                    <div class="text-sm font-medium text-gray-600">
                         Status for
                     </div>
-                    <div class="text-blue-600 dark:text-blue-400 font-medium" id="currentDate">
+                    <div class="text-blue-600 font-medium" id="currentDate">
                         <!-- Date will be populated by JS -->
                     </div>
                 </div>
@@ -169,56 +166,67 @@
                     <!-- Available Section -->
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-base font-medium text-green-600 dark:text-green-400 flex items-center gap-2">
+                            <h3 class="text-base font-medium text-green-600 flex items-center gap-2">
                                 <span class="text-lg">👨‍💼</span> Available
                             </h3>
                             <span class="status-badge status-available" id="availableCount">0</span>
                         </div>
+
+                        <!-- Search Bar -->
+                        <div class="relative mb-3">
+                            <input 
+                                type="text" 
+                                id="searchAvailableEmployees" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm" 
+                                placeholder="Search by employee name..."
+                                oninput="filterAvailableEmployees()"
+                            />
+                        </div>
                         
-                        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
-                            <div id="employeeList" class="space-y-2"></div>
+                        <div class="p-4 bg-green-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
+                            <div id="employeeList" class="space-y-2 scrollable-list"></div>
                         </div>
                     </div>
 
                     <!-- Sick Section -->
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-base font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+                            <h3 class="text-base font-medium text-red-600 flex items-center gap-2">
                                 <span class="text-lg">🤒</span> Out Sick
                             </h3>
                             <span class="status-badge status-unavailable" id="sickCount">0</span>
                         </div>
                         
-                        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
-                            <div id="sickEmployeeList" class="space-y-2"></div>
+                        <div class="p-4 bg-red-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
+                            <div id="sickEmployeeList" class="space-y-2 scrollable-list"></div>
                         </div>
                     </div>
 
                     <!-- Holiday Section -->
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-base font-medium text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+                            <h3 class="text-base font-medium text-yellow-600 flex items-center gap-2">
                                 <span class="text-lg">🏖️</span> On Holiday
                             </h3>
                             <span class="status-badge status-holiday" id="holidayCount">0</span>
                         </div>
                         
-                        <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
-                            <div id="holidayEmployeeList" class="space-y-2"></div>
+                        <div class="p-4 bg-yellow-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
+                            <div id="holidayEmployeeList" class="space-y-2 scrollable-list"></div>
                         </div>
                     </div>
 
                     <!-- Pending Holiday Requests Section -->
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-base font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                            <h3 class="text-base font-medium text-blue-600 flex items-center gap-2">
                                 <span class="text-lg">📋</span> Pending Requests
                             </h3>
-                            <span class="status-badge status-pending" id="pendingCount">0</span>
+                            
                         </div>
                         
-                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm min-h-[50px] border border-gray-100 dark:border-gray-700/40">
-                            <div id="pendingHolidayRequests" class="space-y-2"></div>
+                        <div class="p-4 bg-blue-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
+                            <div id="pendingHolidayRequests" class="space-y-2 scrollable-list"></div>
                         </div>
                     </div>
                 </div>
@@ -230,22 +238,22 @@
                 <div class="flex justify-end space-x-6">
                     <!-- Holiday Notifications -->
                     <div class="notification-dropdown-container relative">
-                        <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-amber-500 dark:hover:bg-gray-700 dark:text-amber-400" onclick="toggleNotifications()">
+                        <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-amber-500" onclick="toggleNotifications()">
                             <span class="text-2xl">🔔</span>
                             <span id="notificationBadge" class="absolute -top-1 -right-1 bg-amber-500 text-white flex items-center justify-center w-5 h-5 p-0 text-xs font-bold shadow-lg animate-pulse rounded-full hidden">0</span>
                         </button>
 
-                        <div id="notificationDropdown" class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 shadow-xl p-4 rounded-xl z-50 border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-right hidden">
-                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">
-                                <h3 class="font-semibold text-gray-800 dark:text-gray-200">Holiday Requests</h3>
-                                <button onclick="toggleNotifications()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        <div id="notificationDropdown" class="absolute right-0 mt-2 w-80 bg-white shadow-xl p-4 rounded-xl z-50 border border-gray-200 transition-all duration-200 transform origin-top-right hidden">
+                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                                <h3 class="font-semibold text-gray-800">Holiday Requests</h3>
+                                <button onclick="toggleNotifications()" class="text-gray-500 hover:text-gray-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
-                            <!-- Holiday notifications will be populated here -->
-                            <div class="space-y-3">
+                            <!-- Make this section scrollable -->
+                            <div class="space-y-3 max-h-96 overflow-y-auto">
                                 <!-- Notification items will be added dynamically -->
                             </div>
                         </div>
@@ -253,15 +261,15 @@
 
                     <!-- Sick Leave Notifications -->
                     <div class="notification-dropdown-container relative">
-                        <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-red-500 dark:hover:bg-gray-700 dark:text-red-400" onclick="toggleSickLeaveNotifications()">
+                        <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 text-red-500" onclick="toggleSickLeaveNotifications()">
                             <span class="text-2xl">🏥</span>
                             <span id="sickLeaveNotificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white flex items-center justify-center w-5 h-5 p-0 text-xs font-bold shadow-lg animate-pulse rounded-full hidden">0</span>
                         </button>
 
-                        <div id="sickLeaveNotificationDropdown" class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 shadow-xl p-4 rounded-xl z-50 border border-gray-200 dark:border-gray-700 transition-all duration-200 transform origin-top-right hidden">
-                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">
-                                <h3 class="font-semibold text-gray-800 dark:text-gray-200">Sick Leave Notifications</h3>
-                                <button onclick="toggleSickLeaveNotifications()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        <div id="sickLeaveNotificationDropdown" class="absolute right-0 mt-2 w-80 bg-white shadow-xl p-4 rounded-xl z-50 border border-gray-200 transition-all duration-200 transform origin-top-right hidden">
+                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                                <h3 class="font-semibold text-gray-800">Sick Leave Notifications</h3>
+                                <button onclick="toggleSickLeaveNotifications()" class="text-gray-500 hover:text-gray-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -278,10 +286,10 @@
                 <!-- Availability Stats -->
                 <div class="dashboard-card">
                     <div class="card-header">
-                        <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                        <div class="text-lg font-semibold text-gray-800">
                             <div class="flex items-center gap-2">
-                                <div class="bg-green-100 dark:bg-green-900/30 p-1.5 rounded-md">
-                                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <div class="bg-green-100 p-1.5 rounded-md">
+                                    <svg class="w-5 h-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
                                 </div>
@@ -289,43 +297,43 @@
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <button id="7daysButton" class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition">7 Days</button>
-                            <button id="1monthButton" class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition">1 Month</button>
-                            <button id="3monthsButton" class="px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition">3 Months</button>
+                            <button id="7daysButton" class="px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition">7 Days</button>
+                            <button id="1monthButton" class="px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition">1 Month</button>
+                            <button id="3monthsButton" class="px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition">3 Months</button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
-                        <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Available</div>
-                            <div class="text-xl font-bold text-green-600 dark:text-green-400" id="availablePercentage">0%</div>
+                        <div class="bg-white rounded-md p-3 shadow-sm border border-gray-100">
+                            <div class="text-sm text-gray-600">Available</div>
+                            <div class="text-xl font-bold text-green-600" id="availablePercentage">0%</div>
                             <div class="mt-1 flex items-center">
-                                <span class="text-xs font-medium text-green-600 dark:text-green-400">+5.2%</span>
-                                <svg class="w-3 h-3 ml-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <span class="text-xs font-medium text-green-600">+5.2%</span>
+                                <svg class="w-3 h-3 ml-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                 </svg>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">vs last period</span>
+                                <span class="text-xs text-gray-500 ml-1">vs last period</span>
                             </div>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Sick</div>
-                            <div class="text-xl font-bold text-red-600 dark:text-red-400" id="sickPercentage">0%</div>
+                        <div class="bg-white rounded-md p-3 shadow-sm border border-gray-100">
+                            <div class="text-sm text-gray-600">Sick</div>
+                            <div class="text-xl font-bold text-red-600" id="sickPercentage">0%</div>
                             <div class="mt-1 flex items-center">
-                                <span class="text-xs font-medium text-red-600 dark:text-red-400">-2.3%</span>
-                                <svg class="w-3 h-3 ml-1 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <span class="text-xs font-medium text-red-600">-2.3%</span>
+                                <svg class="w-3 h-3 ml-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">vs last period</span>
+                                <span class="text-xs text-gray-500 ml-1">vs last period</span>
                             </div>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-md p-3 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Holiday</div>
-                            <div class="text-xl font-bold text-yellow-600 dark:text-yellow-400" id="holidayPercentage">0%</div>
+                        <div class="bg-white rounded-md p-3 shadow-sm border border-gray-100">
+                            <div class="text-sm text-gray-600">Holiday</div>
+                            <div class="text-xl font-bold text-yellow-600" id="holidayPercentage">0%</div>
                             <div class="mt-1 flex items-center">
-                                <span class="text-xs font-medium text-green-600 dark:text-green-400">+1.7%</span>
-                                <svg class="w-3 h-3 ml-1 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <span class="text-xs font-medium text-green-600">+1.7%</span>
+                                <svg class="w-3 h-3 ml-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                 </svg>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">vs last period</span>
+                                <span class="text-xs text-gray-500 ml-1">vs last period</span>
                             </div>
                         </div>
                         
@@ -334,37 +342,37 @@
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6 space-y-4 md:space-y-0">
                             <div class="flex items-center space-x-2">
-                                <label for="startDatePicker" class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                <label for="startDatePicker" class="text-sm font-medium text-gray-600">
                                     Start Date:
                                 </label>
                                 <input 
                                     type="date" 
                                     id="startDatePicker" 
-                                    class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                                    class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 />
                             </div>
 
                             <div class="flex items-center space-x-2">
-                                <label for="endDatePicker" class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                <label for="endDatePicker" class="text-sm font-medium text-gray-600">
                                     End Date:
                                 </label>
                                 <input 
                                     type="date" 
                                     id="endDatePicker"
-                                    class="border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                                    class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 />
                             </div>
                         </div>
 
                         <div class="relative h-[380px] w-full">
-                            <div id="chartLoading" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 bg-white dark:bg-gray-800 bg-opacity-80 dark:bg-opacity-80">
-                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 dark:border-blue-400"></div>
-                                <p class="text-gray-500 dark:text-gray-400 text-sm">Loading chart data...</p>
+                            <div id="chartLoading" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 bg-white bg-opacity-80">
+                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                                <p class="text-gray-500 text-sm">Loading chart data...</p>
                             </div>
                             <canvas id="availabilityChart"></canvas>
                         </div>
                         
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center" id="chartDaysInfo">
+                        <div class="text-xs text-gray-500 mt-4 text-center" id="chartDaysInfo">
                             Showing employee availability data for <span id="totalDays">0</span> days
                         </div>
                         
@@ -372,15 +380,15 @@
                         <div class="flex items-center justify-center mt-4 space-x-6">
                             <div class="flex items-center gap-2">
                                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Available</span>
+                                <span class="text-sm text-gray-600">Available</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">On Holiday</span>
+                                <span class="text-sm text-gray-600">On Holiday</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Sick Leave</span>
+                                <span class="text-sm text-gray-600">Sick Leave</span>
                             </div>
                             
                         </div>
@@ -390,10 +398,10 @@
                 <!-- Holiday Requests Section -->
                 <div class="dashboard-card">
                     <div class="card-header">
-                        <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                        <div class="text-lg font-semibold text-gray-800">
                             <div class="flex items-center gap-2">
-                                <div class="bg-yellow-100 dark:bg-yellow-900/30 p-1.5 rounded-md">
-                                    <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <div class="bg-yellow-100 p-1.5 rounded-md">
+                                    <svg class="w-5 h-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
@@ -407,13 +415,13 @@
                             <input 
                                 type="text" 
                                 id="searchHolidayRequests" 
-                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-gray-200 text-sm" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm" 
                                 placeholder="Search by employee name..."
                                 oninput="filterHolidayRequests()"
                             />
                         </div>
                         <!-- Holiday Requests List -->
-                        <div id="holidayRequests" class="space-y-3">
+                        <div id="holidayRequests" class="space-y-3 scrollable-requests">
                             <!-- Holiday requests will be dynamically populated here -->
                         </div>
                     </div>
@@ -429,22 +437,144 @@
         </div>
     </div>
 
+    <div id="markSickModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Mark Employee as Sick</h2>
+            <p class="text-gray-600 mb-6">Are you sure you want to mark <span id="employeeName" class="font-bold"></span> as sick?</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancelMarkSick" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                <button id="confirmMarkSick" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Mark as Sick</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for End-of-Year Notifications -->
+    <div id="endOfYearModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Send End-of-Year Notifications</h2>
+            <p class="text-gray-600 mb-6">Are you sure you want to send end-of-year notifications to all employees?</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancelEndOfYear" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                <button id="confirmEndOfYear" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Send</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Toggle dark mode
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const htmlElement = document.documentElement;
-            
-            // Check for saved dark mode preference
-            if (localStorage.getItem('darkMode') === 'true' || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                htmlElement.classList.add('dark');
-            }
-            
-            darkModeToggle.addEventListener('click', function() {
-                htmlElement.classList.toggle('dark');
-                localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
+            const markSickModal = document.getElementById('markSickModal');
+            const employeeNameSpan = document.getElementById('employeeName');
+            const confirmMarkSick = document.getElementById('confirmMarkSick');
+            const cancelMarkSick = document.getElementById('cancelMarkSick');
+            let selectedEmployeeId = null;
+
+            // Open modal to mark employee as sick
+            window.openMarkSickModal = function (employeeId, employeeName) {
+                selectedEmployeeId = employeeId;
+                employeeNameSpan.textContent = employeeName;
+                markSickModal.classList.remove('hidden');
+            };
+
+            // Close modal
+            cancelMarkSick.addEventListener('click', () => {
+                markSickModal.classList.add('hidden');
+                selectedEmployeeId = null;
             });
-            
+
+            // Confirm marking employee as sick
+            confirmMarkSick.addEventListener('click', () => {
+                if (!selectedEmployeeId) return;
+
+                fetch(`/workspace/mark-employee-sick/${selectedEmployeeId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        markSickModal.classList.add('hidden');
+                        selectedEmployeeId = null;
+
+                        // Refresh the page to update data
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error marking employee as sick:', error);
+                        alert('Failed to mark employee as sick. Please try again.');
+                    });
+            });
+
+            // Define fetchEmployeeData function
+            function fetchEmployeeData(date) {
+                fetch(`/workspace/get-day-details?date=${date}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const availableList = document.getElementById('employeeList');
+                        const sickList = document.getElementById('sickEmployeeList');
+                        const holidayList = document.getElementById('holidayEmployeeList');
+                        const pendingList = document.getElementById('pendingHolidayRequests');
+                        const availableCount = document.getElementById('availableCount');
+                        const sickCount = document.getElementById('sickCount');
+                        const holidayCount = document.getElementById('holidayCount');
+
+                        // Clear existing lists
+                        availableList.innerHTML = '';
+                        sickList.innerHTML = '';
+                        holidayList.innerHTML = '';
+                        pendingList.innerHTML = '';
+
+                        // Populate available employees
+                        if (data.available && data.available.length > 0) {
+                            data.available.forEach(employee => {
+                                availableList.innerHTML += `
+                                    <div class="employee flex justify-between items-center">
+                                        <span>${employee.user_id}</span>
+                                        <button 
+                                            class="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition"
+                                            onclick="openMarkSickModal(${employee.id}, '${employee.user_id}')">
+                                            Mark as Sick
+                                        </button>
+                                    </div>`;
+                            });
+                        } else {
+                            availableList.innerHTML = '<div class="text-gray-500 text-sm">No available employees</div>';
+                        }
+
+                        // Populate sick employees
+                        if (data.sick && data.sick.length > 0) {
+                            data.sick.forEach(employee => {
+                                sickList.innerHTML += `<div class="sick-employee">${employee.employee.user.first_name} ${employee.employee.user.last_name}</div>`;
+                            });
+                        } else {
+                            sickList.innerHTML = '<div class="text-gray-500 text-sm">No sick employees</div>';
+                        }
+
+                        // Populate employees on holiday
+                        if (data.holiday && data.holiday.length > 0) {
+                            data.holiday.forEach(employee => {
+                                holidayList.innerHTML += `<div class="holiday-employee">${employee.employee.user.first_name} ${employee.employee.user.last_name}</div>`;
+                            });
+                        } else {
+                            holidayList.innerHTML = '<div class="text-gray-500 text-sm">No employees on holiday</div>';
+                        }
+
+                        // Update counts
+                        availableCount.textContent = data.available ? data.available.length : 0;
+                        sickCount.textContent = data.sick ? data.sick.length : 0;
+                        holidayCount.textContent = data.holiday ? data.holiday.length : 0;
+                    })
+                    .catch(error => console.error("Error fetching employee data:", error));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
             // Toggle notification dropdowns
             const notificationDropdown = document.getElementById('notificationDropdown');
             const sickLeaveNotificationDropdown = document.getElementById('sickLeaveNotificationDropdown');
@@ -483,6 +613,17 @@
             const chartLoading = document.getElementById('chartLoading');
             let availabilityChart;
 
+            // Filter available employees by name
+            window.filterAvailableEmployees = function () {
+                const searchAvailableEmployees = document.getElementById('searchAvailableEmployees');
+                const searchTerm = searchAvailableEmployees.value.toLowerCase();
+                const employees = availableList.querySelectorAll('.employee');
+                employees.forEach(employee => {
+                    const name = employee.querySelector('span').textContent.toLowerCase();
+                    employee.style.display = name.includes(searchTerm) ? 'flex' : 'none';
+                });
+            };
+
             // Fetch employee data for a specific day
             function fetchEmployeeData(date) {
                 fetch(`/workspace/get-unavailable-employees?date=${date}`)
@@ -497,7 +638,16 @@
                         // Populate available employees
                         if (data.available && data.available.length > 0) {
                             data.available.forEach(employee => {
-                                availableList.innerHTML += `<div class="employee">${employee.name}</div>`;
+                                availableList.innerHTML += `
+                                    <div class="employee flex justify-between items-center">
+                                        <span>${employee.name}</span>
+                                        <button 
+                                            class="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition"
+                                            onclick="openMarkSickModal(${employee.id}, '${employee.name}')">
+                                            Mark as Sick
+                                        </button>
+                                    </div>
+                                `;
                             });
                         } else {
                             availableList.innerHTML = '<div class="text-gray-500 text-sm">No available employees</div>';
@@ -600,10 +750,10 @@
                         if (data.length > 0) {
                             data.forEach(request => {
                                 pendingList.innerHTML += `
-                                    <div class="pending-request p-3 my-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700/40">
-                                        <div class="font-medium text-blue-600 dark:text-blue-400">${request.employee_name}</div>
-                                        <div class="text-sm text-gray-600 dark:text-gray-400">${request.vacation_type} (${request.day_type})</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">From: ${request.start_date} To: ${request.end_date}</div>
+                                    <div class="pending-request p-3 my-1 bg-blue-50 rounded-lg shadow-sm border border-gray-100">
+                                        <div class="font-medium text-blue-600">${request.employee_name}</div>
+                                        <div class="text-sm text-gray-600">${request.vacation_type} (${request.day_type})</div>
+                                        <div class="text-xs text-gray-500">From: ${request.start_date} To: ${request.end_date}</div>
                                     </div>
                                 `;
                             });
@@ -812,12 +962,12 @@
                             const dayType = notification.day_type || 'Whole Day';
 
                             const notificationItem = document.createElement('div');
-                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                            notificationItem.className = 'p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-100';
                             notificationItem.innerHTML = `
-                                <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                <p class="text-gray-800 font-medium">
                                     ${notification.employee_name} requested ${vacationType} (${dayType})
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                <p class="text-xs text-gray-500">
                                     From: ${notification.start_date} To: ${notification.end_date || notification.start_date}
                                 </p>
                                 <div class="flex space-x-2 mt-2">
@@ -852,15 +1002,15 @@
                         data.forEach(notification => {
                             const notificationItem = document.createElement('div');
                             const formattedDate = new Date(notification.created_at).toISOString().slice(0, 19).replace('T', ' ');
-                            notificationItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                            notificationItem.className = 'p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-100';
                             notificationItem.innerHTML = `
 
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                            <p class="text-sm text-gray-500">
                                 ${notification.message}
                             </p>
                             
 
-                                <p class="text-sm text-gray-400 dark:text-gray-500">
+                                <p class="text-sm text-gray-400">
                                     Submitted: ${formattedDate}
                                 </p>
 
@@ -911,12 +1061,12 @@
                                 const dayType = request.day_type || 'Whole Day';
 
                                 const requestItem = document.createElement('div');
-                                requestItem.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600';
+                                requestItem.className = 'p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-100';
                                 requestItem.innerHTML = `
-                                    <p class="text-gray-800 dark:text-gray-200 font-medium">
+                                    <p class="text-gray-800 font-medium">
                                         ${request.employee_name} requested ${vacationType} (${dayType})
                                     </p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    <p class="text-xs text-gray-500">
                                         From: ${request.start_date} To: ${request.end_date || request.start_date}
                                     </p>
                                     <div class="flex space-x-2 mt-2">
@@ -952,13 +1102,24 @@
                     body: JSON.stringify({ status }),
                 })
                     .then(response => response.json())
-                    .then(() => {
-                        // Refresh both the dropdown and the holiday requests section dynamically
+                    .then(data => {
+                        if (status === 'Rejected' && data.vacation_type === 'Sick Leave') {
+                            const incrementValue = data.day_type === 'Whole Day' ? 1 : 0.5;
+                            const sickLeaveBalanceElement = document.getElementById('sickLeaveBalance');
+                            if (sickLeaveBalanceElement) {
+                                const currentBalance = parseFloat(sickLeaveBalanceElement.textContent) || 0;
+                                sickLeaveBalanceElement.textContent = (currentBalance + incrementValue).toFixed(1);
+                            }
+                        }
+
+                        // Refresh the dropdowns and sections dynamically
                         fetchPendingVacationNotifications();
                         fetchHolidayRequests();
                         fetchSickLeaveNotifications();
-                        
+
                         // Refresh availability data after status update
+                        const startDatePicker = document.getElementById('startDatePicker');
+                        const endDatePicker = document.getElementById('endDatePicker');
                         fetchAvailabilityData(startDatePicker.value, endDatePicker.value);
                     })
                     .catch(error => console.error('Error updating vacation status:', error));
@@ -994,29 +1155,44 @@
             fetchPendingVacationsForDiagram();
 
             // Send end-of-year notifications
-            document.getElementById('sendEndOfYearNotification').addEventListener('click', function () {
-                if (confirm('Are you sure you want to send end-of-year notifications to all employees?')) {
-                    fetch('/workspace/send-end-of-year-notifications', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        },
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        alert(data.message);
-                    })
-                    .catch(error => {
-                        console.error('Error sending notifications:', error);
-                        alert('An error occurred while sending notifications. Please check the server logs for details.');
-                    });
-                }
+            const endOfYearModal = document.getElementById('endOfYearModal');
+            const cancelEndOfYear = document.getElementById('cancelEndOfYear');
+            const confirmEndOfYear = document.getElementById('confirmEndOfYear');
+            const sendEndOfYearNotificationButton = document.getElementById('sendEndOfYearNotification');
+
+            // Open modal
+            sendEndOfYearNotificationButton.addEventListener('click', () => {
+                endOfYearModal.classList.remove('hidden');
+            });
+
+            // Close modal
+            cancelEndOfYear.addEventListener('click', () => {
+                endOfYearModal.classList.add('hidden');
+            });
+
+            // Confirm sending notifications
+            confirmEndOfYear.addEventListener('click', () => {
+                fetch('/workspace/send-end-of-year-notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    endOfYearModal.classList.add('hidden');
+                })
+                .catch(error => {
+                    console.error('Error sending notifications:', error);
+                    alert('An error occurred while sending notifications. Please check the server logs for details.');
+                    endOfYearModal.classList.add('hidden');
+                });
             });
         });
     </script>

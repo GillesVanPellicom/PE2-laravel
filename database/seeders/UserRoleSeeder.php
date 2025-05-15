@@ -46,5 +46,10 @@ class UserRoleSeeder extends Seeder
         $airportUser->assignRole('airport');
         $role = Role::where('name','airport')->first();
         $airportUser->syncPermissions($role->permissions);
+        
+        $airportUser = User::find(13); // Change to the correct user ID
+        $airportUser->assignRole('business_client');
+        $role = Role::where('name','business_client')->first();
+        $airportUser->syncPermissions($role->permissions);
     }
 }
