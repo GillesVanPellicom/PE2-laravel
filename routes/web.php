@@ -26,6 +26,7 @@ use App\Http\Controllers\DispatcherController;
 use App\Http\Controllers\CourierRouteController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
+use App\Models\Employee;
 
 // ======================= Start Middleware ====================== //
     Route::middleware('auth')
@@ -102,6 +103,8 @@ use App\Http\Controllers\TicketController;
             Route::get('/courier/signature/{id}', [CourierRouteController::class, 'signature'])->name('courier.signature');
 
             Route::post('/courier/submit-signature', [CourierRouteController::class, 'submitSignature'])->name('courier.submitSignature');
+
+            
 
 
             // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
@@ -459,4 +462,11 @@ Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationControlle
 
 Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::class, 'markEmployeeAsSick'])->name('markEmployeeAsSick');
 
+Route::view('/courier-location', 'courierlocationchange')->name('courier.location-change');
 
+Route::post("/courier/update-location", function (Request $request){
+    $employee = Employee::find($request->employee);
+    $employee->courierRoute->current_location = $request->location;
+    $employee->courierRoute->save();
+    return redirect()->route('courier.location-change');
+})->name("courier.update.location");
