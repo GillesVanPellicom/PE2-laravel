@@ -5,7 +5,7 @@
 
     <div class="container mx-auto py-10">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4">Create Employee</h1>
+            <h1 class="text-4xl font-bold mb-4">Add Employee</h1>
         </div>
         <div class="max-w-3xl mx-auto bg-white p-8 rounded shadow">
             <form method="post" action="{{ route('workspace.employees.store_employee') }}">
@@ -130,7 +130,7 @@
                 <div>
                     <button type="submit"
                         class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded shadow">
-                        Create
+                        Add Employee
                     </button>
                 </div>
             </form>

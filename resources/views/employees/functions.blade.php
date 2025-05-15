@@ -28,8 +28,6 @@
                         <th class="border border-gray-300 px-4 py-2">Description</th>
                         <th class="border border-gray-300 px-4 py-2">Salary Min</th>
                         <th class="border border-gray-300 px-4 py-2">Salary Max</th>
-                        <th class="border border-gray-300 px-4 py-2">Created At</th>
-                        <th class="border border-gray-300 px-4 py-2">Updated At</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,10 +51,6 @@
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ $function->salary_max }}
                             </td>
-                            <td
-                                class="border border-gray-300 px-4 py-2">{{ $function->created_at }}</td>
-                            <td
-                                class="border border-gray-300 px-4 py-2">{{ $function->updated_at }}</td>
                         </tr>
                     @endforeach
                 </tbody>
