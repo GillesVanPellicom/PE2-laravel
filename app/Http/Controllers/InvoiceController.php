@@ -57,7 +57,7 @@ class InvoiceController extends Controller
             }
         }
 
-        $invoices = $query->paginate(10)->withQueryString();
+        $invoices = $query->paginate(100)->withQueryString();
 
         // Calculate packages and amount for each invoice
         foreach ($invoices as $invoice) {
@@ -213,7 +213,7 @@ class InvoiceController extends Controller
         }
 
         // Add pagination & pass query params so links work with filters
-        $invoices = $query->paginate(15)->appends($request->query());
+        $invoices = $query->paginate(100)->appends($request->query());
 
         return view('employees.manage_invoices',compact('invoices'));
 
