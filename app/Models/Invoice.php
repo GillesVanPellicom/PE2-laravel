@@ -14,6 +14,7 @@ class Invoice extends Model
      *
      * @var array<int, string>
      */
+    protected $table = 'invoices';
     use HasFactory;
     protected $fillable = [
         'company_id',
