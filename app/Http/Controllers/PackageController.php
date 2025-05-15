@@ -65,14 +65,14 @@ class PackageController extends Controller {
         if ($statusToSet === 'Pending') {
             $new_ticket = Ticket::create([
                 'user_id' => Auth::id(),
-                'subject'=> 'Package status changed',
+                'subject'=> 'Package #'.$package->reference.' status changed',
                 'status' => "open",
                 'description' => 'The status of the package was changed to: ' . $statusToSet
             ]);
             TicketMessage::create([
                 'ticket_id' => $new_ticket->id,
                 "is_customer_message"=>false,
-                'message' => "The Package was not left at the pickup point by the delivery driver and was not delivered
+                'message' => "The Package: #".$package->reference." was not left at the pickup point by the delivery driver and was not delivered
                 to the pickup."
             ]);
         }
