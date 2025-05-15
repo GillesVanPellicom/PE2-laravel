@@ -16,6 +16,7 @@ use App\Models\Country;
 use App\Models\City;
 use App\Models\User;
 use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\PackageInInvoice;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -647,7 +648,24 @@ class PackageController extends Controller {
                 // Create the package
 
                 $package = Package::create($packageData);
+                $invoice = Invoice::create([
+                    "company_id" => $userId ?? null, // Replace with actual company ID or null
+                    "discount" => $request->input('discount') ?? 0, // Replace with actual discount or default to 0
+                    "expiry_date" => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+                    "is_paid" => false, // Default to unpaid
+                    "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
+                ]);
+                
+                $invoice_payment = InvoicePayment::create([
+                    'reference' => $invoice->reference,
+                    'amount' => $package->weight_price + $package->delivery_price,
 
+                ]);
+
+                $packageInInvoice = PackageInInvoice::create([
+                    'invoice_id' => $invoice->id,
+                    'package_id' => $package->id,
+                ]);
             }
             catch (\Exception $e) {
                 return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
@@ -667,12 +685,40 @@ class PackageController extends Controller {
                 ->toArray();
 
             $package = Package::create($packageData);
+            $invoice = Invoice::create([
+                "company_id" => $userId ?? null, // Replace with actual company ID or null
+                "discount" => $request->input('discount') ?? 0, // Replace with actual discount or default to 0
+                "expiry_date" => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+                "is_paid" => false, // Default to unpaid
+                "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
+            ]);
+            
+            $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $package->weight_price + $package->delivery_price,
+
+            ]);
+
+            $packageInInvoice = PackageInInvoice::create([
+                'invoice_id' => $invoice->id,
+                'package_id' => $package->id,
+            ]);
         }
 
         $package->getMovements();
 
         if (!$package) {
             return back()->withErrors(['error' => 'Failed to create package']);
+        
+        }
+        if (!$invoice) {
+            return back()->withErrors(['error' => 'Failed to create invoice']);
+        }
+            if (!$invoice_payment) {
+                return back()->withErrors(['error' => 'Failed to create invoice payment']);
+            }
+        if (!$packageInInvoice) {
+            return back()->withErrors(['error' => 'Failed to create package in invoice']);
         }
 
         return redirect()->route('packagepayment',$package->id)->with('success', 'Package created successfully');
@@ -1070,7 +1116,13 @@ public function packagePayment($packageID) {
 
 
     $package->paid = true;
-    $package->save();
+    $packageInInvoice = PackageInInvoice::where('package_id', $package->id)->firstOrFail();
+    $invoice = Invoice::where('id', $packageInInvoice->invoice_id)->firstOrFail();
+    //$invoice->is_paid = true;
+    $invoice->paid_at = Carbon::now();
+
+    //$package->save();
+    $invoice->save();
 
     return view('packagepayment',compact('package'));
 }
@@ -1203,7 +1255,11 @@ public function storeBulkOrder(Request $request)
             'is_paid' => false,
             'reference' => $this->generateUniqueInvoiceReference(), // Generate a unique reference
         ]);
+         $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $package->weight_price + $package->delivery_price,
 
+        ]);
         // Link packages to the invoice
         foreach ($createdPackages as $package) {
             PackageInInvoice::create([

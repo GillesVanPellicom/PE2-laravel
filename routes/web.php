@@ -468,4 +468,8 @@ Route::middleware(['permission:assign.courier'])->group(function () {
 });
 
 
+// Route for FAQ page
 
+Route::get('/faq', function () {
+    return view('faq');
+})->name('faq');

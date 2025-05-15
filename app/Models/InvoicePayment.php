@@ -13,6 +13,7 @@ class InvoicePayment extends Model
      *
      * @var array<int, string>
      */
+    protected $table = 'invoice_payments';
     use HasFactory;
     protected $fillable = [
         'reference',
