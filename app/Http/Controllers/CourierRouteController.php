@@ -30,9 +30,8 @@ class CourierRouteController extends Controller
         $packagemovements = PackageMovement::where('handled_by_courier_id', $courierId)->where('departure_time', null)->get();
         foreach ($packagemovements as $packagemovement) {
             $package = Package::where('id', $packagemovement->package_id)->first();
-            $movement = ($packagemovement->next_movement == null) ? $packagemovement : $packagemovement->nextHop;
             $location = Node::fromId($packagemovement->current_node_id);
-            $at_end = ($packagemovement->next_movement == null && $location->getType() == NodeType::ADDRESS && $package->current_location_id == $packagemovement->current_node_id);
+            $at_end = ($packagemovement->next_movement == null && $location->getType() == NodeType::ADDRESS && $package->current_location_id == $packagemovement->current_node_id && $packagemovement->current_node_id == $courierRoute->current_location);
             $route[] = [
                 'latitude' => $location->getLat(CoordType::DEGREE),
                 'longitude' => $location->getLong(CoordType::DEGREE),
@@ -45,6 +44,9 @@ class CourierRouteController extends Controller
                 'requires_signature' => $package->requires_signature,
             ];
         }
+        usort($route, function ($a, $b) {
+            return ($b['end'] ?? false) <=> ($a['end'] ?? false);
+        });
         $start_coords = null;
         $end_coords = null;
         if ($start != null && $end != null){
