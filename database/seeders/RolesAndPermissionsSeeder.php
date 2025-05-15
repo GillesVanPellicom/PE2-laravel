@@ -97,7 +97,7 @@ class RolesAndPermissionsSeeder extends Seeder
         /* END BASE */
 
         /* START Courier */
-        "scan" => ["courier"],
+        "scan" => ["courier","airport"],
         /* END Courier */
 
         /* START Employees */
