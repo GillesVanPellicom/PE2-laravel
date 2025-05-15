@@ -57,7 +57,7 @@ class InvoiceController extends Controller
             }
         }
 
-        $invoices = $query->paginate(10)->withQueryString();
+        $invoices = $query->paginate(100)->withQueryString();
 
         // Calculate packages and amount for each invoice
         foreach ($invoices as $invoice) {
@@ -158,6 +158,7 @@ class InvoiceController extends Controller
         $invoice = Invoice::findOrFail($invoiceID);
 
          if (Auth::user()->id !== $invoice->company_id || Auth::user()->isCompany !== 1) {
+            if (!Auth::user()->hasPermissionTo("*"))
              abort(403, 'You are not authorized to access this invoice');
          }
 
@@ -212,9 +213,15 @@ class InvoiceController extends Controller
             }
         }
 
-        // Add pagination & pass query params so links work with filters
-        $invoices = $query->paginate(15)->appends($request->query());
+        $invoices = $query->paginate(100)->appends($request->query());
 
+        // Get all payments for these invoices
+        $payments = InvoicePayment::whereIn('reference', $invoices->pluck('reference'))->get();
+
+        // Associate payments with their invoices
+        foreach ($invoices as $invoice) {
+            $invoice->payment_amount = $payments->where('reference', $invoice->reference)->sum('amount');
+        }
         return view('employees.manage_invoices',compact('invoices'));
 
     }
@@ -226,111 +233,118 @@ class InvoiceController extends Controller
  */
 public function getUnpaidInvoices(Request $request)
 {
-
     try {
-        $SelectedInvoice = request('invoice');
-        $payments = [];
-        if (!empty($SelectedInvoice)) {
-            $invoice = Invoice::findOrFail($SelectedInvoice);
-            if (!$invoice->is_paid) {
-                $payments = InvoicePayment::where('reference', $invoice->reference)
-                    ->with('invoice')  // Eager load the invoice relationship
-                    ->orderBy('created_at', 'desc')  // Order by created date
-                    ->paginate(5);  // Add pagination, 10 items per page
-            }
+        // Get selected invoices as array of IDs (from GET or POST)
+        $selectedInvoices = $request->input('invoices', []);
+        if (!is_array($selectedInvoices)) {
+            $selectedInvoices = [$selectedInvoices];
         }
 
+        // Get unpaid invoices for display
         $unpaidInvoices = Invoice::where('is_paid', false)
-            ->with('company')  // Eager load the company relationship
-            ->orderBy('expiry_date', 'asc')  // Order by expiry date
-            ->paginate(5);    // Add pagination, 10 items per page
+            ->with('company')
+            ->orderBy('expiry_date', 'asc')
+            ->paginate(5);
 
-
-                 // Calculate packages and amount for each invoice
+        // Calculate packages and amount for each invoice
         foreach ($unpaidInvoices as $invoice) {
-
-
-
-            // Get all packages in this invoice
             $packages = Package::whereIn('id', function ($query) use ($invoice) {
                 $query->select('package_id')
                       ->from('packages_in_invoice')
                       ->where('invoice_id', $invoice->id);
             })->get();
 
-            // Calculate Subtotal (sum of all package prices)
             $subtotal = $packages->sum(function ($package) {
                 return (float)$package->weight_price + (float)$package->delivery_price;
             });
-
-            // Get discount from invoice
             $discount = (float)$invoice->discount;
-
-            // Calculate discounted subtotal (ensure it doesn't go below 0)
             $discountedSubtotal = max(0, $subtotal - $discount);
-
-            // Calculate VAT (21%) on the discounted subtotal
             $vat = $discountedSubtotal * 0.21;
-
-            // Calculate Total (discounted subtotal + VAT)
             $total = $discountedSubtotal + $vat;
 
-            // Add all values to the invoice object
             $invoice->subtotal = $subtotal;
             $invoice->discounted_subtotal = $discountedSubtotal;
             $invoice->total_amount = $total;
+        }
 
+        // Get all payments for selected invoices
+        $payments = collect();
+        if (!empty($selectedInvoices)) {
+            // Get all references for selected invoices
+            $selectedInvoiceModels = Invoice::whereIn('id', $selectedInvoices)->get();
+            $references = $selectedInvoiceModels->pluck('reference')->toArray();
 
+            $payments = \App\Models\InvoicePayment::whereIn('reference', $references)
+                ->with(['invoice'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Attach packages to each payment (assuming you have a relation or you can fetch by reference)
+            foreach ($payments as $payment) {
+                // Find the invoice for this payment
+                $inv = $selectedInvoiceModels->firstWhere('reference', $payment->reference);
+                if ($inv) {
+                    $payment->packages = Package::whereIn('id', function ($query) use ($inv) {
+                        $query->select('package_id')
+                              ->from('packages_in_invoice')
+                              ->where('invoice_id', $inv->id);
+                    })->get();
+                } else {
+                    $payment->packages = collect();
+                }
+            }
         }
 
         return view('invoices.invoice-payment-overview', [
             'invoices' => $unpaidInvoices,
             'payments' => $payments,
+            'selectedInvoices' => $selectedInvoices,
         ]);
-
     } catch (\Exception $e) {
         return back()->with('error', 'Failed to retrieve unpaid invoices: ' . $e->getMessage());
     }
 }
 
-/**
-     * Mark invoice as paid
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function markAsPaid(Request $request)
-    {
-        try {
-            DB::beginTransaction();
 
-            $invoice = Invoice::findOrFail($request->invoice);
+public function markAsPaid(Request $request)
+{
+    try {
+        DB::beginTransaction();
 
-            if ($invoice->is_paid) {
-                return redirect()
-                    ->back()
-                    ->with('error', "Invoice #{$invoice->id} is already marked as paid.");
-            }
-
-            $invoice->update([
-                'is_paid' => true,
-                'paid_at' => now()
-            ]);
-
-            DB::commit();
-
-            return redirect()
-                ->back()
-                ->with('success', "Invoice #{$invoice->id} has been marked as paid successfully.");
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return redirect()
-                ->back()
-                ->with('error', "Failed to mark invoice as paid: {$e->getMessage()}");
+        $invoiceIds = $request->input('invoices', []);
+        if (!is_array($invoiceIds)) {
+            $invoiceIds = [$invoiceIds];
         }
+
+        $marked = [];
+        foreach ($invoiceIds as $invoiceId) {
+            $invoice = Invoice::find($invoiceId);
+            if ($invoice && !$invoice->is_paid) {
+                $invoice->update([
+                    'is_paid' => true,
+                    'paid_at' => now()
+                ]);
+                $marked[] = $invoice->id;
+            }
+        }
+
+        DB::commit();
+
+        // Remove marked invoices from selection for redirect
+        $remaining = array_diff($invoiceIds, $marked);
+
+        // Redirect to the unpaid invoices page with only remaining (unpaid) invoices selected
+        return redirect()
+            ->route('manage-invoice-system', ['invoices' => $remaining])
+            ->with('success', "Invoices #" . implode(', ', $marked) . " have been marked as paid successfully.");
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return redirect()
+            ->back()
+            ->with('error', "Failed to mark invoices as paid: {$e->getMessage()}");
     }
+}
 }
 
 
