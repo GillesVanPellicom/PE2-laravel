@@ -24,7 +24,7 @@ class EmployeesSeeder extends Seeder
         \App\Models\Team::factory(10)->create();
 
         // Ensure unique user_id values for employees with user_id > 50
-        $userIds = \App\Models\User::where('id', '>', 50)->doesntHave('employee')->pluck('id')->shuffle()->take(200);
+        $userIds = \App\Models\User::where('id', '>', 50)->doesntHave('employee')->pluck('id')->shuffle()->take(50);
         foreach ($userIds as $userId) {
             \App\Models\Employee::factory()->create(['user_id' => $userId]);
         }
