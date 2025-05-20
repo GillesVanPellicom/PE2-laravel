@@ -233,10 +233,15 @@ class Flightscontroller extends Controller
     public function airports()
     {
         $employee = auth()->user()->employee;
+        if (!$employee) {
+            // Redirect to 401 error page if no employee found
+            abort(401);
+        }
         $contract = $employee->contracts()->latest('start_date')->first(); // Get the latest contract
 
         if (!$contract) {
-            return redirect()->back()->with('error', 'No contract found for the employee.');
+            // Redirect to 401 error page if no contract found
+            abort(401);
         }
 
         $employeeLocationId = $contract->location_id;
