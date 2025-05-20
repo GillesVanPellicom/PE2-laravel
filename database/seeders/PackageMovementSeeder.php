@@ -65,17 +65,17 @@ class PackageMovementSeeder extends Seeder {
         2)."ms (total), ".round($averageTime, 2)."ms (avg), ".round($geomean, 2)."ms (geomean)");
     ConsoleHelper::success("Routing completed.");
 
-    $package = Package::find(2);
+    $package = Package::find(5);
     while ($package->movements()->firstWhere("current_node_id", $package->current_location_id)->next_movement != null){
       $package->fakeMove();
     }
 
-    $package = Package::find(3);
+    $package = Package::find(6);
     while ($package->movements()->firstWhere("current_node_id", $package->current_location_id)->next_movement != null){
       $package->fakeMove();
     }
 
-    $package = Package::find(4);
+    $package = Package::find(7);
     while ($package->movements()->firstWhere("current_node_id", $package->current_location_id)->nextHop->next_movement != null){
       $package->fakeMove();
     }
