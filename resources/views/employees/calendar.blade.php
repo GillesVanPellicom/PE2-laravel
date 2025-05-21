@@ -1,17 +1,18 @@
 <x-app-layout>
+    @section('title', 'Calendar - Employee Time Off Portal')
     <x-sidebar>
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
-    
+
     <!-- Animate.css for animations -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
+
     <!-- Swiper for carousels -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
-    
+
     <!-- Three.js for 3D effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
+
     <style>
         /* Base Variables */
         :root {
@@ -23,7 +24,7 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
-            
+
             /* Light theme colors */
             --bg-main: #f9fafb;
             --bg-card: #ffffff;
@@ -33,7 +34,7 @@
             --text-muted: #9ca3af;
             --border-light: #e5e7eb;
             --border-medium: #d1d5db;
-            
+
             /* Dark theme colors - will be applied with .dark class */
             --dark-bg-main: #111827;
             --dark-bg-card: #1f2937;
@@ -43,25 +44,25 @@
             --dark-text-muted: #9ca3af;
             --dark-border-light: #374151;
             --dark-border-medium: #4b5563;
-            
+
             /* Holiday colors */
             --holiday-whole: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
             --holiday-first: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
             --holiday-second: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
             --sick-leave: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-            
+
             /* Status colors */
             --status-approved: #10b981;
             --status-pending: #f59e0b;
             --status-rejected: #ef4444;
-            
+
             /* Animation durations */
             --animate-duration: 0.5s;
-            
+
             /* 3D perspective */
             --perspective: 2000px;
         }
-        
+
         /* Apply dark mode at the :root level with class .dark */
         .dark {
             --bg-main: var(--dark-bg-main);
@@ -74,7 +75,7 @@
             --border-medium: var(--dark-border-medium);
             color-scheme: dark;
         }
-        
+
         /* Base styles */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -82,7 +83,7 @@
             background-color: var(--bg-main);
             color: var(--text-primary);
         }
-        
+
         /* Custom Card Styles */
         .dashboard-card {
             background-color: var(--bg-card);
@@ -93,12 +94,12 @@
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             transform: perspective(var(--perspective)) translateZ(0);
         }
-        
+
         .dashboard-card:hover {
             box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
             transform: perspective(var(--perspective)) translateZ(10px);
         }
-        
+
         .card-header {
             padding: 1.25rem;
             border-bottom: 1px solid var(--border-light);
@@ -108,46 +109,46 @@
             background-color: var(--bg-card-secondary);
             background-image: linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.2));
         }
-        
+
         /* Enhanced Glassmorphism effect */
         .glassmorphism {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
+            box-shadow:
                 0 8px 32px rgba(31, 38, 135, 0.15),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.07);
             border-radius: 1rem;
         }
-        
+
         .dark .glassmorphism {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 
+            box-shadow:
                 0 8px 32px rgba(0, 0, 0, 0.3),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.03);
         }
-        
+
         /* Advanced Gradient backgrounds */
         .gradient-bg {
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
             animation: gradient-shift 15s ease infinite;
         }
-        
+
         .dark .gradient-bg {
             background: linear-gradient(-45deg, #4a1d1d, #5e1954, #0d3b4d, #0c4a3a);
             background-size: 400% 400%;
             animation: gradient-shift 15s ease infinite;
         }
-        
+
         @keyframes gradient-shift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        
+
         /* Morphing background */
         .morphing-bg {
             position: fixed;
@@ -158,81 +159,81 @@
             z-index: -1;
             opacity: 0.5;
         }
-        
+
         /* Holiday/Sick day cards with enhanced gradients */
         .holiday-card {
             background: var(--holiday-whole);
             color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            box-shadow: 
+            box-shadow:
                 0 10px 15px -3px rgba(255, 154, 158, 0.3),
                 0 4px 6px -4px rgba(255, 154, 158, 0.2);
         }
-        
+
         .holiday-first-card {
             background: var(--holiday-first);
             color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            box-shadow: 
+            box-shadow:
                 0 10px 15px -3px rgba(161, 140, 209, 0.3),
                 0 4px 6px -4px rgba(161, 140, 209, 0.2);
         }
-        
+
         .holiday-second-card {
             background: var(--holiday-second);
             color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            box-shadow: 
+            box-shadow:
                 0 10px 15px -3px rgba(166, 193, 238, 0.3),
                 0 4px 6px -4px rgba(166, 193, 238, 0.2);
         }
-        
+
         .sick-leave-card {
             background: var(--sick-leave);
             color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            box-shadow: 
+            box-shadow:
                 0 10px 15px -3px rgba(132, 250, 176, 0.3),
                 0 4px 6px -4px rgba(132, 250, 176, 0.2);
         }
-        
+
         /* Status badge styling */
         .status-badge {
             @apply text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center justify-center;
             transition: all 0.3s ease;
         }
-        
+
         .status-badge:hover {
             transform: scale(1.05);
         }
-        
+
         .status-available {
             @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
         }
-        
+
         .status-unavailable {
             @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
         }
-        
+
         .status-holiday {
             @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
         }
-        
+
         /* Enhanced Button styles */
         .btn {
             @apply px-4 py-2 rounded-xl font-medium relative overflow-hidden;
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .btn:hover {
             transform: translateY(-3px) scale(1.03);
             box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
         }
-        
+
         .btn:active {
             transform: translateY(0) scale(0.98);
         }
-        
+
         .btn::before {
             content: '';
             position: absolute;
@@ -248,118 +249,118 @@
             );
             transition: 0.5s;
         }
-        
+
         .btn:hover::before {
             left: 100%;
         }
-        
+
         .btn-primary {
             @apply bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500;
-            box-shadow: 
+            box-shadow:
                 0 4px 6px -1px rgba(79, 70, 229, 0.2),
                 0 2px 4px -2px rgba(79, 70, 229, 0.1);
         }
-        
+
         .btn-success {
             @apply bg-green-500 hover:bg-green-600 text-white focus:ring-green-500;
-            box-shadow: 
+            box-shadow:
                 0 4px 6px -1px rgba(16, 185, 129, 0.2),
                 0 2px 4px -2px rgba(16, 185, 129, 0.1);
         }
-        
+
         .btn-danger {
             @apply bg-red-500 hover:bg-red-600 text-white focus:ring-red-500;
-            box-shadow: 
+            box-shadow:
                 0 4px 6px -1px rgba(239, 68, 68, 0.2),
                 0 2px 4px -2px rgba(239, 68, 68, 0.1);
         }
-        
+
         .btn-warning {
             @apply bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500;
-            box-shadow: 
+            box-shadow:
                 0 4px 6px -1px rgba(245, 158, 11, 0.2),
                 0 2px 4px -2px rgba(245, 158, 11, 0.1);
         }
-        
+
         .btn-info {
             @apply bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500;
-            box-shadow: 
+            box-shadow:
                 0 4px 6px -1px rgba(59, 130, 246, 0.2),
                 0 2px 4px -2px rgba(59, 130, 246, 0.1);
         }
-        
+
         .btn-ghost {
             @apply bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-500;
-            box-shadow: 
+            box-shadow:
                 0 4px 6px -1px rgba(107, 114, 128, 0.1),
                 0 2px 4px -2px rgba(107, 114, 128, 0.05);
         }
-        
+
         /* Enhanced Calendar styling */
         .fc .fc-toolbar-title {
             color: var(--text-primary);
             font-weight: 700;
             font-size: 1.5rem;
         }
-        
+
         .fc .fc-button-primary {
             @apply bg-indigo-600 border-indigo-600 shadow-md hover:bg-indigo-700 hover:border-indigo-700 focus:bg-indigo-700 focus:shadow-outline-indigo active:bg-indigo-800;
         }
-        
+
         .fc .fc-daygrid-day.fc-day-today {
             background-color: rgba(79, 70, 229, 0.1);
         }
-        
+
         .dark .fc .fc-daygrid-day.fc-day-today {
             background-color: rgba(79, 70, 229, 0.2);
         }
-        
+
         .fc-day-today .fc-daygrid-day-number {
             @apply bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center;
         }
-        
+
         .fc .fc-daygrid-day-frame {
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        
+
         .fc .fc-daygrid-day-frame:hover {
             background-color: rgba(0, 0, 0, 0.03);
             transform: scale(1.02);
         }
-        
+
         .dark .fc .fc-daygrid-day-frame:hover {
             background-color: rgba(255, 255, 255, 0.05);
         }
-        
+
         .fc th {
             font-weight: 600;
             color: var(--text-secondary);
             padding: 0.75rem;
         }
-        
+
         .fc-day-sat, .fc-day-sun {
             background-color: rgba(0, 0, 0, 0.02);
         }
-        
+
         .dark .fc-day-sat, .dark .fc-day-sun {
             background-color: rgba(255, 255, 255, 0.02);
         }
-        
+
         .fc .fc-event {
             border-radius: 0.375rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border: none;
             transition: all 0.3s ease;
         }
-        
+
         .fc .fc-event:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
             background-color: inherit !important; /* Ensure background color remains opaque */
             opacity: 1 !important; /* Ensure full opacity */
         }
-        
+
         /* Fix for day names in dark mode */
         .dark .fc .fc-col-header-cell-cushion {
             color: var(--dark-text-primary); /* Use primary text color for better readability */
@@ -375,30 +376,30 @@
             opacity: 0;
             transition: all 0.3s ease;
         }
-        
+
         .has-tooltip:hover .tooltip {
             @apply visible;
             transform: translateY(0);
             opacity: 1;
         }
-        
+
         /* Modal animation */
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
             animation: fadeIn 0.3s ease forwards;
         }
-        
+
         .modal-content {
             animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transform-origin: center bottom;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
+
         @keyframes slideUp {
             from {
                 transform: translateY(50px) scale(0.95);
@@ -409,13 +410,13 @@
                 opacity: 1;
             }
         }
-        
+
         /* Enhanced Bell animation */
         .bell-pulse {
             animation: bell-ring 2s cubic-bezier(.36,.07,.19,.97) infinite;
             transform-origin: top;
         }
-        
+
         @keyframes bell-ring {
             0%, 100% {
                 transform: rotate(0);
@@ -427,14 +428,14 @@
                 transform: rotate(-15deg);
             }
         }
-        
+
         /* Enhanced Confetti animation */
         .confetti {
             position: absolute;
             animation: fall 5s ease-in-out -2s infinite;
             opacity: 0;
         }
-        
+
         @keyframes fall {
             0% {
                 transform: translateY(0) rotateZ(0);
@@ -451,87 +452,87 @@
                 opacity: 0;
             }
         }
-        
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.05);
             border-radius: 10px;
         }
-        
+
         .dark ::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
-        
+
         .dark ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.2);
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 0, 0, 0.3);
         }
-        
+
         .dark ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
-        
+
         /* Stat cards with 3D hover effects */
         .stat-card {
             border-radius: 1rem;
             overflow: hidden;
             position: relative;
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
+            box-shadow:
                 0 10px 25px -5px rgba(0, 0, 0, 0.1),
                 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             transform-style: preserve-3d;
             transform: perspective(1000px) translateZ(0) rotateX(0) rotateY(0);
         }
-        
+
         .stat-card-content {
             transform-style: preserve-3d;
             transform: translateZ(20px);
         }
-        
+
         .stat-card:hover {
             transform: perspective(1000px) translateZ(10px) rotateX(2deg) rotateY(2deg);
-            box-shadow: 
+            box-shadow:
                 0 20px 30px -10px rgba(0, 0, 0, 0.2),
                 0 10px 15px -5px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card-bg-1 {
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
         }
-        
+
         .stat-card-bg-2 {
             background: linear-gradient(135deg, #f83600 0%, #f9d423 100%);
         }
-        
+
         /* Floating elements */
         .floating {
             animation: floating 3s ease-in-out infinite;
         }
-        
+
         @keyframes floating {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        
+
         /* Glow effect */
         .glow {
             position: relative;
         }
-        
+
         .glow::after {
             content: "";
             position: absolute;
@@ -546,7 +547,7 @@
             border-radius: inherit;
             transition: all 0.3s ease;
         }
-        
+
         .glow:hover::after {
             opacity: 0.7;
             filter: blur(30px);
@@ -573,7 +574,7 @@
                             Employee Time Off Portal
                         </h1>
                     </div>
-                    
+
                     <!-- Controls -->
                     <div class="flex items-center space-x-4">
                         <!-- Theme toggle button with sun/moon animation -->
@@ -589,7 +590,7 @@
                                 </svg>
                             </div>
                         </button>
-                        
+
                         <!-- Notification bell -->
                         <div class="relative">
                             <button id="toggleNotifications" class="p-3 rounded-full glassmorphism hover:shadow-lg transition-all">
@@ -618,7 +619,7 @@
                     </div>
                 </div>
             </div>
-        
+
         <!-- Main content area -->
         <div class="max-w-7xl mx-auto">
             <!-- Stats row -->
@@ -637,7 +638,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="stat-card stat-card-bg-1 p-5 text-white glow">
                             <div class="stat-card-content">
@@ -656,7 +657,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="stat-card stat-card-bg-2 p-5 text-white glow">
                             <div class="stat-card-content">
                                 <div class="text-sm opacity-75">Sick Leave taken</div>
@@ -676,7 +677,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Quick Actions -->
                 <div class="dashboard-card p-6">
                     <div class="card-header -mx-6 -mt-6 mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 ">
@@ -684,10 +685,10 @@
                             Quick Actions
                         </h2>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 gap-4">
-                        
-                        
+
+
                         <button id="clearSelectionBtn" class="btn btn-danger flex items-center justify-between group">
                             <span class="flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -699,7 +700,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
                         </button>
-                        
+
                         <div class="flex items-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/20">
                             <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -711,7 +712,7 @@
                     </div>
                 </div>
             </div>
-            
+
 
             <!-- Calendar -->
             <div class="dashboard-card">
@@ -733,7 +734,7 @@
                 </div>
             </div>
 
-            
+
         </div>
     </div>
 
@@ -744,7 +745,7 @@
                 <h2 class="text-2xl font-bold text-white">Request Time Off</h2>
                 <p class="opacity-75 text-sm mt-1 text-white">Select the type of leave you want to request</p>
             </div>
-            
+
             <div class="p-6 bg-white/80 dark:bg-gray-800/80">
                 <!-- Event Type Selector -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -756,7 +757,7 @@
                         </div>
                         <span class="font-medium text-gray-900 dark:text-white mt-1">Holiday</span>
                     </button>
-                    
+
                     <button id="sickDayBtn" class="relative overflow-hidden rounded-xl p-4 flex flex-col items-center justify-center gap-2 border-2 border-transparent hover:border-indigo-500 transition-all bg-white dark:bg-gray-700 group">
                         <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center transform transition-transform group-hover:scale-110">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -766,11 +767,11 @@
                         <span class="font-medium text-gray-900 dark:text-white mt-1">Sick Leave</span>
                     </button>
                 </div>
-                
+
                 <!-- Holiday Options -->
                 <div id="holidayOptions" class="hidden animate__animated animate__fadeInUp">
                     <h3 class="font-medium text-gray-800 dark:text-gray-200 mb-4">Select Day Type</h3>
-                    
+
                     <div class="space-y-3">
                         <button id="wholeDayBtn" class="w-full p-4 rounded-xl text-white font-medium flex items-center holiday-card transition-all hover:shadow-lg hover:scale-[1.02] group">
                             <span class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">🌞</span>
@@ -795,22 +796,22 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Sick Day Options -->
                 <div id="sickDayRangePicker" class="hidden animate__animated animate__fadeInUp">
                     <h3 class="font-medium text-gray-800 dark:text-gray-200 mb-4">Select Sick Leave Dates</h3>
-                    
+
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                             <input type="date" id="sickStartDate" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
                             <input type="date" id="sickEndDate" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
                         </div>
-                        
+
                         <button id="applySickDaysBtn" class="w-full p-4 rounded-xl text-white font-medium flex items-center sick-leave-card transition-all hover:shadow-lg hover:scale-[1.02] group">
                             <span class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">🤒</span>
                             <span>Apply Sick Days</span>
@@ -821,14 +822,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="p-4 bg-white/90 dark:bg-gray-800/90 border-t border-gray-200 dark:border-gray-700 flex justify-end">
                 <!-- Fix modal cancel button text color -->
                 <button id="closeModalBtn" class="btn btn-ghost text-white">Cancel</button>
             </div>
         </div>
     </div>
-    
+
     <!-- Success Toast -->
     <div id="toast" class="fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500 hidden max-w-xs">
         <div class="flex items-center">
@@ -847,7 +848,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Confetti Container -->
     <div id="confettiContainer" class="fixed inset-0 pointer-events-none hidden z-50"></div>
 
@@ -884,7 +885,7 @@
                 console.error("Calendar element not found!");
                 return;
             }
-            
+
             // Initialize background animation
             function initBackground() {
                 // Check if we have Three.js loaded
@@ -892,27 +893,27 @@
                     console.warn('Three.js not loaded, skipping background animation');
                     return;
                 }
-                
+
                 // Set up scene
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                
+
                 const renderer = new THREE.WebGLRenderer({ alpha: true });
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 bgCanvas.appendChild(renderer.domElement);
-                
+
                 // Create particles
                 const particlesGeometry = new THREE.BufferGeometry();
                 const particlesCount = 1000;
-                
+
                 const posArray = new Float32Array(particlesCount * 3);
-                
+
                 for (let i = 0; i < particlesCount * 3; i++) {
                     posArray[i] = (Math.random() - 0.5) * 10;
                 }
-                
+
                 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-                
+
                 // Materials - different for light/dark mode
                 const lightMaterial = new THREE.PointsMaterial({
                     size: 0.005,
@@ -920,19 +921,19 @@
                     transparent: true,
                     opacity: 0.7,
                 });
-                
+
                 const darkMaterial = new THREE.PointsMaterial({
                     size: 0.005,
                     color: 0x818cf8, // Light indigo
                     transparent: true,
                     opacity: 0.7,
                 });
-                
+
                 const particlesMesh = new THREE.Points(particlesGeometry, document.documentElement.classList.contains('dark') ? darkMaterial : lightMaterial);
                 scene.add(particlesMesh);
-                
+
                 camera.position.z = 2;
-                
+
                 // Animation
                 const animate = () => {
                     requestAnimationFrame(animate);
@@ -940,28 +941,28 @@
                     particlesMesh.rotation.y += 0.0002;
                     renderer.render(scene, camera);
                 };
-                
+
                 animate();
-                
+
                 // Resize handler
                 window.addEventListener('resize', () => {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
                     renderer.setSize(window.innerWidth, window.innerHeight);
                 });
-                
+
                 // Update material on theme change
                 document.addEventListener('themeChanged', (e) => {
                     const isDark = e.detail.isDark;
                     particlesMesh.material = isDark ? darkMaterial : lightMaterial;
                 });
             }
-            
+
             // Dark mode toggle functionality with improved animation
             function initDarkMode() {
                 const htmlElement = document.documentElement;
                 const isDarkMode = localStorage.getItem('darkMode') === 'true';
-                
+
                 // Update the initial state
                 if (isDarkMode) {
                     htmlElement.classList.add('dark');
@@ -969,19 +970,19 @@
                 } else {
                     updateDarkModeIcons(false);
                 }
-                
+
                 darkModeToggle.addEventListener('click', function() {
                     const isDark = htmlElement.classList.toggle('dark');
                     localStorage.setItem('darkMode', isDark);
                     updateDarkModeIcons(isDark);
-                    
+
                     // Dispatch event for background to update
-                    document.dispatchEvent(new CustomEvent('themeChanged', { 
-                        detail: { isDark: isDark } 
+                    document.dispatchEvent(new CustomEvent('themeChanged', {
+                        detail: { isDark: isDark }
                     }));
                 });
             }
-            
+
             // Animate between sun and moon icons
             function updateDarkModeIcons(isDark) {
                 if (isDark) {
@@ -1078,7 +1079,7 @@
             // Show toast message with improved animation
             function showToast(message, type = 'success') {
                 toastMessage.textContent = message;
-                
+
                 // Set toast styles based on type
                 if (type === 'success') {
                     toast.className = 'fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500 bg-gradient-to-r from-green-500 to-emerald-600 text-white max-w-xs';
@@ -1102,27 +1103,27 @@
                         </svg>
                     `;
                 }
-                
+
                 // Show toast with animation
                 toast.classList.remove('hidden');
-                
+
                 // Animate in
                 setTimeout(() => {
                     toast.classList.add('translate-y-0', 'opacity-100');
                 }, 10);
-                
+
                 // Animate out after delay
                 setTimeout(() => {
                     toast.classList.remove('translate-y-0', 'opacity-100');
                     toast.classList.add('translate-y-20', 'opacity-0');
-                    
+
                     // Hide after animation completes
                     setTimeout(() => {
                         toast.classList.add('hidden');
                     }, 500);
                 }, 3000);
             }
-            
+
             // Hide toast manually
             window.hideToast = function() {
                 toast.classList.remove('translate-y-0', 'opacity-100');
@@ -1134,13 +1135,13 @@
 
             let selectedHolidays = JSON.parse(localStorage.getItem('selectedHolidays')) || {};
             let selectedSickDays = new Set(JSON.parse(localStorage.getItem('selectedSickDays')) || []);
-            
+
             @if(auth()->user()->hasRole('admin'))
                 let remainingHolidays = 0;
             @else
                 let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
             @endif
-            
+
             let currentDate = null;
 
             function updateCounters() {
@@ -1150,7 +1151,7 @@
             function addEvent(date, type, period = "Full Day") {
                 let title = type === "holiday" ? `Holiday (${period})` : 'Sick Day';
                 let backgroundColor, textColor = 'white';
-                
+
                 switch(true) {
                     case (type === "holiday" && period === "Whole Day"):
                         backgroundColor = 'var(--holiday-whole)';
@@ -1167,7 +1168,7 @@
                     default:
                         backgroundColor = '#ff7f7f';
                 }
-                
+
                 calendar.addEvent({
                     id: date,
                     title: title,
@@ -1209,7 +1210,7 @@
                 document.getElementById('sickDayRangePicker').classList.add('hidden');
                 document.getElementById('sickDayBtn').disabled = false;
                 document.getElementById('holidayBtn').disabled = false;
-                
+
                 // Show the modal
                 eventModal.classList.remove('hidden');
                 eventModal.querySelector('.modal-content').classList.add('animate__animated', 'animate__fadeInUp');
@@ -1255,7 +1256,7 @@
 
                     closeModal();
                     updateCounters();
-                    
+
                     showToast(`Added ${addedDays} sick day(s)`, 'success');
                 };
 
@@ -1309,7 +1310,7 @@
 
             function closeModal() {
                 eventModal.querySelector('.modal-content').classList.add('animate__animated', 'animate__fadeOutDown');
-                
+
                 setTimeout(() => {
                     eventModal.classList.add('hidden');
                     eventModal.querySelector('.modal-content').classList.remove('animate__animated', 'animate__fadeInUp', 'animate__fadeOutDown');
@@ -1335,7 +1336,7 @@
             function createConfetti() {
                 confettiContainer.classList.remove('hidden');
                 confettiContainer.innerHTML = '';
-                
+
                 // Create a variety of shapes and colors
                 const shapes = ['circle', 'square', 'triangle', 'line', 'star'];
                 const colors = [
@@ -1343,20 +1344,20 @@
                     'var(--success)', 'var(--warning)', 'var(--danger)',
                     '#fc0388', '#03fc90', '#03dbfc', '#fcc203', '#a703fc'
                 ];
-                
+
                 for (let i = 0; i < 150; i++) {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
-                    
+
                     // Random size (3-8px)
                     const size = Math.random() * 5 + 3;
                     confetti.style.width = `${size}px`;
                     confetti.style.height = `${size}px`;
-                    
+
                     // Random position
                     confetti.style.left = Math.random() * 100 + 'vw';
                     confetti.style.top = Math.random() * 100 + 'vh';
-                    
+
                     // Random shape
                     const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
                     if (shapeType === 'circle') {
@@ -1384,22 +1385,22 @@
                         confetti.style.justifyContent = 'center';
                         confetti.style.background = 'transparent';
                     }
-                    
+
                     // Random color (if not already set by shape)
                     if (shapeType !== 'triangle' && shapeType !== 'star') {
                         confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                     }
-                    
+
                     // Random rotation
                     confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-                    
+
                     // Random animation duration and delay
                     confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
                     confetti.style.animationDelay = (Math.random() * 2) + 's';
-                    
+
                     confettiContainer.appendChild(confetti);
                 }
-                
+
                 // Remove confetti after animation
                 setTimeout(() => {
                     // Fade out instead of abrupt removal
@@ -1483,7 +1484,7 @@
                     const type = event.extendedProps.type || '';
                     const status = event.extendedProps.status || '';
                     const period = event.extendedProps.period || '';
-                    
+
                     // Create tooltip
                     const tooltip = document.createElement('div');
                     tooltip.className = 'tooltip glassmorphism p-3 rounded-lg shadow-lg text-gray-800 dark:text-gray-200 text-sm border border-gray-200 dark:border-gray-700';
@@ -1493,11 +1494,11 @@
                         ${period ? `<div class="text-gray-600 dark:text-gray-300 mt-1 text-xs">Type: ${period}</div>` : ''}
                         ${status ? `<div class="text-${status === 'approved' ? 'green' : status === 'pending' ? 'yellow' : 'red'}-500 font-medium mt-1 text-xs">Status: ${status.charAt(0).toUpperCase() + status.slice(1)}</div>` : ''}
                     `;
-                    
+
                     // Add to event element
                     eventEl.classList.add('has-tooltip');
                     eventEl.appendChild(tooltip);
-                    
+
                     // Position tooltip on hover
                     eventEl.addEventListener('mouseenter', () => {
                         const rect = eventEl.getBoundingClientRect();
@@ -1511,7 +1512,7 @@
                     const ripple = document.createElement('div');
                     ripple.className = 'absolute inset-0 bg-white/30 rounded-md';
                     ripple.style.animation = 'ripple 0.7s ease-out';
-                    
+
                     // Add ripple animation keyframes
                     if (!document.querySelector('style#ripple-animation')) {
                         const style = document.createElement('style');
@@ -1524,11 +1525,11 @@
                         `;
                         document.head.appendChild(style);
                     }
-                    
+
                     eventEl.style.position = 'relative';
                     eventEl.style.overflow = 'hidden';
                     eventEl.appendChild(ripple);
-                    
+
                     // Remove ripple after animation
                     setTimeout(() => ripple.remove(), 700);
                 }
@@ -1539,29 +1540,29 @@
                 // Get all calendar-related elements
                 const calendarEl = document.querySelector('.fc');
                 if (!calendarEl) return;
-                
+
                 // Check if dark mode is active
                 const isDarkMode = document.documentElement.classList.contains('dark');
-                
+
                 // Update calendar header
                 const calendarHeader = calendarEl.querySelector('.fc-header-toolbar');
                 if (calendarHeader) {
                     calendarHeader.style.color = isDarkMode ? 'var(--dark-text-primary)' : 'var(--text-primary)';
                 }
-                
+
                 // Update calendar table
                 const calendarTable = calendarEl.querySelector('table');
                 if (calendarTable) {
                     calendarTable.style.color = isDarkMode ? 'var(--dark-text-primary)' : 'var(--text-primary)';
                     calendarTable.style.backgroundColor = isDarkMode ? 'var(--dark-bg-card)' : 'var(--bg-card)';
                 }
-                
+
                 // Update day cells
                 const dayCells = calendarEl.querySelectorAll('.fc-daygrid-day');
                 dayCells.forEach(cell => {
                     cell.style.borderColor = isDarkMode ? 'var(--dark-border-light)' : 'var(--border-light)';
                 });
-                
+
                 // Update today highlight
                 const todayCell = calendarEl.querySelector('.fc-day-today');
                 if (todayCell) {
@@ -1575,12 +1576,12 @@
             selectedSickDays.forEach(date => addEvent(date, "sick"));
             fetchVacations();
             updateCounters();
-            
+
             Object.keys(selectedHolidays).forEach(date => addEvent(date, "holiday", selectedHolidays[date]));
             selectedSickDays.forEach(date => addEvent(date, "sick"));
             fetchVacations();
             updateCounters();
-            
+
             // Apply initial calendar theme
             setTimeout(updateCalendarTheme, 100);
 
@@ -1592,7 +1593,7 @@
                     fetchNotifications();
                 }
             };
-            
+
             // Initial notifications load
             fetchNotifications();
 
@@ -1605,10 +1606,10 @@
                             <h2 class="text-2xl font-bold">Clear All Selections</h2>
                             <p class="opacity-75 text-sm mt-1">Are you sure you want to clear all your selections?</p>
                         </div>
-                        
+
                         <div class="p-6 bg-white/80 dark:bg-gray-800/80">
                             <p class="text-gray-800 dark:text-gray-200 mb-6">This will remove all holiday and sick day selections you've made. This action cannot be undone.</p>
-                            
+
                             <div class="flex space-x-4">
                                 <button id="confirmClearBtn" class="btn btn-danger flex-1">
                                     Yes, Clear All
@@ -1620,21 +1621,21 @@
                         </div>
                     </div>
                 `;
-                
+
                 // Show the modal
                 eventModal.classList.remove('hidden');
-                
+
                 // Add event listeners
                 document.getElementById('confirmClearBtn').addEventListener('click', function() {
                     // Remove all events from the calendar
                     Object.keys(selectedHolidays).forEach(date => {
                         removeEvent(date);
                     });
-                    
+
                     selectedSickDays.forEach(date => {
                         removeEvent(date);
                     });
-                    
+
                     // Reset variables
                     selectedHolidays = {};
                     selectedSickDays = new Set();
@@ -1643,21 +1644,21 @@
                     @else
                         let remainingHolidays = {{ auth()->user()->employee->leave_balance }};
                     @endif
-                    
+
                     // Update localStorage
                     localStorage.setItem('selectedHolidays', JSON.stringify(selectedHolidays));
                     localStorage.setItem('selectedSickDays', JSON.stringify([]));
-                    
+
                     // Update UI
                     updateCounters();
-                    
+
                     // Close the modal
                     eventModal.classList.add('hidden');
-                    
+
                     // Show success toast
                     showToast('All selections cleared', 'success');
                 });
-                
+
                 document.getElementById('cancelClearBtn').addEventListener('click', function() {
                     eventModal.classList.add('hidden');
                 });
@@ -1727,12 +1728,12 @@
                         showToast('Failed to save requests. Please try again.', 'error');
                     });
             });
-            
+
             // Listen for theme changes to update calendar
             document.addEventListener('themeChanged', function() {
                 updateCalendarTheme();
             });
-            
+
             // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 const dropdown = document.getElementById('notificationDropdown');
@@ -1741,27 +1742,27 @@
                     dropdown.classList.add('hidden');
                 }
             });
-            
+
             // Initialize the app
             initDarkMode();
             initBackground();
-            
+
             // 3D tilt effect for stat cards
             document.querySelectorAll('.stat-card').forEach(card => {
                 card.addEventListener('mousemove', function(e) {
                     const cardRect = card.getBoundingClientRect();
                     const x = e.clientX - cardRect.left;
                     const y = e.clientY - cardRect.top;
-                    
+
                     const centerX = cardRect.width / 2;
                     const centerY = cardRect.height / 2;
-                    
+
                     const rotateX = (y - centerY) / 10;
                     const rotateY = (centerX - x) / 10;
-                    
+
                     card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
                 });
-                
+
                 card.addEventListener('mouseleave', function() {
                     card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
                 });

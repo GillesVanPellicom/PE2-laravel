@@ -1,5 +1,5 @@
 <x-app-layout>
-
+@section('title', 'Create Team')
 <x-sidebar>
 
     <div class="container mx-auto py-10">

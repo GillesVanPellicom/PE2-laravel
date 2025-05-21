@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Airport Contracts')
 <x-sidebar-airport>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 

@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Create Employee Contract')
 
 <x-sidebar>
 
