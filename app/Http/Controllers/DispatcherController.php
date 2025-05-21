@@ -177,7 +177,7 @@ class DispatcherController extends Controller
             $packageRefs = $request->input('packages', []);
             $employeeId = $request->input('employee_id');
 
-            // Controleer of de huidige tijd binnen de toegestane uren valt (6:00 - 22:00)
+            // Controleer of de huidige tijd binnen de toegestane uren valt
             $currentHour = now()->hour;
             if ($currentHour < 6 || $currentHour >= 22) {
                 return response()->json([
@@ -188,6 +188,15 @@ class DispatcherController extends Controller
 
             if (empty($packageRefs) || !$employeeId) {
                 return response()->json(['success' => false, 'message' => 'Invalid input data'], 400);
+            }
+
+            // Update de gewichten van de pakketten
+            $packagesToUpdate = Package::whereIn('reference', $packageRefs)->get();
+            foreach($packagesToUpdate as $p){
+                if ($p->weightClass) {
+                    $weight = round(mt_rand($p->weightClass->weight_min * 1000, $p->weightClass->weight_max * 1000) / 1000, 3);
+                    $p->update(['weight' => $weight]);
+                }
             }
 
             // Verwerk de pakketten en wijs ze toe aan de medewerker
