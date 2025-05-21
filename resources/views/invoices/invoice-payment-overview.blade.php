@@ -6,6 +6,13 @@
             <h1 class="text-3xl font-extrabold mb-10 text-gray-800 text-center tracking-tight">Invoice Management System</h1>
             <!-- Hidden GET form for selection -->
             <form id="invoice-select-form" method="GET" action="">
+                <a
+                    href="{{ route('manage-invoices') }}"
+                    class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold shadow inline-block mb-4"
+                >
+                    ← Back to Invoices
+                </a>
+
                 <div id="invoice-select-inputs">
                     @foreach($selectedInvoices ?? [] as $invId)
                         <input type="hidden" name="invoices[]" value="{{ $invId }}">
@@ -15,28 +22,60 @@
             <div class="flex flex-col md:flex-row gap-8 md:gap-6 justify-center">
 
                 <!-- Unpaid Invoices Column -->
-                <div class="md:w-5/12 w-full bg-white rounded-2xl shadow-xl p-6">
+                <div class="md:w-5/12 w-full bg-white rounded-2xl shadow-xl p-6 h-fit">
                     <h2 class="text-xl font-bold mb-5 text-blue-700 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         Unpaid Invoices
                     </h2>
-                    <div id="invoice-list" class="space-y-3">
+                    @if(session('success'))
+                        <div
+                            id="success-alert"
+                            class="bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded relative mb-4 text-center font-semibold shadow-lg"
+                            role="alert"
+                        >
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    <div class="w-full relative mb-4">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <!-- magnifying glass SVG -->
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"
+                             viewBox="0 0 24 24">
+                          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </span>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-100 focus:outline-none transition"
+                            autocomplete="off"
+                            id="invoice-search"
+                        >
+                    </div>
+                    <div id="invoice-list" class="space-y-3 overflow-y-auto" style="max-height: 550px;">
                         @forelse($invoices as $invoice)
-                        <div class="invoice-card flex items-center gap-3 border transition-all border-gray-200 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-blue-100/60 {{ in_array($invoice->id, $selectedInvoices ?? []) ? 'bg-blue-50 border-blue-500' : '' }}"
-                             data-invoice-id="{{ $invoice->id }}">
+                        <div class="invoice-card flex items-center gap-3 border transition-all border-gray-200 p-4 rounded-lg shadow-sm cursor-pointer hover:bg-blue-100/90 {{ in_array($invoice->reference, $selectedInvoices ?? []) ? 'bg-blue-50 border-blue-500' : '' }}"
+                             data-invoice-id="{{ $invoice->reference }}"
+                             data-search="{{ strtolower($invoice->reference . ' ' . $invoice->company->company_name) }}">
                             <div class="flex-1">
                                 <h3 class="font-semibold text-gray-800">Invoice #{{ $invoice->reference }}</h3>
                                 <p class="text-xs text-gray-500">Due: {{ \Carbon\Carbon::parse($invoice->expiry_date)->format('Y-m-d') }}</p>
                                 <p class="text-xs text-gray-500">Company: {{ $invoice->company->company_name }}</p>
                             </div>
-                            <div class="h-4 w-4 rounded-full {{ in_array($invoice->id, $selectedInvoices ?? []) ? 'bg-blue-500' : 'bg-blue-200' }}"></div>
+                            <div class="h-4 w-4 rounded-full {{ in_array($invoice->reference, $selectedInvoices ?? []) ? 'bg-blue-500' : 'bg-blue-200' }}"></div>
                         </div>
                         @empty
                         <div class="text-gray-400 text-center py-8">No unpaid invoices found.</div>
                         @endforelse
-                    </div>
-                    <div class="mt-4">
-                        {{$invoices->appends(request()->query())->links()}}
+                            <div
+                                id="no-invoices-msg"
+                                class="text-gray-400 text-center py-8 hidden"
+                            >
+                                No unpaid invoice found.
+                            </div>
+
                     </div>
                 </div>
 
@@ -73,7 +112,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         Matching Payments
                     </h2>
-                    <div class="space-y-3">
+                    <div class="space-y-3 overflow-y-auto" style="max-height: 550px;">
                         @forelse($payments as $payment)
                         <div class="border border-gray-200 p-4 rounded-lg bg-green-50 shadow-sm">
                             <div class="flex justify-between items-center">
@@ -143,6 +182,28 @@
         const invoiceCards = document.querySelectorAll('.invoice-card');
         const selectInputsDiv = document.getElementById('invoice-select-inputs');
         const selectForm = document.getElementById('invoice-select-form');
+        const searchInput = document.getElementById('invoice-search');
+        const noInvoicesMsg = document.getElementById('no-invoices-msg');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            let found = false;
+
+            invoiceCards.forEach(card => {
+                const data = card.getAttribute('data-search');
+                if (!searchTerm || data.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            if (!found) {
+                noInvoicesMsg.classList.remove('hidden');
+            } else {
+                noInvoicesMsg.classList.add('hidden');
+            }
+
+        });
 
         invoiceCards.forEach(card => {
             card.addEventListener('click', function() {
@@ -171,5 +232,19 @@
                 if (dropdown) dropdown.classList.toggle('hidden');
             });
         });
+
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let alert = document.getElementById('success-alert');
+            if(alert){
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = 0;
+                    setTimeout(() => alert.remove(), 600);
+                }, 3000); // 3 seconds
+            }
+        });
+    </script>
+
 </x-app-layout>
