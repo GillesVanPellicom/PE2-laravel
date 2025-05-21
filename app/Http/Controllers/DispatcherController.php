@@ -177,7 +177,7 @@ class DispatcherController extends Controller
             $packageRefs = $request->input('packages', []);
             $employeeId = $request->input('employee_id');
 
-            // Controleer of de huidige tijd binnen de toegestane uren valt (6:00 - 22:00)
+            // Controleer of de huidige tijd binnen de toegestane uren valt
             $currentHour = now()->hour;
             if ($currentHour < 6 || $currentHour >= 22) {
                 return response()->json([
@@ -188,6 +188,15 @@ class DispatcherController extends Controller
 
             if (empty($packageRefs) || !$employeeId) {
                 return response()->json(['success' => false, 'message' => 'Invalid input data'], 400);
+            }
+
+            // Update de gewichten van de pakketten
+            $packagesToUpdate = Package::whereIn('reference', $packageRefs)->get();
+            foreach($packagesToUpdate as $p){
+                if ($p->weightClass) {
+                    $weight = round(mt_rand($p->weightClass->weight_min * 1000, $p->weightClass->weight_max * 1000) / 1000, 3);
+                    $p->update(['weight' => $weight]);
+                }
             }
 
             // Verwerk de pakketten en wijs ze toe aan de medewerker
@@ -403,26 +412,17 @@ class DispatcherController extends Controller
                 ->select(
                     'packages.reference',
                     'locations.latitude',
-                    'locations.longitude',
-                    'packages.weight_id',
+                    'locations.longitude'
                 )
                 ->get()
                 ->map(function ($package) {
                     return [
                         'reference' => $package->reference,
                         'latitude' => $package->latitude,
-                        'longitude' => $package->longitude,
-                        'weight_id' => $package->weight_id,
+                        'longitude' => $package->longitude
                     ];
                 })
                 ->toArray();
-
-                $pack = Package::whereIn('reference', $packages)->get();
-
-                foreach($pack as $p){
-                    $package->weight = round(mt_rand($package->weightClass->weight_min *1000, $package->weightClass->weight_max *1000) / 1000, 3);
-                    $package->update(['weight' => $package->weight]);
-                }
 
             // Get starting point (distribution center)
             $distributionCenter = RouterNodes::find($request->input('dc_id'));
