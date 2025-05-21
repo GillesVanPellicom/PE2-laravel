@@ -466,8 +466,8 @@ Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::cla
 Route::view('/courier-location', 'courierlocationchange')->name('courier.location-change');
 
 Route::post("/courier/update-location", function (Request $request){
-    $employee = \App\Models\User::find(6)->employee;
-    $package = Package::find(5);
+    $employee = Employee::find(10);
+    $package = Package::find(405);
     $employee->courierRoute->current_location = $package->destination_location_id;
     $employee->courierRoute->save();
     return redirect()->route('courier.location-change');
