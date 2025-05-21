@@ -419,7 +419,7 @@ class DispatcherController extends Controller
                     return [
                         'reference' => $package->reference,
                         'latitude' => $package->latitude,
-                        'longitude' => $package->longitude
+                        'longitude' => $package->longitude,
                     ];
                 })
                 ->toArray();
