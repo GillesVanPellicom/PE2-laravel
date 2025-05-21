@@ -16,8 +16,14 @@
             </li>
             <li>
                 <a href="{{ route('workspace.flightpackages') }}" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
-                    Flight Packages
+                    Packages
                 </a>
+            </li>
+            <li>
+                <a href="{{ route('workspace.courier.scan') }}" class="block px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300">
+                    Scanner
+                </a>
+            </li>
             </li>
         </ul>
     </div>
