@@ -19,6 +19,7 @@ class EmployeesSeeder extends Seeder
             ['leave_balance' => 25,'user_id' => 10, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['leave_balance' => 25,'user_id' => 11, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['leave_balance' => 25,'user_id' => 12, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['leave_balance' => 25,'user_id' => 14, 'team_id' => 1, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
         ]);
 
         \App\Models\Team::factory(10)->create();
