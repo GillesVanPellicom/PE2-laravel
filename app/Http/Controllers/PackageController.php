@@ -667,7 +667,7 @@ class PackageController extends Controller {
                     "is_paid" => false, // Default to unpaid
                     "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
                 ]);
-                
+
                 $invoice_payment = InvoicePayment::create([
                     'reference' => $invoice->reference,
                     'amount' => $package->weight_price + $package->delivery_price,
@@ -704,7 +704,7 @@ class PackageController extends Controller {
                 "is_paid" => false, // Default to unpaid
                 "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
             ]);
-            
+
             $invoice_payment = InvoicePayment::create([
                 'reference' => $invoice->reference,
                 'amount' => $package->weight_price + $package->delivery_price,
@@ -721,7 +721,7 @@ class PackageController extends Controller {
 
         if (!$package) {
             return back()->withErrors(['error' => 'Failed to create package']);
-        
+
         }
         if (!$invoice) {
             return back()->withErrors(['error' => 'Failed to create invoice']);
@@ -1130,10 +1130,10 @@ public function packagePayment($packageID) {
     $package->paid = true;
     $packageInInvoice = PackageInInvoice::where('package_id', $package->id)->firstOrFail();
     $invoice = Invoice::where('id', $packageInInvoice->invoice_id)->firstOrFail();
-    //$invoice->is_paid = true;
+    $invoice->is_paid = true;
     $invoice->paid_at = Carbon::now();
 
-    //$package->save();
+    $package->save();
     $invoice->save();
 
     return view('packagepayment',compact('package'));
@@ -1278,21 +1278,23 @@ public function storeBulkOrder(Request $request)
             'discount' => 0,
             'expiry_date' => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
             'is_paid' => false,
-            'is_paid' => false,
             'reference' => $this->generateUniqueInvoiceReference(), // Generate a unique reference
         ]);
-         $invoice_payment = InvoicePayment::create([
-                'reference' => $invoice->reference,
-                'amount' => $package->weight_price + $package->delivery_price,
-
-        ]);
+        $total_paymentAmount = 0;
         // Link packages to the invoice
         foreach ($createdPackages as $package) {
             PackageInInvoice::create([
                 'invoice_id' => $invoice->id,
                 'package_id' => $package->id,
             ]);
+            $total_paymentAmount += $package->weight_price + $package->delivery_price;
         }
+         $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $total_paymentAmount,
+        ]);
+
+
 
     $packageIds = collect($createdPackages)->pluck('id')->implode(',');
     return redirect()->route('packages.bulk-details', ['ids' => $packageIds])

@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Dashboard - Company')
     <div class="bg-gray-100 min-h-screen py-12">
         <div class="container mx-auto px-4">
             <!-- Title -->
@@ -8,7 +9,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
 
                 <!-- Bulk Order Link -->
-                <a href="{{ route('packages.bulk-order') }}" 
+                <a href="{{ route('packages.bulk-order') }}"
                    class="block bg-green-500 hover:bg-green-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-truck text-2xl mb-2"></i>
@@ -18,7 +19,7 @@
                 </a>
 
                 <!-- Customer List Link -->
-                <a href="{{ route('customers.index') }}" 
+                <a href="{{ route('customers.index') }}"
                    class="block bg-red-500 hover:bg-red-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-users text-2xl mb-2"></i>
@@ -31,7 +32,7 @@
             <!-- My Packages and My Invoices Links -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- My Packages Link -->
-                <a href="{{ route('packages.mypackages') }}" 
+                <a href="{{ route('packages.mypackages') }}"
                    class="block bg-blue-500 hover:bg-blue-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-box text-2xl mb-2"></i>
@@ -41,7 +42,7 @@
                 </a>
 
                 <!-- My Invoices Link -->
-                <a href="{{ route('invoices.myinvoices') }}" 
+                <a href="{{ route('invoices.myinvoices') }}"
                    class="block bg-purple-500 hover:bg-purple-600 text-white text-center py-6 rounded-lg shadow-lg transition duration-300">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-file-invoice text-2xl mb-2"></i>

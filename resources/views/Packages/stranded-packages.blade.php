@@ -1,8 +1,5 @@
 <x-app-layout>
     @section("title","Stranded Packages")
-
-
-
     <div class="min-h-[calc(100vh-121px)] flex flex-col justify-center items-center bg-gray-100 px-2 py-10">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">
             Stranded Packages </h1>

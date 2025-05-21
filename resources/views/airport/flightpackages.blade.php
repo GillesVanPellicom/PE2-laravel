@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Airport Flight Packages')
 <x-sidebar-airport>
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -53,7 +54,7 @@
             </tbody>
         </table>
         <div class="text-right mt-4">
-            <button onclick="openFlightModal()" 
+            <button onclick="openFlightModal()"
                 class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition">
                 Assign to Flight
             </button>
@@ -109,8 +110,8 @@
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
                     <td class="py-2 px-4 border">
                         @php
-                            $flight = is_numeric($package->assigned_flight) 
-                                ? $flights->firstWhere('id', $package->assigned_flight) 
+                            $flight = is_numeric($package->assigned_flight)
+                                ? $flights->firstWhere('id', $package->assigned_flight)
                                 : null;
                         @endphp
 
@@ -121,7 +122,7 @@
                         @endif
                     </td>
                     <td class="py-2 px-4 border">
-                        <button onclick="selectPackageAndOpenFlightModal({{ $package->id }})" 
+                        <button onclick="selectPackageAndOpenFlightModal({{ $package->id }})"
                             class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700 transition">
                             Re-assign Flight
                         </button>
@@ -154,8 +155,8 @@
                     <td class="py-2 px-4 border">{{ $package->weight }} kg</td>
                     <td class="py-2 px-4 border">
                         @php
-                            $flight = is_numeric($package->assigned_flight) 
-                                ? $flights->firstWhere('id', $package->assigned_flight) 
+                            $flight = is_numeric($package->assigned_flight)
+                                ? $flights->firstWhere('id', $package->assigned_flight)
                                 : null;
                         @endphp
 
@@ -199,8 +200,18 @@
         </div>
     </div>
 
+    @php
+    // Precompute a mapping of flight IDs to arrival airport names
+    $flightArrivalAirportNames = [];
+    foreach ($flights as $flight) {
+        $flightArrivalAirportNames[$flight->id] = $flight->arrivalAirport && $flight->arrivalAirport->name ? $flight->arrivalAirport->name : 'Unknown';
+    }
+    @endphp
+
     <script>
     let selectedPackageIds = [];
+    // Pass the PHP mapping to JS
+    const flightArrivalAirportNames = @json($flightArrivalAirportNames);
 
     function openFlightModal() {
         selectedPackageIds = Array.from(document.querySelectorAll('.package-checkbox:checked')).map(cb => cb.value);
@@ -251,11 +262,13 @@
             flightList.innerHTML = '<li class="text-gray-600">No flights available for the selected packages.</li>';
         } else {
             filteredFlights.forEach(flight => {
+                // Use the precomputed mapping for airport name
+                const airportName = flightArrivalAirportNames[flight.id] || 'Unknown';
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <button onclick="assignFlightToSelectedPackages(${flight.id})" 
+                    <button onclick="assignFlightToSelectedPackages(${flight.id})"
                         class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
-                        Flight ${flight.id} - ${flight.departure_time} to ${flight.arrivalAirport?.name ?? 'Unknown'}
+                        Flight ${flight.id} - ${flight.departure_time} to ${airportName}
                     </button>
                 `;
                 flightList.appendChild(li);
@@ -347,13 +360,13 @@
             flightList.innerHTML = '<li class="text-gray-600">No flights available for the selected package.</li>';
         } else {
             filteredFlights.forEach(flight => {
-                // Fix: use arrive here, which is now defined above
-                const arrive = flight.arrivalAirport?.name ?? 'Unknown';
+                // Use the precomputed mapping for airport name
+                const airportName = flightArrivalAirportNames[flight.id] || 'Unknown';
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <button onclick="assignFlightToSelectedPackages(${flight.id})" 
+                    <button onclick="assignFlightToSelectedPackages(${flight.id})"
                         class="block w-full text-left px-4 py-2 bg-white hover:bg-gray-200 rounded shadow-sm">
-                        Flight ${flight.id} - ${flight.departure_time} to ${arrive}
+                        Flight ${flight.id} - ${flight.departure_time} to ${airportName}
                     </button>
                 `;
                 flightList.appendChild(li);

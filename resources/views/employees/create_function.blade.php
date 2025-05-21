@@ -1,5 +1,5 @@
 <x-app-layout>
-
+@section('title', 'Create Function')
 <x-sidebar>
 
     <div class="container mx-auto py-10">

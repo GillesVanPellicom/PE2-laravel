@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Bulk Orders - Package Details')
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <body class="bg-gray-100">
@@ -23,7 +24,7 @@
                                 <!-- QR Code Section -->
                                 <div class="bg-white rounded-lg border border-gray-200 p-6 flex flex-col items-center">
                                     <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                                        <img src="data:image/png;base64,{{ $package->qrCode }}" 
+                                        <img src="data:image/png;base64,{{ $package->qrCode }}"
                                         alt="Package QR Code"
                                         style="width: 150px; height: 150px; margin: 10px auto; display: block;">
                                     </div>
@@ -95,7 +96,7 @@
                                 <div class="bg-white rounded-lg border border-gray-200 p-6 flex flex-col justify-center">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Track & Trace</h3>
                                     <p class="text-sm text-gray-600 mb-4">Click the button below to track the status of this package.</p>
-                                    <a href="{{ route('track.package', $package->reference) }}" 
+                                    <a href="{{ route('track.package', $package->reference) }}"
                                     class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-3 px-4 rounded-md hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 flex items-center justify-center space-x-2">
                                         <i class="fas fa-map-marked-alt text-xl"></i>
                                         <span class="font-medium">Track Package</span>

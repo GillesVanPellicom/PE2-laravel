@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'My Packages')
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <div class="container mx-auto px-4 py-8">
@@ -11,7 +12,7 @@
                         </a>
                     </div>
                 </div>
-    
+
                 <!-- Tab Navigation -->
                 <div class="mb-6">
                     <div class="border-b border-gray-200">
@@ -31,7 +32,7 @@
                         </nav>
                     </div>
                 </div>
-    
+
                 <!-- Search Bar -->
                 <div class="mb-6">
                     <div class="relative">
@@ -44,7 +45,7 @@
                         </div>
                     </div>
                 </div>
-    
+
                 <!-- Receiving Packages Section -->
                 <div id="receiving-packages" class="tab-content">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -85,7 +86,7 @@
                                             @endif
                                             ,
                                             {{ $package->destinationLocation->address->city->postcode }}
-                                            {{ $package->destinationLocation->address->city->name }}, 
+                                            {{ $package->destinationLocation->address->city->name }},
                                             {{ $package->destinationLocation->address->city->country->country_name }}
                                     @else
                                             {{ $package->address->street }}
@@ -95,7 +96,7 @@
                                             @endif
                                             ,
                                             {{ $package->address->city->postcode }}
-                                            {{ $package->address->city->name }}, 
+                                            {{ $package->address->city->name }},
                                             {{ $package->address->city->country->country_name }}
                                     @endif
                                         </span>
@@ -121,7 +122,7 @@
                         @endforelse
                     </div>
                 </div>
-    
+
                 <!-- Sending Packages Section -->
                 <div id="sending-packages" class="tab-content hidden">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -170,7 +171,7 @@
                                                 @endif
                                                 ,
                                                 {{ $package->destinationLocation->address->city->postcode }}
-                                                {{ $package->destinationLocation->address->city->name }}, 
+                                                {{ $package->destinationLocation->address->city->name }},
                                                 {{ $package->destinationLocation->address->city->country->country_name }}
                                         @else
                                                 {{ $package->address->street }}
@@ -180,7 +181,7 @@
                                                 @endif
                                                 ,
                                                 {{ $package->address->city->postcode }}
-                                                {{ $package->address->city->name }}, 
+                                                {{ $package->address->city->name }},
                                                 {{ $package->address->city->country->country_name }}
                                         @endif
                                         </span>
@@ -210,12 +211,12 @@
                                 <p class="text-gray-500 text-lg">No packages found</p>
                             </div>
                         @endforelse
-    
+
                     </div>
                 </div>
             </div>
         </div>
-    
+
         <script>
             function switchTab(tab) {
                 document.querySelectorAll('.tab-content').forEach(content => {
@@ -244,7 +245,7 @@
         packageCards.forEach(card => {
             const searchableContent = card.textContent.toLowerCase();
             const matches = searchableContent.includes(searchTerm.toLowerCase());
-            
+
             card.style.display = matches ? '' : 'none';
             if (matches) hasVisiblePackages = true;
         });
@@ -259,7 +260,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('packageSearch');
-        
+
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
                 searchPackages(e.target.value);
@@ -267,5 +268,5 @@
         }
     });
         </script>
-    
+
 </x-app-layout>

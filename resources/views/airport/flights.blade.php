@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Airport Flight Packages')
 <x-sidebar-airport>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -23,7 +24,7 @@
                     <th class="py-2 px-4 border">Flight Duration (min)</th>
                     <th class="py-2 px-4 border">Estimated Arrival Time</th>
 
-                    <th class="py-2 px-4 border">Gate</th> 
+                    <th class="py-2 px-4 border">Gate</th>
                     <th class="py-2 px-4 border">Status</th>
                     <th class="py-2 px-4 border">Packages</th>
                 </tr>
@@ -44,7 +45,7 @@
                         <td class="py-2 px-4 border">{{$flight->time_flight_minutes}}</td>
                         <td class="py-2 px-4 border">{{$flight->arrival_time}}</td>
 
-                        <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td> 
+                        <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td>
                         <td class="py-2 px-4 border">
                             @if($flight->status == 'On Time')
                                 {{$flight->status}}
@@ -55,7 +56,7 @@
                             @endif
                         </td>
                         <td class="py-2 px-4 border">
-                            <button onclick="showPackages({{ $flight->id }})" 
+                            <button onclick="showPackages({{ $flight->id }})"
                                 class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                                 View Packages ({{ \App\Models\Package::where('assigned_flight', $flight->id)->count() }})
                             </button>
@@ -77,7 +78,7 @@
                     <th class="py-2 px-4 border">Flight Duration (min)</th>
 
                     <th class="py-2 px-4 border">Arrival Place</th>
-                    <th class="py-2 px-4 border">Gate</th> 
+                    <th class="py-2 px-4 border">Gate</th>
                     <th class="py-2 px-4 border">Status</th>
                     <th class="py-2 px-4 border">Packages</th>
                 </tr>
@@ -98,7 +99,7 @@
                         <td class="py-2 px-4 border">{{$flight->time_flight_minutes}}</td>
 
                         <td class="py-2 px-4 border">{{$flight->arrivalAirport->name ?? 'Unknown Arrival Airport'}}</td>
-                        <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td> 
+                        <td class="py-2 px-4 border">{{$flight->gate ?? 'Unknown Gate'}}</td>
                         <td class="py-2 px-4 border">
                             @if($flight->status == 'On Time')
                                 {{$flight->status}}
@@ -109,7 +110,7 @@
                             @endif
                         </td>
                         <td class="py-2 px-4 border">
-                            <button onclick="showPackages({{ $flight->id }})" 
+                            <button onclick="showPackages({{ $flight->id }})"
                                 class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                                 View Packages ({{ \App\Models\Package::where('assigned_flight', $flight->id)->count() }})
                             </button>
