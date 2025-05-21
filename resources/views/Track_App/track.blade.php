@@ -1,11 +1,11 @@
 <x-app-layout>
-    @section("title", 'Track & Trace - Pakket: ' . $package->reference)
+    @section("title", 'Track & Trace - Package: ' . $package->reference)
     <div class="flex flex-col w-9/12 p-4 m-auto min-h-[calc(100vh-121px)]  justify-center bg-gray-100 ">
-        <h2 class="text-2xl font-bold mb-4">Track & Trace - Pakket: {{ $package->reference }}</h2>
+        <h2 class="text-2xl font-bold mb-4">Track & Trace - Package: {{ $package->reference }}</h2>
         <h4 class="text-lg mb-10">Current Location: {{ $currentLocation ? $currentLocation->getDescription() : 'Unknown' }}</h4>
 
         {{-- Timeline Bullets --}}
-        <h3 class="text-xl font-semibold mb-4">Tijdlijn</h3>
+        <h3 class="text-xl font-semibold mb-4">Timeline:</h3>
         <div class="relative flex items-center justify-between mb-10">
 
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
@@ -36,7 +36,7 @@
         </div>
 
         {{-- Step Details --}}
-        <h3 class="text-xl font-semibold mb-4">Details per step</h3>
+        <h3 class="text-xl font-semibold mb-4">Details per step:</h3>
         <div class="space-y-4">
             @foreach ($movements as $movement)
                 <div class="p-4 border rounded-lg shadow-sm

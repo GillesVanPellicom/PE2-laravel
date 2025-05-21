@@ -590,6 +590,13 @@ class Package extends Model {
     //   ];
     // }
 
+    $user = auth()->user();
+    $employee = $user?->employee;
+    $route = $employee->courierRoute;
+    if ($route == null || $route->current_location != $currentMovement->current_node_id){
+      return [false, "Courier location and package destination do not match."];
+    }
+
     // If arrival time is not set, set all timestamps to now
     if (is_null($currentMovement->arrival_time)) {
       $now = now();

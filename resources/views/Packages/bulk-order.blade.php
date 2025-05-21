@@ -41,14 +41,18 @@
                         <div class="package bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Package Details</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="packages[0][name]" placeholder="Receiver Name" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="packages[0][lastName]" placeholder="Receiver Last Name" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="email" name="packages[0][receiverEmail]" placeholder="Receiver Email" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="packages[0][receiver_phone_number]" placeholder="Receiver Phone Number" required 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="packages[0][name]" placeholder="First Name" required 
+                                value="{{ request('first_name') }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="packages[0][lastName]" placeholder="Last Name" required 
+                                value="{{ request('last_name') }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <input type="email" name="packages[0][receiverEmail]" placeholder="Receiver Email" required 
+                                value="{{ request('email') }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" name="packages[0][receiver_phone_number]" placeholder="Receiver Phone Number" required 
+                                value="{{ request('phone') }}" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <input type="text" name="packages[0][dimension]" placeholder="Dimension" required 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -75,17 +79,18 @@
                                 <h4 class="text-sm font-medium text-gray-900 mb-2">Delivery Method</h4>
                                 <div class="space-y-3">
                                     @foreach($deliveryMethods as $method)
-                                        <div class="flex items-center">
-                                            <input type="radio" name="packages[0][delivery_method_id]" value="{{ $method->id }}"
-                                                data-requires-location="{{ $method->requires_location }}"
-                                                data-code="{{ $method->code }}"
-                                                data-price="{{ $method->price }}"
-                                                onchange="handleDeliveryMethodChange(this, 0)"
-                                                class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                            <label class="ml-3 text-sm text-gray-700">
-                                                {{ $method->name }} - €{{ number_format($method->price, 2) }}
-                                            </label>
-                                        </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" name="packages[0][delivery_method_id]" value="{{ $method->id }}"
+                                            data-requires-location="{{ $method->requires_location }}"
+                                            data-code="{{ $method->code }}"
+                                            data-price="{{ $method->price }}"
+                                            onchange="handleDeliveryMethodChange(this, 0)"
+                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            {{ request('delivery_method_id') == $method->id ? 'checked' : '' }}>
+                                        <label class="ml-3 text-sm text-gray-700">
+                                            {{ $method->name }} - €{{ number_format($method->price, 2) }}
+                                        </label>
+                                    </div>
                                     @endforeach
                                 </div>
                             </div>
@@ -123,6 +128,7 @@
                                             name="packages[0][addressInput]" 
                                             placeholder="Enter your address" 
                                             autocomplete="off"
+                                            value="{{ request('address') }}"
                                             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                         >
                                         <div id="suggestions-0" 
@@ -131,6 +137,11 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Delete Button for Additional Packages -->
+                            <button type="button" class="delete-package-btn bg-red-500 text-white px-4 py-2 rounded mt-4 hidden">
+                                Delete Package
+                            </button>
                         </div>
                     </div>
 
@@ -162,6 +173,12 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const deliveryMethodRadio = document.querySelector('input[name="packages[0][delivery_method_id]"]:checked');
+    if (deliveryMethodRadio) {
+        handleDeliveryMethodChange(deliveryMethodRadio, 0);
+    }
+});
         let packageIndex = 1;
 
         document.getElementById('addPackageButton').addEventListener('click', function () {
@@ -185,6 +202,13 @@
             }
         });
 
+            // Show the delete button for the new package
+        const deleteButton = newPackage.querySelector('.delete-package-btn');
+        deleteButton.classList.remove('hidden');
+        deleteButton.addEventListener('click', function () {
+            newPackage.remove();
+            updatePrices();
+        });
         // Append the cloned package to the container
         container.appendChild(newPackage);
         packageIndex++;

@@ -26,6 +26,8 @@ use App\Http\Controllers\DispatcherController;
 use App\Http\Controllers\CourierRouteController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
+use App\Models\Employee;
+use App\Http\Controllers\CustomerController;
 
 // ======================= Start Middleware ====================== //
     Route::middleware('auth')
@@ -37,8 +39,8 @@ use App\Http\Controllers\TicketController;
 
                 if (auth()->user()->hasPermissionTo('*')) {
                     return view('real-homepage');
-                } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages","scan"])) {
-                    return redirect()->route('workspace.courier.scan');
+                } elseif (auth()->user()->hasAnyPermission(["courier.route", "scan.deliver", "courier.packages"])) {
+                    return redirect()->route('workspace.courier');
                 } elseif (auth()->user()->hasAnyPermission(['HR.checkall',"HR.create", "HR.assign"])) {
                     return redirect()->route('workspace.employees.index');
                 } elseif (auth()->user()->hasAnyPermission(["pickup.view", "pickup.edit"])) {
@@ -102,6 +104,8 @@ use App\Http\Controllers\TicketController;
             Route::get('/courier/signature/{id}', [CourierRouteController::class, 'signature'])->name('courier.signature');
 
             Route::post('/courier/submit-signature', [CourierRouteController::class, 'submitSignature'])->name('courier.submitSignature');
+
+
 
 
             // Route::post('/update-package-status', [PackageController::class, 'updateStatus'])->name('package.update');
@@ -363,7 +367,7 @@ Route::middleware("auth")->group(function () {
     Route::post('/bulk-order', [PackageController::class, 'storeBulkOrder'])
         ->name('packages.bulk-order.store');
 
-    Route::match(['GET', 'POST'], '/packages/bulk-details/{id}', [PackageController::class, 'bulkPackageDetails'])
+    Route::get('/packages/bulk-details/{ids}', [PackageController::class, 'bulkPackageDetails'])
         ->name('packages.bulk-details');
 
     Route::get('/company-dashboard', [PackageController::class, 'companyDashboard'])
@@ -372,12 +376,15 @@ Route::middleware("auth")->group(function () {
 
     Route::post('/packages/complete-bulk-payment', [PackageController::class, 'completeBulkPayment'])
         ->name('packages.complete-bulk-payment');
-    // invoice start
-    Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
-    Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
-    Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
-    // invoice end
 
+    Route::get('/customers', [CustomerController::class, 'index'])
+        ->middleware(['permission:business_client.view'])
+        ->name('customers.index');
+        // invoice start
+        Route::get('/invoices',[InvoiceController::class, 'manageInvoices'])->name('manage-invoices');
+        Route::get('/invoice-payment', [InvoiceController::class, 'getUnpaidInvoices'])->name("manage-invoice-system");
+        Route::post('/invoices/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+        // invoice end
 });
 
 // Invoices
@@ -422,10 +429,6 @@ Route::get('/package/payment/{id}', [PackageController::class, 'packagePayment']
     //->middleware('auth')
     ->name('packagepayment');
 
-Route::get('/package/bulk-payment/{id}', [PackageController::class, 'bulkPackagePayment'])
-    ->middleware('auth')
-    ->name('bulk-packagepayment');
-
 // ======================= Package Payment End  ====================== //
     Route::get('/track-parcel',[TrackPackageController::class, 'trackParcel'])->name('track-parcel');
 
@@ -459,4 +462,30 @@ Route::post('/workspace/notifications/{id}/mark-as-read', [NotificationControlle
 
 Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::class, 'markEmployeeAsSick'])->name('markEmployeeAsSick');
 
+Route::view('/courier-location', 'courierlocationchange')->name('courier.location-change');
 
+Route::post("/courier/update-location", function (Request $request){
+    $employee = Employee::find($request->employee);
+    $employee->courierRoute->current_location = $request->location;
+    $employee->courierRoute->save();
+    return redirect()->route('courier.location-change');
+})->name("courier.update.location");
+
+
+
+Route::middleware(['permission:assign.courier'])->group(function () {
+    Route::get('/create-route', [RouteCreatorController::class, 'createRoute']);
+
+    Route::get('/dispatcher', [DispatcherController::class, 'index'])->name('dispatcher.index');
+    Route::get('/distribution-center/{id}', [DispatcherController::class, 'getDistributionCenterDetails'])->name('dispatcher.details');
+    Route::post('/distribution-center/dispatch-packages', [DispatcherController::class, 'dispatchSelectedPackages'])->name('dispatcher.dispatch-packages');
+    Route::post('/distribution-center/unassign-packages', [DispatcherController::class, 'unassignPackages'])->name('dispatcher.unassign-packages');
+    Route::post('/distribution-center/calculate-optimal-selection', [DispatcherController::class, 'calculateOptimalSelection'])->name('dispatcher.calculate-optimal');
+});
+
+
+// Route for FAQ page
+
+Route::get('/faq', function () {
+    return view('faq');
+})->name('faq');

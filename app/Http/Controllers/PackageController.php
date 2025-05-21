@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use App\Models\Ticket;
+use App\Models\TicketMessage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Package;
@@ -16,6 +18,7 @@ use App\Models\Country;
 use App\Models\City;
 use App\Models\User;
 use App\Models\Invoice;
+use App\Models\InvoicePayment;
 use App\Models\PackageInInvoice;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -23,6 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Flight;
+use App\Models\Customer;
 use App\Models\FlightContract;
 
 class PackageController extends Controller {
@@ -59,6 +63,20 @@ class PackageController extends Controller {
     public function setStatusPackage ($id) {
         $package = Package::findOrFail($id);
         $statusToSet = request()->get('status') ?? '';
+        if ($statusToSet === 'Pending') {
+            $new_ticket = Ticket::create([
+                'user_id' => Auth::id(),
+                'subject'=> 'Package #'.$package->reference.' status changed',
+                'status' => "open",
+                'description' => 'The status of the package was changed to: ' . $statusToSet
+            ]);
+            TicketMessage::create([
+                'ticket_id' => $new_ticket->id,
+                "is_customer_message"=>false,
+                'message' => "The Package: #".$package->reference." was not left at the pickup point by the delivery driver and was not delivered
+                to the pickup."
+            ]);
+        }
         $package->update(['status' => $statusToSet]);
         return redirect()->route('workspace.pickup.dashboard')->with('success', 'The state of the package: ' . $package->reference . ' was successfully updated to ' . $statusToSet);
     }
@@ -82,15 +100,10 @@ class PackageController extends Controller {
         $packages = Package::where('status', '!=', 'delivered')
             ->where('status', '!=', 'returned')
             ->where('status', '!=', 'cancelled')
-            ->whereHas('deliveryMethod', function ($query) {
-                $query->where('code', 'PICKUP_POINT');
-            })
+            ->where('destination_location_id', '@DOP_0001')
             ->with(['movements' => function ($query) use ($today) {
                 $query->whereDate('arrival_time', $today);
             }])
-            ->whereHas('movements', function ($query) use ($today) {
-                $query->whereDate('arrival_time', $today);
-            })
             ->paginate(10);
 
         return view('pickup.receiving-packages', compact('packages'));
@@ -647,7 +660,24 @@ class PackageController extends Controller {
                 // Create the package
 
                 $package = Package::create($packageData);
+                $invoice = Invoice::create([
+                    "company_id" => $userId ?? null, // Replace with actual company ID or null
+                    "discount" => $request->input('discount') ?? 0, // Replace with actual discount or default to 0
+                    "expiry_date" => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+                    "is_paid" => false, // Default to unpaid
+                    "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
+                ]);
+                
+                $invoice_payment = InvoicePayment::create([
+                    'reference' => $invoice->reference,
+                    'amount' => $package->weight_price + $package->delivery_price,
 
+                ]);
+
+                $packageInInvoice = PackageInInvoice::create([
+                    'invoice_id' => $invoice->id,
+                    'package_id' => $package->id,
+                ]);
             }
             catch (\Exception $e) {
                 return back()->withErrors(['error' => 'Error processing address: ' . $e->getMessage()]);
@@ -667,12 +697,40 @@ class PackageController extends Controller {
                 ->toArray();
 
             $package = Package::create($packageData);
+            $invoice = Invoice::create([
+                "company_id" => $userId ?? null, // Replace with actual company ID or null
+                "discount" => $request->input('discount') ?? 0, // Replace with actual discount or default to 0
+                "expiry_date" => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
+                "is_paid" => false, // Default to unpaid
+                "reference" => 'INV-' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT), // Generate a unique reference
+            ]);
+            
+            $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $package->weight_price + $package->delivery_price,
+
+            ]);
+
+            $packageInInvoice = PackageInInvoice::create([
+                'invoice_id' => $invoice->id,
+                'package_id' => $package->id,
+            ]);
         }
 
         $package->getMovements();
 
         if (!$package) {
             return back()->withErrors(['error' => 'Failed to create package']);
+        
+        }
+        if (!$invoice) {
+            return back()->withErrors(['error' => 'Failed to create invoice']);
+        }
+            if (!$invoice_payment) {
+                return back()->withErrors(['error' => 'Failed to create invoice payment']);
+            }
+        if (!$packageInInvoice) {
+            return back()->withErrors(['error' => 'Failed to create package in invoice']);
         }
 
         return redirect()->route('packagepayment',$package->id)->with('success', 'Package created successfully');
@@ -802,7 +860,7 @@ class PackageController extends Controller {
  * Format: REF + YYYY + MM + XXXXXXXX (where X is random number)
  * Example: REF20250312345678
  * I changed this to REF for consitency sake & it otherwise breaks my code.
- * 
+ *
  * @return string
  * @throws \Exception if unable to generate unique number after maximum attempts
  */
@@ -1070,7 +1128,13 @@ public function packagePayment($packageID) {
 
 
     $package->paid = true;
-    $package->save();
+    $packageInInvoice = PackageInInvoice::where('package_id', $package->id)->firstOrFail();
+    $invoice = Invoice::where('id', $packageInInvoice->invoice_id)->firstOrFail();
+    //$invoice->is_paid = true;
+    $invoice->paid_at = Carbon::now();
+
+    //$package->save();
+    $invoice->save();
 
     return view('packagepayment',compact('package'));
 }
@@ -1185,6 +1249,7 @@ public function storeBulkOrder(Request $request)
             'weight_price' => $weightPrice,
             'delivery_price' => $deliveryPrice,
             'status' => 'pending',
+            'paid' => true,
         ]);
 
         $createdPackages[] = $package;
@@ -1192,18 +1257,35 @@ public function storeBulkOrder(Request $request)
         // Update total prices
         $totalWeightPrice += $weightPrice;
         $totalDeliveryPrice += $deliveryPrice;
+
+        // Add customer to the company's customer list
+        Customer::updateOrCreate(
+            [
+                'company_id' => $userId,
+                'address' => $packageData['addressInput'], // Save the full address as a single string
+            ],
+            [
+                'first_name' => $packageData['name'], // Map to first_name
+                'last_name' => $packageData['lastName'], // Map to last_name
+                'email' => $packageData['receiverEmail'],
+                'phone' => $packageData['receiver_phone_number'],
+            ]
+        );
     }
 
-        // Create an invoice for the bulk order
         $invoice = Invoice::create([
             'company_id' => $userId,
-            'discount' => 0, // Add logic for discounts if needed
+            'discount' => 0,
             'expiry_date' => Carbon::now()->addDays(30), // Set expiry date to 30 days from now
             'is_paid' => false,
             'is_paid' => false,
             'reference' => $this->generateUniqueInvoiceReference(), // Generate a unique reference
         ]);
+         $invoice_payment = InvoicePayment::create([
+                'reference' => $invoice->reference,
+                'amount' => $package->weight_price + $package->delivery_price,
 
+        ]);
         // Link packages to the invoice
         foreach ($createdPackages as $package) {
             PackageInInvoice::create([
@@ -1212,19 +1294,9 @@ public function storeBulkOrder(Request $request)
             ]);
         }
 
-    session([
-        'bulk_order_total_price' => $totalWeightPrice + $totalDeliveryPrice,
-        'bulk_order_weight_price' => $totalWeightPrice,
-        'bulk_order_delivery_price' => $totalDeliveryPrice,
-        'bulk_order_package_ids' => collect($createdPackages)->pluck('id')->toArray(),
-    ]);
-
-    return redirect()->route('bulk-packagepayment', ['id' => $createdPackages[0]->id])
-    ->with('bulk_order_total_price', $totalWeightPrice + $totalDeliveryPrice)
-    ->with('bulk_order_weight_price', $totalWeightPrice)
-    ->with('bulk_order_delivery_price', $totalDeliveryPrice)
-    ->with('bulk_order_package_ids', collect($createdPackages)->pluck('id')->toArray())
-    ->with('success', 'Packages created successfully');
+    $packageIds = collect($createdPackages)->pluck('id')->implode(',');
+    return redirect()->route('packages.bulk-details', ['ids' => $packageIds])
+        ->with('success', 'Packages created successfully.');
 }
 
 public function bulkPackageDetails($ids)
@@ -1251,33 +1323,6 @@ public function bulkPackageDetails($ids)
         ->with('success', 'Payment completed successfully.');
 }
 
-public function bulkPackagePayment($packageID)
-{
-    $bulkOrderPackageIds = session('bulk_order_package_ids', []);
-
-    if (empty($bulkOrderPackageIds)) {
-        return back()->withErrors(['error' => 'No packages found for the bulk order.']);
-    }
-
-    // Update all packages in the bulk order to "paid"
-    Package::whereIn('id', $bulkOrderPackageIds)
-        ->where('user_id', Auth::user()->id)
-        ->update(['paid' => true]);
-
-    // Fetch the first package for display purposes
-    $package = Package::with(['user'])
-        ->where('user_id', Auth::user()->id)
-        ->where('id', $packageID)
-        ->first();
-
-    if (!$package) {
-        return back()->withErrors(['error' => 'Package not found.']);
-    }
-
-    return view('packagepayment', compact('package'))
-        ->with('success', 'Payment completed successfully.');
-}
-
 public function companyDashboard()
 {
     $userId = Auth::id();
@@ -1288,6 +1333,7 @@ public function companyDashboard()
 
     return view('Packages.company-dashboard', compact('totalPackages', 'unpaidPackages'));
 }
+
 private function generateUniqueInvoiceReference()
 {
     $maxAttempts = 100;

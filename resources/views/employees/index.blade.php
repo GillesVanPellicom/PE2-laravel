@@ -37,8 +37,6 @@
                         <th class="border border-gray-300 px-4 py-2">Country</th>
                         <th class="border border-gray-300 px-4 py-2">Leave Balance</th>
                         <th class="border border-gray-300 px-4 py-2">Team</th>
-                        <th class="border border-gray-300 px-4 py-2">Created At</th>
-                        <th class="border border-gray-300 px-4 py-2">Updated At</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,8 +55,6 @@
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->address->city->country->country_name }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->leave_balance }}</td>
                             <td class="border border-gray-300 px-4 py-2">{{ $employee->employee->team->department }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ $employee->created_at }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ $employee->updated_at }}</td>
                         </tr>
                     @endforeach
                 </tbody>
