@@ -2,6 +2,7 @@
 
 
 use App\Http\Middleware\Authenticate;
+use App\Models\Package;
 use Aws\Middleware;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -465,8 +466,9 @@ Route::post('/workspace/mark-employee-sick/{employee}', [VacationController::cla
 Route::view('/courier-location', 'courierlocationchange')->name('courier.location-change');
 
 Route::post("/courier/update-location", function (Request $request){
-    $employee = Employee::find($request->employee);
-    $employee->courierRoute->current_location = $request->location;
+    $employee = \App\Models\User::find(6)->employee;
+    $package = Package::find(5);
+    $employee->courierRoute->current_location = $package->destination_location_id;
     $employee->courierRoute->save();
     return redirect()->route('courier.location-change');
 })->name("courier.update.location");

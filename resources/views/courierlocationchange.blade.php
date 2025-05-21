@@ -6,15 +6,13 @@
     use App\Services\Router\Types\Node;
 @endphp
 <x-app-layout>
-    HELLO WORLD
-    <form method="POST" action="{{ route('courier.update.location') }}" class="p-5">
-        @csrf
-        <!--
-
-        -->
-        <div class="mt-6">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Change Location</button>
-        </div>
-    </form>
+    <div class="flex justify-center items-center">
+        <form method="POST" action="{{ route('courier.update.location') }}" class="p-5">
+            @csrf
+            <div class="mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Change Bob's Location</button>
+            </div>
+        </form>
+    </div>
 
 </x-app-layout>
