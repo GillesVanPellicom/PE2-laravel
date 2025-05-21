@@ -244,7 +244,7 @@ public function getUnpaidInvoices(Request $request)
         $unpaidInvoices = Invoice::where('is_paid', false)
             ->with('company')
             ->orderBy('expiry_date', 'asc')
-            ->paginate(5);
+            ->get();
 
         // Calculate packages and amount for each invoice
         foreach ($unpaidInvoices as $invoice) {
@@ -271,7 +271,7 @@ public function getUnpaidInvoices(Request $request)
         $payments = collect();
         if (!empty($selectedInvoices)) {
             // Get all references for selected invoices
-            $selectedInvoiceModels = Invoice::whereIn('id', $selectedInvoices)->get();
+            $selectedInvoiceModels = Invoice::whereIn('reference', $selectedInvoices)->get();
             $references = $selectedInvoiceModels->pluck('reference')->toArray();
 
             $payments = \App\Models\InvoicePayment::whereIn('reference', $references)
@@ -318,13 +318,13 @@ public function markAsPaid(Request $request)
 
         $marked = [];
         foreach ($invoiceIds as $invoiceId) {
-            $invoice = Invoice::find($invoiceId);
+            $invoice = Invoice::where("reference",$invoiceId)->firstOrFail();
             if ($invoice && !$invoice->is_paid) {
                 $invoice->update([
                     'is_paid' => true,
                     'paid_at' => now()
                 ]);
-                $marked[] = $invoice->id;
+                $marked[] = $invoice->reference;
             }
         }
 
