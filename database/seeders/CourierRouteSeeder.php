@@ -35,6 +35,8 @@ class CourierRouteSeeder extends Seeder
             if ($user && $user->first_name === 'Bob' && $user->last_name === 'Courier') {
                 $location = '@DC_ANTWERP';
                 $antwerpCourierCount++;
+            } elseif ($user && $user->first_name === 'Bob' && $user->last_name === 'Madrid') {
+                $location = '@DC_MADRID';
             } elseif ($antwerpCourierCount < $targetAntwerpCouriers) {
                 $location = '@DC_ANTWERP';
                 $antwerpCourierCount++;

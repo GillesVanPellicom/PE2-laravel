@@ -412,8 +412,7 @@ class DispatcherController extends Controller
                 ->select(
                     'packages.reference',
                     'locations.latitude',
-                    'locations.longitude',
-                    'packages.weight_id',
+                    'locations.longitude'
                 )
                 ->get()
                 ->map(function ($package) {
@@ -421,17 +420,9 @@ class DispatcherController extends Controller
                         'reference' => $package->reference,
                         'latitude' => $package->latitude,
                         'longitude' => $package->longitude,
-                        'weight_id' => $package->weight_id,
                     ];
                 })
                 ->toArray();
-
-                $pack = Package::whereIn('reference', $packages)->get();
-
-                foreach($pack as $p){
-                    $package->weight = round(mt_rand($package->weightClass->weight_min *1000, $package->weightClass->weight_max *1000) / 1000, 3);
-                    $package->update(['weight' => $package->weight]);
-                }
 
             // Get starting point (distribution center)
             $distributionCenter = RouterNodes::find($request->input('dc_id'));

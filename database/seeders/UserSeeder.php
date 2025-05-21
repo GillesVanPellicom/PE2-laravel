@@ -239,6 +239,22 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'first_name' => 'Bob',
+                'last_name' => 'Madrid',
+                'phone_number' => '098567321',
+                'birth_date' => '1990-01-01',
+                'email' => 'couriermadrid@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('courier'),
+                'address_id' => 4,
+                'isCompany' => false,
+                'company_name' => null,
+                'VAT_Number' => null,
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
         \App\Models\User::factory(1000)->create();
