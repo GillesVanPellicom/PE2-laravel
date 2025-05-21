@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Blue Sky - Homepage')
+    @section('title', 'Homepage')
 
     <div class="flex flex-col items-center justify-center min-h-[calc(100vh-121px)] bg-gray-100">
 
