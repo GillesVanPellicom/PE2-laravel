@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Dispatcher')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @section('pageName', 'Dispatcher')
     <div class="flex h-screen">
@@ -153,7 +154,7 @@
                 }
 
                 updatePackageDisplay(data, centerDescription);
-                
+
                 // Load couriers for this distribution center
                 await filterCouriers(centerId, centerDescription);
             } catch (error) {
@@ -176,17 +177,17 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to load couriers');
                 }
-                
+
                 const data = await response.json();
-                
+
                 if (!data.success) {
                     throw new Error(data.message || 'Failed to load couriers');
                 }
-                
+
                 // Update the couriers list
                 updateCouriersList(data.couriers, centerDescription);
             } catch (error) {
@@ -210,7 +211,7 @@
                                                 Going to: ${group.nextMovement}
                                             </h3>
                                         </div>
-                                        <button onclick="dispatchSelectedPackages('${group.city}')" 
+                                        <button onclick="dispatchSelectedPackages('${group.city}')"
                                                 class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
                                             Assign
                                         </button>
@@ -220,8 +221,8 @@
                                             ${group.packages.length} packages
                                         </span>
                                         <div class="absolute bottom-0 right-0">
-                                            <input type="checkbox" 
-                                                id="select-all-unassigned-${group.city}" 
+                                            <input type="checkbox"
+                                                id="select-all-unassigned-${group.city}"
                                                 class="select-all-group"
                                                 data-city="${group.city}">
                                             <label for="select-all-unassigned-${group.city}">Select All</label>
@@ -232,8 +233,8 @@
                                             ${group.packages.map(package => `
                                             <div class="border p-4 rounded-md hover:bg-gray-50">
                                                 <div class="flex items-center gap-4">
-                                                    <input type="checkbox" 
-                                                        name="package" 
+                                                    <input type="checkbox"
+                                                        name="package"
                                                         value="${package.ref}"
                                                         data-city="${group.city}"
                                                         class="h-5 w-5">
@@ -273,8 +274,8 @@
                                                 ${group.packages.length} packages
                                             </span>
                                             <div class="absolute bottom-0 right-0">
-                                                <input type="checkbox" 
-                                                    id="select-all-assigned-${group.city}" 
+                                                <input type="checkbox"
+                                                    id="select-all-assigned-${group.city}"
                                                     class="select-all-group"
                                                     data-city="${group.city}">
                                                 <label for="select-all-assigned-${group.city}">Select All</label>
@@ -285,8 +286,8 @@
                                                 ${group.packages.map(package => `
                                                 <div class="border p-4 rounded-md hover:bg-gray-50">
                                                     <div class="flex items-center gap-4">
-                                                        <input type="checkbox" 
-                                                            name="assigned_package" 
+                                                        <input type="checkbox"
+                                                            name="assigned_package"
                                                             value="${package.ref}"
                                                             data-city="${group.city}"
                                                             class="h-5 w-5">
@@ -582,12 +583,12 @@
                 <button ${pagination.current_page === pagination.last_page ? 'disabled' : ''} onclick="fetchCourierPackages(${pagination.current_page + 1})">Next</button>
             `;
         }
-        
+
         function updateCouriersList(couriers, centerDescription) {
             // Gebruik meer specifieke en betrouwbare selectors met IDs
             const couriersTitle = document.querySelector('.w-1\\/6.bg-white.p-4.overflow-y-auto.border-l h2');
             const couriersList = document.querySelector('.w-1\\/6.bg-white.p-4.overflow-y-auto.border-l ul');
-            
+
             // Dit is betrouwbaarder dan class-gebaseerde selectors
             if (!couriersTitle || !couriersList) {
                 // Probeer het met een simpelere selector als de eerste niet werkt
@@ -597,11 +598,11 @@
                     const lastSection = couriersSection[couriersSection.length - 1];
                     const titleElement = lastSection.querySelector('h2');
                     const listElement = lastSection.querySelector('ul');
-                    
+
                     if (titleElement && listElement) {
                         // Update titel met het geselecteerde DC
                         titleElement.innerHTML = `Couriers <span class="text-sm font-normal text-gray-500">in ${centerDescription}</span>`;
-                        
+
                         // Update courier lijst
                         if (!couriers || couriers.length === 0) {
                             listElement.innerHTML = '<li class="p-2">No couriers assigned to this distribution center</li>';
@@ -622,13 +623,13 @@
                         return;
                     }
                 }
-                
+
                 // Log een fout als we de elementen niet kunnen vinden
                 console.error('Could not find courier title or list elements');
             } else {
                 // Update titel met het geselecteerde DC
                 couriersTitle.innerHTML = `Couriers <span class="text-sm font-normal text-gray-500">in ${centerDescription}</span>`;
-                
+
                 // Update courier lijst
                 if (!couriers || couriers.length === 0) {
                     couriersList.innerHTML = '<li class="p-2">No couriers assigned to this distribution center</li>';

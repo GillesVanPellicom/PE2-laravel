@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Overview Invoices')
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 <body class="bg-gray-100 min-h-screen">
@@ -10,14 +11,14 @@
                 <h1 class="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Invoice Overview</h1>
                 <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                     <div class="relative">
-                        <input type="text" 
-                            name="search" 
+                        <input type="text"
+                            name="search"
                             value="{{ $searchTerm }}"
-                            placeholder="Search invoices..." 
+                            placeholder="Search invoices..."
                             class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
-                    <select name="status" 
+                    <select name="status"
                             class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             onchange="this.form.submit()">
                         <option @if($selectedStatus == 'All Invoices') selected @endif>All Invoices</option>
@@ -97,9 +98,9 @@
                                 <div class="text-sm text-gray-900">{{ $invoice->package_count }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {{ $invoice->status_color === 'green' ? 'bg-green-100 text-green-800' : 
-                                    ($invoice->status_color === 'orange' ? 'bg-orange-100 text-orange-800' : 
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {{ $invoice->status_color === 'green' ? 'bg-green-100 text-green-800' :
+                                    ($invoice->status_color === 'orange' ? 'bg-orange-100 text-orange-800' :
                                         'bg-red-100 text-red-800') }}">
                                     {{ $invoice->status }}
                                 </span>

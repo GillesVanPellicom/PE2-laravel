@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Pickup Package Info')
     @section('scripts')
         <script>
             document.addEventListener("DOMContentLoaded", function () {

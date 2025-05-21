@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Bulk Order')
     <div class="min-h-screen bg-gray-100 py-12">
         <div class="max-w-5xl mx-auto">
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -41,19 +42,19 @@
                         <div class="package bg-gray-50 rounded-lg p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Package Details</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" name="packages[0][name]" placeholder="First Name" required 
-                                value="{{ request('first_name') }}" 
+                            <input type="text" name="packages[0][name]" placeholder="First Name" required
+                                value="{{ request('first_name') }}"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <input type="text" name="packages[0][lastName]" placeholder="Last Name" required 
-                                value="{{ request('last_name') }}" 
+                            <input type="text" name="packages[0][lastName]" placeholder="Last Name" required
+                                value="{{ request('last_name') }}"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <input type="email" name="packages[0][receiverEmail]" placeholder="Receiver Email" required 
-                                value="{{ request('email') }}" 
+                            <input type="email" name="packages[0][receiverEmail]" placeholder="Receiver Email" required
+                                value="{{ request('email') }}"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <input type="text" name="packages[0][receiver_phone_number]" placeholder="Receiver Phone Number" required 
-                                value="{{ request('phone') }}" 
+                            <input type="text" name="packages[0][receiver_phone_number]" placeholder="Receiver Phone Number" required
+                                value="{{ request('phone') }}"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <input type="text" name="packages[0][dimension]" placeholder="Dimension" required 
+                                <input type="text" name="packages[0][dimension]" placeholder="Dimension" required
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
 
@@ -121,17 +122,17 @@
                             <div id="addressSection-0" style="display: none;" class="bg-gray-50 rounded-lg p-6">
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Delivery Address</h3>
                                 <div class="w-full">
-                                    <div class="relative"> 
-                                        <input 
-                                            id="addressInput-0" 
-                                            type="text" 
-                                            name="packages[0][addressInput]" 
-                                            placeholder="Enter your address" 
+                                    <div class="relative">
+                                        <input
+                                            id="addressInput-0"
+                                            type="text"
+                                            name="packages[0][addressInput]"
+                                            placeholder="Enter your address"
                                             autocomplete="off"
                                             value="{{ request('address') }}"
                                             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                         >
-                                        <div id="suggestions-0" 
+                                        <div id="suggestions-0"
                                             class="absolute w-full top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 hidden max-h-60 overflow-y-auto">
                                         </div>
                                     </div>
@@ -147,7 +148,7 @@
 
                     <!-- Add Package Button -->
                     <div class="mt-6">
-                        <button type="button" id="addPackageButton" 
+                        <button type="button" id="addPackageButton"
                             class="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
                             Add Another Package
                         </button>
@@ -162,7 +163,7 @@
 
                     <!-- Submit Button -->
                     <div class="flex justify-end mt-6">
-                        <button type="submit" 
+                        <button type="submit"
                             class="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                             Submit Bulk Order
                         </button>
@@ -215,10 +216,10 @@
 
         // Re-initialize autocomplete for the new package
         initializeAutocomplete(packageIndex - 1);
-        
+
         // Reattach event listeners for the new radio buttons (delivery method & weight class)
         attachRadioEventListeners(packageIndex - 1);
-        
+
         // Recalculate prices after adding a new package
         updatePrices();
 

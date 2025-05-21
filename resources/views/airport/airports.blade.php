@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Airports Management')
     <x-sidebar-airport>
         <div class="max-w-4xl mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
             <h1 class="text-2xl font-bold mb-4">

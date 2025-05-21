@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Send a Parcel')
     <style>
         .loader {
             width: 24px;
@@ -214,7 +215,7 @@
                             <div class="flex items-center">
                                 <input type="text" name="safe_location" value="{{old('safe_location')}}" placeholder="Eg. Behind the shed."
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            
+
                             </div>
                         </div>
 

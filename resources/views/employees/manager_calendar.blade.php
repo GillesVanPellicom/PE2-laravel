@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Manager Calendar')
     <head>
         <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
         <script src="https://unpkg.com/@popperjs/core@2"></script>
@@ -43,56 +44,56 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             transition: background-color 0.3s, color 0.3s;
         }
-        
+
         /* Custom Card Styles */
         .dashboard-card {
             @apply bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all hover:shadow-xl;
         }
-        
+
         .card-header {
             @apply p-5 border-b border-gray-100 flex items-center justify-between;
         }
-        
+
         /* Status Indicators */
         .status-badge {
             @apply text-xs font-medium px-2.5 py-0.5 rounded-full;
         }
-        
+
         .status-available {
             @apply bg-green-100 text-green-800;
         }
-        
+
         .status-unavailable {
             @apply bg-red-100 text-red-800;
         }
-        
+
         .status-holiday {
             @apply bg-yellow-100 text-yellow-800;
         }
-        
+
         .status-pending {
             @apply bg-blue-100 text-blue-800;
         }
-        
+
         /* Calendar styles */
         .fc .fc-button-primary {
             @apply bg-blue-600 border-blue-600 hover:bg-blue-700 hover:border-blue-700;
         }
-        
+
         .fc .fc-button-primary:not(:disabled).fc-button-active,
         .fc .fc-button-primary:not(:disabled):active {
             @apply bg-blue-700 border-blue-700 shadow-inner;
         }
-        
+
         .fc .fc-daygrid-day.fc-day-today {
             @apply bg-blue-50;
         }
-        
+
         .fc .fc-col-header-cell-cushion,
         .fc .fc-daygrid-day-number {
             @apply text-gray-700;
         }
-        
+
         /* Custom tooltip */
         .calendar-tooltip {
             position: fixed;
@@ -152,7 +153,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="px-5 py-2 border-b border-gray-100 bg-gray-50">
                     <div class="text-sm font-medium text-gray-600">
                         Status for
@@ -161,7 +162,7 @@
                         <!-- Date will be populated by JS -->
                     </div>
                 </div>
-                
+
                 <div class="p-5 space-y-6">
                     <!-- Available Section -->
                     <div>
@@ -174,15 +175,15 @@
 
                         <!-- Search Bar -->
                         <div class="relative mb-3">
-                            <input 
-                                type="text" 
-                                id="searchAvailableEmployees" 
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm" 
+                            <input
+                                type="text"
+                                id="searchAvailableEmployees"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 placeholder="Search by employee name..."
                                 oninput="filterAvailableEmployees()"
                             />
                         </div>
-                        
+
                         <div class="p-4 bg-green-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
                             <div id="employeeList" class="space-y-2 scrollable-list"></div>
                         </div>
@@ -196,7 +197,7 @@
                             </h3>
                             <span class="status-badge status-unavailable" id="sickCount">0</span>
                         </div>
-                        
+
                         <div class="p-4 bg-red-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
                             <div id="sickEmployeeList" class="space-y-2 scrollable-list"></div>
                         </div>
@@ -210,7 +211,7 @@
                             </h3>
                             <span class="status-badge status-holiday" id="holidayCount">0</span>
                         </div>
-                        
+
                         <div class="p-4 bg-yellow-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
                             <div id="holidayEmployeeList" class="space-y-2 scrollable-list"></div>
                         </div>
@@ -222,9 +223,9 @@
                             <h3 class="text-base font-medium text-blue-600 flex items-center gap-2">
                                 <span class="text-lg">📋</span> Pending Requests
                             </h3>
-                            
+
                         </div>
-                        
+
                         <div class="p-4 bg-blue-50 rounded-lg shadow-sm min-h-[50px] border border-gray-100">
                             <div id="pendingHolidayRequests" class="space-y-2 scrollable-list"></div>
                         </div>
@@ -336,18 +337,18 @@
                                 <span class="text-xs text-gray-500 ml-1">vs last period</span>
                             </div>
                         </div>
-                        
+
                     </div>
-                    
+
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6 space-y-4 md:space-y-0">
                             <div class="flex items-center space-x-2">
                                 <label for="startDatePicker" class="text-sm font-medium text-gray-600">
                                     Start Date:
                                 </label>
-                                <input 
-                                    type="date" 
-                                    id="startDatePicker" 
+                                <input
+                                    type="date"
+                                    id="startDatePicker"
                                     class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 />
                             </div>
@@ -356,8 +357,8 @@
                                 <label for="endDatePicker" class="text-sm font-medium text-gray-600">
                                     End Date:
                                 </label>
-                                <input 
-                                    type="date" 
+                                <input
+                                    type="date"
                                     id="endDatePicker"
                                     class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 />
@@ -371,11 +372,11 @@
                             </div>
                             <canvas id="availabilityChart"></canvas>
                         </div>
-                        
+
                         <div class="text-xs text-gray-500 mt-4 text-center" id="chartDaysInfo">
                             Showing employee availability data for <span id="totalDays">0</span> days
                         </div>
-                        
+
                         <!-- Chart Legend -->
                         <div class="flex items-center justify-center mt-4 space-x-6">
                             <div class="flex items-center gap-2">
@@ -390,7 +391,7 @@
                                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
                                 <span class="text-sm text-gray-600">Sick Leave</span>
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -412,10 +413,10 @@
                     <div class="p-5 space-y-4">
                         <!-- Search Bar -->
                         <div class="relative">
-                            <input 
-                                type="text" 
-                                id="searchHolidayRequests" 
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm" 
+                            <input
+                                type="text"
+                                id="searchHolidayRequests"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                                 placeholder="Search by employee name..."
                                 oninput="filterHolidayRequests()"
                             />
@@ -536,7 +537,7 @@
                                 availableList.innerHTML += `
                                     <div class="employee flex justify-between items-center">
                                         <span>${employee.user_id}</span>
-                                        <button 
+                                        <button
                                             class="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition"
                                             onclick="openMarkSickModal(${employee.id}, '${employee.user_id}')">
                                             Mark as Sick
@@ -578,17 +579,17 @@
             // Toggle notification dropdowns
             const notificationDropdown = document.getElementById('notificationDropdown');
             const sickLeaveNotificationDropdown = document.getElementById('sickLeaveNotificationDropdown');
-            
+
             window.toggleNotifications = function() {
                 notificationDropdown.classList.toggle('hidden');
                 sickLeaveNotificationDropdown.classList.add('hidden');
             };
-            
+
             window.toggleSickLeaveNotifications = function() {
                 sickLeaveNotificationDropdown.classList.toggle('hidden');
                 notificationDropdown.classList.add('hidden');
             };
-            
+
             document.addEventListener('click', function (event) {
                 if (!event.target.closest('#notificationDropdown') &&
                     !event.target.closest('[onclick="toggleNotifications()"]')) {
@@ -641,7 +642,7 @@
                                 availableList.innerHTML += `
                                     <div class="employee flex justify-between items-center">
                                         <span>${employee.name}</span>
-                                        <button 
+                                        <button
                                             class="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded-md hover:bg-red-600 transition"
                                             onclick="openMarkSickModal(${employee.id}, '${employee.name}')">
                                             Mark as Sick
@@ -683,7 +684,7 @@
                             month: 'long',
                             day: 'numeric',
                         });
-                        
+
                         // After loading employee data, fetch pending requests for this day
                         fetchPendingRequests(date);
                     })
@@ -1008,7 +1009,7 @@
                             <p class="text-sm text-gray-500">
                                 ${notification.message}
                             </p>
-                            
+
 
                                 <p class="text-sm text-gray-400">
                                     Submitted: ${formattedDate}
@@ -1146,7 +1147,7 @@
 
             // Fetch sick leave notifications on page load
             fetchSickLeaveNotifications();
-            
+
             // Initial load of employee data for today's date
             const today = new Date().toISOString().split('T')[0];
             fetchEmployeeData(today);

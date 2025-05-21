@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section("pageName","Employees")
+    @section("title","Employees")
 
 <x-sidebar>
 

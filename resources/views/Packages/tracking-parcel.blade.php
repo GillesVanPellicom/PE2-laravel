@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Track Your Package')
     <!-- Hero Section with Tracking Input -->
     <div class="bg-gray-50 p-8 md:py-20 py-12">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 rounded-xl shadow-2xl bg-white">

@@ -6,6 +6,7 @@
     use App\Services\Router\Types\Node;
 @endphp
 <x-app-layout>
+    @section('title', 'Change Bob\'s Location')
     <div class="flex justify-center items-center">
         <form method="POST" action="{{ route('courier.update.location') }}" class="p-5">
             @csrf

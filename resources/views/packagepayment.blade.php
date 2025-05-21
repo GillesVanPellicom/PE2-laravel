@@ -1,5 +1,6 @@
 
 <x-app-layout>
+    @section('title', 'Payment Details')
     <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
         <div class="relative py-3 sm:max-w-xl sm:mx-auto">
             <div class="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
@@ -17,9 +18,9 @@
                         $routeName = $isBulk ? 'packages.bulk-details' : 'packages.packagedetails';
                     @endphp
 
-                    <form id="submit-form" 
-                        action="{{ route($routeName, ['id' => $isBulk ? implode(',', session('bulk_order_package_ids')) : $package->id]) }}" 
-                        method="GET" 
+                    <form id="submit-form"
+                        action="{{ route($routeName, ['id' => $isBulk ? implode(',', session('bulk_order_package_ids')) : $package->id]) }}"
+                        method="GET"
                         class="mt-8 space-y-6">
                         @csrf
                         <div class="bg-white">
